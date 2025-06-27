@@ -1,6 +1,7 @@
 // src/App.jsx
 import React from "react";
 import STCMain from "./STC/form/STCMain";
+import WTCMain from "./WTC/form/WtcMain";
 
 function App() {
   return (

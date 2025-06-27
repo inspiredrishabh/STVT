@@ -1,26 +1,12 @@
 import React from "react";
 
-const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
+const Contact = ({ formData, onChange }) => {
   const handleCopyAddress = () => {
-    onChange("currentAddress", formData.permanentAddress || "");
+    onChange("permanentAddress", formData.currentAddress || "");
   };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSubmit) onSubmit(formData); // For backend integration
-  };
-
-  const RequiredLabel = ({ children }) => (
-    <label className="block text-gray-700 font-medium mb-1">
-      {children} <span className="text-red-500">*</span>
-    </label>
-  );
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200"
-    >
+    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
           📞
@@ -29,32 +15,9 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        {/* Permanent Address */}
-        <div className="sm:col-span-2">
-          <RequiredLabel>Permanent Address</RequiredLabel>
-          <textarea
-            rows="3"
-            value={formData.permanentAddress || ""}
-            onChange={(e) => onChange("permanentAddress", e.target.value)}
-            placeholder="Enter permanent address"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-          />
-        </div>
-
-        {/* Same as Permanent Address Button */}
-        <div className="sm:col-span-2">
-          <button
-            type="button"
-            onClick={handleCopyAddress}
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-sm text-gray-800"
-          >
-            Same as Permanent Address
-          </button>
-        </div>
-
         {/* Current Address */}
         <div className="sm:col-span-2">
-          <RequiredLabel>Current Address</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">Current Address</label>
           <textarea
             rows="3"
             value={formData.currentAddress || ""}
@@ -64,9 +27,32 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
           />
         </div>
 
+        {/* Copy Button */}
+        <div className="sm:col-span-2">
+          <button
+            type="button"
+            onClick={handleCopyAddress}
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-sm text-gray-800"
+          >
+            Copy Current Address to Permanent
+          </button>
+        </div>
+
+        {/* Permanent Address */}
+        <div className="sm:col-span-2">
+          <label className="block text-gray-700 font-medium mb-1">Permanent Address</label>
+          <textarea
+            rows="3"
+            value={formData.permanentAddress || ""}
+            onChange={(e) => onChange("permanentAddress", e.target.value)}
+            placeholder="Enter permanent address"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          />
+        </div>
+
         {/* Phone Number */}
         <div>
-          <RequiredLabel>Phone Number (WhatsApp)</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">Phone Number (WhatsApp)</label>
           <input
             type="tel"
             value={formData.phoneNumber || ""}
@@ -78,7 +64,7 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
 
         {/* Emergency Contact */}
         <div>
-          <RequiredLabel>Emergency Contact Number</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">Emergency Contact Number</label>
           <input
             type="tel"
             value={formData.emergencyContactNumber || ""}
@@ -90,7 +76,7 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
 
         {/* Email */}
         <div className="sm:col-span-2">
-          <RequiredLabel>Email</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">Email</label>
           <input
             type="email"
             value={formData.email || ""}
@@ -100,7 +86,7 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
           />
         </div>
       </div>
-    </form>
+    </div>
   );
 };
 

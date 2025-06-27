@@ -3,7 +3,7 @@ import React from "react";
 const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit(formData);
+    if (onSubmit) onSubmit(formData); // This allows endpoint integration
   };
 
   return (
@@ -19,32 +19,33 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
           {/* Picture Upload */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Picture<span className="text-red-500">*</span></label>
-            <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
-              <label
-                htmlFor="pictureUpload"
-                className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
-              >
-                Choose File
-              </label>
-              <input
-                id="pictureUpload"
-                type="file"
-                accept="image/*"
-                onChange={(e) => onChange("picture", e.target.files[0])}
-                className="hidden"
-              />
-              <span className="text-gray-500 text-sm truncate">
-                {formData.picture ? formData.picture.name : "No file chosen"}
-              </span>
+            <label className="block text-gray-700 font-medium mb-1">Picture</label>
+            <div>
+              <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
+                <label
+                  htmlFor="pictureUpload"
+                  className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
+                >
+                  Choose File
+                </label>
+                <input
+                  id="pictureUpload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onChange("picture", e.target.files[0])}
+                  className="hidden"
+                />
+                <span className="text-gray-500 text-sm truncate">
+                  {formData.picture ? formData.picture.name : "No file chosen"}
+                </span>
+              </div>
             </div>
+
           </div>
 
           {/* Name */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Name <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Name</label>
             <input
               type="text"
               value={formData.name || ""}
@@ -56,9 +57,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
 
           {/* Gender */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Gender <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Gender</label>
             <select
               value={formData.sex || ""}
               onChange={(e) => onChange("sex", e.target.value)}
@@ -73,9 +72,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
 
           {/* Father's Name */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Father's Name <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Father's Name</label>
             <input
               type="text"
               value={formData.fatherName || ""}
@@ -85,7 +82,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
             />
           </div>
 
-          {/* Mother's Name (Optional) */}
+          {/* Mother's Name */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Mother's Name</label>
             <input
@@ -99,9 +96,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
 
           {/* Date of Birth */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Date of Birth <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Date of Birth</label>
             <input
               type="date"
               value={formData.dob || ""}
@@ -112,9 +107,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
 
           {/* Category */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Category <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Category</label>
             <select
               value={formData.category || ""}
               onChange={(e) => onChange("category", e.target.value)}
@@ -131,9 +124,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
 
           {/* PWD (Yes/No) */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              PWD (Yes/No) <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">PWD (Yes/No)</label>
             <select
               value={formData.pwd || ""}
               onChange={(e) => onChange("pwd", e.target.value)}
@@ -145,7 +136,7 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
             </select>
           </div>
 
-          {/* Type of Disability */}
+          {/* Type of Disability (if applicable) */}
           {formData.pwd === "Yes" && (
             <div>
               <label className="block text-gray-700 font-medium mb-1">Type of Disability</label>
@@ -159,21 +150,19 @@ const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
             </div>
           )}
 
-          {/* Nationality (default Indian) */}
+          {/* Nationality */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Nationality <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Nationality</label>
             <input
               type="text"
-              value={formData.nationality || "Indian"}
+              value={formData.nationality || ""}
               onChange={(e) => onChange("nationality", e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Enter nationality"
             />
           </div>
 
-          {/* Marital Status (Optional) */}
+          {/* Marital Status */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Marital Status</label>
             <select

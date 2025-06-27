@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
+import Professional from "./Professional";
 import Course from "./Course";
 
 const STCMain = () => {
@@ -14,13 +15,38 @@ const STCMain = () => {
     category: "",
     pwd: "",
     typeOfDisability: "",
-    nationality: "",
+    nationality: "INDIAN",
     maritalStatus: "",
     currentAddress: "",
     permanentAddress: "",
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
+    employeeNo: "",
+    hrmsId: "",
+    pfNo: "",
+    dateOfAppointment: "",
+    modeOfAppointment: "",
+    designation: "",
+    unitDiv: "",
+    workingUnder: "",
+    highestQualification: "",
+    otherQualification: "",
+    fieldOfStudy: "",
+    institution: "",
+    boardType: "",
+    educationStartYear: "",
+    eduCourseDuration: "",
+    yearOfGraduation: "",
+    modeOfStudy: "",
+    gradeType: "",
+    gradeValue: "",
+    division: "",
+    hasAdditionalQualification: "",
+    additionalQualificationName: "",
+    additionalQualificationOrg: "",
+    additionalQualificationYear: "",
+    thesisTitle: "",
     ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -30,21 +56,27 @@ const STCMain = () => {
   });
 
   const [step, setStep] = useState(0);
-  const steps = ["Personal", "Contact", "Course"];
-  const icons = ["👤", "📞", "📄"];
+  const steps = ["Personal", "Contact", "Professional", "Course"];
+  const icons = ["👤", "📞", "💼", "📄"];
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const requiredFields = {
-    0: ["name", "sex", "fatherName", "motherName", "dob", "category", "nationality"],
+    0: ["name", "sex", "fatherName", "dob", "category", "nationality"],
     1: ["currentAddress", "permanentAddress", "phoneNumber", "emergencyContactNumber", "email"],
-    2: ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "dateOfSparing", "moduleNo", "courseDuration"]
+    2: ["dateOfAppointment", "modeOfAppointment", "designation", "unitDiv", "workingUnder", "employeeNo", "hrmsId", "pfNo"],
+    3: ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "moduleNo", "courseDuration"]
   };
 
   const isStepValid = () => {
-    return requiredFields[step].every((field) => formData[field]?.toString().trim() !== "");
+    return requiredFields[step].every((field) => {
+      const value = formData[field];
+      if (typeof value === "string") return value.trim() !== "";
+      if (typeof value === "object" && value !== null) return true;
+      return !!value;
+    });
   };
 
   const handleNext = () => {
@@ -75,6 +107,8 @@ const STCMain = () => {
       case 1:
         return <Contact formData={formData} onChange={handleChange} />;
       case 2:
+        return <Professional formData={formData} onChange={handleChange} />;
+      case 3:
         return <Course formData={formData} onChange={handleChange} />;
       default:
         return null;
