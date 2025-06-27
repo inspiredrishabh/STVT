@@ -1,11 +1,15 @@
-import React from 'react'
-import STCMain from './STC/form/STCMain'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './auth/AuthContext'
+import Router from './Router'
+
 
 const App = () => {
   return (
-    <div>
-      <STCMain />
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
