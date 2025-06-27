@@ -1,35 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-const Course = ({ formData, onChange }) => {
+const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
+  const [ticketCounter, setTicketCounter] = useState({
+    ASE: 1, AJE: 1, IJE: 1, RJE: 1, RCW: 1, RD: 1,
+    TS: 1, LHI: 1, LHII: 1, FM: 1, WT: 1, DM: 1,
+    WE: 1, NDT: 1, EA: 1, "3DMP": 1
+  });
+
   const courseModules = {
-    "MSE-C": 52,
-    "MSE-D": 52,
-    "MSE-W": 52,
-    "MJR-C": 52,
-    "MJR-D": 52,
-    "MJR-W": 52,
-    "MJI-C": 52,
-    "MJI-D": 52,
-    "MJ1-W": 52,
-    "MJP-C": 13,
-    "MJP-D": 13,
-    "MJP-W": 13,
-    "ASE": 52,
-    "AJE": 52,
-    "IJE": 52,
-    "RJE": 13,
-    "RCW": 3,
-    "RD": 2,
-    "TS": 1,
-    "LH-I": 1,
-    "LH-II": 1,
-    "FM": 1,
-    "WT": "3 Days",
-    "DM": "3 Days",
-    "WE": "3 Days",
-    "NDT": "4 Days",
-    "EA": "4 Days",
-    "3DMP": "3 Days",
+    "MSE-C": 52, "MSE-D": 52, "MSE-W": 52, "MJR-C": 52, "MJR-D": 52, "MJR-W": 52,
+    "MJI-C": 52, "MJI-D": 52, "MJ1-W": 52, "MJP-C": 13, "MJP-D": 13, "MJP-W": 13,
+    "ASE": 52, "AJE": 52, "IJE": 52, "RJE": 13, "RCW": 3, "RD": 2, "TS": 1,
+    "LH-I": 1, "LH-II": 1, "FM": 1, "WT": "3 Days", "DM": "3 Days", "WE": "3 Days",
+    "NDT": "4 Days", "EA": "4 Days", "3DMP": "3 Days",
   };
 
   const RequiredLabel = ({ children }) => (
@@ -41,7 +24,24 @@ const Course = ({ formData, onChange }) => {
   const batchOptions = ["2024-2025", "Other"];
   const moduleOptions = [...Object.keys(courseModules), "Other"];
 
-  // Update courseDuration when moduleNo is a known option
+  const generateTicketNumber = (designation) => {
+    if (!designation || !ticketCounter[designation]) return "";
+    const counter = ticketCounter[designation].toString().padStart(5, '0');
+    return `${designation}${counter}`;
+  };
+
+  useEffect(() => {
+    const designation = formData.designation;
+    if (designation && ticketCounter[designation] && !formData.ticketNo) {
+      const ticketNumber = generateTicketNumber(designation);
+      onChange("ticketNo", ticketNumber);
+      setTicketCounter(prev => ({
+        ...prev,
+        [designation]: prev[designation] + 1
+      }));
+    }
+  }, [formData.designation]);
+
   useEffect(() => {
     if (courseModules[formData.moduleNo]) {
       const duration = courseModules[formData.moduleNo];
@@ -49,7 +49,6 @@ const Course = ({ formData, onChange }) => {
     }
   }, [formData.moduleNo]);
 
-  // Auto-calculate sparing date
   useEffect(() => {
     const joiningDate = formData.dateOfJoiningStcWtcNonRailway;
     const duration = courseModules[formData.moduleNo];
@@ -61,6 +60,48 @@ const Course = ({ formData, onChange }) => {
     }
   }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo]);
 
+  const handleTicketChange = (value) => onChange("ticketNo", value);
+
+  const generateNewTicket = () => {
+    const designation = formData.designation;
+    if (designation && ticketCounter[designation]) {
+      const ticketNumber = generateTicketNumber(designation);
+      onChange("ticketNo", ticketNumber);
+      setTicketCounter(prev => ({
+        ...prev,
+        [designation]: prev[designation] + 1
+      }));
+    }
+  };
+
+  const validateField = (field, value) => {
+    if (!value || (typeof value === "string" && value.trim() === "")) {
+      return "This field is required";
+    }
+    return "";
+  };
+
+  const validateAllFields = () => {
+    const requiredFields = ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "moduleNo", "courseDuration"];
+    const validationErrors = {};
+
+    requiredFields.forEach((field) => {
+      const error = validateField(field, formData[field]);
+      if (error) validationErrors[field] = error;
+    });
+
+    return {
+      isValid: Object.keys(validationErrors).length === 0,
+      errors: validationErrors,
+    };
+  };
+
+  useEffect(() => {
+    if (onChange.setValidationFunction) {
+      onChange.setValidationFunction(validateAllFields);
+    }
+  }, [formData]);
+
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
       <div className="flex items-center space-x-3 mb-6">
@@ -71,19 +112,30 @@ const Course = ({ formData, onChange }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        {/* Ticket Number */}
         <div>
           <RequiredLabel>Ticket Number</RequiredLabel>
-          <input
-            type="text"
-            value={formData.ticketNo || ""}
-            onChange={(e) => onChange("ticketNo", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter ticket number"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={formData.ticketNo || ""}
+              onChange={(e) => handleTicketChange(e.target.value)}
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Auto-generated based on designation"
+              readOnly={!formData.designation || !ticketCounter[formData.designation]}
+            />
+            {formData.designation && ticketCounter[formData.designation] && (
+              <button
+                type="button"
+                onClick={generateNewTicket}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+              >
+                🔄
+              </button>
+            )}
+          </div>
+          {errors.ticketNo && <p className="text-sm text-red-500 mt-1">{errors.ticketNo}</p>}
         </div>
 
-        {/* Batch */}
         <div>
           <RequiredLabel>Batch</RequiredLabel>
           <select
@@ -101,13 +153,13 @@ const Course = ({ formData, onChange }) => {
               type="text"
               placeholder="Enter custom batch"
               value={formData.customBatch || ""}
-              onChange={(e) => onChange("batch", e.target.value)}
+              onChange={(e) => onChange("customBatch", e.target.value)}
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
             />
           )}
+          {errors.batch && <p className="text-sm text-red-500 mt-1">{errors.batch}</p>}
         </div>
 
-        {/* Date of Joining */}
         <div>
           <RequiredLabel>Date of Joining at STC</RequiredLabel>
           <input
@@ -116,20 +168,23 @@ const Course = ({ formData, onChange }) => {
             onChange={(e) => onChange("dateOfJoiningStcWtcNonRailway", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           />
+          {errors.dateOfJoiningStcWtcNonRailway && (
+            <p className="text-sm text-red-500 mt-1">{errors.dateOfJoiningStcWtcNonRailway}</p>
+          )}
         </div>
 
-        {/* Date of Sparing (Optional) */}
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Date of Sparing from STC</label>
+          <label className="block text-gray-700 font-medium mb-1">
+            Date of Sparing <span className="text-xs text-gray-500">(Auto-calculated)</span>
+          </label>
           <input
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
           />
         </div>
 
-        {/* Module Number */}
         <div>
           <RequiredLabel>Module Number</RequiredLabel>
           <select
@@ -147,22 +202,23 @@ const Course = ({ formData, onChange }) => {
               type="text"
               placeholder="Enter custom module"
               value={formData.customModule || ""}
-              onChange={(e) => onChange("moduleNo", e.target.value)}
+              onChange={(e) => onChange("customModule", e.target.value)}
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
             />
           )}
+          {errors.moduleNo && <p className="text-sm text-red-500 mt-1">{errors.moduleNo}</p>}
         </div>
 
-        {/* Course Duration */}
         <div>
           <RequiredLabel>Course Duration</RequiredLabel>
           <input
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="E.g., 3 months"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            placeholder="Auto-filled"
           />
+          {errors.courseDuration && <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>}
         </div>
       </div>
     </div>

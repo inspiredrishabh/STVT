@@ -1,3 +1,4 @@
+// STCMain.js
 import React, { useState } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
@@ -22,14 +23,14 @@ const STCMain = () => {
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
-    employeeNo: "",
-    hrmsId: "",
-    pfNo: "",
-    dateOfAppointment: "",
+    dateOfAppointmentInRailway: "",
     modeOfAppointment: "",
     designation: "",
-    unitDiv: "",
+    unit: "",
     workingUnder: "",
+    hrmsId: "",
+    pfNoNpsUps: "",
+    employeeNumber: "",
     highestQualification: "",
     otherQualification: "",
     fieldOfStudy: "",
@@ -56,32 +57,60 @@ const STCMain = () => {
   });
 
   const [step, setStep] = useState(0);
+  const [errors, setErrors] = useState({});
+  const [validationFunctions, setValidationFunctions] = useState({});
+
   const steps = ["Personal", "Contact", "Professional", "Course"];
   const icons = ["👤", "📞", "💼", "📄"];
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
-  const requiredFields = {
-    0: ["name", "sex", "fatherName", "dob", "category", "nationality"],
-    1: ["currentAddress", "permanentAddress", "phoneNumber", "emergencyContactNumber", "email"],
-    2: ["dateOfAppointment", "modeOfAppointment", "designation", "unitDiv", "workingUnder", "employeeNo", "hrmsId", "pfNo"],
-    3: ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "moduleNo", "courseDuration"]
+  const handlePersonalChange = (field, value) => {
+    handleChange(field, value);
+  };
+
+  handlePersonalChange.setValidationFunction = (validationFn) => {
+    setValidationFunctions((prev) => ({ ...prev, personal: validationFn }));
+  };
+
+  handlePersonalChange.updateErrors = (validationErrors) => {
+    setErrors(validationErrors);
+  };
+
+  handleChange.setValidationFunction = (validationFn) => {
+    setValidationFunctions((prev) => ({ ...prev, contact: validationFn }));
+  };
+
+  handleChange.updateErrors = (validationErrors) => {
+    setErrors(validationErrors);
   };
 
   const isStepValid = () => {
-    return requiredFields[step].every((field) => {
-      const value = formData[field];
-      if (typeof value === "string") return value.trim() !== "";
-      if (typeof value === "object" && value !== null) return true;
-      return !!value;
-    });
+    const stepKeys = ["personal", "contact", "professional", "course"];
+    const currentKey = stepKeys[step];
+    if (validationFunctions[currentKey]) {
+      const validation = validationFunctions[currentKey]();
+      if (!validation.isValid) {
+        setErrors(validation.errors);
+        return false;
+      }
+      return true;
+    }
+    return true;
   };
 
   const handleNext = () => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before proceeding.");
+      alert("Please correct the validation errors before proceeding.");
       return;
     }
     if (step < steps.length - 1) setStep(step + 1);
@@ -103,13 +132,13 @@ const STCMain = () => {
   const renderForm = () => {
     switch (step) {
       case 0:
-        return <Personal formData={formData} onChange={handleChange} />;
+        return <Personal formData={formData} onChange={handlePersonalChange} errors={errors} />;
       case 1:
-        return <Contact formData={formData} onChange={handleChange} />;
+        return <Contact formData={formData} onChange={handleChange} errors={errors} />;
       case 2:
-        return <Professional formData={formData} onChange={handleChange} />;
+        return <Professional formData={formData} onChange={handleChange} errors={errors} />;
       case 3:
-        return <Course formData={formData} onChange={handleChange} />;
+        return <Course formData={formData} onChange={handleChange} errors={errors} />;
       default:
         return null;
     }
@@ -117,7 +146,6 @@ const STCMain = () => {
 
   return (
     <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-      {/* Step Navigation Bar */}
       <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
@@ -132,7 +160,6 @@ const STCMain = () => {
         ))}
       </div>
 
-      {/* Unified Form Handler */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -142,7 +169,6 @@ const STCMain = () => {
       >
         {renderForm()}
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between pt-8 mt-8 border-t border-gray-100">
           {step > 0 ? (
             <button
