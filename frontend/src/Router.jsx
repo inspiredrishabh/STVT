@@ -6,13 +6,19 @@ import { useAuth } from "./auth/AuthContext";
 // Lazy load components
 const Login = lazy(() => import("./auth/Login"));
 const Dashboard = lazy(() => import("./components/Dashboard"));
+
+// Form Components
 const STCMain = lazy(() => import("./STC/form/STCMain"));
+const WTCMain = lazy(() => import("./WTC/form/WtcMain"));
+const NonRailwayMain = lazy(() => import("./NonRailway/form/NonRailwayMain"));
+
+// STC Management Components
 const HomePageSTC = lazy(() => import("./stcManagement/HomePageSTC"));
 const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
-const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
+// const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
 const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
 const Letter = lazy(() => import("./WTCManagement/Letter"));
 const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
@@ -70,7 +76,7 @@ const Router = () => {
           }
         />
 
-        {/* STC Form Route */}
+        {/* Form Routes */}
         <Route
           path="/stc-form"
           element={
@@ -81,13 +87,32 @@ const Router = () => {
         />
 
         <Route
-          path="/manage-candidate"
+          path="/wtc-form"
+          element={
+            // <ProtectedLayout>
+            <WTCMain />
+            // </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path="/non-railway-form"
           element={
             <ProtectedLayout>
-              <ManageCandidate />
+              <NonRailwayMain />
             </ProtectedLayout>
           }
         />
+
+        {/* Candidate Management Route */}
+        {/* <Route
+          path="/manage-candidate"
+          element={
+            // <ProtectedLayout>
+            // <ManageCandidate />
+            // </ProtectedLayout>
+          }
+        /> */}
 
         {/* STC Management Homepage */}
         <Route
@@ -103,9 +128,9 @@ const Router = () => {
         <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
-              <FeedMark />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <FeedMark />
+            // </ProtectedLayout>
           }
         />
 
@@ -130,9 +155,9 @@ const Router = () => {
         <Route
           path="/stc/marksheet"
           element={
-            <ProtectedLayout>
-              <Marksheet />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <Marksheet />
+            // </ProtectedLayout>
           }
         />
 
@@ -148,7 +173,7 @@ const Router = () => {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </Suspense>
+    </Suspense >
   );
 };
 
