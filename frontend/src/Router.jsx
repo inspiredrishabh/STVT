@@ -18,7 +18,7 @@ const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
-// const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
+const ManageCandidate = lazy(() => import("./manage/CandidateManagementPage"));
 const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
 const Letter = lazy(() => import("./WTCManagement/Letter"));
 const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
@@ -105,14 +105,14 @@ const Router = () => {
         />
 
         {/* Candidate Management Route */}
-        {/* <Route
+        <Route
           path="/manage-candidate"
           element={
-            // <ProtectedLayout>
-            // <ManageCandidate />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <ManageCandidate />
+            </ProtectedLayout>
           }
-        /> */}
+        />
 
         {/* STC Management Homepage */}
         <Route
