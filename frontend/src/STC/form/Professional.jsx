@@ -11,44 +11,123 @@ const Professional = ({ formData, onChange }) => {
     [onChange]
   );
 
-  const validateField = (field, value) => {
-    if (!value || value.toString().trim() === "") {
+  // Enhanced validation with comprehensive type checking
+  const validateField = useCallback((field, value) => {
+    // Check for empty/null/undefined values
+    if (value === null || value === undefined || value.toString().trim() === "") {
       return "This field is required";
     }
 
+    const stringValue = value.toString().trim();
+
+    // String validation for text fields
+    if (["workingUnder", "institution", "fieldOfStudy", "hrmsId", "pfNoNpsUps", "employeeNumber"].includes(field)) {
+      if (stringValue.length < 2) {
+        return "Must be at least 2 characters long";
+      }
+      if (stringValue.length > 100) {
+        return "Must not exceed 100 characters";
+      }
+      // Check for valid characters (letters, numbers, spaces, common punctuation)
+      if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
+        return "Contains invalid characters";
+      }
+    }
+
+    // Year validation
     if (field === "educationStartYear" || field === "additionalQualificationYear") {
-      const year = parseInt(value, 10);
+      const year = parseInt(stringValue, 10);
       const currentYear = new Date().getFullYear();
-      if (isNaN(year) || year < 1970 || year > currentYear) {
+      if (isNaN(year)) {
         return "Please enter a valid year";
       }
-    }
-
-    if (field === "eduCourseDuration") {
-      const duration = parseInt(value, 10);
-      if (isNaN(duration) || duration < 1 || duration > 6) {
-        return "Course duration should be between 1 and 6 years";
+      if (year < 1970 || year > currentYear) {
+        return `Year must be between 1970 and ${currentYear}`;
       }
     }
 
+    // Course duration validation
+    if (field === "eduCourseDuration") {
+      const duration = parseInt(stringValue, 10);
+      if (isNaN(duration)) {
+        return "Please enter a valid number";
+      }
+      if (duration < 1 || duration > 6) {
+        return "Course duration must be between 1 and 6 years";
+      }
+    }
+
+    // Enhanced grade value validation
     if (field === "gradeValue") {
-      if (formData.gradeType?.includes("CGPA")) {
-        const g = parseFloat(value);
-        if (isNaN(g) || g <= 0 || (formData.gradeType === "CGPA (out of 10)" && g > 10) || (formData.gradeType === "CGPA (out of 4)" && g > 4)) {
-          return `Please enter a valid CGPA (${formData.gradeType})`;
+      const gradeType = formData.gradeType;
+      if (!gradeType) {
+        return "Please select grade type first";
+      }
+
+      if (gradeType === "CGPA (out of 10)") {
+        const cgpa = parseFloat(stringValue);
+        if (isNaN(cgpa)) {
+          return "Please enter a valid CGPA";
         }
-      } else if (formData.gradeType === "Percentage") {
-        const p = parseFloat(value);
-        if (isNaN(p) || p < 0 || p > 100) {
-          return "Enter a valid percentage between 0 and 100";
+        if (cgpa < 0 || cgpa > 10) {
+          return "CGPA must be between 0 and 10";
         }
+        // Check decimal places in the original string to handle cases like "9.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
+          return "CGPA can have maximum 2 decimal places";
+        }
+      } else if (gradeType === "CGPA (out of 4)") {
+        const cgpa = parseFloat(stringValue);
+        if (isNaN(cgpa)) {
+          return "Please enter a valid CGPA";
+        }
+        if (cgpa < 0 || cgpa > 4) {
+          return "CGPA must be between 0 and 4";
+        }
+        // Check decimal places in the original string to handle cases like "3.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
+          return "CGPA can have maximum 2 decimal places";
+        }
+      } else if (gradeType === "Percentage") {
+        const percentage = parseFloat(stringValue);
+        if (isNaN(percentage)) {
+          return "Please enter a valid percentage";
+        }
+        if (percentage < 0 || percentage > 100) {
+          return "Percentage must be between 0 and 100";
+        }
+        // Check decimal places in the original string to handle cases like "99.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
+          return "Percentage can have maximum 2 decimal places";
+        }
+      } else if (gradeType === "Grade") {
+        if (!/^[A-F][+-]?$|^[O]$/.test(stringValue.toUpperCase())) {
+          return "Enter valid grade (A+, A, B+, B, C+, C, D+, D, F, O)";
+        }
+      }
+    }
+
+    // Date validation
+    if (field === "dateOfAppointmentInRailway") {
+      const date = new Date(stringValue);
+      const currentDate = new Date();
+      const minDate = new Date('1950-01-01');
+
+      if (isNaN(date.getTime())) {
+        return "Please enter a valid date";
+      }
+      if (date < minDate || date > currentDate) {
+        return "Date must be between 1950 and today";
       }
     }
 
     return "";
-  };
+  }, [formData.gradeType]);
 
-  const requiredFields = [
+  const requiredFields = useMemo(() => [
     "dateOfAppointmentInRailway",
     "modeOfAppointment",
     "designation",
@@ -68,17 +147,36 @@ const Professional = ({ formData, onChange }) => {
     "gradeValue",
     "division",
     "hasAdditionalQualification"
-  ];
+  ], []);
 
-  const validateAllFields = () => {
+  const validateAllFields = useCallback(() => {
     const newErrors = {};
 
+    // Validate all required fields
     requiredFields.forEach((field) => {
       const value = formData[field];
       const error = validateField(field, value);
       if (error) newErrors[field] = error;
     });
 
+    // Validate conditional fields for "Other" selections
+    if (formData.modeOfAppointment === "Other" && !formData.modeOfAppointmentOther?.trim()) {
+      newErrors.modeOfAppointmentOther = "Please specify the mode of appointment";
+    }
+
+    if (formData.designation === "Other" && !formData.designationOther?.trim()) {
+      newErrors.designationOther = "Please specify the designation";
+    }
+
+    if (formData.unit === "Other" && !formData.unitOther?.trim()) {
+      newErrors.unitOther = "Please specify the unit/division";
+    }
+
+    if (formData.highestQualification === "Other" && !formData.otherQualification?.trim()) {
+      newErrors.otherQualification = "Please specify the qualification";
+    }
+
+    // Validate additional qualification fields
     if (formData.hasAdditionalQualification === "Yes") {
       ["additionalQualificationName", "additionalQualificationOrg", "additionalQualificationYear"].forEach((field) => {
         const error = validateField(field, formData[field]);
@@ -91,14 +189,15 @@ const Professional = ({ formData, onChange }) => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
     };
-  };
+  }, [formData, requiredFields, validateField]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [formData]);
+  }, [validateAllFields, onChange]);
 
+  // Auto-calculate graduation year
   useEffect(() => {
     if (formData.educationStartYear && formData.eduCourseDuration) {
       const startYear = parseInt(formData.educationStartYear, 10);
@@ -110,10 +209,11 @@ const Professional = ({ formData, onChange }) => {
   }, [formData.educationStartYear, formData.eduCourseDuration, handleChange]);
 
   const generateYearOptions = useCallback(
-    () => Array.from({ length: 50 }, (_, i) => (new Date().getFullYear() - i).toString()),
+    () => Array.from({ length: 55 }, (_, i) => (new Date().getFullYear() - i).toString()),
     []
   );
 
+  // Memoized options for better performance
   const qualificationOptions = useMemo(() => [
     "", "High School", "Intermediate", "Diploma", "Bachelor's Degree", "Master's Degree", "Ph.D", "Other"
   ], []);
@@ -127,13 +227,19 @@ const Professional = ({ formData, onChange }) => {
   const gradeTypeOptions = useMemo(() => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)", "Grade"], []);
   const divisionOptions = useMemo(() => ["", "First Division", "Second Division", "Third Division", "Distinction", "Pass"], []);
 
-  const professionalFields = [
+  const appointmentModeOptions = useMemo(() => ["", "RRB", "Promotion Through LDCE", "Promotion Through Seniority", "Other"], []);
+
+  const designationOptions = useMemo(() => ["", "ASE", "AJE", "IJE", "RJE", "RCW", "RD", "TS", "LHI", "LHII", "FM", "WT", "DM", "WE", "NDT", "EA", "3DMP", "Other"], []);
+
+  const unitOptions = useMemo(() => ["", "JAT", "FZD", "MB", "LKO", "DLI", "Other"], []);
+
+  const professionalFields = useMemo(() => [
     { label: "Date of Appointment", field: "dateOfAppointmentInRailway", type: "date" },
     {
       label: "Mode of Appointment",
       field: "modeOfAppointment",
       type: "select",
-      options: ["", "RRB", "Promotion Through LDCE", "Promotion Through Seniority", "Other"],
+      options: appointmentModeOptions,
     },
     formData.modeOfAppointment === "Other" && {
       label: "Specify Mode",
@@ -143,7 +249,7 @@ const Professional = ({ formData, onChange }) => {
       label: "Designation",
       field: "designation",
       type: "select",
-      options: ["", "ASE", "AJE", "IJE", "RJE", "RCW", "RD", "TS", "LHI", "LHII", "FM", "WT", "DM", "WE", "NDT", "EA", "3DMP", "Other"],
+      options: designationOptions,
     },
     formData.designation === "Other" && {
       label: "Specify Designation",
@@ -153,7 +259,7 @@ const Professional = ({ formData, onChange }) => {
       label: "Unit / Division",
       field: "unit",
       type: "select",
-      options: ["", "JAT", "FZD", "MB", "LKO", "DLI", "Other"],
+      options: unitOptions,
     },
     formData.unit === "Other" && {
       label: "Specify Unit / Division",
@@ -163,9 +269,9 @@ const Professional = ({ formData, onChange }) => {
     { label: "HRMS ID", field: "hrmsId" },
     { label: "PF/NPS/UPS No.", field: "pfNoNpsUps" },
     { label: "Employee Number", field: "employeeNumber" },
-  ];
+  ], [formData.modeOfAppointment, formData.designation, formData.unit, appointmentModeOptions, designationOptions, unitOptions]);
 
-  const educationFields = [
+  const educationFields = useMemo(() => [
     {
       label: "Highest Qualification",
       field: "highestQualification",
@@ -214,7 +320,14 @@ const Professional = ({ formData, onChange }) => {
       type: "select",
       options: gradeTypeOptions,
     },
-    { label: "Grade/Percentage/CGPA", field: "gradeValue" },
+    {
+      label: "Grade/Percentage/CGPA",
+      field: "gradeValue",
+      helpText: formData.gradeType === "CGPA (out of 10)" ? "Enter CGPA between 0-10" :
+        formData.gradeType === "CGPA (out of 4)" ? "Enter CGPA between 0-4" :
+          formData.gradeType === "Percentage" ? "Enter percentage between 0-100" :
+            formData.gradeType === "Grade" ? "Enter grade (A+, A, B+, B, C+, C, D+, D, F, O)" : ""
+    },
     {
       label: "Division/Class",
       field: "division",
@@ -246,9 +359,9 @@ const Professional = ({ formData, onChange }) => {
       field: "thesisTitle",
       required: false,
     },
-  ];
+  ], [formData.highestQualification, formData.hasAdditionalQualification, formData.gradeType, qualificationOptions, boardOptions, durationOptions, modeOptions, gradeTypeOptions, divisionOptions, generateYearOptions]);
 
-  const renderFields = (fields) =>
+  const renderFields = useCallback((fields) =>
     fields
       .filter(Boolean)
       .map(({ label, field, type = "text", options = [], disabled = false, required = true, helpText }) => (
@@ -260,7 +373,8 @@ const Professional = ({ formData, onChange }) => {
             <select
               value={formData[field] || ""}
               onChange={(e) => handleChange(field, e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
               disabled={disabled}
             >
               {options.map((opt) => (
@@ -274,7 +388,8 @@ const Professional = ({ formData, onChange }) => {
               type={type}
               value={formData[field] || ""}
               onChange={(e) => handleChange(field, e.target.value)}
-              className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
               placeholder={`Enter ${label.toLowerCase()}`}
               disabled={disabled}
             />
@@ -282,7 +397,7 @@ const Professional = ({ formData, onChange }) => {
           {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
           {errors[field] && <p className="text-sm text-red-500 mt-1">{errors[field]}</p>}
         </div>
-      ));
+      )), [formData, errors, handleChange]);
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
