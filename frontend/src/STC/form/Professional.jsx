@@ -72,7 +72,9 @@ const Professional = ({ formData, onChange }) => {
         if (cgpa < 0 || cgpa > 10) {
           return "CGPA must be between 0 and 10";
         }
-        if (cgpa.toString().split('.')[1]?.length > 2) {
+        // Check decimal places in the original string to handle cases like "9.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
           return "CGPA can have maximum 2 decimal places";
         }
       } else if (gradeType === "CGPA (out of 4)") {
@@ -83,7 +85,9 @@ const Professional = ({ formData, onChange }) => {
         if (cgpa < 0 || cgpa > 4) {
           return "CGPA must be between 0 and 4";
         }
-        if (cgpa.toString().split('.')[1]?.length > 2) {
+        // Check decimal places in the original string to handle cases like "3.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
           return "CGPA can have maximum 2 decimal places";
         }
       } else if (gradeType === "Percentage") {
@@ -94,7 +98,9 @@ const Professional = ({ formData, onChange }) => {
         if (percentage < 0 || percentage > 100) {
           return "Percentage must be between 0 and 100";
         }
-        if (percentage.toString().split('.')[1]?.length > 2) {
+        // Check decimal places in the original string to handle cases like "99.999"
+        const decimalPart = stringValue.split('.')[1];
+        if (decimalPart && decimalPart.length > 2) {
           return "Percentage can have maximum 2 decimal places";
         }
       } else if (gradeType === "Grade") {

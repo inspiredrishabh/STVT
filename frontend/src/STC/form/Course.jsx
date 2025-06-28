@@ -46,17 +46,36 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     if (courseModules[formData.moduleNo]) {
       const duration = courseModules[formData.moduleNo];
       onChange("courseDuration", typeof duration === "number" ? `${duration} Weeks` : duration);
+    } else if (formData.moduleNo === "") {
+      // Clear course duration when no module is selected
+      onChange("courseDuration", "");
     }
   }, [formData.moduleNo]);
 
   useEffect(() => {
     const joiningDate = formData.dateOfJoiningStcWtcNonRailway;
-    const duration = courseModules[formData.moduleNo];
-    if (joiningDate && typeof duration === "number") {
+    const moduleNo = formData.moduleNo;
+    const duration = courseModules[moduleNo];
+
+    if (joiningDate && duration && moduleNo !== "") {
       const joining = new Date(joiningDate);
-      joining.setDate(joining.getDate() + duration * 7);
+
+      if (typeof duration === "number") {
+        // For week-based durations
+        joining.setDate(joining.getDate() + duration * 7);
+      } else if (typeof duration === "string" && duration.includes("Days")) {
+        // For day-based durations (e.g., "3 Days", "4 Days")
+        const days = parseInt(duration.split(" ")[0]);
+        if (!isNaN(days)) {
+          joining.setDate(joining.getDate() + days);
+        }
+      }
+
       const isoString = joining.toISOString().split("T")[0];
       onChange("dateOfSparing", isoString);
+    } else if (!joiningDate || !moduleNo || moduleNo === "") {
+      // Clear date of sparing when required fields are empty
+      onChange("dateOfSparing", "");
     }
   }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo]);
 
@@ -174,18 +193,6 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 font-medium mb-1">
-            Date of Sparing <span className="text-xs text-gray-500">(Auto-calculated)</span>
-          </label>
-          <input
-            type="date"
-            value={formData.dateOfSparing || ""}
-            onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
-          />
-        </div>
-
-        <div>
           <RequiredLabel>Module Number</RequiredLabel>
           <select
             value={formData.moduleNo || ""}
@@ -207,6 +214,18 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             />
           )}
           {errors.moduleNo && <p className="text-sm text-red-500 mt-1">{errors.moduleNo}</p>}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Date of Sparing <span className="text-xs text-gray-500">(Auto-calculated)</span>
+          </label>
+          <input
+            type="date"
+            value={formData.dateOfSparing || ""}
+            onChange={(e) => onChange("dateOfSparing", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+          />
         </div>
 
         <div>
