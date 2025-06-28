@@ -119,7 +119,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
         hasCustom: true,
       },
       {
-        label: "Date of Joining at STC",
+        label: "Date of Joining at WTC",
         field: "dateOfJoiningStcWtcNonRailway",
         type: "date",
       },
