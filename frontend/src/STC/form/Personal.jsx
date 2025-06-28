@@ -1,487 +1,384 @@
-import React, { useState } from 'react';
+import React from "react";
 
-const Personal = () => {
-  const [formData, setFormData] = useState({
-    picture: null,
-    name: '',
-    fatherName: '',
-    motherName: '',
-    dob: '',
-    category: '',
-    pwd: '',
-    disabilityType: '',
-    nationality: '',
-    maritalStatus: '',
-    phoneNo: '',
-    email: '',
-    emergencyContact: '',
-    permanentAddress: '',
-    currentAddress: '',
-    gender: ''
-  });
+const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
+  // Validation function for all fields
+  const validateField = (fieldName, value) => {
+    let error = "";
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+    switch (fieldName) {
+      case "picture":
+        if (!value) {
+          error = "Picture is required";
+        } else if (value && !value.type?.startsWith("image/")) {
+          error = "Please select a valid image file";
+        } else if (value && value.size > 5 * 1024 * 1024) { // 5MB limit
+          error = "Image size should be less than 5MB";
+        }
+        break;
 
-  const categoryOptions = ['General', 'OBC', 'SC', 'ST', 'EWS', 'Other'];
-  const disabilityTypes = ['Visual Impairment', 'Hearing Impairment', 'Locomotor Disability', 'Intellectual Disability', 'Multiple Disabilities', 'Other'];
-  const nationalityOptions = ['Indian', 'Other'];
-  const maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Widowed'];
-  const genderOptions = ['Male', 'Female', 'Other'];
+      case "name":
+        if (!value || value.trim() === "") {
+          error = "Name is required";
+        } else if (value.trim().length < 2) {
+          error = "Name must be at least 2 characters long";
+        } else if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+          error = "Name should only contain letters and spaces";
+        }
+        break;
 
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target;
+      case "sex":
+        if (!value) {
+          error = "Gender is required";
+        } else if (!["Male", "Female", "Other"].includes(value)) {
+          error = "Please select a valid gender";
+        }
+        break;
 
-    if (type === 'file') {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      case "fatherName":
+        if (!value || value.trim() === "") {
+          error = "Father's name is required";
+        } else if (value.trim().length < 2) {
+          error = "Father's name must be at least 2 characters long";
+        } else if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+          error = "Father's name should only contain letters and spaces";
+        }
+        break;
+
+      case "motherName":
+        if (value && value.trim() !== "") {
+          if (value.trim().length < 2) {
+            error = "Mother's name must be at least 2 characters long";
+          } else if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+            error = "Mother's name should only contain letters and spaces";
+          }
+        }
+        break;
+
+      case "dob":
+        if (!value) {
+          error = "Date of birth is required";
+        } else {
+          const dobDate = new Date(value);
+          const today = new Date();
+          const age = today.getFullYear() - dobDate.getFullYear();
+          const monthDiff = today.getMonth() - dobDate.getMonth();
+
+          if (dobDate > today) {
+            error = "Date of birth cannot be in the future";
+          } else if (age < 16 || (age === 16 && monthDiff < 0)) {
+            error = "Age must be at least 16 years";
+          } else if (age > 100) {
+            error = "Please enter a valid date of birth";
+          }
+        }
+        break;
+
+      case "category":
+        if (!value) {
+          error = "Category is required";
+        } else if (!["General", "OBC", "SC", "ST", "EWS"].includes(value)) {
+          error = "Please select a valid category";
+        }
+        break;
+
+      case "pwd":
+        if (!value) {
+          error = "PWD selection is required";
+        } else if (!["Yes", "No"].includes(value)) {
+          error = "Please select Yes or No for PWD";
+        }
+        break;
+
+      case "typeOfDisability":
+        if (formData.pwd === "Yes" && (!value || value.trim() === "")) {
+          error = "Type of disability is required when PWD is Yes";
+        } else if (value && value.trim() !== "" && value.trim().length < 3) {
+          error = "Type of disability must be at least 3 characters long";
+        }
+        break;
+
+      case "nationality":
+        if (!value || value.trim() === "") {
+          error = "Nationality is required";
+        } else if (value.trim().length < 2) {
+          error = "Nationality must be at least 2 characters long";
+        } else if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+          error = "Nationality should only contain letters and spaces";
+        }
+        break;
+
+      case "maritalStatus":
+        if (value && !["Single", "Married", "Divorced", "Widowed"].includes(value)) {
+          error = "Please select a valid marital status";
+        }
+        break;
+
+      default:
+        break;
     }
 
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    return error;
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    const requiredFields = ['name', 'fatherName', 'motherName', 'dob', 'category', 'nationality', 'maritalStatus', 'phoneNo', 'email', 'permanentAddress', 'currentAddress', 'gender'];
+  // Enhanced onChange handler with validation
+  const handleFieldChange = (fieldName, value) => {
+    // Call the original onChange
+    onChange(fieldName, value);
+  };
+
+  // Add a function to validate all fields and return validation status
+  const validateAllFields = () => {
+    const validationErrors = {};
+    const requiredFields = ["picture", "name", "sex", "fatherName", "dob", "category", "pwd", "nationality"];
 
     requiredFields.forEach(field => {
-      if (!formData[field] || formData[field].trim() === '') {
-        newErrors[field] = 'This field is required';
+      const error = validateField(field, formData[field]);
+      if (error) {
+        validationErrors[field] = error;
       }
     });
 
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (formData.phoneNo && !phoneRegex.test(formData.phoneNo)) {
-      newErrors.phoneNo = 'Enter valid 10-digit phone number';
-    }
+    // Validate optional fields if they have values
+    ["motherName", "typeOfDisability", "maritalStatus"].forEach(field => {
+      if (formData[field]) {
+        const error = validateField(field, formData[field]);
+        if (error) {
+          validationErrors[field] = error;
+        }
+      }
+    });
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = 'Enter valid email address';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return {
+      isValid: Object.keys(validationErrors).length === 0,
+      errors: validationErrors
+    };
   };
 
-  const handleSubmit = async (e) => {
+  // Export validation function for parent component
+  React.useEffect(() => {
+    if (onChange.setValidationFunction) {
+      onChange.setValidationFunction(validateAllFields);
+    }
+  }, [formData]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    const validation = validateAllFields();
 
-    setLoading(true);
-    try {
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== '') {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
-
-      const response = await fetch('/api/personal-details', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      if (response.ok) {
-        alert('Personal details submitted successfully!');
-        console.log('Success:', await response.json());
-      } else {
-        throw new Error('Failed to submit form');
+    // If there are validation errors, don't submit
+    if (!validation.isValid) {
+      console.log("Validation errors:", validation.errors);
+      // Update errors in parent component
+      if (onChange.updateErrors) {
+        onChange.updateErrors(validation.errors);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error submitting form. Please try again.');
-    } finally {
-      setLoading(false);
+      return false; // Prevent form submission
     }
-  };
 
-  const copyPermanentAddress = () => {
-    setFormData(prev => ({ ...prev, currentAddress: prev.permanentAddress }));
+    if (onSubmit) {
+      const isValid = onSubmit(formData);
+      return isValid !== false; // Allow submission unless explicitly returned false
+    }
+    return true;
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <div className="text-center mb-8 border-b pb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Personal Details</h2>
-        <p className="text-gray-600">Please fill in all required information</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Picture Upload */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Picture <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="file"
-            name="picture"
-            accept="image/*"
-            onChange={handleInputChange}
-            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-          />
-          {errors.picture && <p className="text-red-500 text-xs mt-1">{errors.picture}</p>}
+    <form onSubmit={handleSubmit}>
+      <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
+            👤
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800">Personal Detail</h3>
         </div>
 
-        {/* Basic Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+          {/* Picture Upload */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Full Name <span className="text-red-500">*</span>
+            <label className="block text-gray-700 font-medium mb-1">Picture<span className="text-red-500">*</span></label>
+            <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
+              <label
+                htmlFor="pictureUpload"
+                className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
+              >
+                Choose File
+              </label>
+              <input
+                id="pictureUpload"
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFieldChange("picture", e.target.files[0])}
+                className="hidden"
+              />
+              <span className="text-gray-500 text-sm truncate">
+                {formData.picture ? formData.picture.name : "No file chosen"}
+              </span>
+            </div>
+            {errors.picture && <span className="text-red-500 text-sm mt-1">{errors.picture}</span>}
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter your full name"
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
+              value={formData.name || ""}
+              onChange={(e) => handleFieldChange("name", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter full name"
             />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <span className="text-red-500 text-sm mt-1">{errors.name}</span>}
           </div>
 
+          {/* Gender */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Date of Birth <span className="text-red-500">*</span>
+            <label className="block text-gray-700 font-medium mb-1">
+              Gender <span className="text-red-500">*</span>
             </label>
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleInputChange}
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.dob ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
-            />
-            {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
+            <select
+              value={formData.sex || ""}
+              onChange={(e) => handleFieldChange("sex", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            {errors.sex && <span className="text-red-500 text-sm mt-1">{errors.sex}</span>}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Father's Name */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-gray-700 font-medium mb-1">
               Father's Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              name="fatherName"
-              value={formData.fatherName}
-              onChange={handleInputChange}
+              value={formData.fatherName || ""}
+              onChange={(e) => handleFieldChange("fatherName", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Enter father's name"
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.fatherName ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
             />
-            {errors.fatherName && <p className="text-red-500 text-xs mt-1">{errors.fatherName}</p>}
+            {errors.fatherName && <span className="text-red-500 text-sm mt-1">{errors.fatherName}</span>}
           </div>
 
+          {/* Mother's Name (Optional) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Mother's Name <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Mother's Name</label>
             <input
               type="text"
-              name="motherName"
-              value={formData.motherName}
-              onChange={handleInputChange}
+              value={formData.motherName || ""}
+              onChange={(e) => handleFieldChange("motherName", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Enter mother's name"
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.motherName ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
             />
-            {errors.motherName && <p className="text-red-500 text-xs mt-1">{errors.motherName}</p>}
+            {errors.motherName && <span className="text-red-500 text-sm mt-1">{errors.motherName}</span>}
           </div>
-        </div>
 
-        {/* Category and Gender */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Date of Birth */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-gray-700 font-medium mb-1">
+              Date of Birth <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={formData.dob || ""}
+              onChange={(e) => handleFieldChange("dob", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            />
+            {errors.dob && <span className="text-red-500 text-sm mt-1">{errors.dob}</span>}
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
               Category <span className="text-red-500">*</span>
             </label>
-            {formData.category === 'Other' ? (
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                placeholder="Please specify category"
-                className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.category ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                  }`}
-              />
-            ) : (
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.category ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                  }`}
-              >
-                <option value="">Select Category</option>
-                {categoryOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            )}
-            {formData.category !== 'Other' && (
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, category: 'Other' }))}
-                className="text-blue-500 text-sm mt-1 hover:underline"
-              >
-                Other (Click to specify)
-              </button>
-            )}
-            {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Gender <span className="text-red-500">*</span>
-            </label>
             <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleInputChange}
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.gender ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
+              value={formData.category || ""}
+              onChange={(e) => handleFieldChange("category", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
-              <option value="">Select Gender</option>
-              {genderOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
-              ))}
+              <option value="">Select category</option>
+              <option value="General">General</option>
+              <option value="OBC">OBC</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+              <option value="EWS">EWS</option>
             </select>
-            {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+            {errors.category && <span className="text-red-500 text-sm mt-1">{errors.category}</span>}
           </div>
-        </div>
 
-        {/* PWD Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* PWD (Yes/No) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Person with Disability (PWD)
+            <label className="block text-gray-700 font-medium mb-1">
+              PWD (Yes/No) <span className="text-red-500">*</span>
             </label>
             <select
-              name="pwd"
-              value={formData.pwd}
-              onChange={handleInputChange}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+              value={formData.pwd || ""}
+              onChange={(e) => handleFieldChange("pwd", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
               <option value="">Select</option>
               <option value="Yes">Yes</option>
               <option value="No">No</option>
             </select>
+            {errors.pwd && <span className="text-red-500 text-sm mt-1">{errors.pwd}</span>}
           </div>
 
-          {formData.pwd === 'Yes' && (
+          {/* Type of Disability */}
+          {formData.pwd === "Yes" && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Type of Disability
-              </label>
-              {formData.disabilityType === 'Other' ? (
-                <input
-                  type="text"
-                  name="disabilityType"
-                  value={formData.disabilityType}
-                  onChange={handleInputChange}
-                  placeholder="Please specify disability type"
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              ) : (
-                <select
-                  name="disabilityType"
-                  value={formData.disabilityType}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                >
-                  <option value="">Select Disability Type</option>
-                  {disabilityTypes.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              )}
-              {formData.disabilityType !== 'Other' && (
-                <button
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, disabilityType: 'Other' }))}
-                  className="text-blue-500 text-sm mt-1 hover:underline"
-                >
-                  Other (Click to specify)
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Nationality and Marital Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Nationality <span className="text-red-500">*</span>
-            </label>
-            {formData.nationality === 'Other' ? (
+              <label className="block text-gray-700 font-medium mb-1">Type of Disability</label>
               <input
                 type="text"
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                placeholder="Please specify nationality"
-                className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.nationality ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                  }`}
+                value={formData.typeOfDisability || ""}
+                onChange={(e) => handleFieldChange("typeOfDisability", e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                placeholder="Specify disability"
               />
-            ) : (
-              <select
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleInputChange}
-                className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.nationality ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                  }`}
-              >
-                <option value="">Select Nationality</option>
-                {nationalityOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            )}
-            {formData.nationality !== 'Other' && (
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, nationality: 'Other' }))}
-                className="text-blue-500 text-sm mt-1 hover:underline"
-              >
-                Other (Click to specify)
-              </button>
-            )}
-            {errors.nationality && <p className="text-red-500 text-xs mt-1">{errors.nationality}</p>}
+              {errors.typeOfDisability && <span className="text-red-500 text-sm mt-1">{errors.typeOfDisability}</span>}
+            </div>
+          )}
+
+          {/* Nationality (default Indian) */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Nationality <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.nationality || "Indian"}
+              onChange={(e) => handleFieldChange("nationality", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter nationality"
+            />
+            {errors.nationality && <span className="text-red-500 text-sm mt-1">{errors.nationality}</span>}
           </div>
 
+          {/* Marital Status (Optional) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Marital Status <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Marital Status</label>
             <select
-              name="maritalStatus"
-              value={formData.maritalStatus}
-              onChange={handleInputChange}
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.maritalStatus ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
+              value={formData.maritalStatus || ""}
+              onChange={(e) => handleFieldChange("maritalStatus", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
-              <option value="">Select Marital Status</option>
-              {maritalStatusOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
-              ))}
+              <option value="">Select status</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
             </select>
-            {errors.maritalStatus && <p className="text-red-500 text-xs mt-1">{errors.maritalStatus}</p>}
+            {errors.maritalStatus && <span className="text-red-500 text-sm mt-1">{errors.maritalStatus}</span>}
           </div>
         </div>
-
-        {/* Contact Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Phone No. (WhatsApp) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              name="phoneNo"
-              value={formData.phoneNo}
-              onChange={handleInputChange}
-              placeholder="Enter 10-digit mobile number"
-              maxLength="10"
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.phoneNo ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
-            />
-            {errors.phoneNo && <p className="text-red-500 text-xs mt-1">{errors.phoneNo}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Enter email address"
-              className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Emergency Contact
-          </label>
-          <input
-            type="tel"
-            name="emergencyContact"
-            value={formData.emergencyContact}
-            onChange={handleInputChange}
-            placeholder="Enter emergency contact number"
-            className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-          />
-        </div>
-
-        {/* Address Information */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Permanent Address <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            name="permanentAddress"
-            value={formData.permanentAddress}
-            onChange={handleInputChange}
-            placeholder="Enter complete permanent address"
-            rows="3"
-            className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors resize-none ${errors.permanentAddress ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-              }`}
-          />
-          {errors.permanentAddress && <p className="text-red-500 text-xs mt-1">{errors.permanentAddress}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Current Address <span className="text-red-500">*</span>
-            <button
-              type="button"
-              onClick={copyPermanentAddress}
-              className="ml-3 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
-            >
-              Same as Permanent
-            </button>
-          </label>
-          <textarea
-            name="currentAddress"
-            value={formData.currentAddress}
-            onChange={handleInputChange}
-            placeholder="Enter complete current address"
-            rows="3"
-            className={`w-full p-3 border-2 rounded-lg focus:outline-none transition-colors resize-none ${errors.currentAddress ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-              }`}
-          />
-          {errors.currentAddress && <p className="text-red-500 text-xs mt-1">{errors.currentAddress}</p>}
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-center pt-6 border-t">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-8 py-3 rounded-lg font-semibold text-white transition-all duration-300 ${loading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:shadow-lg transform hover:-translate-y-1'
-              }`}
-          >
-            {loading ? 'Submitting...' : 'Submit Personal Details'}
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 

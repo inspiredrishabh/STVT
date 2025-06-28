@@ -3,14 +3,14 @@ import { AuthProvider } from './auth/AuthContext'
 import Router from './Router'
 
 
-const App = () => {
+
+function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Router />
       </AuthProvider>
-    </BrowserRouter>
-  )
+    </BrowserRouter
 }
 
-export default App
+export default App;
