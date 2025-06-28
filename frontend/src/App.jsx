@@ -1,15 +1,16 @@
-// src/App.jsx
-import React from "react";
-import STCMain from "./STC/form/STCMain";
-import WTCMain from "./WTC/form/WtcMain";
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './auth/AuthContext'
+import Router from './Router'
+
+
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Details Form</h1>
-      <STCMain />
-    </div>
-  );
+    <BrowserRouter>
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
+    </BrowserRouter
 }
 
 export default App;
