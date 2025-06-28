@@ -7,7 +7,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     if (!trimmedValue) return "This field is required";
 
     if (
-      ["courseName", "workingUnder", "institution", "fieldOfStudy"].includes(field) &&
+      ["courseType", "workingUnder", "institution", "fieldOfStudy", "destination", "unitCustodian"].includes(field) &&
       trimmedValue.length < 2
     ) {
       return "Must be at least 2 characters";
@@ -34,7 +34,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      "courseName",
+      "courseType",
+      "destination",
+      "unitCustodian",
+      "duration",
       "workingUnder",
       "highestQualification",
       "fieldOfStudy",
@@ -63,6 +66,74 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
   const handleChange = (field, value) => onChange(field, value);
 
+  // Course type and mapping data
+  const courseTypeOptions = [
+    "Non Railway",
+    "Custom"
+  ];
+
+  const destinationOptions = [
+    "RRC Act Apprentice 1961",
+    "Act Junior Apprentices",
+    "Rail Kaushal Vikas Yojana",
+    "Summer Vacation training"
+  ];
+
+  const unitMapping = {
+    "RRC Act Apprentice 1961": [
+      "Dy. CME (Diesel)/ RSW/CB",
+      "Dy. CEE /CB"
+    ],
+    "Act Junior Apprentices": [
+      "Dy. CME (Diesel)/ RSW/CB",
+      "Dy. CEE /CB"
+    ],
+    "Rail Kaushal Vikas Yojana": [
+      "Welder",
+      "Electrician"
+    ],
+    "Summer Vacation training": [
+      "Degree & Diploma Holders"
+    ]
+  };
+
+  const durationMapping = {
+    "RRC Act Apprentice 1961": {
+      theory: "01 W",
+      practical: "51 W",
+      total: "01 Y"
+    },
+    "Act Junior Apprentices": {
+      theory: "04 W",
+      practical: "48 W",
+      total: "01 Y"
+    },
+    "Rail Kaushal Vikas Yojana": {
+      theory: "01 W",
+      practical: "02 W",
+      total: "03 W"
+    },
+    "Summer Vacation training": {
+      theory: "00 W",
+      practical: "06 W",
+      total: "06 W"
+    }
+  };
+
+  const getAvailableUnits = () => {
+    if (!formData.destination || formData.courseType === "Custom") {
+      return [];
+    }
+    return unitMapping[formData.destination] || [];
+  };
+
+  const getDurationInfo = () => {
+    if (!formData.destination || formData.courseType === "Custom") {
+      return { theory: "", practical: "", total: "" };
+    }
+    return durationMapping[formData.destination] || { theory: "", practical: "", total: "" };
+  };
+
   const RequiredLabel = ({ children }) => (
     <label className="block text-gray-700 font-medium mb-1">
       {children} <span className="text-red-500">*</span>
@@ -82,17 +153,149 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 mb-10">
         <div>
-          <RequiredLabel>Course Name</RequiredLabel>
+          <RequiredLabel>Course Type</RequiredLabel>
+          <select
+            value={formData.courseType || ""}
+            onChange={(e) => {
+              handleChange("courseType", e.target.value);
+              // Reset dependent fields when course type changes
+              handleChange("destination", "");
+              handleChange("unitCustodian", "");
+            }}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select course type</option>
+            {courseTypeOptions.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          {errors.courseType && (
+            <p className="text-sm text-red-500 mt-1">{errors.courseType}</p>
+          )}
+        </div>
+
+        {formData.courseType === "Custom" && (
+          <div>
+            <RequiredLabel>Custom Course Type</RequiredLabel>
+            <input
+              type="text"
+              value={formData.customCourseType || ""}
+              onChange={(e) => handleChange("customCourseType", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter custom course type"
+            />
+            {errors.customCourseType && (
+              <p className="text-sm text-red-500 mt-1">{errors.customCourseType}</p>
+            )}
+          </div>
+        )}
+
+        <div>
+          <RequiredLabel>Destination</RequiredLabel>
+          {formData.courseType === "Non Railway" ? (
+            <select
+              value={formData.destination || ""}
+              onChange={(e) => {
+                handleChange("destination", e.target.value);
+                handleChange("unitCustodian", ""); // Reset unit when destination changes
+              }}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            >
+              <option value="">Select destination</option>
+              {destinationOptions.map((dest) => (
+                <option key={dest} value={dest}>
+                  {dest}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={formData.destination || ""}
+              onChange={(e) => handleChange("destination", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter destination"
+              disabled={!formData.courseType}
+            />
+          )}
+          {errors.destination && (
+            <p className="text-sm text-red-500 mt-1">{errors.destination}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Unit/ Custodian/ Other Details</RequiredLabel>
+          {formData.courseType === "Non Railway" && formData.destination ? (
+            <select
+              value={formData.unitCustodian || ""}
+              onChange={(e) => handleChange("unitCustodian", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            >
+              <option value="">Select unit/custodian</option>
+              {getAvailableUnits().map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={formData.unitCustodian || ""}
+              onChange={(e) => handleChange("unitCustodian", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter unit/custodian details"
+              disabled={!formData.courseType}
+            />
+          )}
+          {errors.unitCustodian && (
+            <p className="text-sm text-red-500 mt-1">{errors.unitCustodian}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Duration</RequiredLabel>
           <input
             type="text"
-            value={formData.courseName || ""}
-            onChange={(e) => handleChange("courseName", e.target.value)}
+            value={formData.duration || getDurationInfo().total}
+            onChange={(e) => handleChange("duration", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter course name"
+            placeholder="Enter duration"
+            readOnly={formData.courseType === "Non Railway" && formData.destination}
           />
-          {errors.courseName && (
-            <p className="text-sm text-red-500 mt-1">{errors.courseName}</p>
+          {errors.duration && (
+            <p className="text-sm text-red-500 mt-1">{errors.duration}</p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Theory Period
+          </label>
+          <input
+            type="text"
+            value={formData.theoryPeriod || getDurationInfo().theory}
+            onChange={(e) => handleChange("theoryPeriod", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            placeholder="Auto-filled"
+            readOnly={formData.courseType === "Non Railway" && formData.destination}
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Practical Period
+          </label>
+          <input
+            type="text"
+            value={formData.practicalPeriod || getDurationInfo().practical}
+            onChange={(e) => handleChange("practicalPeriod", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            placeholder="Auto-filled"
+            readOnly={formData.courseType === "Non Railway" && formData.destination}
+          />
         </div>
 
         <div>
@@ -223,4 +426,3 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 };
 
 export default Professional;
-            
