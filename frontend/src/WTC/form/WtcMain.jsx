@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
+import Professional from "./Professional";
 import Course from "./Course";
 
-const WTCMain = () => {
+const WtcMain = () => {
   const [formData, setFormData] = useState({
-    // Personal
     picture: null,
     name: "",
     sex: "",
@@ -15,17 +15,41 @@ const WTCMain = () => {
     category: "",
     pwd: "",
     typeOfDisability: "",
-    nationality: "",
+    nationality: "INDIAN",
     maritalStatus: "",
-
-    // Contact
     currentAddress: "",
     permanentAddress: "",
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
-
-    // Course
+    // Professional fields with correct names
+    dateOfAppointmentInRailway: "",
+    modeOfAppointment: "",
+    designation: "",
+    unit: "",
+    workingUnder: "",
+    hrmsId: "",
+    pfNoNpsUps: "",
+    employeeNumber: "",
+    // Educational fields
+    highestQualification: "",
+    otherQualification: "",
+    fieldOfStudy: "",
+    institution: "",
+    boardType: "",
+    educationStartYear: "",
+    eduCourseDuration: "",
+    yearOfGraduation: "",
+    modeOfStudy: "",
+    gradeType: "",
+    gradeValue: "",
+    division: "",
+    hasAdditionalQualification: "",
+    additionalQualificationName: "",
+    additionalQualificationOrg: "",
+    additionalQualificationYear: "",
+    thesisTitle: "",
+    // Course fields
     ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -35,26 +59,66 @@ const WTCMain = () => {
   });
 
   const [step, setStep] = useState(0);
-  const steps = ["Personal", "Contact", "Course"];
-  const icons = ["\u{1F464}", "\u{1F4DE}", "\u{1F4C4}"];
+  const [errors, setErrors] = useState({});
+  const validationFunctions = useRef({});
+
+  const steps = ["Personal", "Contact", "Professional", "Course"];
+  const icons = ["👤", "📞", "💼", "📄"];
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when field is changed
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
-  const requiredFields = {
-    0: ["name", "sex", "fatherName", "motherName", "dob", "category", "nationality"],
-    1: ["currentAddress", "permanentAddress", "phoneNumber", "emergencyContactNumber", "email"],
-    2: ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "dateOfSparing", "moduleNo", "courseDuration"]
+  // Create enhanced change handlers for each step
+  const createChangeHandler = (stepKey) => {
+    const handler = (field, value) => handleChange(field, value);
+
+    handler.setValidationFunction = (validationFn) => {
+      validationFunctions.current[stepKey] = validationFn;
+    };
+
+    handler.updateErrors = (validationErrors) => {
+      setErrors(validationErrors);
+    };
+
+    return handler;
   };
+
+  const personalChangeHandler = createChangeHandler('personal');
+  const contactChangeHandler = createChangeHandler('contact');
+  const professionalChangeHandler = createChangeHandler('professional');
+  const courseChangeHandler = createChangeHandler('course');
 
   const isStepValid = () => {
-    return requiredFields[step].every((field) => formData[field]?.toString().trim() !== "");
+    const stepKeys = ["personal", "contact", "professional", "course"];
+    const currentKey = stepKeys[step];
+
+    if (validationFunctions.current[currentKey]) {
+      const validation = validationFunctions.current[currentKey]();
+      if (!validation.isValid) {
+        setErrors(validation.errors);
+        return false;
+      }
+      setErrors({}); // Clear errors if validation passes
+      return true;
+    }
+
+    // Fallback basic validation if no validation function is registered
+    console.warn(`No validation function registered for step: ${currentKey}`);
+    return true;
   };
 
   const handleNext = () => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before proceeding.");
+      alert("Please correct the validation errors before proceeding.");
       return;
     }
     if (step < steps.length - 1) setStep(step + 1);
@@ -66,7 +130,7 @@ const WTCMain = () => {
 
   const handleSubmit = () => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before submitting.");
+      alert("Please correct all validation errors before submitting.");
       return;
     }
     console.log("Final Submitted Data:", formData);
@@ -76,11 +140,13 @@ const WTCMain = () => {
   const renderForm = () => {
     switch (step) {
       case 0:
-        return <Personal formData={formData} onChange={handleChange} />;
+        return <Personal formData={formData} onChange={personalChangeHandler} errors={errors} />;
       case 1:
-        return <Contact formData={formData} onChange={handleChange} />;
+        return <Contact formData={formData} onChange={contactChangeHandler} errors={errors} />;
       case 2:
-        return <Course formData={formData} onChange={handleChange} />;
+        return <Professional formData={formData} onChange={professionalChangeHandler} errors={errors} />;
+      case 3:
+        return <Course formData={formData} onChange={courseChangeHandler} errors={errors} />;
       default:
         return null;
     }
@@ -88,29 +154,22 @@ const WTCMain = () => {
 
   return (
     <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      {/* Step Navigation Bar */}
       <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
-            <div
-              className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold ${step === index
-                  ? "bg-orange-500"
-                  : step > index
-                    ? "bg-green-500"
-                    : "bg-gray-500"
-                }`}
-            >
+            <div className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
+              ${step === index ? "bg-blue-500" : step > index ? "bg-green-500" : "bg-gray-500"}`}>
               {icons[index]}
             </div>
-            <p
-              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
-                }`}
-            >
+            <p className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"}`}>
               {label} Details
             </p>
           </div>
         ))}
       </div>
 
+      {/* Unified Form Handler */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -120,6 +179,7 @@ const WTCMain = () => {
       >
         {renderForm()}
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between pt-8 mt-8 border-t border-gray-100">
           {step > 0 ? (
             <button
@@ -135,7 +195,7 @@ const WTCMain = () => {
 
           <button
             type="submit"
-            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 focus:outline-none focus:ring-4 focus:ring-pink-200 transition-all duration-200 shadow-md"
+            className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md"
           >
             {step === steps.length - 1 ? "Save All Details" : "Save and Next →"}
           </button>
@@ -145,4 +205,4 @@ const WTCMain = () => {
   );
 };
 
-export default WTCMain;
+export default WtcMain;
