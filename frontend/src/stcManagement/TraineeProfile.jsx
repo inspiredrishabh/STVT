@@ -15,8 +15,10 @@ import {
   FileText,
   Plus,
   Settings,
-  Hash
+  Hash,
+  CheckCircle
 } from 'lucide-react';
+import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ const TraineeProfile = () => {
     } catch (err) {
       setError(err.message);
       // Mock data for development
-      const mockData = [
+      const baseMockData = [
         {
           id: 1,
           ticketNo: 'ASE00001',
@@ -60,11 +62,6 @@ const TraineeProfile = () => {
             duration: '52 Weeks',
             joiningDate: '2024-01-15',
             sparingDate: '2025-01-15'
-          },
-          marks: {
-            theory: 85,
-            practical: 88,
-            overall: 86.5
           },
           lineTraining: {
             status: 'Completed',
@@ -89,11 +86,6 @@ const TraineeProfile = () => {
             joiningDate: '2024-02-01',
             sparingDate: '2025-02-01'
           },
-          marks: {
-            theory: 92,
-            practical: 89,
-            overall: 90.5
-          },
           lineTraining: {
             status: 'In Progress',
             duration: '6 months',
@@ -117,11 +109,6 @@ const TraineeProfile = () => {
             joiningDate: '2024-03-01',
             sparingDate: '2025-03-01'
           },
-          marks: {
-            theory: 88,
-            practical: 91,
-            overall: 89.5
-          },
           lineTraining: {
             status: 'Scheduled',
             duration: '6 months',
@@ -130,6 +117,19 @@ const TraineeProfile = () => {
           status: 'Active'
         }
       ];
+
+      // Enhance mock data with calculated marks from FeedMark data
+      const mockData = baseMockData.map(trainee => {
+        const calculatedMarks = hasMarksData(trainee.id) 
+          ? calculateOverallMarks(trainee.id)
+          : { theory: 0, practical: 0, overall: 0 };
+        
+        return {
+          ...trainee,
+          marks: calculatedMarks
+        };
+      });
+      
       setTrainees(mockData);
       setFilteredTrainees(mockData);
     } finally {
@@ -301,17 +301,36 @@ const TraineeProfile = () => {
 
               {/* Stats */}
               <div className="p-4 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Academic Performance</span>
+                  {hasMarksData(trainee.id) ? (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full flex items-center">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Live Data
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                      No Data
+                    </span>
+                  )}
+                </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-lg font-bold text-blue-600">{trainee.marks.theory}%</div>
+                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {trainee.marks.theory}%
+                    </div>
                     <div className="text-xs text-gray-500">Theory</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-green-600">{trainee.marks.practical}%</div>
+                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-green-600' : 'text-gray-400'}`}>
+                      {trainee.marks.practical}%
+                    </div>
                     <div className="text-xs text-gray-500">Practical</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-purple-600">{trainee.marks.overall}%</div>
+                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-purple-600' : 'text-gray-400'}`}>
+                      {trainee.marks.overall}%
+                    </div>
                     <div className="text-xs text-gray-500">Overall</div>
                   </div>
                 </div>
@@ -329,10 +348,14 @@ const TraineeProfile = () => {
                   </button>
                   <Link
                     to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`}
-                    className="flex items-center justify-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${
+                      hasMarksData(trainee.id) 
+                        ? 'bg-green-500 hover:bg-green-600' 
+                        : 'bg-orange-500 hover:bg-orange-600'
+                    }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
-                    Marks
+                    {hasMarksData(trainee.id) ? 'View Marks' : 'Add Marks'}
                   </Link>
                   <button
                     onClick={() => handleLineTraining(trainee)}
