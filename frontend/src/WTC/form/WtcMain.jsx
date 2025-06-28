@@ -154,6 +154,12 @@ const WtcMain = () => {
 
   return (
     <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      {/* Page Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">WTC Candidate Registration</h1>
+        <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto rounded-full"></div>
+      </div>
+
       {/* Step Navigation Bar */}
       <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
         {steps.map((label, index) => (
