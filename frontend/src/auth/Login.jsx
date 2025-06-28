@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { Shield, Settings, ClipboardList } from "lucide-react";
+import trainingCenterImage from "../assets/Training center.jpg";
 
 const roleOptions = [
     { value: "admin", label: "Administrator", icon: <Shield className="w-6 h-6" /> },
@@ -51,10 +52,23 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-pink-50 p-4">
-            <div className="w-full max-w-md bg-white/60 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-gray-200">
+        <div
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-pink-50 p-4 relative"
+            style={{
+                backgroundImage: `url(${trainingCenterImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed'
+            }}
+        >
+            {/* Background Overlay with Blur Effect */}
+            <div className="absolute inset-0 backdrop-blur-sm bg-white/30"></div>
+
+            {/* Login Card - Original Design */}
+            <div className="relative w-full max-w-md bg-white/60 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-gray-200">
                 <div className="text-center mb-6">
-                    <h1 className="text-3xl font-extrabold text-gray-900">Northern Railways </h1>
+                    <h1 className="text-3xl font-extrabold text-gray-900">Northern Railways</h1>
                     <h2 className="text-2xl font-bold text-gray-900">Trainee Management System</h2>
                 </div>
 

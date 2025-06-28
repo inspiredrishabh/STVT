@@ -1,53 +1,26 @@
 import React, { useEffect } from "react";
 
-const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
-  // Validation logic
+const Contact = ({ formData, onChange, errors = {} }) => {
   const validateField = (fieldName, value) => {
-    let error = "";
+    const trimmedValue = value?.toString().trim() || "";
 
     switch (fieldName) {
       case "permanentAddress":
       case "currentAddress":
-        if (!value || value.trim().length < 5) {
-          error = "Address must be at least 5 characters long";
-        }
-        break;
-
+        return trimmedValue.length < 5 ? "Address must be at least 5 characters long" : "";
       case "phoneNumber":
-        if (!value || !/^\d{10}$/.test(value.trim())) {
-          error = "Phone number must be 10 digits";
-        }
-        break;
-
       case "emergencyContactNumber":
-        if (!value || !/^\d{10}$/.test(value.trim())) {
-          error = "Emergency contact must be 10 digits";
-        }
-        break;
-
+        return !/^\d{10}$/.test(trimmedValue) ? "Must be 10 digits" : "";
       case "email":
-        if (!value || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value.trim())) {
-          error = "Please enter a valid email address";
-        }
-        break;
-
+        return !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(trimmedValue) ? "Invalid email format" : "";
       default:
-        break;
+        return "";
     }
-
-    return error;
   };
 
-  // Validate all fields
   const validateAllFields = () => {
+    const requiredFields = ["permanentAddress", "currentAddress", "phoneNumber", "emergencyContactNumber", "email"];
     const validationErrors = {};
-    const requiredFields = [
-      "permanentAddress",
-      "currentAddress",
-      "phoneNumber",
-      "emergencyContactNumber",
-      "email"
-    ];
 
     requiredFields.forEach((field) => {
       const error = validateField(field, formData[field]);
@@ -66,30 +39,8 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
     }
   }, [formData]);
 
-  const handleFieldChange = (field, value) => {
-    onChange(field, value);
-  };
-
-  const handleCopyAddress = () => {
-    handleFieldChange("currentAddress", formData.permanentAddress || "");
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validation = validateAllFields();
-
-    if (!validation.isValid) {
-      if (onChange.updateErrors) onChange.updateErrors(validation.errors);
-      return false;
-    }
-
-    if (onSubmit) {
-      const isValid = onSubmit(formData);
-      return isValid !== false;
-    }
-
-    return true;
-  };
+  const handleFieldChange = (field, value) => onChange(field, value);
+  const handleCopyAddress = () => handleFieldChange("currentAddress", formData.permanentAddress || "");
 
   const RequiredLabel = ({ children }) => (
     <label className="block text-gray-700 font-medium mb-1">
@@ -98,15 +49,12 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
   );
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200"
-    >
+    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
           📞
         </div>
-        <h3 className="text-xl font-semibold text-gray-800">Contact Detail</h3>
+        <h3 className="text-xl font-semibold text-gray-800">Contact Details</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
@@ -123,7 +71,7 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
           {errors.permanentAddress && <span className="text-red-500 text-sm">{errors.permanentAddress}</span>}
         </div>
 
-        {/* Same as Permanent Address */}
+        {/* Copy Address Button */}
         <div className="sm:col-span-2">
           <button
             type="button"
@@ -186,8 +134,9 @@ const Contact = ({ formData, onChange, errors = {}, onSubmit }) => {
           {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
         </div>
       </div>
-    </form>
+    </div>
   );
 };
 
 export default Contact;
+           
