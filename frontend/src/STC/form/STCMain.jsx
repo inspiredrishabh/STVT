@@ -1,5 +1,4 @@
-// STCMain.js
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
 import Professional from "./Professional";
@@ -23,6 +22,7 @@ const STCMain = () => {
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
+    // Professional fields with correct names
     dateOfAppointmentInRailway: "",
     modeOfAppointment: "",
     designation: "",
@@ -31,6 +31,7 @@ const STCMain = () => {
     hrmsId: "",
     pfNoNpsUps: "",
     employeeNumber: "",
+    // Educational fields
     highestQualification: "",
     otherQualification: "",
     fieldOfStudy: "",
@@ -48,6 +49,7 @@ const STCMain = () => {
     additionalQualificationOrg: "",
     additionalQualificationYear: "",
     thesisTitle: "",
+    // Course fields
     ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -58,13 +60,14 @@ const STCMain = () => {
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
-  const [validationFunctions, setValidationFunctions] = useState({});
+  const validationFunctions = useRef({});
 
   const steps = ["Personal", "Contact", "Professional", "Course"];
   const icons = ["👤", "📞", "💼", "📄"];
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when field is changed
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -74,37 +77,42 @@ const STCMain = () => {
     }
   };
 
-  const handlePersonalChange = (field, value) => {
-    handleChange(field, value);
+  // Create enhanced change handlers for each step
+  const createChangeHandler = (stepKey) => {
+    const handler = (field, value) => handleChange(field, value);
+
+    handler.setValidationFunction = (validationFn) => {
+      validationFunctions.current[stepKey] = validationFn;
+    };
+
+    handler.updateErrors = (validationErrors) => {
+      setErrors(validationErrors);
+    };
+
+    return handler;
   };
 
-  handlePersonalChange.setValidationFunction = (validationFn) => {
-    setValidationFunctions((prev) => ({ ...prev, personal: validationFn }));
-  };
-
-  handlePersonalChange.updateErrors = (validationErrors) => {
-    setErrors(validationErrors);
-  };
-
-  handleChange.setValidationFunction = (validationFn) => {
-    setValidationFunctions((prev) => ({ ...prev, contact: validationFn }));
-  };
-
-  handleChange.updateErrors = (validationErrors) => {
-    setErrors(validationErrors);
-  };
+  const personalChangeHandler = createChangeHandler('personal');
+  const contactChangeHandler = createChangeHandler('contact');
+  const professionalChangeHandler = createChangeHandler('professional');
+  const courseChangeHandler = createChangeHandler('course');
 
   const isStepValid = () => {
     const stepKeys = ["personal", "contact", "professional", "course"];
     const currentKey = stepKeys[step];
-    if (validationFunctions[currentKey]) {
-      const validation = validationFunctions[currentKey]();
+
+    if (validationFunctions.current[currentKey]) {
+      const validation = validationFunctions.current[currentKey]();
       if (!validation.isValid) {
         setErrors(validation.errors);
         return false;
       }
+      setErrors({}); // Clear errors if validation passes
       return true;
     }
+
+    // Fallback basic validation if no validation function is registered
+    console.warn(`No validation function registered for step: ${currentKey}`);
     return true;
   };
 
@@ -122,7 +130,7 @@ const STCMain = () => {
 
   const handleSubmit = () => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before submitting.");
+      alert("Please correct all validation errors before submitting.");
       return;
     }
     console.log("Final Submitted Data:", formData);
@@ -132,13 +140,13 @@ const STCMain = () => {
   const renderForm = () => {
     switch (step) {
       case 0:
-        return <Personal formData={formData} onChange={handlePersonalChange} errors={errors} />;
+        return <Personal formData={formData} onChange={personalChangeHandler} errors={errors} />;
       case 1:
-        return <Contact formData={formData} onChange={handleChange} errors={errors} />;
+        return <Contact formData={formData} onChange={contactChangeHandler} errors={errors} />;
       case 2:
-        return <Professional formData={formData} onChange={handleChange} errors={errors} />;
+        return <Professional formData={formData} onChange={professionalChangeHandler} errors={errors} />;
       case 3:
-        return <Course formData={formData} onChange={handleChange} errors={errors} />;
+        return <Course formData={formData} onChange={courseChangeHandler} errors={errors} />;
       default:
         return null;
     }
@@ -146,6 +154,7 @@ const STCMain = () => {
 
   return (
     <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      {/* Step Navigation Bar */}
       <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
@@ -160,6 +169,7 @@ const STCMain = () => {
         ))}
       </div>
 
+      {/* Unified Form Handler */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -169,6 +179,7 @@ const STCMain = () => {
       >
         {renderForm()}
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between pt-8 mt-8 border-t border-gray-100">
           {step > 0 ? (
             <button
