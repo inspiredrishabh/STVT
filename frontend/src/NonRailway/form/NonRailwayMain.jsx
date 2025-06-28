@@ -23,7 +23,13 @@ const NonRailwayMain = () => {
     emergencyContactNumber: "",
     email: "",
     // Professional fields
-    courseName: "",
+    courseType: "",
+    customCourseType: "",
+    designation: "",
+    unitCustodian: "",
+    duration: "",
+    theoryPeriod: "",
+    practicalPeriod: "",
     workingUnder: "",
     remark: "",
     // Educational fields
@@ -130,48 +136,64 @@ const NonRailwayMain = () => {
     try {
       const submissionData = prepareFormDataForSubmission();
 
-      const response = await fetch("/api/nonrailway/register", {
+      const response = await fetch("/api/candidates/nonrailway", {
         method: "POST",
         body: submissionData,
+        headers: {
+          Accept: "application/json",
+        },
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        alert("Registration completed successfully!");
-        // Reset form
-        setFormData({
-          picture: null,
-          name: "",
-          sex: "",
-          fatherName: "",
-          motherName: "",
-          dob: "",
-          category: "",
-          pwd: "",
-          typeOfDisability: "",
-          nationality: "Indian",
-          currentAddress: "",
-          permanentAddress: "",
-          phoneNumber: "",
-          emergencyContactNumber: "",
-          email: "",
-          courseName: "",
-          workingUnder: "",
-          remark: "",
-          highestQualification: "",
-          fieldOfStudy: "",
-          institution: "",
-          gradeType: "",
-          gradeValue: "",
-        });
-        setStep(0);
-      } else {
-        throw new Error(result.message || "Registration failed");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
+
+      const result = await response.json();
+      alert(
+        "Registration completed successfully! Your application ID: " +
+          (result.applicationId || "Generated")
+      );
+
+      // Reset form after successful submission
+      setFormData({
+        picture: null,
+        name: "",
+        sex: "",
+        fatherName: "",
+        motherName: "",
+        dob: "",
+        category: "",
+        pwd: "",
+        typeOfDisability: "",
+        nationality: "Indian",
+        currentAddress: "",
+        permanentAddress: "",
+        phoneNumber: "",
+        emergencyContactNumber: "",
+        email: "",
+        courseType: "",
+        customCourseType: "",
+        designation: "",
+        unitCustodian: "",
+        duration: "",
+        theoryPeriod: "",
+        practicalPeriod: "",
+        workingUnder: "",
+        remark: "",
+        highestQualification: "",
+        fieldOfStudy: "",
+        institution: "",
+        gradeType: "",
+        gradeValue: "",
+      });
+      setStep(0);
+      setErrors({});
     } catch (error) {
       console.error("Submission error:", error);
-      alert(error.message || "Failed to submit registration. Please try again.");
+      alert(`Registration failed: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -223,19 +245,21 @@ const NonRailwayMain = () => {
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
             <div
-              className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${step === index
+              className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold transition-colors duration-200
+              ${
+                step === index
                   ? "bg-orange-500"
                   : step > index
-                    ? "bg-green-500"
-                    : "bg-gray-500"
-                }`}
+                  ? "bg-green-500"
+                  : "bg-gray-500"
+              }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
-                }`}
+              className={`text-sm font-semibold ${
+                step === index ? "text-white" : "text-gray-300"
+              }`}
             >
               {label} Details
             </p>
@@ -260,7 +284,7 @@ const NonRailwayMain = () => {
               type="button"
               onClick={handleBack}
               disabled={isLoading}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 disabled:opacity-50"
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 disabled:opacity-50 transition-colors"
             >
               ← Back
             </button>
@@ -271,7 +295,7 @@ const NonRailwayMain = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 flex items-center"
+            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 flex items-center transition-colors"
           >
             {isLoading && (
               <svg
@@ -297,8 +321,8 @@ const NonRailwayMain = () => {
             {isLoading
               ? "Submitting..."
               : step === steps.length - 1
-                ? "Submit Registration"
-                : "Save and Next →"}
+              ? "Submit Registration"
+              : "Save and Next →"}
           </button>
         </div>
       </form>
