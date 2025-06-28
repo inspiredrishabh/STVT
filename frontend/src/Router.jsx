@@ -126,9 +126,9 @@ const Router = () => {
         <Route
           path="/stc/marksheet"
           element={
-            <ProtectedLayout>
+            // <ProtectedLayout>
               <Marksheet />
-            </ProtectedLayout>
+            // </ProtectedLayout>
           }
         />
 

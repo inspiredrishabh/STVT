@@ -1,8 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ArrowLeft, Save, RotateCcw, CheckCircle, AlertCircle, ClipboardList, Search, X, User } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { mockTraineeMarksData, calculateOverallMarks } from '../utils/marksUtils'
 
 const FeedMark = () => {
+  const [searchParams] = useSearchParams()
+  
+  // Get URL parameters
+  const traineeIdFromUrl = searchParams.get('traineeId')
+  const traineeNameFromUrl = searchParams.get('name')
+  const ticketNoFromUrl = searchParams.get('ticketNo')
   // Mock trainee data with course assignments
   const trainees = [
     { id: 1, name: 'Rahul Sharma', ticketNo: 'ASE00001', course: 'MSE-C' },
@@ -19,88 +26,6 @@ const FeedMark = () => {
     { id: 12, name: 'Pooja Mishra', ticketNo: 'MJI00002', course: 'MJI-D' },
   ]
 
-  // Mock existing marks data for trainees
-  const mockTraineeData = {
-    1: { // Rahul Sharma - MSE-C
-      course: 'MSE-C',
-      marks: {
-        'Session 1-Paper 1': 75,
-        'Session 1-Paper 2': 82,
-        'Session 1-Practical': 45,
-        'Session 2-Paper 1': 55, // Supplement required
-        'Session 2-Paper 2': 78,
-        'Session 2-Practical': 42,
-      },
-      savedSessions: ['Session 1', 'Session 2'],
-      supplementStatus: {
-        'Session 1-Practical': true, // Cleared
-        'Session 2-Paper 1': false, // Pending
-        'Session 2-Practical': false, // Pending
-      }
-    },
-    2: { // Priya Singh - MJR-D
-      course: 'MJR-D',
-      marks: {
-        'Session 1-Paper 1': 88,
-        'Session 1-Paper 2': 92,
-        'Session 1-Practical': 47,
-        'Session 2-Paper 1': 65,
-        'Session 2-Paper 2': 58, // Supplement required
-        'Session 2-Practical': 35, // Supplement required
-      },
-      savedSessions: ['Session 1', 'Session 2'],
-      supplementStatus: {
-        'Session 1-Practical': true, // Cleared
-        'Session 2-Paper 2': false, // Pending
-        'Session 2-Practical': true, // Cleared
-      }
-    },
-    3: { // Amit Kumar - MSE-C
-      course: 'MSE-C',
-      marks: {
-        'Session 1-Paper 1': 95,
-        'Session 1-Paper 2': 87,
-        'Session 1-Practical': 48,
-        'Session 2-Paper 1': 72,
-        'Session 2-Paper 2': 89,
-        'Session 2-Practical': 46,
-        'Session 3-Paper 1': 78,
-        'Session 3-Paper 2': 25, // Supplement required
-      },
-      savedSessions: ['Session 1', 'Session 2'],
-      supplementStatus: {
-        'Session 3-Paper 2': false, // Pending
-      }
-    },
-    4: { // Sneha Patel - MJR-C
-      course: 'MJR-C',
-      marks: {
-        'Session 1-Paper 1': 91,
-        'Session 1-Paper 2': 85,
-        'Session 1-Practical': 49,
-      },
-      savedSessions: ['Session 1'],
-      supplementStatus: {}
-    },
-    6: { // Anita Verma - MJI-C
-      course: 'MJI-C',
-      marks: {
-        'Session 1-Paper 1': 68,
-        'Session 1-Paper 2': 72,
-        'Session 1-Paper 3': 55, // Supplement required
-        'Session 1-Paper 4': 78,
-        'Session 1-Paper 5': 45, // Supplement required
-        'Session 1-Paper 6': 82,
-        'Session 1-Paper 7': 75,
-      },
-      savedSessions: ['Session 1'],
-      supplementStatus: {
-        'Session 1-Paper 3': true, // Cleared
-        'Session 1-Paper 5': false, // Pending
-      }
-    }
-  }
-
   const [selectedCourse, setSelectedCourse] = useState('')
   const [selectedTrainee, setSelectedTrainee] = useState('')
   const [marks, setMarks] = useState({})
@@ -108,7 +33,30 @@ const FeedMark = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [filteredTrainees, setFilteredTrainees] = useState(trainees)
-  const [supplementStatus, setSupplementStatus] = useState({}) // Track supplement clearance
+  const [supplementStatus, setSupplementStatus] = useState({})
+
+  // Initialize trainee selection from URL parameters
+  useEffect(() => {
+    if (traineeIdFromUrl) {
+      const foundTrainee = trainees.find(t => t.id === parseInt(traineeIdFromUrl))
+      if (foundTrainee) {
+        setSelectedTrainee(foundTrainee.id)
+        setSelectedCourse(foundTrainee.course)
+        setSearchTerm(foundTrainee.name)
+        setShowDropdown(false)
+        
+        // Load existing marks data if available
+        const existingData = mockTraineeMarksData[foundTrainee.id]
+        if (existingData) {
+          setMarks(existingData.marks || {})
+          setSavedSessions(new Set(existingData.savedSessions || []))
+          setSupplementStatus(existingData.supplementStatus || {})
+        }
+      }
+    }
+  }, [traineeIdFromUrl])
+
+  // Calculate overall marks from session marks - remove duplicate function since it's imported // Track supplement clearance
 
   // Filter trainees based on search term
   const filterTrainees = (term) => {
@@ -144,7 +92,7 @@ const FeedMark = () => {
     setShowDropdown(false)
     
     // Auto-load existing marks and supplement status if available
-    const existingData = mockTraineeData[trainee.id]
+    const existingData = mockTraineeMarksData[trainee.id]
     if (existingData) {
       setMarks(existingData.marks || {})
       setSavedSessions(new Set(existingData.savedSessions || []))
@@ -168,7 +116,7 @@ const FeedMark = () => {
   }
 
   const courseStructure = {
-    'MSE-C': {
+    'MSE-C&W': {
       'Session 1': {
         'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
         'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
@@ -240,7 +188,7 @@ const FeedMark = () => {
         'Interview': { maxMarks: 100, subjects: [] }
       }
     },
-    'MJR-C': {
+    'MJR-C&W': {
       'Session 1': {
         'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
         'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
@@ -312,7 +260,7 @@ const FeedMark = () => {
         'Interview': { maxMarks: 100, subjects: [] }
       }
     },
-    'MJI-C': {
+    'MJI-C&W': {
       'Session 1': {
         'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-02'] },
         'Paper 2': { maxMarks: 100, subjects: ['MET-01'] },
@@ -405,7 +353,7 @@ const FeedMark = () => {
         'Interview': { maxMarks: 50, subjects: [] }
       }
     },
-    'MJP-C': {
+    'MJP-C&W': {
       'Session 1': {
         'Paper 1': { maxMarks: 150, subjects: ['MRT-14', 'MRT-16', 'MRT-17', 'MRT-18', 'MRT-19'] },
         'Paper 2': { maxMarks: 150, subjects: ['MET-12', 'MET-13', 'MET-14'] },
@@ -851,7 +799,7 @@ const FeedMark = () => {
                     <div className="flex-1">
                       <div className="font-medium">Trainee Selected</div>
                       <div className="text-sm text-green-700">{getSelectedTraineeName()}</div>
-                      {mockTraineeData[selectedTrainee] && (
+                      {mockTraineeMarksData[selectedTrainee] && (
                         <div className="text-xs text-green-600 mt-1 flex items-center">
                           <ClipboardList className="w-3 h-3 mr-1" />
                           Previous marks and supplement status loaded automatically
@@ -887,7 +835,7 @@ const FeedMark = () => {
                   
                   // Only clear marks if switching to a different course than the trainee's assigned course
                   if (selectedTrainee) {
-                    const traineeData = mockTraineeData[selectedTrainee]
+                    const traineeData = mockTraineeMarksData[selectedTrainee]
                     const selectedTraineeInfo = trainees.find(t => t.id === selectedTrainee)
                     
                     if (traineeData && newCourse === traineeData.course) {
