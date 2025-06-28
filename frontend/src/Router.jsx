@@ -14,6 +14,7 @@ const NonRailwayMain = lazy(() => import("./NonRailway/form/NonRailwayMain"));
 
 // STC Management Components
 const HomePageSTC = lazy(() => import("./stcManagement/HomePageSTC"));
+const HomePageWTC = lazy(() => import("./WTCManagement/HomePageWTC"));
 const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
@@ -21,6 +22,9 @@ const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
 // const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
 const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
 const Letter = lazy(() => import("./WTCManagement/Letter"));
+const LetterBulk = lazy(() => import("./WTCManagement/LetterBulk"));
+const Certificate = lazy(() => import("./WTCManagement/Cerificate"));
+const CertificatePreview = lazy(() => import("./WTCManagement/CertificatePreview"));
 const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
 
 // Protected route wrapper
@@ -160,9 +164,19 @@ const Router = () => {
             // </ProtectedLayout>
           }
         />
-
-        <Route path="/wtc/tranieeProfile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
+        {/* WTC Management Homepage */}
+        <Route path="/wtc-management"
+          element={
+            // <ProtectedLayout>
+            <HomePageWTC />
+            // </ProtectedLayout>
+          }
+        />
+        <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
         <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
+        <Route path="/wtc/letter/bulk" element={<ProtectedLayout><LetterBulk /></ProtectedLayout>} />
+        <Route path="/wtc/certificate" element={<ProtectedLayout><Certificate /></ProtectedLayout>} />
+        <Route path="/wtc/certificate/preview" element={<ProtectedLayout><CertificatePreview /></ProtectedLayout>} />
         <Route path="/wtc/form" element={<ProtectedLayout><WtcMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
