@@ -18,13 +18,10 @@ const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
-
-
-// Candidate Management Component
-const ManageCandidate = lazy(() => import("./manage/CandidateManagementPage"));
-
-
-
+// const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
+const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
+const Letter = lazy(() => import("./WTCManagement/Letter"));
+const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
@@ -108,14 +105,14 @@ const Router = () => {
         />
 
         {/* Candidate Management Route */}
-        <Route
+        {/* <Route
           path="/manage-candidate"
           element={
-            <ProtectedLayout>
-              <ManageCandidate />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            // <ManageCandidate />
+            // </ProtectedLayout>
           }
-        />
+        /> */}
 
         {/* STC Management Homepage */}
         <Route
@@ -130,9 +127,9 @@ const Router = () => {
         {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
-              <FeedMark />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <FeedMark />
+            // </ProtectedLayout>
           }
         />
 
@@ -155,11 +152,15 @@ const Router = () => {
         />        <Route
           path="/stc/marksheet"
           element={
-            <ProtectedLayout>
-              <Marksheet />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <Marksheet />
+            // </ProtectedLayout>
           }
         />
+
+        <Route path="/wtc/tranieeProfile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
+        <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
+        <Route path="/wtc/form" element={<ProtectedLayout><WtcMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
         <Route
