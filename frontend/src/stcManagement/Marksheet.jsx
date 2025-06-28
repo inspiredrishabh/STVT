@@ -1,46 +1,73 @@
-import React, { useState } from 'react'
-import { ArrowLeft, FileText, User, Search } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { ArrowLeft, FileText, User, Search, Printer } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const Marksheet = () => {
-  const [viewType, setViewType] = useState('overall')
   const [selectedCandidate, setSelectedCandidate] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
-  const [filteredCandidates, setFilteredCandidates] = useState([])
+  const [candidates, setCandidates] = useState([])
+  const [marksheetData, setMarksheetData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  // Mock data for candidates from FeedMark.jsx
-  const candidates = [
-    { id: 1, name: 'Rahul Sharma', ticketNo: 'ASE00001', designation: 'Assistant Signal Engineer', batch: 'MSE', stream: 'Coach and Wagon(C&W)', course: 'MSE-C&W', photo: '/api/placeholder/100/120' },
-    { id: 2, name: 'Priya Singh', ticketNo: 'AJE00001', designation: 'Assistant Junior Engineer', batch: 'MJR', stream: 'Diesel(D)', course: 'MJR-D', photo: '/api/placeholder/100/120' },
-    { id: 3, name: 'Amit Kumar', ticketNo: 'MSE00001', designation: 'Mechanical Supervisor Engineer', batch: 'MSE', stream: 'Coach and Wagon(C&W)', course: 'MSE-C&W', photo: '/api/placeholder/100/120' },
-    { id: 4, name: 'Sneha Patel', ticketNo: 'MJR00001', designation: 'Mechanical Junior Engineer', batch: 'MJR', stream: 'Coach and Wagon(C&W)', course: 'MJR-C&W', photo: '/api/placeholder/100/120' },
-    { id: 5, name: 'Vikram Singh', ticketNo: 'MSE00002', designation: 'Mechanical Supervisor Engineer', batch: 'MSE', stream: 'Diesel(D)', course: 'MSE-D', photo: '/api/placeholder/100/120' },
-    { id: 6, name: 'Anita Verma', ticketNo: 'MJI00001', designation: 'Mechanical Junior Inspector', batch: 'MJI', stream: 'Coach and Wagon(C&W)', course: 'MJI-C&W', photo: '/api/placeholder/100/120' },
-    { id: 7, name: 'Rajesh Kumar', ticketNo: 'MJP00001', designation: 'Mechanical Junior Programmer', batch: 'MJP', stream: 'W(Workshop)', course: 'MJP-W', photo: '/api/placeholder/100/120' },
-    { id: 8, name: 'Sunita Yadav', ticketNo: 'ASE00002', designation: 'Assistant Signal Engineer', batch: 'MSE', stream: 'W(Workshop)', course: 'MSE-W', photo: '/api/placeholder/100/120' },
-    { id: 9, name: 'Deepak Gupta', ticketNo: 'AJE00002', designation: 'Assistant Junior Engineer', batch: 'MJR', stream: 'W(Workshop)', course: 'MJR-W', photo: '/api/placeholder/100/120' },
-    { id: 10, name: 'Kavita Sharma', ticketNo: 'MSE00003', designation: 'Mechanical Supervisor Engineer', batch: 'MSE', stream: 'Coach and Wagon(C&W)', course: 'MSE-C&W', photo: '/api/placeholder/100/120' },
-    { id: 11, name: 'Manish Agarwal', ticketNo: 'MJR00002', designation: 'Mechanical Junior Engineer', batch: 'MJR', stream: 'Diesel(D)', course: 'MJR-D', photo: '/api/placeholder/100/120' },
-    { id: 12, name: 'Pooja Mishra', ticketNo: 'MJI00002', designation: 'Mechanical Junior Inspector', batch: 'MJI', stream: 'Diesel(D)', course: 'MJI-D', photo: '/api/placeholder/100/120' },
-  ]
+  // Fetch candidates on component mount
+  useEffect(() => {
+    fetchCandidates()
+  }, [])
+
+  // Fetch marksheet data when candidate is selected
+  useEffect(() => {
+    if (selectedCandidate) {
+      fetchMarksheetData(selectedCandidate)
+    } else {
+      setMarksheetData(null)
+    }
+  }, [selectedCandidate])
+
+  // API calls
+  const fetchCandidates = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/candidates/with-marks')
+      if (!response.ok) throw new Error('Failed to fetch candidates')
+      const data = await response.json()
+      setCandidates(data)
+    } catch (err) {
+      setError('Failed to load candidates')
+      console.error('Error fetching candidates:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMarksheetData = async (candidateId) => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/marksheet/${candidateId}`)
+      if (!response.ok) throw new Error('Failed to fetch marksheet data')
+      const data = await response.json()
+      setMarksheetData(data)
+    } catch (err) {
+      setError('Failed to load marksheet data')
+      console.error('Error fetching marksheet:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Filter candidates based on search term
-  const filterCandidates = (term) => {
-    if (!term) return candidates
-    return candidates.filter(candidate => 
-      candidate.name.toLowerCase().includes(term.toLowerCase()) ||
-      candidate.ticketNo.toLowerCase().includes(term.toLowerCase())
-    )
-  }
+  const filteredCandidates = candidates.filter(candidate => 
+    candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    candidate.ticketNo.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   // Handle search input change
   const handleSearchChange = (value) => {
     setSearchTerm(value)
-    setFilteredCandidates(filterCandidates(value))
     setShowDropdown(true)
     
-    // If exact match found, auto-select
+    // Auto-select if exact match found
     const exactMatch = candidates.find(candidate => 
       candidate.ticketNo.toLowerCase() === value.toLowerCase()
     )
@@ -59,110 +86,52 @@ const Marksheet = () => {
     setShowDropdown(false)
   }
 
-  // Get selected candidate name for display
-  const getSelectedCandidateName = () => {
-    if (!selectedCandidate) return ''
-    const candidate = candidates.find(c => c.id === parseInt(selectedCandidate))
-    return candidate ? `${candidate.name} (${candidate.ticketNo})` : ''
+  // Print functionality
+  const handlePrint = () => {
+    const printStyle = document.createElement('style')
+    printStyle.textContent = `
+      @media print {
+        body * { visibility: hidden; }
+        .print-only-marksheet, .print-only-marksheet * { visibility: visible; }
+        .print-only-marksheet {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        .marksheet-container {
+          transform: scale(0.8);
+          transform-origin: top left;
+          margin: 0;
+          padding: 5mm;
+        }
+      }
+    `
+    document.head.appendChild(printStyle)
+    window.print()
+    setTimeout(() => document.head.removeChild(printStyle), 1000)
   }
 
-  // Mock marksheet data structure based on FeedMark structure
-  const mockMarksheetData = {
-    1: { // Rahul Sharma
-      candidate: candidates[0],
-      fathersName: 'Mr. Rajesh Sharma',
-      ticketNo: 'ASE00001',
-      course: 'MSE-C&W',
-      sessions: {
-        session1: {
-          theory: [
-            { code: 'MRT-01', marksObtained: 75, maxMarks: 100 },
-            { code: 'MRT-06', marksObtained: 82, maxMarks: 100 },
-            { code: 'MRT-02', marksObtained: 68, maxMarks: 100 },
-            { code: 'MRT-03', marksObtained: 72, maxMarks: 100 },
-            { code: 'MRT-04', marksObtained: 79, maxMarks: 100 },
-            { code: 'MRT-05', marksObtained: 74, maxMarks: 100 },
-          ],
-          practical: [
-            { code: 'PRAC-1', marksObtained: 45, maxMarks: 50 },
-          ]
-        },
-        session2: {
-          theory: [
-            { code: 'MRT-07', marksObtained: 55, maxMarks: 75 },
-            { code: 'MRT-09', marksObtained: 65, maxMarks: 75 },
-            { code: 'MCT-01', marksObtained: 78, maxMarks: 100 },
-          ],
-          practical: [
-            { code: 'PRAC-2', marksObtained: 42, maxMarks: 50 },
-          ]
-        },
-        session3: {
-          theory: [
-            { code: 'MCT-02/I', marksObtained: 85, maxMarks: 100 },
-            { code: 'MCT-02/II', marksObtained: 35, maxMarks: 50 },
-            { code: 'MRT-08', marksObtained: 20, maxMarks: 25 },
-            { code: 'MRT-11', marksObtained: 42, maxMarks: 50 },
-          ],
-          practical: [
-            { code: 'PRAC-3', marksObtained: 46, maxMarks: 50 },
-          ]
-        },
-        session4: {
-          theory: [
-            { code: 'MRT-12', marksObtained: 88, maxMarks: 100 },
-          ],
-          practical: [
-            { code: 'PRAC-4', marksObtained: 47, maxMarks: 50 },
-          ],
-          interview: [
-            { code: 'INT-1', marksObtained: 85, maxMarks: 100 },
-          ]
-        }
-      },
-      totalMarks: '1103/1400',
-      finalPercentage: '78.79%',
-      disclaimer: 'Candidate has failed in subject(s): MCT-02/II, MRT-11',
-      passingCriteria: 'Passing criteria: 60% or above required in each subject.'
-    },
-    2: { // Priya Singh
-      candidate: candidates[1],
-      fathersName: 'Mr. Suresh Singh',
-      ticketNo: 'AJE00001',
-      course: 'MJR-D',
-      sessions: {
-        session1: {
-          theory: [
-            { code: 'MRT-01', marksObtained: 88, maxMarks: 100 },
-            { code: 'MRT-06', marksObtained: 92, maxMarks: 100 },
-            { code: 'MRT-02', marksObtained: 85, maxMarks: 100 },
-            { code: 'MRT-03', marksObtained: 78, maxMarks: 100 },
-            { code: 'MRT-04', marksObtained: 82, maxMarks: 100 },
-            { code: 'MRT-05', marksObtained: 79, maxMarks: 100 },
-          ],
-          practical: [
-            { code: 'PRAC-1', marksObtained: 47, maxMarks: 50 },
-          ]
-        },
-        session2: {
-          theory: [
-            { code: 'MRT-07', marksObtained: 65, maxMarks: 75 },
-            { code: 'MRT-09', marksObtained: 58, maxMarks: 75 },
-            { code: 'MDT-01', marksObtained: 72, maxMarks: 100 },
-          ],
-          practical: [
-            { code: 'PRAC-2', marksObtained: 35, maxMarks: 50 },
-          ]
-        }
-      },
-      totalMarks: '951/1200',
-      finalPercentage: '79.25%',
-      disclaimer: 'Candidate has failed in subject(s): PRAC-2',
-      passingCriteria: 'Passing criteria: 60% or above required in each subject.'
+  const renderMarksheet = () => {
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center justify-center h-96 text-center p-8">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+          <p className="text-gray-500 mt-4">Loading...</p>
+        </div>
+      )
     }
-  }
 
-  const renderOverallMarksheet = () => {
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-96 text-center p-8">
+          <FileText size={64} className="text-red-300 mb-4" />
+          <h3 className="text-xl font-semibold text-red-600 mb-2">Error</h3>
+          <p className="text-red-500">{error}</p>
+        </div>
+      )
+    }
+
     if (!selectedCandidate) {
       return (
         <div className="flex flex-col items-center justify-center h-96 text-center p-8">
@@ -173,8 +142,7 @@ const Marksheet = () => {
       )
     }
 
-    const candidateData = mockMarksheetData[parseInt(selectedCandidate)]
-    if (!candidateData) {
+    if (!marksheetData) {
       return (
         <div className="flex flex-col items-center justify-center h-96 text-center p-8">
           <FileText size={64} className="text-gray-300 mb-4" />
@@ -184,156 +152,193 @@ const Marksheet = () => {
       )
     }
 
-    const candidate = candidateData.candidate
-    
     return (
       <div className="p-6">
-        {/* Print-ready marksheet */}
-        <div className="bg-white border border-gray-300 max-w-4xl mx-auto shadow-lg">
-          {/* Header */}
-          <div className="flex items-center p-6 border-b border-gray-300">
-            <img src="/api/placeholder/80/80" alt="Indian Railways Logo" className="w-20 h-20 mr-6" />
-            <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold text-gray-800">INDIAN RAILWAYS</h1>
-              <p className="text-base text-gray-600">ZONAL RAILWAY TRAINING INSTITUTE</p>
-              <p className="text-base font-semibold text-gray-700 mt-1">STATEMENT OF MARKS</p>
-            </div>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-4 mb-6 print:hidden">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+          >
+            <Printer size={20} />
+            Print Marksheet
+          </button>
+        </div>
 
-          {/* Student Info */}
-          <div className="grid grid-cols-3 gap-6 p-6 border-b border-gray-300 text-sm bg-gray-50">
-            <div className="space-y-2">
-              <p><span className="font-semibold text-gray-700">Name:</span> <span className="text-gray-800">{candidate?.name}</span></p>
-              <p><span className="font-semibold text-gray-700">Batch:</span> <span className="text-gray-800">{candidate?.batch}</span></p>
-              <p><span className="font-semibold text-gray-700">Designation:</span> <span className="text-gray-800">{candidate?.designation}</span></p>
-              <p><span className="font-semibold text-gray-700">Stream:</span> <span className="text-gray-800">{candidate?.stream}</span></p>
-            </div>
-            <div className="space-y-2">
-              <p><span className="font-semibold text-gray-700">Father's Name:</span> <span className="text-gray-800">{candidateData.fathersName}</span></p>
-              <p><span className="font-semibold text-gray-700">Ticket No:</span> <span className="text-gray-800">{candidateData.ticketNo}</span></p>
-              <p><span className="font-semibold text-gray-700">Course:</span> <span className="text-gray-800">{candidateData.course}</span></p>
-            </div>
-            <div className="flex justify-center">
-              <div className="text-center">
-                <img 
-                  src={candidate?.photo} 
-                  alt={`${candidate?.name} Photo`} 
-                  className="w-24 h-28 object-cover border-2 border-gray-300 rounded mb-2 shadow-sm"
-                />
-                <p className="text-xs text-gray-600 font-medium">Candidate Photo</p>
+        {/* Print-ready marksheet */}
+        <div className="print-only-marksheet">
+          <div className="bg-white border-2 border-black marksheet-container" style={{width: '210mm', minHeight: '297mm'}}>
+            {/* Header */}
+            <div className="border-b-2 border-black">
+              <div className="flex items-center p-6 bg-white">
+                <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mr-6">
+                  <span className="text-white font-bold text-xl">IR</span>
+                </div>
+                <div className="text-center flex-1">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">INDIAN RAILWAYS</h1>
+                  <p className="text-base text-gray-800 font-semibold">ZONAL RAILWAY TRAINING INSTITUTE</p>
+                  <p className="text-sm font-bold text-gray-700 mt-2 tracking-wider">STATEMENT OF MARKS</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Marks Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{backgroundColor: '#ff8128'}} className="text-white">
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">SUBJECT CODE</th>
-                  <th className="border border-gray-300 px-4 py-3 font-semibold">MARKS OBTAINED</th>
-                  <th className="border border-gray-300 px-4 py-3 font-semibold">MAXIMUM MARKS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(candidateData.sessions).map(([sessionKey, sessionData], sessionIndex) => (
-                  <React.Fragment key={sessionKey}>
-                    {/* Session Header */}
-                    <tr style={{backgroundColor: '#ff8128', opacity: 0.2}} className="bg-opacity-20">
-                      <td colSpan="3" className="border border-gray-300 px-4 py-2 font-bold" style={{color: '#ff8128'}}>
-                        Session {sessionIndex + 1}
-                      </td>
+            {/* Student Information */}
+            <div className="border-b-2 border-black">
+              <div className="grid grid-cols-3 gap-4 p-6 bg-white">
+                <div className="col-span-2 space-y-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Name of Trainee</p>
+                      <p className="text-base font-semibold text-black border-b border-black pb-1">{marksheetData.candidate?.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Father's Name</p>
+                      <p className="text-base font-semibold text-black border-b border-black pb-1">{marksheetData.fathersName}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Ticket No.</p>
+                      <p className="text-base font-semibold text-black border-b border-black pb-1">{marksheetData.ticketNo}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Batch</p>
+                      <p className="text-base font-semibold text-black border-b border-black pb-1">{marksheetData.candidate?.batch}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Designation</p>
+                      <p className="text-sm text-black border-b border-black pb-1">{marksheetData.candidate?.designation}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Course</p>
+                      <p className="text-base font-semibold text-black border-b border-black pb-1">{marksheetData.course}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-center items-start">
+                  <div className="text-center">
+                    <div className="border-2 border-black p-1 bg-white">
+                      <img 
+                        src={marksheetData.candidate?.photo} 
+                        alt={`${marksheetData.candidate?.name} Photo`} 
+                        className="w-24 h-28 object-cover grayscale"
+                      />
+                    </div>
+                    <p className="text-xs font-bold text-gray-700 mt-1 uppercase tracking-wide">Trainee Photo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Marks Table */}
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-white border-2 border-black">
+                      <th className="border-2 border-black px-4 py-2 text-left font-bold text-sm text-black">Paper</th>
+                      <th className="border-2 border-black px-4 py-2 text-center font-bold text-sm text-black">Subjects</th>
+                      <th className="border-2 border-black px-4 py-2 text-center font-bold text-sm text-black">Marks Obtained</th>
+                      <th className="border-2 border-black px-4 py-2 text-center font-bold text-sm text-black">Maximum Marks</th>
                     </tr>
-                    
-                    {/* Theory Section */}
-                    {sessionData.theory && sessionData.theory.length > 0 && (
-                      <>
-                        <tr className="bg-gray-100">
-                          <td colSpan="3" className="border border-gray-300 px-4 py-2 font-semibold text-gray-700">THEORY</td>
+                  </thead>
+                  <tbody>
+                    {marksheetData.sessions && Object.entries(marksheetData.sessions).map(([sessionKey, sessionData]) => (
+                      <React.Fragment key={sessionKey}>
+                        {/* Session Header */}
+                        <tr>
+                          <td colSpan="4" className="border-2 border-black px-6 py-3 font-bold text-black text-left text-lg bg-white">
+                            {sessionData.sessionName}
+                          </td>
                         </tr>
-                        {sessionData.theory.map((subject, index) => (
-                          <tr key={index} className={`${subject.marksObtained < (subject.maxMarks * 0.6) ? 'bg-red-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}>
-                            <td className="border border-gray-300 px-4 py-2 font-medium text-gray-800">{subject.code}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">{subject.marksObtained}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center">{subject.maxMarks}</td>
-                          </tr>
-                        ))}
-                      </>
-                    )}
-                    
-                    {/* Practical Section */}
-                    {sessionData.practical && sessionData.practical.length > 0 && (
-                      <>
-                        <tr className="bg-gray-100">
-                          <td colSpan="3" className="border border-gray-300 px-4 py-2 font-semibold text-gray-700">PRACTICAL</td>
-                        </tr>
-                        {sessionData.practical.map((subject, index) => (
-                          <tr key={index} className={`${subject.marksObtained < (subject.maxMarks * 0.6) ? 'bg-red-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}>
-                            <td className="border border-gray-300 px-4 py-2 font-medium text-gray-800">{subject.code}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">{subject.marksObtained}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center">{subject.maxMarks}</td>
-                          </tr>
-                        ))}
-                      </>
-                    )}
-                    
-                    {/* Interview Section */}
-                    {sessionData.interview && sessionData.interview.length > 0 && (
-                      <>
-                        <tr className="bg-gray-100">
-                          <td colSpan="3" className="border border-gray-300 px-4 py-2 font-semibold text-gray-700">INTERVIEW</td>
-                        </tr>
-                        {sessionData.interview.map((subject, index) => (
-                          <tr key={index} className={`${subject.marksObtained < (subject.maxMarks * 0.6) ? 'bg-red-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}>
-                            <td className="border border-gray-300 px-4 py-2 font-medium text-gray-800">{subject.code}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">{subject.marksObtained}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-center">{subject.maxMarks}</td>
-                          </tr>
-                        ))}
-                      </>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        
+                        {/* Papers */}
+                        {sessionData.papers && sessionData.papers.map((paper, paperIndex) => {
+                          const isFailure = typeof paper.marksObtained === 'number' && paper.marksObtained < (paper.maxMarks * 0.6)
+                          const isEmpty = paper.isEmpty || paper.marksObtained === '-'
+                          
+                          return (
+                            <tr key={paperIndex} className={`${isFailure ? 'bg-red-100 border-red-300' : 'bg-white'} transition-colors`}>
+                              <td className="border border-black px-3 py-2 font-semibold text-black text-sm">{paper.paperNo}</td>
+                              <td className="border border-black px-3 py-2 text-center text-black text-sm">{paper.subjects}</td>
+                              <td className={`border border-black px-3 py-2 text-center font-bold text-sm ${
+                                isFailure ? 'text-red-600' : isEmpty ? 'text-gray-500' : 'text-black'
+                              }`}>
+                                {paper.marksObtained}
+                              </td>
+                              <td className="border border-black px-3 py-2 text-center font-semibold text-black text-sm">{paper.maxMarks}</td>
+                            </tr>
+                          )
+                        })}
+                        
+                        {/* Practical */}
+                        {sessionData.practical && (() => {
+                          const isFailure = typeof sessionData.practical.marksObtained === 'number' && 
+                                           sessionData.practical.marksObtained < (sessionData.practical.maxMarks * 0.6)
+                          const isEmpty = sessionData.practical.isEmpty || sessionData.practical.marksObtained === '-'
+                          
+                          return (
+                            <tr className={`${isFailure ? 'bg-red-100 border-red-300' : 'bg-white'} transition-colors`}>
+                              <td className="border border-black px-3 py-2 font-semibold text-black text-sm">PRACTICAL</td>
+                              <td className="border border-black px-3 py-2 text-center text-gray-600 italic text-sm">Hands-on Assessment</td>
+                              <td className={`border border-black px-3 py-2 text-center font-bold text-sm ${
+                                isFailure ? 'text-red-600' : isEmpty ? 'text-gray-500' : 'text-black'
+                              }`}>
+                                {sessionData.practical.marksObtained}
+                              </td>
+                              <td className="border border-black px-3 py-2 text-center font-semibold text-black text-sm">{sessionData.practical.maxMarks}</td>
+                            </tr>
+                          )
+                        })()}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-          {/* Summary */}
-          <div className="grid grid-cols-2 gap-6 p-6 border-t border-gray-300" style={{backgroundColor: '#ff8128', opacity: 0.1}}>
-            <div className="text-center">
-              <p className="font-semibold text-gray-700 mb-2">TOTAL MARKS</p>
-              <p className="text-2xl font-bold" style={{color: '#ff8128'}}>{candidateData.totalMarks}</p>
+            {/* Summary Section */}
+            <div className="border-t-2 border-black">
+              <div className="grid grid-cols-3 gap-4 p-4 bg-white">
+                <div className="text-center border-2 border-black bg-white p-3">
+                  <p className="text-xs font-bold text-black uppercase tracking-wider mb-2">Total Marks Obtained</p>
+                  <p className="text-2xl font-bold text-black">{marksheetData.total}</p>
+                </div>
+                <div className="text-center border-2 border-black bg-white p-3">
+                  <p className="text-xs font-bold text-black uppercase tracking-wider mb-2">Final Percentage</p>
+                  <p className="text-2xl font-bold text-black">{marksheetData.percentage}</p>
+                </div>
+                <div className="text-center border-2 border-black bg-white p-3">
+                  <p className="text-xs font-bold text-black uppercase tracking-wider mb-2">Result Status</p>
+                  <p className={`text-xl font-bold ${
+                    marksheetData.disclaimer?.includes('failed') ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {marksheetData.disclaimer?.includes('failed') ? 'FAILED' : 'PASSED'}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="font-semibold text-gray-700 mb-2">FINAL PERCENTAGE</p>
-              <p className="text-2xl font-bold text-green-600">{candidateData.finalPercentage}</p>
-            </div>
-          </div>
 
-          {/* Disclaimer */}
-          <div className="p-6 border-t border-gray-300 text-center bg-yellow-50">
-            <p className="text-red-600 font-semibold mb-2">
-              Disclaimer: {candidateData.disclaimer}
-            </p>
-            <p className="text-gray-600">
-              {candidateData.passingCriteria}
-            </p>
-          </div>
-
-          {/* Footer */}
-          <div className="grid grid-cols-3 gap-6 p-6 border-t border-gray-300 text-center bg-gray-50">
-            <div>
-              <p className="font-semibold text-gray-700 mb-3">Checked by</p>
-              <div className="h-12 border-b border-gray-400"></div>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-700 mb-1">Principal / Director</p>
-              <p className="text-sm text-gray-600 mb-2">Govt. of Chandigarh : 25/06/2023</p>
-              <div className="h-8 border-b border-gray-400"></div>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-700 mb-3">Prepared by</p>
-              <div className="h-12 border-b border-gray-400"></div>
+            {/* Remarks */}
+            <div className="border-t-2 border-black bg-white">
+              <div className="p-4">
+                <h3 className="text-base font-bold text-black mb-3 uppercase tracking-wide">Remarks & Disclaimer</h3>
+                <div className="space-y-2">
+                  <p className={`font-semibold text-sm ${
+                    marksheetData.disclaimer?.includes('failed') ? 'text-red-700' : 'text-green-700'
+                  }`}>
+                    Status: {marksheetData.disclaimer}
+                  </p>
+                  <p className="text-black text-sm">
+                    <span className="font-semibold">Note:</span> {marksheetData.passingCriteria}
+                  </p>
+                  <p className="text-xs text-black italic">
+                    This is a computer-generated statement of marks. Any discrepancy should be reported to the training department within 7 days of issue.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -342,7 +347,52 @@ const Marksheet = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+    <div className="min-h-screen bg-white p-4">
+      {/* Print styles */}
+      <style jsx>{`
+        @media print {
+          body { margin: 0; padding: 0; }
+          
+          /* Hide everything except the marksheet */
+          .print\\:hidden { display: none !important; }
+          .print\\:block { display: block !important; }
+          
+          /* Only show the marksheet container */
+          .print-only-marksheet {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: white !important;
+            z-index: 9999 !important;
+          }
+          
+          /* Ensure the marksheet fits on one page */
+          .marksheet-container {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 10mm !important;
+            box-sizing: border-box !important;
+            transform: scale(0.85) !important;
+            transform-origin: top left !important;
+          }
+          
+          /* Remove shadows and borders for print */
+          .bg-white { background: white !important; }
+          .shadow-2xl { box-shadow: none !important; }
+          .border-2 { border-width: 1px !important; }
+          
+          /* Optimize table for print */
+          table { page-break-inside: avoid !important; }
+          tr { page-break-inside: avoid !important; }
+          
+          /* Ensure text is readable */
+          * { color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
+        }
+      `}</style>
+      
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -362,38 +412,6 @@ const Marksheet = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Panel - Controls */}
           <div className="lg:col-span-1 space-y-6">
-            {/* View Type Selection */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <FileText size={20} style={{color: '#ff8128'}} />
-                Marksheet Type
-              </h3>
-              <div className="space-y-3">
-                <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    value="overall"
-                    checked={viewType === 'overall'}
-                    onChange={(e) => setViewType(e.target.value)}
-                    className="mr-3"
-                    style={{accentColor: '#ff8128'}}
-                  />
-                  <span className="font-medium text-gray-700">Overall Marksheet</span>
-                </label>
-                <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    value="session-wise"
-                    checked={viewType === 'session-wise'}
-                    onChange={(e) => setViewType(e.target.value)}
-                    className="mr-3"
-                    style={{accentColor: '#ff8128'}}
-                  />
-                  <span className="font-medium text-gray-700">Session-wise Marksheet</span>
-                </label>
-              </div>
-            </div>
-
             {/* Candidate Selection */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -424,10 +442,7 @@ const Marksheet = () => {
                       <div
                         key={candidate.id}
                         onClick={() => handleCandidateSelect(candidate)}
-                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
-                        style={{'&:hover': {backgroundColor: '#ff8128', opacity: 0.1}}}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#ff812820'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        className="p-3 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors hover:bg-orange-50"
                       >
                         <div className="font-medium text-gray-800">{candidate.name}</div>
                         <div className="text-sm text-gray-500">{candidate.ticketNo} • {candidate.course}</div>
@@ -438,9 +453,11 @@ const Marksheet = () => {
               </div>
               
               {selectedCandidate && (
-                <div className="mt-4 p-3 rounded-lg" style={{backgroundColor: '#ff8128', opacity: 0.1}}>
-                  <div className="text-sm font-medium" style={{color: '#ff8128'}}>Selected Candidate:</div>
-                  <div style={{color: '#ff8128', opacity: 0.8}}>{getSelectedCandidateName()}</div>
+                <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="text-sm font-medium text-orange-700">Selected Candidate:</div>
+                  <div className="text-orange-600 font-semibold">
+                    {candidates.find(c => c.id === selectedCandidate)?.name} ({candidates.find(c => c.id === selectedCandidate)?.ticketNo})
+                  </div>
                 </div>
               )}
             </div>
@@ -449,15 +466,7 @@ const Marksheet = () => {
           {/* Right Panel - Marksheet Display */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[600px]">
-              {viewType === 'session-wise' ? (
-                <div className="flex flex-col items-center justify-center h-96 text-center p-8">
-                  <FileText size={64} className="text-gray-300 mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">Session-wise Marksheet</h3>
-                  <p className="text-gray-500">This feature will be implemented in the future.</p>
-                </div>
-              ) : (
-                renderOverallMarksheet()
-              )}
+              {renderMarksheet()}
             </div>
           </div>
         </div>
