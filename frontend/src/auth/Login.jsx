@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { Shield, Settings, ClipboardList } from "lucide-react";
+import { Shield, Settings, ClipboardList, Eye, EyeOff } from "lucide-react";
 import trainingCenterImage from "../assets/Training center.jpg";
 
 const roleOptions = [
@@ -16,6 +16,7 @@ const Login = () => {
     const [credentials, setCredentials] = useState({ role: "admin", password: "" });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -110,18 +111,31 @@ const Login = () => {
                     {/* Password Input */}
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password / Pin (Currently)
+                            Password / Pin
                         </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            value={credentials.password}
-                            onChange={handleChange}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
-                            placeholder="Enter password"
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={credentials.password}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none"
+                                placeholder="Enter password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Submit Button */}
