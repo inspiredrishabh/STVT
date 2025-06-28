@@ -1,403 +1,75 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect } from "react";
 
-const Professional = ({ formData, onChange }) => {
-  const [errors, setErrors] = useState({});
+const Professional = ({ formData, onChange, errors = {} }) => {
+  const validateField = (field, value) => {
+    const trimmedValue = value?.toString().trim() || "";
 
-  const handleChange = useCallback(
-    (field, value) => {
-      onChange(field, value);
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    },
-    [onChange]
-  );
+    if (!trimmedValue) return "This field is required";
 
-  // Enhanced validation with comprehensive type checking
-  const validateField = useCallback((field, value) => {
-    // Check for empty/null/undefined values
-    if (value === null || value === undefined || value.toString().trim() === "") {
-      return "This field is required";
+    if (
+      ["workingUnder", "institution", "fieldOfStudy"].includes(field) &&
+      trimmedValue.length < 2
+    ) {
+      return "Must be at least 2 characters";
     }
 
-    const stringValue = value.toString().trim();
-
-    // String validation for text fields
-    if (["workingUnder", "institution", "fieldOfStudy", "hrmsId", "pfNoNpsUps", "employeeNumber"].includes(field)) {
-      if (stringValue.length < 2) {
-        return "Must be at least 2 characters long";
+    if (field === "gradeValue" && formData.gradeType) {
+      const grade = parseFloat(trimmedValue);
+      if (
+        formData.gradeType === "CGPA (out of 10)" &&
+        (isNaN(grade) || grade < 0 || grade > 10)
+      ) {
+        return "CGPA must be between 0-10";
       }
-      if (stringValue.length > 100) {
-        return "Must not exceed 100 characters";
-      }
-      // Check for valid characters (letters, numbers, spaces, common punctuation)
-      if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
-        return "Contains invalid characters";
-      }
-    }
-
-    // Year validation
-    if (field === "educationStartYear" || field === "additionalQualificationYear") {
-      const year = parseInt(stringValue, 10);
-      const currentYear = new Date().getFullYear();
-      if (isNaN(year)) {
-        return "Please enter a valid year";
-      }
-      if (year < 1970 || year > currentYear) {
-        return `Year must be between 1970 and ${currentYear}`;
-      }
-    }
-
-    // Course duration validation
-    if (field === "eduCourseDuration") {
-      const duration = parseInt(stringValue, 10);
-      if (isNaN(duration)) {
-        return "Please enter a valid number";
-      }
-      if (duration < 1 || duration > 6) {
-        return "Course duration must be between 1 and 6 years";
-      }
-    }
-
-    // Enhanced grade value validation
-    if (field === "gradeValue") {
-      const gradeType = formData.gradeType;
-      if (!gradeType) {
-        return "Please select grade type first";
-      }
-
-      if (gradeType === "CGPA (out of 10)") {
-        const cgpa = parseFloat(stringValue);
-        if (isNaN(cgpa)) {
-          return "Please enter a valid CGPA";
-        }
-        if (cgpa < 0 || cgpa > 10) {
-          return "CGPA must be between 0 and 10";
-        }
-        // Check decimal places in the original string to handle cases like "9.999"
-        const decimalPart = stringValue.split('.')[1];
-        if (decimalPart && decimalPart.length > 2) {
-          return "CGPA can have maximum 2 decimal places";
-        }
-      } else if (gradeType === "CGPA (out of 4)") {
-        const cgpa = parseFloat(stringValue);
-        if (isNaN(cgpa)) {
-          return "Please enter a valid CGPA";
-        }
-        if (cgpa < 0 || cgpa > 4) {
-          return "CGPA must be between 0 and 4";
-        }
-        // Check decimal places in the original string to handle cases like "3.999"
-        const decimalPart = stringValue.split('.')[1];
-        if (decimalPart && decimalPart.length > 2) {
-          return "CGPA can have maximum 2 decimal places";
-        }
-      } else if (gradeType === "Percentage") {
-        const percentage = parseFloat(stringValue);
-        if (isNaN(percentage)) {
-          return "Please enter a valid percentage";
-        }
-        if (percentage < 0 || percentage > 100) {
-          return "Percentage must be between 0 and 100";
-        }
-        // Check decimal places in the original string to handle cases like "99.999"
-        const decimalPart = stringValue.split('.')[1];
-        if (decimalPart && decimalPart.length > 2) {
-          return "Percentage can have maximum 2 decimal places";
-        }
-      } else if (gradeType === "Grade") {
-        if (!/^[A-F][+-]?$|^[O]$/.test(stringValue.toUpperCase())) {
-          return "Enter valid grade (A+, A, B+, B, C+, C, D+, D, F, O)";
-        }
-      }
-    }
-
-    // Date validation
-    if (field === "dateOfAppointmentInRailway") {
-      const date = new Date(stringValue);
-      const currentDate = new Date();
-      const minDate = new Date('1950-01-01');
-
-      if (isNaN(date.getTime())) {
-        return "Please enter a valid date";
-      }
-      if (date < minDate || date > currentDate) {
-        return "Date must be between 1950 and today";
+      if (
+        formData.gradeType === "Percentage" &&
+        (isNaN(grade) || grade < 0 || grade > 100)
+      ) {
+        return "Percentage must be between 0-100";
       }
     }
 
     return "";
-  }, [formData.gradeType]);
+  };
 
-  const requiredFields = useMemo(() => [
-    "dateOfAppointmentInRailway",
-    "modeOfAppointment",
-    "designation",
-    "unit",
-    "workingUnder",
-    "hrmsId",
-    "pfNoNpsUps",
-    "employeeNumber",
-    "highestQualification",
-    "fieldOfStudy",
-    "institution",
-    "boardType",
-    "educationStartYear",
-    "eduCourseDuration",
-    "modeOfStudy",
-    "gradeType",
-    "gradeValue",
-    "division",
-    "hasAdditionalQualification"
-  ], []);
+  const validateAllFields = () => {
+    const requiredFields = [
+      "dateOfAppointmentInRailway",
+      "modeOfAppointment",
+      "designation",
+      "unit",
+      "highestQualification",
+      "fieldOfStudy",
+      "institution",
+      "gradeType",
+      "gradeValue",
+    ];
 
-  const validateAllFields = useCallback(() => {
-    const newErrors = {};
-
-    // Validate all required fields
+    const validationErrors = {};
     requiredFields.forEach((field) => {
-      const value = formData[field];
-      const error = validateField(field, value);
-      if (error) newErrors[field] = error;
+      const error = validateField(field, formData[field]);
+      if (error) validationErrors[field] = error;
     });
 
-    // Validate conditional fields for "Other" selections
-    if (formData.modeOfAppointment === "Other" && !formData.modeOfAppointmentOther?.trim()) {
-      newErrors.modeOfAppointmentOther = "Please specify the mode of appointment";
-    }
-
-    if (formData.designation === "Other" && !formData.designationOther?.trim()) {
-      newErrors.designationOther = "Please specify the designation";
-    }
-
-    if (formData.unit === "Other" && !formData.unitOther?.trim()) {
-      newErrors.unitOther = "Please specify the unit/division";
-    }
-
-    if (formData.highestQualification === "Other" && !formData.otherQualification?.trim()) {
-      newErrors.otherQualification = "Please specify the qualification";
-    }
-
-    // Validate additional qualification fields
-    if (formData.hasAdditionalQualification === "Yes") {
-      ["additionalQualificationName", "additionalQualificationOrg", "additionalQualificationYear"].forEach((field) => {
-        const error = validateField(field, formData[field]);
-        if (error) newErrors[field] = error;
-      });
-    }
-
-    setErrors(newErrors);
     return {
-      isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
+      isValid: Object.keys(validationErrors).length === 0,
+      errors: validationErrors,
     };
-  }, [formData, requiredFields, validateField]);
+  };
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [validateAllFields, onChange]);
+  }, [formData]);
 
-  // Auto-calculate graduation year
-  useEffect(() => {
-    if (formData.educationStartYear && formData.eduCourseDuration) {
-      const startYear = parseInt(formData.educationStartYear, 10);
-      const duration = parseInt(formData.eduCourseDuration, 10);
-      if (!isNaN(startYear) && !isNaN(duration)) {
-        handleChange("yearOfGraduation", (startYear + duration).toString());
-      }
-    }
-  }, [formData.educationStartYear, formData.eduCourseDuration, handleChange]);
+  const handleChange = (field, value) => onChange(field, value);
 
-  const generateYearOptions = useCallback(
-    () => Array.from({ length: 55 }, (_, i) => (new Date().getFullYear() - i).toString()),
-    []
+  const RequiredLabel = ({ children }) => (
+    <label className="block text-gray-700 font-medium mb-1">
+      {children} <span className="text-red-500">*</span>
+    </label>
   );
-
-  // Memoized options for better performance
-  const qualificationOptions = useMemo(() => [
-    "", "High School", "Intermediate", "Diploma", "Bachelor's Degree", "Master's Degree", "Ph.D", "Other"
-  ], []);
-
-  const boardOptions = useMemo(() => [
-    "", "State Board", "CBSE", "ICSE", "State University", "Central University", "Deemed University", "Private University", "Foreign University", "Other"
-  ], []);
-
-  const durationOptions = useMemo(() => ["", "1", "2", "3", "4", "5", "6"], []);
-  const modeOptions = useMemo(() => ["", "Full-Time", "Part-Time", "Distance Learning", "Online"], []);
-  const gradeTypeOptions = useMemo(() => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)", "Grade"], []);
-  const divisionOptions = useMemo(() => ["", "First Division", "Second Division", "Third Division", "Distinction", "Pass"], []);
-
-  const appointmentModeOptions = useMemo(() => ["", "RRB", "Promotion Through LDCE", "Promotion Through Seniority", "Other"], []);
-
-  const designationOptions = useMemo(() => ["", "ASE", "AJE", "IJE", "RJE", "RCW", "RD", "TS", "LHI", "LHII", "FM", "WT", "DM", "WE", "NDT", "EA", "3DMP", "Other"], []);
-
-  const unitOptions = useMemo(() => ["", "JAT", "FZD", "MB", "LKO", "DLI", "Other"], []);
-
-  const professionalFields = useMemo(() => [
-    { label: "Date of Appointment", field: "dateOfAppointmentInRailway", type: "date" },
-    {
-      label: "Mode of Appointment",
-      field: "modeOfAppointment",
-      type: "select",
-      options: appointmentModeOptions,
-    },
-    formData.modeOfAppointment === "Other" && {
-      label: "Specify Mode",
-      field: "modeOfAppointmentOther",
-    },
-    {
-      label: "Designation",
-      field: "designation",
-      type: "select",
-      options: designationOptions,
-    },
-    formData.designation === "Other" && {
-      label: "Specify Designation",
-      field: "designationOther",
-    },
-    {
-      label: "Unit / Division",
-      field: "unit",
-      type: "select",
-      options: unitOptions,
-    },
-    formData.unit === "Other" && {
-      label: "Specify Unit / Division",
-      field: "unitOther",
-    },
-    { label: "Working Under", field: "workingUnder" },
-    { label: "HRMS ID", field: "hrmsId" },
-    { label: "PF/NPS/UPS No.", field: "pfNoNpsUps" },
-    { label: "Employee Number", field: "employeeNumber" },
-  ], [formData.modeOfAppointment, formData.designation, formData.unit, appointmentModeOptions, designationOptions, unitOptions]);
-
-  const educationFields = useMemo(() => [
-    {
-      label: "Highest Qualification",
-      field: "highestQualification",
-      type: "select",
-      options: qualificationOptions,
-    },
-    formData.highestQualification === "Other" && {
-      label: "Specify Qualification",
-      field: "otherQualification",
-    },
-    { label: "Field of Study/Specialization", field: "fieldOfStudy" },
-    { label: "University/Institution", field: "institution" },
-    {
-      label: "Board/University Type",
-      field: "boardType",
-      type: "select",
-      options: boardOptions,
-    },
-    {
-      label: "Start Year",
-      field: "educationStartYear",
-      type: "select",
-      options: ["", ...generateYearOptions()],
-    },
-    {
-      label: "Course Duration (years)",
-      field: "eduCourseDuration",
-      type: "select",
-      options: durationOptions,
-    },
-    {
-      label: "Year of Graduation",
-      field: "yearOfGraduation",
-      disabled: true,
-      helpText: "Auto-calculated from start year and duration",
-    },
-    {
-      label: "Mode of Study",
-      field: "modeOfStudy",
-      type: "select",
-      options: modeOptions,
-    },
-    {
-      label: "Grade Type",
-      field: "gradeType",
-      type: "select",
-      options: gradeTypeOptions,
-    },
-    {
-      label: "Grade/Percentage/CGPA",
-      field: "gradeValue",
-      helpText: formData.gradeType === "CGPA (out of 10)" ? "Enter CGPA between 0-10" :
-        formData.gradeType === "CGPA (out of 4)" ? "Enter CGPA between 0-4" :
-          formData.gradeType === "Percentage" ? "Enter percentage between 0-100" :
-            formData.gradeType === "Grade" ? "Enter grade (A+, A, B+, B, C+, C, D+, D, F, O)" : ""
-    },
-    {
-      label: "Division/Class",
-      field: "division",
-      type: "select",
-      options: divisionOptions,
-    },
-    {
-      label: "Additional Qualification?",
-      field: "hasAdditionalQualification",
-      type: "select",
-      options: ["", "Yes", "No"],
-    },
-    formData.hasAdditionalQualification === "Yes" && {
-      label: "Certification Name",
-      field: "additionalQualificationName",
-    },
-    formData.hasAdditionalQualification === "Yes" && {
-      label: "Issuing Organization",
-      field: "additionalQualificationOrg",
-    },
-    formData.hasAdditionalQualification === "Yes" && {
-      label: "Year of Completion",
-      field: "additionalQualificationYear",
-      type: "select",
-      options: ["", ...generateYearOptions()],
-    },
-    {
-      label: "Thesis/Project Title (if applicable)",
-      field: "thesisTitle",
-      required: false,
-    },
-  ], [formData.highestQualification, formData.hasAdditionalQualification, formData.gradeType, qualificationOptions, boardOptions, durationOptions, modeOptions, gradeTypeOptions, divisionOptions, generateYearOptions]);
-
-  const renderFields = useCallback((fields) =>
-    fields
-      .filter(Boolean)
-      .map(({ label, field, type = "text", options = [], disabled = false, required = true, helpText }) => (
-        <div key={field}>
-          <label className="block text-gray-700 font-medium mb-1">
-            {label} {required && <span className="text-red-500">*</span>}
-          </label>
-          {type === "select" ? (
-            <select
-              value={formData[field] || ""}
-              onChange={(e) => handleChange(field, e.target.value)}
-              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
-                } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              disabled={disabled}
-            >
-              {options.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt || "Select option"}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={type}
-              value={formData[field] || ""}
-              onChange={(e) => handleChange(field, e.target.value)}
-              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
-                } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              placeholder={`Enter ${label.toLowerCase()}`}
-              disabled={disabled}
-            />
-          )}
-          {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
-          {errors[field] && <p className="text-sm text-red-500 mt-1">{errors[field]}</p>}
-        </div>
-      )), [formData, errors, handleChange]);
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
@@ -405,22 +77,248 @@ const Professional = ({ formData, onChange }) => {
         <div className="h-12 w-12 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full shadow text-lg">
           💼
         </div>
-        <h3 className="text-xl font-semibold text-gray-800">Professional Detail</h3>
+        <h3 className="text-xl font-semibold text-gray-800">
+          Professional Details
+        </h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 mb-10">
-        {renderFields(professionalFields)}
+        <div>
+          <RequiredLabel>Date of Appointment</RequiredLabel>
+          <input
+            type="date"
+            value={formData.dateOfAppointmentInRailway || ""}
+            onChange={(e) =>
+              handleChange("dateOfAppointmentInRailway", e.target.value)
+            }
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          />
+          {errors.dateOfAppointmentInRailway && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.dateOfAppointmentInRailway}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Mode of Appointment</RequiredLabel>
+          <select
+            value={formData.modeOfAppointment || ""}
+            onChange={(e) => handleChange("modeOfAppointment", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select mode</option>
+            <option value="RRB">RRB</option>
+            <option value="Promotion Through LDCE">
+              Promotion Through LDCE
+            </option>
+            <option value="Promotion Through Seniority">
+              Promotion Through Seniority
+            </option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.modeOfAppointment && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.modeOfAppointment}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Designation</RequiredLabel>
+          <select
+            value={formData.designation || ""}
+            onChange={(e) => handleChange("designation", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select designation</option>
+            <option value="ASE">ASE</option>
+            <option value="AJE">AJE</option>
+            <option value="IJE">IJE</option>
+            <option value="RJE">RJE</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.designation && (
+            <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Unit / Division</RequiredLabel>
+          <select
+            value={formData.unit || ""}
+            onChange={(e) => handleChange("unit", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select unit</option>
+            <option value="JAT">JAT</option>
+            <option value="FZD">FZD</option>
+            <option value="MB">MB</option>
+            <option value="LKO">LKO</option>
+            <option value="DLI">DLI</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.unit && (
+            <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Working Under
+          </label>
+          <input
+            type="text"
+            value={formData.workingUnder || ""}
+            onChange={(e) => handleChange("workingUnder", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter working under"
+          />
+          {errors.workingUnder && (
+            <p className="text-sm text-red-500 mt-1">{errors.workingUnder}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            HRMS ID
+          </label>
+          <input
+            type="text"
+            value={formData.hrmsId || ""}
+            onChange={(e) => handleChange("hrmsId", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter HRMS ID"
+          />
+          {errors.hrmsId && (
+            <p className="text-sm text-red-500 mt-1">{errors.hrmsId}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            PF/NPS/UPS No.
+          </label>
+          <input
+            type="text"
+            value={formData.pfNoNpsUps || ""}
+            onChange={(e) => handleChange("pfNoNpsUps", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter PF/NPS/UPS number"
+          />
+          {errors.pfNoNpsUps && (
+            <p className="text-sm text-red-500 mt-1">{errors.pfNoNpsUps}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Employee Number
+          </label>
+          <input
+            type="text"
+            value={formData.employeeNumber || ""}
+            onChange={(e) => handleChange("employeeNumber", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter employee number"
+          />
+          {errors.employeeNumber && (
+            <p className="text-sm text-red-500 mt-1">{errors.employeeNumber}</p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
           🎓
         </div>
-        <h4 className="text-xl font-semibold text-gray-800">Educational Qualifications</h4>
+        <h4 className="text-xl font-semibold text-gray-800">
+          Educational Qualifications
+        </h4>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        {renderFields(educationFields)}
+        <div>
+          <RequiredLabel>Highest Qualification</RequiredLabel>
+          <select
+            value={formData.highestQualification || ""}
+            onChange={(e) =>
+              handleChange("highestQualification", e.target.value)
+            }
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select qualification</option>
+            <option value="Diploma">Diploma</option>
+            <option value="Bachelor's Degree">Bachelor's Degree</option>
+            <option value="Master's Degree">Master's Degree</option>
+            <option value="Ph.D">Ph.D</option>
+          </select>
+          {errors.highestQualification && (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.highestQualification}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Field of Study</RequiredLabel>
+          <input
+            type="text"
+            value={formData.fieldOfStudy || ""}
+            onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter field of study"
+          />
+          {errors.fieldOfStudy && (
+            <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Institution</RequiredLabel>
+          <input
+            type="text"
+            value={formData.institution || ""}
+            onChange={(e) => handleChange("institution", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter institution"
+          />
+          {errors.institution && (
+            <p className="text-sm text-red-500 mt-1">{errors.institution}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Grade Type</RequiredLabel>
+          <select
+            value={formData.gradeType || ""}
+            onChange={(e) => handleChange("gradeType", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            <option value="">Select grade type</option>
+            <option value="Percentage">Percentage</option>
+            <option value="CGPA (out of 10)">CGPA (out of 10)</option>
+            <option value="CGPA (out of 4)">CGPA (out of 4)</option>
+          </select>
+          {errors.gradeType && (
+            <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
+          )}
+        </div>
+
+        <div>
+          <RequiredLabel>Grade Value</RequiredLabel>
+          <input
+            type="number"
+            step="0.01"
+            value={formData.gradeValue || ""}
+            onChange={(e) => handleChange("gradeValue", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder="Enter grade value"
+          />
+          {errors.gradeValue && (
+            <p className="text-sm text-red-500 mt-1">{errors.gradeValue}</p>
+          )}
+        </div>
       </div>
     </div>
   );

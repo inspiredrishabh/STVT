@@ -6,13 +6,27 @@ import { useAuth } from "./auth/AuthContext";
 // Lazy load components
 const Login = lazy(() => import("./auth/Login"));
 const Dashboard = lazy(() => import("./components/Dashboard"));
+
+// Form Components
 const STCMain = lazy(() => import("./STC/form/STCMain"));
+const WTCMain = lazy(() => import("./WTC/form/WtcMain"));
+const NonRailwayMain = lazy(() => import("./NonRailway/form/NonRailwayMain"));
+
+// STC Management Components
 const HomePageSTC = lazy(() => import("./stcManagement/HomePageSTC"));
+const HomePageWTC = lazy(() => import("./WTCManagement/HomePageWTC"));
 const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
-const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
+const ManageCandidate = lazy(() => import("./manage/CandidateManagementPage"));
+const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
+const Letter = lazy(() => import("./WTCManagement/Letter"));
+const LetterBulk = lazy(() => import("./WTCManagement/LetterBulk"));
+const Certificate = lazy(() => import("./WTCManagement/Cerificate"));
+const CertificatePreview = lazy(() => import("./WTCManagement/CertificatePreview"));
+const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
+
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
   const { userRole, hasPermission } = useAuth();
@@ -66,7 +80,7 @@ const Router = () => {
           }
         />
 
-        {/* STC Form Route */}
+        {/* Form Routes */}
         <Route
           path="/stc-form"
           element={
@@ -76,6 +90,25 @@ const Router = () => {
           }
         />
 
+        <Route
+          path="/wtc-form"
+          element={
+            <ProtectedLayout>
+              <WTCMain />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path="/non-railway-form"
+          element={
+            <ProtectedLayout>
+              <NonRailwayMain />
+            </ProtectedLayout>
+          }
+        />
+
+        {/* Candidate Management Route */}
         <Route
           path="/manage-candidate"
           element={
@@ -89,48 +122,59 @@ const Router = () => {
         <Route
           path="/stc-management"
           element={
-            // <ProtectedLayout>
-            <HomePageSTC />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <HomePageSTC />
+            </ProtectedLayout>
           }
         />
 
-        {/* STC Management Components - Only 4 components as per image */}
-        <Route
+        {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
-              <FeedMark />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <FeedMark />
+            // </ProtectedLayout>
           }
         />
 
         <Route
           path="/stc/trainee-profile"
           element={
-            // <ProtectedLayout>
+            <ProtectedLayout>
               <TraineeProfile />
-            // </ProtectedLayout>
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/stc/line-training"
           element={
-            // <ProtectedLayout>
+            <ProtectedLayout>
               <LineTraining />
+            </ProtectedLayout>
+          }
+        />        <Route
+          path="/stc/marksheet"
+          element={
+            // <ProtectedLayout>
+            <Marksheet />
             // </ProtectedLayout>
           }
         />
-
-        <Route
-          path="/stc/marksheet"
+        {/* WTC Management Homepage */}
+        <Route path="/wtc-management"
           element={
-            <ProtectedLayout>
-              <Marksheet />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <HomePageWTC />
+            // </ProtectedLayout>
           }
         />
+        <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
+        <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
+        <Route path="/wtc/letter/bulk" element={<ProtectedLayout><LetterBulk /></ProtectedLayout>} />
+        <Route path="/wtc/certificate" element={<ProtectedLayout><Certificate /></ProtectedLayout>} />
+        <Route path="/wtc/certificate/preview" element={<ProtectedLayout><CertificatePreview /></ProtectedLayout>} />
+        <Route path="/wtc/form" element={<ProtectedLayout><WtcMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
         <Route
@@ -140,7 +184,7 @@ const Router = () => {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </Suspense>
+    </Suspense >
   );
 };
 
