@@ -99,9 +99,9 @@ const Router = () => {
         <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
+            // <ProtectedLayout>
               <FeedMark />
-            </ProtectedLayout>
+            // </ProtectedLayout>
           }
         />
 
@@ -126,9 +126,9 @@ const Router = () => {
         <Route
           path="/stc/marksheet"
           element={
-            <ProtectedLayout>
+            // <ProtectedLayout>
               <Marksheet />
-            </ProtectedLayout>
+            // </ProtectedLayout>
           }
         />
 
