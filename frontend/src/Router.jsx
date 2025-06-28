@@ -13,6 +13,10 @@ const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
 const ManageCandidate = lazy(() => import("./stcManagement/ManageCandidate"));
+const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
+const Letter = lazy(() => import("./WTCManagement/Letter"));
+const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
+
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
   const { userRole, hasPermission } = useAuth();
@@ -109,7 +113,7 @@ const Router = () => {
           path="/stc/trainee-profile"
           element={
             // <ProtectedLayout>
-              <TraineeProfile />
+            <TraineeProfile />
             // </ProtectedLayout>
           }
         />
@@ -118,7 +122,7 @@ const Router = () => {
           path="/stc/line-training"
           element={
             // <ProtectedLayout>
-              <LineTraining />
+            <LineTraining />
             // </ProtectedLayout>
           }
         />
@@ -131,6 +135,10 @@ const Router = () => {
             </ProtectedLayout>
           }
         />
+
+        <Route path="/wtc/tranieeProfile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
+        <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
+        <Route path="/wtc/form" element={<ProtectedLayout><WtcMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
         <Route
