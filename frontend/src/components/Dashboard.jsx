@@ -174,63 +174,6 @@ class DashboardAPI {
             method: 'GET'
         };
     }
-
-    // GET /api/dashboard/trends - Monthly Trends
-    async getMonthlyTrends() {
-        await this.delay();
-
-        const mockData = [
-            {
-                month: 'Jan',
-                stc: { registrations: 45, completions: 38 },
-                wtc: { registrations: 32, completions: 28 },
-                nonRailway: { registrations: 43, completions: 29 },
-                total: { registrations: 120, completions: 95 }
-            },
-            {
-                month: 'Feb',
-                stc: { registrations: 52, completions: 42 },
-                wtc: { registrations: 38, completions: 35 },
-                nonRailway: { registrations: 45, completions: 33 },
-                total: { registrations: 135, completions: 110 }
-            },
-            {
-                month: 'Mar',
-                stc: { registrations: 58, completions: 48 },
-                wtc: { registrations: 42, completions: 38 },
-                nonRailway: { registrations: 50, completions: 39 },
-                total: { registrations: 150, completions: 125 }
-            },
-            {
-                month: 'Apr',
-                stc: { registrations: 55, completions: 52 },
-                wtc: { registrations: 40, completions: 38 },
-                nonRailway: { registrations: 50, completions: 40 },
-                total: { registrations: 145, completions: 130 }
-            },
-            {
-                month: 'May',
-                stc: { registrations: 62, completions: 55 },
-                wtc: { registrations: 45, completions: 42 },
-                nonRailway: { registrations: 53, completions: 43 },
-                total: { registrations: 160, completions: 140 }
-            },
-            {
-                month: 'Jun',
-                stc: { registrations: 68, completions: 60 },
-                wtc: { registrations: 48, completions: 45 },
-                nonRailway: { registrations: 59, completions: 50 },
-                total: { registrations: 175, completions: 155 }
-            }
-        ];
-
-        return {
-            success: true,
-            data: mockData,
-            endpoint: `${this.baseURL}/trends`,
-            method: 'GET'
-        };
-    }
 }
 
 // Simple Chart Components (Since recharts might not be installed)
@@ -344,7 +287,6 @@ function Dashboard() {
     const [distributionData, setDistributionData] = useState([]);
     const [overallStats, setOverallStats] = useState(null);
     const [recentActivities, setRecentActivities] = useState([]);
-    const [monthlyTrends, setMonthlyTrends] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -359,24 +301,21 @@ function Dashboard() {
         setError(null);
 
         try {
-            const [categoriesRes, distributionRes, statsRes, activitiesRes, trendsRes] = await Promise.all([
+            const [categoriesRes, distributionRes, statsRes, activitiesRes] = await Promise.all([
                 dashboardAPI.getCategoriesData(),
                 dashboardAPI.getDistributionData(),
                 dashboardAPI.getOverallStats(),
-                dashboardAPI.getRecentActivities(),
-                dashboardAPI.getMonthlyTrends()
+                dashboardAPI.getRecentActivities()
             ]); if (categoriesRes.success) setCategoriesData(categoriesRes.data);
             if (distributionRes.success) setDistributionData(distributionRes.data);
             if (statsRes.success) setOverallStats(statsRes.data);
             if (activitiesRes.success) setRecentActivities(activitiesRes.data);
-            if (trendsRes.success) setMonthlyTrends(trendsRes.data);
 
             // Backend API Endpoints for implementation:
             // GET /api/dashboard/categories - Returns STC, WTC, Non-Railway categories data for bar chart
             // GET /api/dashboard/distribution - Returns distribution data for pie chart  
             // GET /api/dashboard/stats - Returns overall statistics
             // GET /api/dashboard/activities - Returns recent activities
-            // GET /api/dashboard/trends - Returns monthly trends data
         } catch (err) {
             setError('Failed to load dashboard data');
             console.error('Dashboard data loading error:', err);
@@ -562,97 +501,50 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* Monthly Trends and Recent Activities */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Monthly Trends */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Trends by Category</h3>
-                        <div className="space-y-4">
-                            {monthlyTrends.map((trend, index) => (
-                                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                                    <div className="font-semibold text-gray-800 mb-3 text-center">{trend.month} 2024</div>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-blue-600 font-medium">STC</span>
-                                            <div className="text-sm">
-                                                <span className="text-blue-600">📈 {trend.stc.registrations}</span>
-                                                <span className="text-green-600 ml-2">✅ {trend.stc.completions}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-green-600 font-medium">WTC</span>
-                                            <div className="text-sm">
-                                                <span className="text-blue-600">📈 {trend.wtc.registrations}</span>
-                                                <span className="text-green-600 ml-2">✅ {trend.wtc.completions}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-orange-600 font-medium">Non-Railway</span>
-                                            <div className="text-sm">
-                                                <span className="text-blue-600">📈 {trend.nonRailway.registrations}</span>
-                                                <span className="text-green-600 ml-2">✅ {trend.nonRailway.completions}</span>
-                                            </div>
-                                        </div>
-                                        <div className="border-t pt-2 flex justify-between items-center font-semibold">
-                                            <span className="text-gray-800">Total</span>
-                                            <div className="text-sm">
-                                                <span className="text-blue-600">📈 {trend.total.registrations}</span>
-                                                <span className="text-green-600 ml-2">✅ {trend.total.completions}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                {/* Recent Activities - Full Width */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
+                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                            View All
+                        </button>
                     </div>
-
-                    {/* Recent Activities */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
-                            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                                View All
-                            </button>
-                        </div>
-                        <div className="space-y-3 max-h-80 overflow-y-auto">
-                            {recentActivities.map((activity) => (
-                                <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
-                                    style={{
-                                        borderLeftColor:
-                                            activity.category === 'STC' ? '#2563eb' :
-                                                activity.category === 'WTC' ? '#10b981' :
-                                                    activity.category === 'Non-Railway' ? '#f59e0b' : '#6b7280'
-                                    }}>
-                                    <div className="flex-shrink-0 text-lg">
-                                        {activity.icon}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center space-x-2 mb-1">
-                                            <p className="text-sm font-medium text-gray-900 truncate">
-                                                {activity.activity}
-                                            </p>
-                                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${activity.category === 'STC' ? 'bg-blue-100 text-blue-700' :
-                                                    activity.category === 'WTC' ? 'bg-green-100 text-green-700' :
-                                                        activity.category === 'Non-Railway' ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-gray-100 text-gray-700'
-                                                }`}>
-                                                {activity.category}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-gray-600 truncate">
-                                            {activity.candidate}
-                                        </p>
-                                        <p className="text-xs text-gray-400 mt-1">
-                                            {activity.time}
-                                        </p>
-                                    </div>
+                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                        {recentActivities.map((activity) => (
+                            <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
+                                style={{
+                                    borderLeftColor:
+                                        activity.category === 'STC' ? '#2563eb' :
+                                            activity.category === 'WTC' ? '#10b981' :
+                                                activity.category === 'Non-Railway' ? '#f59e0b' : '#6b7280'
+                                }}>
+                                <div className="flex-shrink-0 text-lg">
+                                    {activity.icon}
                                 </div>
-                            ))}
-                        </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                            {activity.activity}
+                                        </p>
+                                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${activity.category === 'STC' ? 'bg-blue-100 text-blue-700' :
+                                            activity.category === 'WTC' ? 'bg-green-100 text-green-700' :
+                                                activity.category === 'Non-Railway' ? 'bg-orange-100 text-orange-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                            }`}>
+                                            {activity.category}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 truncate">
+                                        {activity.candidate}
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {activity.time}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-
-
             </div>
         </div>
     );
