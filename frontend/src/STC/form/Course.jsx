@@ -2,17 +2,53 @@ import React, { useEffect, useState } from "react";
 
 const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   const [ticketCounter, setTicketCounter] = useState({
-    ASE: 1, AJE: 1, IJE: 1, RJE: 1, RCW: 1, RD: 1,
-    TS: 1, LHI: 1, LHII: 1, FM: 1, WT: 1, DM: 1,
-    WE: 1, NDT: 1, EA: 1, "3DMP": 1
+    ASE: 1,
+    AJE: 1,
+    IJE: 1,
+    RJE: 1,
+    RCW: 1,
+    RD: 1,
+    TS: 1,
+    LHI: 1,
+    LHII: 1,
+    FM: 1,
+    WT: 1,
+    DM: 1,
+    WE: 1,
+    NDT: 1,
+    EA: 1,
+    "3DMP": 1,
   });
 
   const courseModules = {
-    "MSE-C": 52, "MSE-D": 52, "MSE-W": 52, "MJR-C": 52, "MJR-D": 52, "MJR-W": 52,
-    "MJI-C": 52, "MJI-D": 52, "MJ1-W": 52, "MJP-C": 13, "MJP-D": 13, "MJP-W": 13,
-    "ASE": 52, "AJE": 52, "IJE": 52, "RJE": 13, "RCW": 3, "RD": 2, "TS": 1,
-    "LH-I": 1, "LH-II": 1, "FM": 1, "WT": "3 Days", "DM": "3 Days", "WE": "3 Days",
-    "NDT": "4 Days", "EA": "4 Days", "3DMP": "3 Days",
+    "MSE-C": 52,
+    "MSE-D": 52,
+    "MSE-W": 52,
+    "MJR-C": 52,
+    "MJR-D": 52,
+    "MJR-W": 52,
+    "MJI-C": 52,
+    "MJI-D": 52,
+    "MJ1-W": 52,
+    "MJP-C": 13,
+    "MJP-D": 13,
+    "MJP-W": 13,
+    ASE: 52,
+    AJE: 52,
+    IJE: 52,
+    RJE: 13,
+    RCW: 3,
+    RD: 2,
+    TS: 1,
+    "LH-I": 1,
+    "LH-II": 1,
+    FM: 1,
+    WT: "3 Days",
+    DM: "3 Days",
+    WE: "3 Days",
+    NDT: "4 Days",
+    EA: "4 Days",
+    "3DMP": "3 Days",
   };
 
   const RequiredLabel = ({ children }) => (
@@ -26,7 +62,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
   const generateTicketNumber = (designation) => {
     if (!designation || !ticketCounter[designation]) return "";
-    const counter = ticketCounter[designation].toString().padStart(5, '0');
+    const counter = ticketCounter[designation].toString().padStart(5, "0");
     return `${designation}${counter}`;
   };
 
@@ -35,9 +71,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     if (designation && ticketCounter[designation] && !formData.ticketNo) {
       const ticketNumber = generateTicketNumber(designation);
       onChange("ticketNo", ticketNumber);
-      setTicketCounter(prev => ({
+      setTicketCounter((prev) => ({
         ...prev,
-        [designation]: prev[designation] + 1
+        [designation]: prev[designation] + 1,
       }));
     }
   }, [formData.designation]);
@@ -45,7 +81,10 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   useEffect(() => {
     if (courseModules[formData.moduleNo]) {
       const duration = courseModules[formData.moduleNo];
-      onChange("courseDuration", typeof duration === "number" ? `${duration} Weeks` : duration);
+      onChange(
+        "courseDuration",
+        typeof duration === "number" ? `${duration} Weeks` : duration
+      );
     } else if (formData.moduleNo === "") {
       // Clear course duration when no module is selected
       onChange("courseDuration", "");
@@ -86,9 +125,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     if (designation && ticketCounter[designation]) {
       const ticketNumber = generateTicketNumber(designation);
       onChange("ticketNo", ticketNumber);
-      setTicketCounter(prev => ({
+      setTicketCounter((prev) => ({
         ...prev,
-        [designation]: prev[designation] + 1
+        [designation]: prev[designation] + 1,
       }));
     }
   };
@@ -101,7 +140,13 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   };
 
   const validateAllFields = () => {
-    const requiredFields = ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "moduleNo", "courseDuration"];
+    const requiredFields = [
+      "ticketNo",
+      "batch",
+      "dateOfJoiningStcWtcNonRailway",
+      "moduleNo",
+      "courseDuration",
+    ];
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -140,7 +185,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               onChange={(e) => handleTicketChange(e.target.value)}
               className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Auto-generated based on designation"
-              readOnly={!formData.designation || !ticketCounter[formData.designation]}
+              readOnly={
+                !formData.designation || !ticketCounter[formData.designation]
+              }
             />
             {formData.designation && ticketCounter[formData.designation] && (
               <button
@@ -152,7 +199,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               </button>
             )}
           </div>
-          {errors.ticketNo && <p className="text-sm text-red-500 mt-1">{errors.ticketNo}</p>}
+          {errors.ticketNo && (
+            <p className="text-sm text-red-500 mt-1">{errors.ticketNo}</p>
+          )}
         </div>
 
         <div>
@@ -164,7 +213,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           >
             <option value="">Select batch</option>
             {batchOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
           {formData.batch === "Other" && (
@@ -176,7 +227,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
             />
           )}
-          {errors.batch && <p className="text-sm text-red-500 mt-1">{errors.batch}</p>}
+          {errors.batch && (
+            <p className="text-sm text-red-500 mt-1">{errors.batch}</p>
+          )}
         </div>
 
         <div>
@@ -184,11 +237,15 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           <input
             type="date"
             value={formData.dateOfJoiningStcWtcNonRailway || ""}
-            onChange={(e) => onChange("dateOfJoiningStcWtcNonRailway", e.target.value)}
+            onChange={(e) =>
+              onChange("dateOfJoiningStcWtcNonRailway", e.target.value)
+            }
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           />
           {errors.dateOfJoiningStcWtcNonRailway && (
-            <p className="text-sm text-red-500 mt-1">{errors.dateOfJoiningStcWtcNonRailway}</p>
+            <p className="text-sm text-red-500 mt-1">
+              {errors.dateOfJoiningStcWtcNonRailway}
+            </p>
           )}
         </div>
 
@@ -201,7 +258,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           >
             <option value="">Select module</option>
             {moduleOptions.map((key) => (
-              <option key={key} value={key}>{key}</option>
+              <option key={key} value={key}>
+                {key}
+              </option>
             ))}
           </select>
           {formData.moduleNo === "Other" && (
@@ -213,12 +272,15 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
             />
           )}
-          {errors.moduleNo && <p className="text-sm text-red-500 mt-1">{errors.moduleNo}</p>}
+          {errors.moduleNo && (
+            <p className="text-sm text-red-500 mt-1">{errors.moduleNo}</p>
+          )}
         </div>
 
         <div>
           <label className="block text-gray-700 font-medium mb-1">
-            Date of Sparing <span className="text-xs text-gray-500">(Auto-calculated)</span>
+            Date of Sparing{" "}
+            <span className="text-xs text-gray-500">(Auto-calculated)</span>
           </label>
           <input
             type="date"
@@ -237,7 +299,9 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
           />
-          {errors.courseDuration && <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>}
+          {errors.courseDuration && (
+            <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>
+          )}
         </div>
       </div>
     </div>
