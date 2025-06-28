@@ -18,7 +18,14 @@ const FeedMark = lazy(() => import("./stcManagement/FeedMark"));
 const TraineeProfile = lazy(() => import("./stcManagement/TraineeProfile"));
 const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
-const ManageCandidate = lazy(() => import("./STC/manage/CandidateManagementPage"));
+
+
+// Candidate Management Component
+const ManageCandidate = lazy(() => import("./manage/CandidateManagementPage"));
+
+
+
+
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
   const { userRole, hasPermission } = useAuth();
@@ -85,9 +92,9 @@ const Router = () => {
         <Route
           path="/wtc-form"
           element={
-            // <ProtectedLayout>
-            <WTCMain />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <WTCMain />
+            </ProtectedLayout>
           }
         />
 
@@ -104,9 +111,9 @@ const Router = () => {
         <Route
           path="/manage-candidate"
           element={
-            // <ProtectedLayout>
-            <ManageCandidate />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <ManageCandidate />
+            </ProtectedLayout>
           }
         />
 
@@ -114,46 +121,43 @@ const Router = () => {
         <Route
           path="/stc-management"
           element={
-            // <ProtectedLayout>
-            <HomePageSTC />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <HomePageSTC />
+            </ProtectedLayout>
           }
         />
 
-        {/* STC Management Components - Only 4 components as per image */}
-        <Route
+        {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            // <ProtectedLayout>
+            <ProtectedLayout>
               <FeedMark />
-            // </ProtectedLayout>
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/stc/trainee-profile"
           element={
-            // <ProtectedLayout>
-            <TraineeProfile />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <TraineeProfile />
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/stc/line-training"
           element={
-            // <ProtectedLayout>
-            <LineTraining />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <LineTraining />
+            </ProtectedLayout>
           }
-        />
-
-        <Route
+        />        <Route
           path="/stc/marksheet"
           element={
-            // <ProtectedLayout>
+            <ProtectedLayout>
               <Marksheet />
-            // </ProtectedLayout>
+            </ProtectedLayout>
           }
         />
 
