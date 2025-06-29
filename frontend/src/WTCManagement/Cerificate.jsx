@@ -201,34 +201,6 @@ const Certificate = () => {
     html2pdf().set(opt).from(element).save();
   };
 
-  // Generate bulk letters instead of certificates
-  const generateBulkLetters = () => {
-    if (selectedTrainees.length === 0) {
-      alert('Please select at least one trainee');
-      return;
-    }
-
-    // Format the trainee data for the letters URL
-    const traineeDataParam = selectedTrainees.map(id => {
-      const trainee = trainees.find(t => t.id === id);
-      return {
-        id: trainee.id,
-        name: trainee.name,
-        ticketNo: trainee.ticketNo,
-        trade: trainee.designation,
-        from: trainee.dateOfJoiningStcWtcNonRailway,
-        to: trainee.dateOfSparingFromStcWtcNonRailway
-      };
-    });
-
-    // Navigate to the bulk letters page with trainee data
-    navigate('/wtc/letter/bulk', {
-      state: {
-        trainees: traineeDataParam
-      }
-    });
-  };
-
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -291,7 +263,7 @@ const Certificate = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             <Link
-              to="/wtc/home"
+              to="/wtc-management"
               className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
             >
               <ArrowLeft className="w-4 h-4 text-gray-600" />
@@ -452,18 +424,6 @@ const Certificate = () => {
                   >
                     <Award className="w-4 h-4" />
                     <span>Generate Certificates</span>
-                  </button>
-
-                  <button
-                    onClick={generateBulkLetters}
-                    disabled={selectedTrainees.length === 0}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${selectedTrainees.length > 0
-                      ? 'bg-green-600 text-white hover:bg-green-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      } transition-colors`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>Generate Letters</span>
                   </button>
                 </div>
               </div>

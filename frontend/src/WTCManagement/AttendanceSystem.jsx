@@ -435,10 +435,7 @@ const AttendanceSystem = () => {
         <div className="w-full px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link
-                to="/wtc-management"
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
-              >
+              <Link to="/wtc-management" className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group">
                 <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
               </Link>
               <div>

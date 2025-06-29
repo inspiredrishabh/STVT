@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, Search, Edit, Eye, Users, Phone, Mail, MapPin, Calendar, GraduationCap, Award, FileText, Plus, Settings, Hash
+    ArrowLeft, Search, Edit, Eye, Users, Phone, Mail, MapPin, Calendar, GraduationCap, Award, FileText, Plus, Settings, Hash, Download, Printer
 } from 'lucide-react';
 
 const TraineeProfile = () => {
@@ -331,13 +331,13 @@ const TraineeProfile = () => {
                                             <Settings className="w-4 h-4 mr-1" />
                                             Manage
                                         </button>
-                                        <Link
-                                            to={`/wtc/certificate?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`}
+                                        <button
+                                            onClick={() => navigate(`/wtc/certificate/preview?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}&trade=${encodeURIComponent(trainee.designation || trainee.designationOther)}&from=${trainee.dateOfJoiningStcWtcNonRailway}&to=${trainee.dateOfSparingFromStcWtcNonRailway}`)}
                                             className="flex items-center justify-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
                                         >
                                             <FileText className="w-4 h-4 mr-1" />
                                             Certificate
-                                        </Link>
+                                        </button>
                                         <button
                                             onClick={() => handleLetterGeneration(trainee)}
                                             className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"

@@ -558,10 +558,7 @@ const LetterBulk = () => {
         {/* Header with back button and actions */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
-            <Link
-              to="/wtc/certificate"
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
-            >
+            <Link to="/wtc-management" className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200">
               <ArrowLeft className="w-4 h-4 text-gray-600" />
             </Link>
             <h1 className="text-2xl font-bold text-gray-800">
@@ -718,8 +715,8 @@ const LetterBulk = () => {
                   onClick={generateLettersPreview}
                   disabled={selectedTrainees.length === 0}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${selectedTrainees.length > 0
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     } transition-colors`}
                 >
                   <FileText className="w-4 h-4" />
