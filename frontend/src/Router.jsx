@@ -164,9 +164,9 @@ const Router = () => {
         {/* WTC Management Homepage */}
         <Route path="/wtc-management"
           element={
-            // <ProtectedLayout>
-            <HomePageWTC />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <HomePageWTC />
+            </ProtectedLayout>
           }
         />
         <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
