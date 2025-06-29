@@ -156,17 +156,17 @@ const Router = () => {
         />        <Route
           path="/stc/marksheet"
           element={
-            // <ProtectedLayout>
-            <Marksheet />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              < Marksheet />
+            </ProtectedLayout>
           }
         />
         {/* WTC Management Homepage */}
         <Route path="/wtc-management"
           element={
-            <ProtectedLayout>
-              <HomePageWTC />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <HomePageWTC />
+            // </ProtectedLayout>
           }
         />
         <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
