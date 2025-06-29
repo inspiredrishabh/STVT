@@ -1,186 +1,219 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 
-const Personal = ({ formData, onChange, errors = {}, onSubmit }) => {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSubmit) onSubmit(formData); // This allows endpoint integration
+const Personal = ({ formData, onChange, errors = {} }) => {
+  const validateField = useCallback(
+    (fieldName, value) => {
+      const validations = {
+        picture: (v) => {
+          if (!v) return "Picture is required";
+          if (!v.type?.startsWith("image/"))
+            return "Please select a valid image file";
+          if (v.size > 1024 * 1024) return "Image size should be less than 1MB";
+          return "";
+        },
+        name: (v) => validateName(v, "Name"),
+        fatherName: (v) => validateName(v, "Father's name"),
+        motherName: (v) => (v ? validateName(v, "Mother's name", false) : ""),
+        sex: (v) =>
+          !v
+            ? "Gender is required"
+            : !["Male", "Female", "Other"].includes(v)
+            ? "Please select a valid gender"
+            : "",
+        dob: (v) => {
+          if (!v) return "Date of birth is required";
+          const dobDate = new Date(v);
+          const today = new Date();
+          const age = today.getFullYear() - dobDate.getFullYear();
+          if (dobDate > today) return "Date of birth cannot be in the future";
+          if (age < 16) return "Age must be at least 16 years";
+          if (age > 100) return "Please enter a valid date of birth";
+          return "";
+        },
+        category: (v) =>
+          !v
+            ? "Category is required"
+            : !["General", "OBC", "SC", "ST", "EWS"].includes(v)
+            ? "Please select a valid category"
+            : "",
+        pwd: (v) =>
+          !v
+            ? "PWD selection is required"
+            : !["Yes", "No"].includes(v)
+            ? "Please select Yes or No for PWD"
+            : "",
+        typeOfDisability: (v) => {
+          if (formData.pwd === "Yes" && (!v || !v.trim()))
+            return "Type of disability is required when PWD is Yes";
+          if (v && v.trim() && v.trim().length < 3)
+            return "Type of disability must be at least 3 characters long";
+          return "";
+        },
+        nationality: (v) => validateName(v, "Nationality"),
+        maritalStatus: (v) =>
+          v && !["Single", "Married", "Divorced", "Widowed"].includes(v)
+            ? "Please select a valid marital status"
+            : "",
+      };
+
+      return validations[fieldName]?.(value) || "";
+    },
+    [formData.pwd]
+  );
+
+  const validateName = (value, fieldLabel, required = true) => {
+    if (!value || !value.trim()) return required ? `${fieldLabel} is required` : "";
+    if (value.trim().length < 2) return `${fieldLabel} must be at least 2 characters long`;
+    if (!/^[a-zA-Z\s]+$/.test(value.trim())) return `${fieldLabel} should only contain letters and spaces`;
+    return "";
   };
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
-            👤
-          </div>
-          <h3 className="text-xl font-semibold text-gray-800">Personal Detail</h3>
-        </div>
+  const validateAllFields = useCallback(() => {
+    const requiredFields = [
+      "picture",
+      "name",
+      "sex",
+      "fatherName",
+      "dob",
+      "category",
+      "pwd",
+      "nationality",
+    ];
+    const optionalFields = ["motherName", "typeOfDisability", "maritalStatus"];
+    const validationErrors = {};
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-          {/* Picture Upload */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Picture</label>
-            <div>
-              <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
-                <label
-                  htmlFor="pictureUpload"
-                  className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
-                >
-                  Choose File
-                </label>
-                <input
-                  id="pictureUpload"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => onChange("picture", e.target.files[0])}
-                  className="hidden"
-                />
-                <span className="text-gray-500 text-sm truncate">
-                  {formData.picture ? formData.picture.name : "No file chosen"}
-                </span>
-              </div>
-            </div>
+    [...requiredFields, ...optionalFields.filter((field) => formData[field])].forEach(
+      (field) => {
+        const error = validateField(field, formData[field]);
+        if (error) validationErrors[field] = error;
+      }
+    );
 
-          </div>
+    return {
+      isValid: Object.keys(validationErrors).length === 0,
+      errors: validationErrors,
+    };
+  }, [formData, validateField]);
 
-          {/* Name */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Name</label>
-            <input
-              type="text"
-              value={formData.name || ""}
-              onChange={(e) => onChange("name", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter full name"
-            />
-          </div>
+  React.useEffect(() => {
+    onChange.setValidationFunction?.(validateAllFields);
+  }, [validateAllFields, onChange]);
 
-          {/* Gender */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Gender</label>
-            <select
-              value={formData.sex || ""}
-              onChange={(e) => onChange("sex", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+  const formFields = useMemo(
+    () => [
+      { label: "Picture", field: "picture", type: "file", required: true },
+      { label: "Name", field: "name", required: true },
+      {
+        label: "Gender",
+        field: "sex",
+        type: "select",
+        options: ["", "Male", "Female", "Other"],
+        required: true,
+      },
+      { label: "Father's Name", field: "fatherName", required: true },
+      { label: "Mother's Name", field: "motherName" },
+      { label: "Date of Birth", field: "dob", type: "date", required: true },
+      {
+        label: "Category",
+        field: "category",
+        type: "select",
+        options: ["", "General", "OBC", "SC", "ST", "EWS"],
+        required: true,
+      },
+      {
+        label: "PWD (Yes/No)",
+        field: "pwd",
+        type: "select",
+        options: ["", "Yes", "No"],
+        required: true,
+      },
+      ...(formData.pwd === "Yes"
+        ? [{ label: "Type of Disability", field: "typeOfDisability" }]
+        : []),
+      {
+        label: "Nationality",
+        field: "nationality",
+        defaultValue: "Indian",
+        required: true,
+      },
+      {
+        label: "Marital Status",
+        field: "maritalStatus",
+        type: "select",
+        options: ["", "Single", "Married", "Divorced", "Widowed"],
+      },
+    ],
+    [formData.pwd]
+  );
+
+  const renderField = useCallback(
+    ({ label, field, type = "text", options = [], required = false, defaultValue }) => (
+      <div key={field}>
+        <label className="block text-gray-700 font-medium mb-1">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        {type === "file" ? (
+          <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
+            <label
+              htmlFor="pictureUpload"
+              className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
             >
-              <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          {/* Father's Name */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Father's Name</label>
+              Choose File
+            </label>
             <input
-              type="text"
-              value={formData.fatherName || ""}
-              onChange={(e) => onChange("fatherName", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter father's name"
+              id="pictureUpload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => onChange(field, e.target.files[0])}
+              className="hidden"
             />
+            <span className="text-gray-500 text-sm truncate">
+              {formData[field] ? formData[field].name : "No file chosen"}
+            </span>
           </div>
-
-          {/* Mother's Name */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Mother's Name</label>
-            <input
-              type="text"
-              value={formData.motherName || ""}
-              onChange={(e) => onChange("motherName", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter mother's name"
-            />
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Date of Birth</label>
-            <input
-              type="date"
-              value={formData.dob || ""}
-              onChange={(e) => onChange("dob", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Category</label>
-            <select
-              value={formData.category || ""}
-              onChange={(e) => onChange("category", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            >
-              <option value="">Select category</option>
-              <option value="General">General</option>
-              <option value="OBC">OBC</option>
-              <option value="SC">SC</option>
-              <option value="ST">ST</option>
-              <option value="EWS">EWS</option>
-            </select>
-          </div>
-
-          {/* PWD (Yes/No) */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">PWD (Yes/No)</label>
-            <select
-              value={formData.pwd || ""}
-              onChange={(e) => onChange("pwd", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            >
-              <option value="">Select</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-
-          {/* Type of Disability (if applicable) */}
-          {formData.pwd === "Yes" && (
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">Type of Disability</label>
-              <input
-                type="text"
-                value={formData.typeOfDisability || ""}
-                onChange={(e) => onChange("typeOfDisability", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2"
-                placeholder="Specify disability"
-              />
-            </div>
-          )}
-
-          {/* Nationality */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Nationality</label>
-            <input
-              type="text"
-              value={formData.nationality || ""}
-              onChange={(e) => onChange("nationality", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter nationality"
-            />
-          </div>
-
-          {/* Marital Status */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Marital Status</label>
-            <select
-              value={formData.maritalStatus || ""}
-              onChange={(e) => onChange("maritalStatus", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            >
-              <option value="">Select status</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Divorced">Divorced</option>
-              <option value="Widowed">Widowed</option>
-            </select>
-          </div>
-        </div>
+        ) : type === "select" ? (
+          <select
+            value={formData[field] || ""}
+            onChange={(e) => onChange(field, e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          >
+            {options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt || "Select option"}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type={type}
+            value={formData[field] || defaultValue || ""}
+            onChange={(e) => onChange(field, e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            placeholder={`Enter ${label.toLowerCase()}`}
+          />
+        )}
+        {errors[field] && (
+          <span className="text-red-500 text-sm mt-1">{errors[field]}</span>
+        )}
       </div>
-    </form>
+    ),
+    [formData, errors, onChange]
+  );
+
+  return (
+    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+      <div className="flex items-center space-x-3 mb-6">
+        <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
+          👤
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800">Personal Detail</h3>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+        {formFields.map(renderField)}
+      </div>
+    </div>
   );
 };
 
 export default Personal;
+         

@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
+import Professional from "./Professional";
 import Course from "./Course";
 
-const WTCMain = () => {
+const WtcMain = () => {
   const [formData, setFormData] = useState({
-    // Personal
     picture: null,
     name: "",
     sex: "",
@@ -15,17 +15,38 @@ const WTCMain = () => {
     category: "",
     pwd: "",
     typeOfDisability: "",
-    nationality: "",
+    nationality: "INDIAN",
     maritalStatus: "",
-
-    // Contact
     currentAddress: "",
     permanentAddress: "",
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
-
-    // Course
+    dateOfAppointmentInRailway: "",
+    modeOfAppointment: "",
+    designation: "",
+    unit: "",
+    workingUnder: "",
+    hrmsId: "",
+    pfNoNpsUps: "",
+    employeeNumber: "",
+    highestQualification: "",
+    otherQualification: "",
+    fieldOfStudy: "",
+    institution: "",
+    boardType: "",
+    educationStartYear: "",
+    eduCourseDuration: "",
+    yearOfGraduation: "",
+    modeOfStudy: "",
+    gradeType: "",
+    gradeValue: "",
+    division: "",
+    hasAdditionalQualification: "",
+    additionalQualificationName: "",
+    additionalQualificationOrg: "",
+    additionalQualificationYear: "",
+    thesisTitle: "",
     ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -35,64 +56,162 @@ const WTCMain = () => {
   });
 
   const [step, setStep] = useState(0);
-  const steps = ["Personal", "Contact", "Course"];
-  const icons = ["\u{1F464}", "\u{1F4DE}", "\u{1F4C4}"];
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const validationFunctions = useRef({});
 
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const steps = useMemo(
+    () => ["Personal", "Contact", "Professional", "Course"],
+    []
+  );
+  const icons = useMemo(() => ["👤", "📞", "💼", "📄"], []);
 
-  const requiredFields = {
-    0: ["name", "sex", "fatherName", "motherName", "dob", "category", "nationality"],
-    1: ["currentAddress", "permanentAddress", "phoneNumber", "emergencyContactNumber", "email"],
-    2: ["ticketNo", "batch", "dateOfJoiningStcWtcNonRailway", "dateOfSparing", "moduleNo", "courseDuration"]
-  };
+  const handleChange = useCallback(
+    (field, value) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      if (errors[field]) {
+        setErrors((prev) => {
+          const { [field]: removed, ...rest } = prev;
+          return rest;
+        });
+      }
+    },
+    [errors]
+  );
 
-  const isStepValid = () => {
-    return requiredFields[step].every((field) => formData[field]?.toString().trim() !== "");
-  };
+  const createChangeHandler = useCallback(
+    (stepKey) => {
+      const handler = (field, value) => handleChange(field, value);
+      handler.setValidationFunction = (validationFn) => {
+        validationFunctions.current[stepKey] = validationFn;
+      };
+      handler.updateErrors = setErrors;
+      return handler;
+    },
+    [handleChange]
+  );
 
-  const handleNext = () => {
+  const changeHandlers = useMemo(
+    () => ({
+      personal: createChangeHandler("personal"),
+      contact: createChangeHandler("contact"),
+      professional: createChangeHandler("professional"),
+      course: createChangeHandler("course"),
+    }),
+    [createChangeHandler]
+  );
+
+  const isStepValid = useCallback(() => {
+    const stepKeys = ["personal", "contact", "professional", "course"];
+    const currentKey = stepKeys[step];
+    const validationFn = validationFunctions.current[currentKey];
+
+    if (validationFn) {
+      const validation = validationFn();
+      if (!validation.isValid) {
+        setErrors(validation.errors);
+        return false;
+      }
+      setErrors({});
+      return true;
+    }
+    return true;
+  }, [step]);
+
+  const handleNext = useCallback(() => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before proceeding.");
+      alert("Please correct the validation errors before proceeding.");
       return;
     }
     if (step < steps.length - 1) setStep(step + 1);
-  };
+  }, [isStepValid, step, steps.length]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step > 0) setStep(step - 1);
-  };
+  }, [step]);
 
-  const handleSubmit = () => {
+  const submitToAPI = useCallback(async (data) => {
+    setIsSubmitting(true);
+    try {
+      const formDataToSend = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          formDataToSend.append(key, value);
+        }
+      });
+
+      const response = await fetch("http://localhost:5000/api/wtc/submit", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("API submission error:", error);
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error(
+          "Cannot connect to server. Please ensure the backend is running on port 5000"
+        );
+      }
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     if (!isStepValid()) {
-      alert("Please fill in all required fields before submitting.");
+      alert("Please correct all validation errors before submitting.");
       return;
     }
-    console.log("Final Submitted Data:", formData);
-    alert("All details saved successfully.");
-  };
 
-  const renderForm = () => {
-    switch (step) {
-      case 0:
-        return <Personal formData={formData} onChange={handleChange} />;
-      case 1:
-        return <Contact formData={formData} onChange={handleChange} />;
-      case 2:
-        return <Course formData={formData} onChange={handleChange} />;
-      default:
-        return null;
+    try {
+      const result = await submitToAPI(formData);
+      console.log("Submission successful:", result);
+      alert(
+        `Registration completed successfully! Registration ID: ${result.registrationId}`
+      );
+
+      // Optional: Reset form after successful submission
+      // setFormData(initialFormData);
+      // setStep(0);
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert(`Failed to submit registration: ${error.message}`);
     }
-  };
+  }, [isStepValid, submitToAPI, formData]);
+
+  const renderForm = useCallback(() => {
+    const formComponents = [Personal, Contact, Professional, Course];
+    const Component = formComponents[step];
+    const handler = Object.values(changeHandlers)[step];
+
+    return <Component formData={formData} onChange={handler} errors={errors} />;
+  }, [step, formData, errors, changeHandlers]);
 
   return (
     <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      {/* Page Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          WTC Candidate Registration
+        </h1>
+        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+      </div>
+
+      {/* Step Navigation Bar */}
       <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
             <div
-              className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold ${step === index
+              className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
+              ${step === index
                   ? "bg-orange-500"
                   : step > index
                     ? "bg-green-500"
@@ -111,21 +230,18 @@ const WTCMain = () => {
         ))}
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          step === steps.length - 1 ? handleSubmit() : handleNext();
-        }}
-        className="space-y-8"
-      >
+      {/* Form */}
+      <div className="space-y-8">
         {renderForm()}
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between pt-8 mt-8 border-t border-gray-100">
           {step > 0 ? (
             <button
               type="button"
               onClick={handleBack}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300"
+              disabled={isSubmitting}
             >
               ← Back
             </button>
@@ -134,15 +250,24 @@ const WTCMain = () => {
           )}
 
           <button
-            type="submit"
-            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 focus:outline-none focus:ring-4 focus:ring-pink-200 transition-all duration-200 shadow-md"
+            type="button"
+            onClick={step === steps.length - 1 ? handleSubmit : handleNext}
+            disabled={isSubmitting}
+            className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-pink-500 hover:bg-pink-700"
+              } text-white`}
           >
-            {step === steps.length - 1 ? "Save All Details" : "Save and Next →"}
+            {isSubmitting
+              ? "Submitting..."
+              : step === steps.length - 1
+                ? "Submit Registration"
+                : "Save and Next →"}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
 
-export default WTCMain;
+export default WtcMain;
