@@ -6,6 +6,7 @@ import {
   FileText,
   ArrowLeft,
   Settings,
+  UserCheck,
 } from "lucide-react";
 
 const HomePageWTC = () => {
@@ -19,6 +20,16 @@ const HomePageWTC = () => {
       color: "bg-green-500 hover:bg-green-600",
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
+    },
+    {
+      id: "attendance-system",
+      title: "Attendance System",
+      description: "Mark and track trainee attendance",
+      icon: UserCheck,
+      path: "/wtc/attendance",
+      color: "bg-blue-500 hover:bg-blue-600",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
     },
     {
       id: "certificate",
@@ -95,7 +106,7 @@ const HomePageWTC = () => {
       {/* Main Content */}
       <div className="w-full px-8 py-12">
         {/* Management Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {managementOptions.map((option) => {
             const IconComponent = option.icon;
             return (
@@ -137,7 +148,7 @@ const HomePageWTC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Quick Overview
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center p-4 bg-blue-50 rounded-xl">
               <div className="text-3xl font-bold text-blue-600 mb-2">25</div>
               <div className="text-gray-600">Active Trainees</div>
@@ -149,6 +160,10 @@ const HomePageWTC = () => {
             <div className="text-center p-4 bg-purple-50 rounded-xl">
               <div className="text-3xl font-bold text-purple-600 mb-2">12</div>
               <div className="text-gray-600">Completed This Month</div>
+            </div>
+            <div className="text-center p-4 bg-orange-50 rounded-xl">
+              <div className="text-3xl font-bold text-orange-600 mb-2">92%</div>
+              <div className="text-gray-600">Average Attendance</div>
             </div>
           </div>
         </div>
