@@ -169,6 +169,10 @@ const Navbar = () => {
                         <Settings className="w-4 h-4 mr-2" />
                         STC Management System
                     </Link>
+                    <Link to="/wtc-management" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:bg-blue-50 rounded">
+                        <Settings className="w-4 h-4 mr-2" />
+                        WTC Management System
+                    </Link>
                 </div>
             </div>
         </nav >
