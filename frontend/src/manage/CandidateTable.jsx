@@ -216,20 +216,11 @@ const EditableCandidateRow = ({
     </td>
     <td className="px-6 py-4">
       <div className="space-y-2">
-        <select
-          value={editFormData.stream || ''}
-          onChange={(e) => onInputChange('stream', e.target.value)}
-          className="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1"
-        >
-          <option value="">Select Stream</option>
-          <option value="Railway">Railway</option>
-          <option value="Non Railway">Non Railway</option>
-        </select>
         <input
           type="text"
           value={editFormData.batch || ''}
           onChange={(e) => onInputChange('batch', e.target.value)}
-          className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1"
+          className="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1"
           placeholder="Batch"
         />
       </div>
@@ -261,7 +252,17 @@ const EditableCandidateRow = ({
         </select>
         <select
           value={editFormData.type || ''}
-          onChange={(e) => onInputChange('type', e.target.value)}
+          onChange={(e) => {
+            // Set both type and category based on selection
+            const type = e.target.value;
+            onInputChange('type', type);
+            // Set category based on type
+            if (type === 'STC' || type === 'WTC') {
+              onInputChange('category', 'Railway');
+            } else if (type === 'Non Railway') {
+              onInputChange('category', 'Non Railway');
+            }
+          }}
           className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1"
         >
           <option value="">Select Type</option>
