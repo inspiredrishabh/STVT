@@ -494,9 +494,7 @@ const CandidateManagementPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
-  const [filterStream, setFilterStream] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All"); // Railway/Non Railway filter
-  const [filterType, setFilterType] = useState("All"); // STC/WTC/Non Railway filter
+  const [selectedFilters, setSelectedFilters] = useState(["STC", "WTC", "Non Railway"]);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidateId: null, candidateName: "" });
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
@@ -588,26 +586,25 @@ const CandidateManagementPage = () => {
   }, []);
 
   const activeCandidates = useMemo(() => {
-    let filtered = candidates;
-
-    // Filter by category (Railway/Non Railway)
-    if (filterCategory !== "All") {
-      filtered = filtered.filter(c => c.category === filterCategory);
+    // If no filters are selected, return nothing
+    if (selectedFilters.length === 0) {
+      return [];
     }
 
-    // Filter by type (STC/WTC/Non Railway)
-    if (filterType !== "All") {
-      if (filterType === "All Railway") {
-        filtered = filtered.filter(c => c.category === "Railway");
-      } else if (filterType === "Non Railway") {
-        filtered = filtered.filter(c => c.category === "Non Railway");
-      } else {
-        filtered = filtered.filter(c => c.type === filterType);
+    // Filter candidates based on selected filter types
+    return candidates.filter(candidate => {
+      if (selectedFilters.includes('STC') && candidate.type === 'STC') {
+        return true;
       }
-    }
-
-    return filtered;
-  }, [candidates, filterCategory, filterType]);
+      if (selectedFilters.includes('WTC') && candidate.type === 'WTC') {
+        return true;
+      }
+      if (selectedFilters.includes('Non Railway') && candidate.type === 'Non Railway') {
+        return true;
+      }
+      return false;
+    });
+  }, [candidates, selectedFilters]);
 
   const filteredCandidates = useMemo(() => activeCandidates.filter(candidate => {
     const searchLower = searchTerm.toLowerCase();
@@ -616,10 +613,9 @@ const CandidateManagementPage = () => {
       candidate.ticketNumber?.toLowerCase().includes(searchLower) ||
       candidate.serialNo?.toString().includes(searchTerm);
     const matchesBatch = !filterBatch || candidate.batch === filterBatch;
-    const matchesStream = !filterStream || candidate.stream === filterStream;
 
-    return matchesSearch && matchesBatch && matchesStream;
-  }), [activeCandidates, searchTerm, filterBatch, filterStream]);
+    return matchesSearch && matchesBatch;
+  }), [activeCandidates, searchTerm, filterBatch]);
 
   // Handle inline editing update
   const handleInlineUpdate = async (candidateId, updatedData) => {
@@ -633,12 +629,6 @@ const CandidateManagementPage = () => {
   // Handler to open the form for editing a specific candidate
   const handleEdit = (candidate) => {
     setCandidateToEdit(candidate);
-    setView('form');
-  };
-
-  // Handler to open the form for adding a new candidate
-  const handleAddNew = () => {
-    setCandidateToEdit(null); // Ensure we're not editing
     setView('form');
   };
 
@@ -678,11 +668,8 @@ const CandidateManagementPage = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setFilterBatch("");
-    setFilterStream("");
-    setFilterCategory("All");
-    setFilterType("All");
+    setSelectedFilters(["STC", "WTC", "Non Railway"]); // Reset to all filters selected
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-8xl mx-auto space-y-8">
@@ -693,12 +680,9 @@ const CandidateManagementPage = () => {
         )}
 
         <PageHeader
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          filterType={filterType}
-          setFilterType={setFilterType}
+          selectedFilters={selectedFilters}
+          setSelectedFilters={setSelectedFilters}
           isListView={view === 'list'}
-          dropdownData={dropdownData}
         />
 
         {loading ? (
@@ -711,8 +695,9 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-3 space-y-6">
                 <StatsCards
                   candidates={activeCandidates}
-                  filterCategory={filterCategory}
-                  filterType={filterType}
+                  filterType={selectedFilters.length === 1 ? selectedFilters[0] : "All"}
+                  filterCategory={selectedFilters.includes("Non Railway") && !selectedFilters.includes("STC") && !selectedFilters.includes("WTC") ? "Non Railway" :
+                    (!selectedFilters.includes("Non Railway") && (selectedFilters.includes("STC") || selectedFilters.includes("WTC"))) ? "Railway" : "All"}
                   mockAPI={mockAPI}
                 />
                 <SearchFilters
@@ -720,12 +705,6 @@ const CandidateManagementPage = () => {
                   setSearchTerm={setSearchTerm}
                   filterBatch={filterBatch}
                   setFilterBatch={setFilterBatch}
-                  filterStream={filterStream}
-                  setFilterStream={setFilterStream}
-                  filterCategory={filterCategory}
-                  setFilterCategory={setFilterCategory}
-                  filterType={filterType}
-                  setFilterType={setFilterType}
                   dropdownData={dropdownData}
                   onClearFilters={clearFilters}
                   mockAPI={mockAPI}
@@ -741,7 +720,6 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-1">
                 <ActivityPanel
                   candidates={activeCandidates}
-                  onAddNew={handleAddNew}
                   mockAPI={mockAPI}
                 />
               </div>

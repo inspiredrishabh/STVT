@@ -3,12 +3,12 @@ import { Search, Filter, X } from 'lucide-react';
 
 const SearchFilters = ({
   searchTerm, setSearchTerm, filterBatch, setFilterBatch,
-  filterStream, setFilterStream, dropdownData, onClearFilters, mockAPI
+  dropdownData, onClearFilters, mockAPI
 }) => {
   const [loading, setLoading] = useState(false);
   const [dynamicDropdownData, setDynamicDropdownData] = useState(null);
 
-  const hasActiveFilters = searchTerm || filterBatch || filterStream;
+  const hasActiveFilters = searchTerm || filterBatch;
 
   // Fetch fresh dropdown data when component mounts or when data changes
   useEffect(() => {
@@ -71,19 +71,13 @@ const SearchFilters = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SearchInput value={searchTerm} onChange={setSearchTerm} />
         <FilterSelect
           value={filterBatch}
           onChange={setFilterBatch}
           options={currentDropdownData.batches}
           placeholder="All Batches"
-        />
-        <FilterSelect
-          value={filterStream}
-          onChange={setFilterStream}
-          options={currentDropdownData.streams}
-          placeholder="All Streams"
         />
       </div>
     </div>
