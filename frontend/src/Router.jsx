@@ -153,7 +153,10 @@ const Router = () => {
               <LineTraining />
             </ProtectedLayout>
           }
-        />        <Route
+        />
+
+
+        <Route
           path="/stc/marksheet"
           element={
             <ProtectedLayout>
@@ -161,6 +164,7 @@ const Router = () => {
             </ProtectedLayout>
           }
         />
+
         {/* WTC Management Homepage */}
         <Route path="/wtc-management"
           element={

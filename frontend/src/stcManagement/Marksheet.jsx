@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Search, FileText, Download, Printer, ArrowLeft, GraduationCap, Award, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
+import railwayLogo from '../assets/rail.png';
 
 // Course structure definition (same as FeedMark)
 const courseStructure = {
@@ -428,6 +430,18 @@ const marksheetAPI = {
     return failedSubjects;
   },
 
+  // Backend Endpoint: POST /api/marksheet/:ticketNumber/generate-pdf
+  generateMarksheetPDF: async (ticketNumber, sessionWise = false) => {
+    await marksheetAPI.delay(1000);
+    console.log('Generating PDF marksheet for:', ticketNumber, 'Session-wise:', sessionWise);
+    return {
+      success: true,
+      message: 'PDF marksheet generated successfully',
+      downloadUrl: `/api/marksheet/download/${ticketNumber}.pdf?sessionWise=${sessionWise}`,
+      fileName: `Marksheet_${ticketNumber}_${sessionWise ? 'Sessional' : 'Complete'}.pdf`
+    };
+  },
+
   // Backend Endpoint: POST /api/marksheet/:ticketNumber/generate
   generateMarksheet: async (ticketNumber, sessionWise = false) => {
     await marksheetAPI.delay(1200);
@@ -437,10 +451,68 @@ const marksheetAPI = {
       message: 'Marksheet generated successfully',
       downloadUrl: `/api/marksheet/download/${ticketNumber}?sessionWise=${sessionWise}`
     };
-  }
+  },
+
+  // Backend Endpoint: POST /api/marksheet/bulk-generate
+  generateBulkMarksheets: async (candidateIds, sessionWise = false) => {
+    await marksheetAPI.delay(2000);
+    console.log('Generating bulk marksheets for:', candidateIds, 'Session-wise:', sessionWise);
+    return {
+      success: true,
+      message: `Bulk marksheets generated for ${candidateIds.length} candidates`,
+      downloadUrl: `/api/marksheet/bulk-download?ids=${candidateIds.join(',')}&sessionWise=${sessionWise}`,
+      generatedCount: candidateIds.length
+    };
+  },
+
+  // Backend Endpoint: GET /api/marksheet/batch/:batchName
+  getBatchMarksheets: async (batchName) => {
+    await marksheetAPI.delay(800);
+    const batchCandidates = marksheetAPI.candidatesData.filter(c => c.batch === batchName);
+    return batchCandidates.map(candidate => ({
+      ...candidate,
+      summary: {
+        totalMarks: 850,
+        maxMarks: 1000,
+        percentage: 85.0,
+        status: 'PASS'
+      }
+    }));
+  },
+
+  // Backend Endpoint: POST /api/marksheet/validate
+  validateMarksheetData: async (ticketNumber) => {
+    await marksheetAPI.delay(500);
+    const candidate = marksheetAPI.candidatesData.find(c => c.ticketNumber === ticketNumber);
+    if (!candidate) {
+      return { valid: false, errors: ['Candidate not found'] };
+    }
+
+    const marks = await marksheetAPI.getMarksheetData(ticketNumber);
+    const errors = [];
+
+    // Validate course structure
+    const structure = courseStructure[candidate.courseCode];
+    if (!structure) {
+      errors.push('Invalid course code');
+    }
+
+    // Validate marks data
+    if (Object.keys(marks).length === 0) {
+      errors.push('No marks data available');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      candidate,
+      hasCompleteData: Object.keys(marks).length > 0
+    };
+  },
 };
 
 const Marksheet = () => {
+  // State management - optimized
   const [searchMethod, setSearchMethod] = useState('ticket');
   const [ticketNumber, setTicketNumber] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState('');
@@ -455,14 +527,8 @@ const Marksheet = () => {
   const [selectedSession, setSelectedSession] = useState('all');
   const marksheetRef = useRef();
 
-  // Load candidates for dropdown
-  useEffect(() => {
-    if (searchMethod === 'dropdown') {
-      loadCandidates();
-    }
-  }, [searchMethod]);
-
-  const loadCandidates = async () => {
+  // Optimized handlers with useCallback
+  const loadCandidates = useCallback(async () => {
     setLoading(true);
     try {
       const candidatesList = await marksheetAPI.getCandidates();
@@ -472,13 +538,19 @@ const Marksheet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadCandidateData = async (candidate) => {
+  const loadCandidateData = useCallback(async (candidate) => {
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
+      // Validate candidate first
+      const validation = await marksheetAPI.validateMarksheetData(candidate.ticketNumber);
+      if (!validation.valid) {
+        throw new Error(validation.errors.join(', '));
+      }
+
       setCandidateData(candidate);
 
       // Load marksheet data
@@ -498,9 +570,26 @@ const Marksheet = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSearchCandidate = async () => {
+  const resetForm = useCallback(() => {
+    setTicketNumber('');
+    setSelectedCandidate('');
+    setCandidateData(null);
+    setMarksheetData({});
+    setFailedSubjects([]);
+    setMessage({ type: '', text: '' });
+    setSelectedSession('all');
+  }, []);
+
+  // Load candidates for dropdown
+  useEffect(() => {
+    if (searchMethod === 'dropdown') {
+      loadCandidates();
+    }
+  }, [searchMethod, loadCandidates]);
+
+  const handleSearchCandidate = useCallback(async () => {
     if (!ticketNumber.trim()) {
       setMessage({ type: 'error', text: 'Please enter a ticket number' });
       return;
@@ -515,9 +604,9 @@ const Marksheet = () => {
       setMarksheetData({});
       setFailedSubjects([]);
     }
-  };
+  }, [ticketNumber, loadCandidateData]);
 
-  const handleCandidateSelect = async (candidateId) => {
+  const handleCandidateSelect = useCallback(async (candidateId) => {
     if (!candidateId) {
       setCandidateData(null);
       setMarksheetData({});
@@ -530,9 +619,9 @@ const Marksheet = () => {
       setTicketNumber(candidate.ticketNumber);
       await loadCandidateData(candidate);
     }
-  };
+  }, [candidates, loadCandidateData]);
 
-  const handleGenerateMarksheet = async (sessionWise = false) => {
+  const handleGenerateMarksheet = useCallback(async (sessionWise = false) => {
     if (!candidateData) {
       setMessage({ type: 'error', text: 'No candidate selected' });
       return;
@@ -549,9 +638,9 @@ const Marksheet = () => {
     } finally {
       setGenerating(false);
     }
-  };
+  }, [candidateData]);
 
-  const handlePrintMarksheet = () => {
+  const handlePrintMarksheet = useCallback(() => {
     if (marksheetRef.current) {
       const printContent = marksheetRef.current;
       const printWindow = window.open('', '_blank');
@@ -560,14 +649,139 @@ const Marksheet = () => {
           <head>
             <title>Marksheet - ${candidateData?.name}</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-              th, td { border: 1px solid #333; padding: 8px; text-align: center; }
-              th { background-color: #f5f5f5; }
-              .header { text-align: center; margin-bottom: 30px; }
-              .candidate-info { margin: 20px 0; }
-              .failed-subjects { color: red; font-weight: bold; }
-              @media print { body { margin: 0; } }
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 15px; 
+                background: white;
+                color: black;
+                font-size: 12px;
+                line-height: 1.3;
+              }
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin: 8px 0; 
+              }
+              th, td { 
+                border: 1px solid #000; 
+                padding: 4px 6px; 
+                text-align: center; 
+                font-size: 11px; 
+                line-height: 1.2;
+              }
+              th { 
+                background-color: #f0f0f0; 
+                font-weight: bold; 
+              }
+              .header-section { 
+                text-align: center; 
+                margin-bottom: 15px; 
+                border-bottom: 2px solid #666;
+                padding-bottom: 10px;
+              }
+              .candidate-info { 
+                margin: 12px 0; 
+              }
+              .candidate-info table { 
+                border: none; 
+              }
+              .candidate-info td { 
+                border: none; 
+                text-align: left; 
+                padding: 2px 6px; 
+                font-size: 12px;
+              }
+              .summary-section { 
+                margin: 15px 0; 
+                border: 2px solid #ccc;
+                background: #f8f8f8;
+              }
+              .footer-section { 
+                margin-top: 25px; 
+                border-top: 2px solid #666;
+                padding-top: 15px;
+              }
+              .logo-container { 
+                width: 70px; 
+                height: 70px; 
+                border: 2px solid #000; 
+                display: inline-block;
+                vertical-align: top;
+                margin-right: 15px;
+                background: white;
+                text-align: center;
+                line-height: 70px;
+              }
+              .logo-container img {
+                width: 60px;
+                height: 60px;
+                object-fit: contain;
+                vertical-align: middle;
+                line-height: normal;
+              }
+              .signature-line {
+                border-top: 2px solid #000;
+                width: 120px;
+                margin: 0 auto;
+                margin-top: 40px;
+              }
+              .railway-header {
+                display: flex;
+                align-items: flex-start;
+                gap: 15px;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #666;
+                padding-bottom: 15px;
+              }
+              .header-text {
+                flex: 1;
+                text-align: center;
+              }
+              .header-text h1 {
+                font-size: 20px;
+                font-weight: bold;
+                margin: 0 0 5px 0;
+              }
+              .header-text h2 {
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 5px 0;
+              }
+              .header-text h3 {
+                font-size: 18px;
+                font-weight: bold;
+                margin: 10px 0 5px 0;
+              }
+              .header-text h4 {
+                font-size: 14px;
+                font-weight: 600;
+                margin: 5px 0 0 0;
+                color: #666;
+              }
+              @media print { 
+                body { 
+                  margin: 0; 
+                  padding: 8px; 
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+                }
+                .no-print { 
+                  display: none; 
+                }
+                table {
+                  page-break-inside: avoid;
+                }
+                tr {
+                  page-break-inside: avoid;
+                }
+                .railway-header {
+                  page-break-after: avoid;
+                }
+                .logo-container {
+                  page-break-inside: avoid;
+                }
+              }
             </style>
           </head>
           <body>
@@ -576,22 +790,73 @@ const Marksheet = () => {
         </html>
       `);
       printWindow.document.close();
-      printWindow.print();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 250);
+    }
+  }, [candidateData]);
+
+  const handleExportPDF = async () => {
+    if (!marksheetRef.current || !candidateData) {
+      setMessage({ type: 'error', text: 'No marksheet data available for export' });
+      return;
+    }
+
+    setGenerating(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      // Call backend API first
+      const result = await marksheetAPI.generateMarksheetPDF(
+        candidateData.ticketNumber,
+        viewMode === 'sessionWise'
+      );
+
+      // Generate PDF using html2pdf with optimized settings
+      const element = marksheetRef.current;
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: result.fileName || `Marksheet_${candidateData.ticketNumber}_${viewMode === 'sessionWise' ? 'Sessional' : 'Complete'}.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 0.98
+        },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          imageTimeout: 15000,
+          removeContainer: true
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          putTotalPages: true
+        },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy'],
+          before: '.page-break',
+          after: '.page-break-after'
+        }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      setMessage({ type: 'success', text: 'PDF exported successfully!' });
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+      setMessage({ type: 'error', text: 'Failed to export PDF. Please try again.' });
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const resetForm = () => {
-    setTicketNumber('');
-    setSelectedCandidate('');
-    setCandidateData(null);
-    setMarksheetData({});
-    setFailedSubjects([]);
-    setMessage({ type: '', text: '' });
-    setSelectedSession('all');
-  };
-
-  // Helper functions
-  const calculateTotalMarks = () => {
+  // Helper functions with useMemo for optimization
+  const calculateTotalMarks = useMemo(() => {
     if (!marksheetData || !candidateData) return { total: 0, maxTotal: 0 };
 
     const structure = courseStructure[candidateData.courseCode];
@@ -609,14 +874,21 @@ const Marksheet = () => {
     });
 
     return { total, maxTotal };
-  };
+  }, [marksheetData, candidateData, selectedSession]);
 
-  const getPassingMarks = (maxMarks) => Math.ceil(maxMarks * 0.6);
+  const getPassingMarks = useCallback((maxMarks) => Math.ceil(maxMarks * 0.6), []);
 
-  // Computed values
-  const currentCourseStructure = candidateData ? courseStructure[candidateData.courseCode] : null;
-  const { total, maxTotal } = calculateTotalMarks();
-  const percentage = maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(2) : 0;
+  // Computed values with useMemo
+  const currentCourseStructure = useMemo(() =>
+    candidateData ? courseStructure[candidateData.courseCode] : null,
+    [candidateData]
+  );
+
+  const { total, maxTotal } = calculateTotalMarks;
+  const percentage = useMemo(() =>
+    maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(2) : 0,
+    [total, maxTotal]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -805,6 +1077,18 @@ const Marksheet = () => {
                     Print
                   </button>
                   <button
+                    onClick={handleExportPDF}
+                    disabled={generating || !candidateData}
+                    className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {generating ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5" />
+                    )}
+                    {generating ? 'Exporting...' : 'Export PDF'}
+                  </button>
+                  <button
                     onClick={() => handleGenerateMarksheet(viewMode === 'sessionWise')}
                     disabled={generating}
                     className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -812,9 +1096,9 @@ const Marksheet = () => {
                     {generating ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Download className="w-5 h-5" />
+                      <Award className="w-5 h-5" />
                     )}
-                    {generating ? 'Generating...' : 'Generate PDF'}
+                    {generating ? 'Generating...' : 'Generate'}
                   </button>
                 </div>
               </div>
@@ -830,8 +1114,8 @@ const Marksheet = () => {
                     onChange={(e) => setViewMode(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   >
-                    <option value="complete">Complete Marksheet</option>
-                    <option value="sessionWise">Session-wise View</option>
+                    <option value="complete">Complete Marksheet (Annual)</option>
+                    <option value="sessionWise">Sessional Marksheet</option>
                   </select>
                 </div>
 
@@ -866,70 +1150,79 @@ const Marksheet = () => {
 
           {/* Marksheet Display */}
           {candidateData && (
-            <div ref={marksheetRef} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">
-              {/* Header */}
-              <div className="text-center mb-8 border-b border-gray-300 pb-6">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Award className="w-8 h-8 text-white" />
+            <div ref={marksheetRef} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 mb-8">              {/* Header - Exact format from image */}
+              <div className="border-b-2 border-gray-400 pb-6 mb-8">
+                <div className="flex items-start gap-6">
+                  {/* Railway Logo */}
+                  <div className="w-20 h-20 border-2 border-black bg-white flex items-center justify-center flex-shrink-0 p-1">
+                    <img
+                      src={railwayLogo}
+                      alt="Indian Railways Logo"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="text-center hidden">
+                      <div className="text-xs font-bold">INDIAN</div>
+                      <div className="text-xs font-bold">RAILWAYS</div>
+                      <div className="text-xs font-bold">LOGO</div>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">INDIAN RAILWAYS</h1>
-                    <p className="text-lg text-gray-600">ZONAL RAILWAY TRAINING INSTITUTE</p>
-                    <p className="text-xl font-semibold text-gray-800">STATEMENT OF MARKS</p>
+
+                  {/* Header text */}
+                  <div className="text-center flex-1">
+                    <h1 className="text-2xl font-bold text-black">INDIAN RAILWAYS</h1>
+                    <h2 className="text-lg font-semibold text-black">ZONAL RAILWAY TRAINING INSTITUTE</h2>
+                    <h3 className="text-xl font-bold text-black mt-2">STATEMENT OF MARKS</h3>
+                    {viewMode === 'sessionWise' && selectedSession !== 'all' && (
+                      <h4 className="text-md font-semibold text-gray-700 mt-1">({selectedSession} - Sessional)</h4>
+                    )}
+                    {viewMode === 'complete' && (
+                      <h4 className="text-md font-semibold text-gray-700 mt-1">(Complete/Annual)</h4>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Candidate Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Name:</span>
-                    <span className="text-gray-900">{candidateData.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Batch:</span>
-                    <span className="text-gray-900">{candidateData.batch}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Post:</span>
-                    <span className="text-gray-900">{candidateData.post}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Stream:</span>
-                    <span className="text-gray-900">{candidateData.stream}</span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Father's Name:</span>
-                    <span className="text-gray-900">{candidateData.fatherName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Roll No:</span>
-                    <span className="text-gray-900">{candidateData.rollNo}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-700">Module:</span>
-                    <span className="text-gray-900">{candidateData.courseCode}</span>
-                  </div>
-                </div>
+              {/* Candidate Information - Exact format from image */}
+              <div className="mb-8">
+                <table className="w-full">
+                  <tbody>
+                    <tr>
+                      <td className="py-1 font-semibold text-black">Name: {candidateData.name}</td>
+                      <td className="py-1 font-semibold text-black text-right">Father's Name: {candidateData.fatherName}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 font-semibold text-black">Batch: {candidateData.batch}</td>
+                      <td className="py-1 font-semibold text-black text-right">Roll No: {candidateData.rollNo}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 font-semibold text-black">Post: {candidateData.post}</td>
+                      <td className="py-1 font-semibold text-black text-right">Module: {candidateData.courseCode}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 font-semibold text-black">Stream: {candidateData.stream}</td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               {/* Marks Table */}
               {currentCourseStructure && (
-                <div className="overflow-x-auto mb-8">
-                  <table className="w-full border border-gray-300">
+                <div className="mb-8">
+                  <table className="w-full border-2 border-black">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Session</th>
-                        <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Paper</th>
-                        <th className="border border-gray-300 px-4 py-3 text-center font-semibold">Subjects</th>
-                        <th className="border border-gray-300 px-4 py-3 text-center font-semibold">Max Marks</th>
-                        <th className="border border-gray-300 px-4 py-3 text-center font-semibold">Obtained Marks</th>
-                        <th className="border border-gray-300 px-4 py-3 text-center font-semibold">Percentage</th>
-                        <th className="border border-gray-300 px-4 py-3 text-center font-semibold">Result</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Session</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Paper</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Subjects</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Max Marks</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Obtained</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">%</th>
+                        <th className="border border-black px-3 py-2 text-sm font-bold text-black">Result</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -948,29 +1241,26 @@ const Marksheet = () => {
                             <tr key={`${session}-${paper}`} className={!isPassed ? 'bg-red-50' : ''}>
                               {paperIndex === 0 && (
                                 <td
-                                  className="border border-gray-300 px-4 py-3 font-medium text-gray-800"
+                                  className="border border-black px-3 py-2 font-semibold text-black text-center align-top"
                                   rowSpan={Object.keys(papers).length}
                                 >
                                   {session}
                                 </td>
                               )}
-                              <td className="border border-gray-300 px-4 py-3">{paper}</td>
-                              <td className="border border-gray-300 px-4 py-3 text-center text-sm">
+                              <td className="border border-black px-3 py-2 text-sm text-black">{paper}</td>
+                              <td className="border border-black px-3 py-2 text-xs text-black text-center">
                                 {config.subjects.length > 0 ? config.subjects.join(', ') : '-'}
                               </td>
-                              <td className="border border-gray-300 px-4 py-3 text-center font-medium">
+                              <td className="border border-black px-3 py-2 text-sm font-semibold text-black text-center">
                                 {config.maxMarks}
                               </td>
-                              <td className={`border border-gray-300 px-4 py-3 text-center font-bold ${!isPassed ? 'text-red-600' : 'text-green-600'
-                                }`}>
+                              <td className={`border border-black px-3 py-2 text-sm font-bold text-center ${!isPassed ? 'text-red-600' : 'text-black'}`}>
                                 {marks}
                               </td>
-                              <td className={`border border-gray-300 px-4 py-3 text-center ${!isPassed ? 'text-red-600' : 'text-green-600'
-                                }`}>
+                              <td className={`border border-black px-3 py-2 text-sm text-center ${!isPassed ? 'text-red-600' : 'text-black'}`}>
                                 {percentage}%
                               </td>
-                              <td className={`border border-gray-300 px-4 py-3 text-center font-medium ${!isPassed ? 'text-red-600' : 'text-green-600'
-                                }`}>
+                              <td className={`border border-black px-3 py-2 text-sm font-semibold text-center ${!isPassed ? 'text-red-600' : 'text-green-600'}`}>
                                 {isPassed ? 'PASS' : 'FAIL'}
                               </td>
                             </tr>
@@ -982,55 +1272,55 @@ const Marksheet = () => {
                 </div>
               )}
 
-              {/* Summary */}
-              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">TOTAL MARKS</h3>
-                    <p className="text-3xl font-bold text-blue-600">{total}/{maxTotal}</p>
+              {/* Summary Section - Exact format from image */}
+              <div className="mb-8 border-2 border-gray-300 bg-gray-50">
+                <div className="grid grid-cols-2 divide-x-2 divide-gray-300">
+                  <div className="p-4 text-center">
+                    <h3 className="text-sm font-bold text-black mb-1">TOTAL MARKS</h3>
+                    <p className="text-xl font-bold text-black">{total}/{maxTotal}</p>
                   </div>
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">FINAL PERCENTAGE</h3>
-                    <p className="text-3xl font-bold text-green-600">{percentage}%</p>
+                  <div className="p-4 text-center">
+                    <h3 className="text-sm font-bold text-black mb-1">FINAL PERCENTAGE</h3>
+                    <p className="text-xl font-bold text-black">{percentage}%</p>
                   </div>
                 </div>
 
-                {/* Failed Subjects Disclaimer */}
+                {/* Failed Subjects Disclaimer - Exact format from image */}
                 {failedSubjects.length > 0 && (
-                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="w-5 h-5 text-red-600" />
-                      <span className="font-bold text-red-800">Disclaimer: Candidate has failed in subject(s):</span>
-                    </div>
-                    <p className="text-red-700 font-medium">
+                  <div className="border-t-2 border-gray-300 p-4 text-center">
+                    <p className="text-red-600 font-bold text-sm">
+                      Disclaimer: Candidate has failed in subject(s): {' '}
                       {failedSubjects.map(subject =>
                         subject.subjects.length > 0 ? subject.subjects.join(', ') : `${subject.session} - ${subject.paper}`
                       ).join(', ')}
                     </p>
-                    <p className="text-red-600 text-sm mt-2">
+                    <p className="text-red-600 text-xs mt-1">
                       Passing criteria: 60% or above required in each subject.
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="border-t border-gray-300 pt-6">
-                <div className="grid grid-cols-3 gap-8 text-center">
-                  <div>
-                    <p className="font-semibold text-gray-800">Checked By</p>
-                    <div className="h-16 border-b border-gray-300 mt-8"></div>
+              {/* Footer - Exact format from image */}
+              <div className="border-t-2 border-gray-400 pt-6">
+                <div className="grid grid-cols-3 gap-8">
+                  <div className="text-center">
+                    <p className="font-semibold text-black text-sm">Checked By</p>
+                    <div className="h-12 mt-8"></div>
+                    <div className="border-t-2 border-black w-32 mx-auto"></div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">Principal / Director</p>
-                    <div className="h-16 border-b border-gray-300 mt-8"></div>
-                    <p className="text-sm text-gray-600 italic mt-2">
+                  <div className="text-center">
+                    <p className="font-semibold text-black text-sm">Principal / Director</p>
+                    <div className="h-12 mt-8"></div>
+                    <div className="border-t-2 border-black w-32 mx-auto"></div>
+                    <p className="text-xs text-gray-600 italic mt-2">
                       Date of Generation: {new Date().toLocaleDateString("en-IN")}
                     </p>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">Prepared By</p>
-                    <div className="h-16 border-b border-gray-300 mt-8"></div>
+                  <div className="text-center">
+                    <p className="font-semibold text-black text-sm">Prepared By</p>
+                    <div className="h-12 mt-8"></div>
+                    <div className="border-t-2 border-black w-32 mx-auto"></div>
                   </div>
                 </div>
               </div>
