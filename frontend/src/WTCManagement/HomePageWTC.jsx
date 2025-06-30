@@ -46,7 +46,7 @@ const HomePageWTC = () => {
       title: "Letter Generation",
       description: "Generate official letters",
       icon: FileText,
-      path: "/wtc/letter/bulk",
+      path: "/wtc/letter",
       color: "bg-orange-500 hover:bg-orange-600",
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
