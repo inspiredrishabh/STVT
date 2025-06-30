@@ -194,32 +194,6 @@ const Professional = ({ formData, onChange }) => {
         }
       }
 
-      // Year validation
-      if (
-        field === "educationStartYear" ||
-        field === "additionalQualificationYear"
-      ) {
-        const year = parseInt(stringValue, 10);
-        const currentYear = new Date().getFullYear();
-        if (isNaN(year)) {
-          return "Please enter a valid year";
-        }
-        if (year < 1970 || year > currentYear) {
-          return `Year must be between 1970 and ${currentYear}`;
-        }
-      }
-
-      // Course duration validation
-      if (field === "eduCourseDuration") {
-        const duration = parseInt(stringValue, 10);
-        if (isNaN(duration)) {
-          return "Please enter a valid number";
-        }
-        if (duration < 1 || duration > 6) {
-          return "Course duration must be between 1 and 6 years";
-        }
-      }
-
       // Enhanced grade value validation
       if (field === "gradeValue") {
         const gradeType = formData.gradeType;
@@ -266,10 +240,6 @@ const Professional = ({ formData, onChange }) => {
           if (decimalPart && decimalPart.length > 2) {
             return "Percentage can have maximum 2 decimal places";
           }
-        } else if (gradeType === "Grade") {
-          if (!/^[A-F][+-]?$|^[O]$/.test(stringValue.toUpperCase())) {
-            return "Enter valid grade (A+, A, B+, B, C+, C, D+, D, F, O)";
-          }
         }
       }
 
@@ -300,21 +270,11 @@ const Professional = ({ formData, onChange }) => {
       "designation",
       "unit",
       "trainingPeriod",
-      "workingUnder",
-      "hrmsId",
-      "pfNoNpsUps",
-      "employeeNumber",
       "highestQualification",
       "fieldOfStudy",
       "institution",
-      "boardType",
-      "educationStartYear",
-      "eduCourseDuration",
-      "modeOfStudy",
       "gradeType",
       "gradeValue",
-      "division",
-      "hasAdditionalQualification",
     ],
     []
   );
@@ -327,9 +287,7 @@ const Professional = ({ formData, onChange }) => {
       const value = formData[field];
       const error = validateField(field, value);
       if (error) newErrors[field] = error;
-    });
-
-    // Validate conditional fields for "Other" selections
+    });      // Validate conditional fields for "Other" selections
     if (
       formData.modeOfAppointment === "Other" &&
       !formData.modeOfAppointmentOther?.trim()
@@ -376,18 +334,6 @@ const Professional = ({ formData, onChange }) => {
       }
     }
 
-    // Validate additional qualification fields
-    if (formData.hasAdditionalQualification === "Yes") {
-      [
-        "additionalQualificationName",
-        "additionalQualificationOrg",
-        "additionalQualificationYear",
-      ].forEach((field) => {
-        const error = validateField(field, formData[field]);
-        if (error) newErrors[field] = error;
-      });
-    }
-
     setErrors(newErrors);
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -400,25 +346,6 @@ const Professional = ({ formData, onChange }) => {
       onChange.setValidationFunction(validateAllFields);
     }
   }, [validateAllFields, onChange]);
-
-  // Auto-calculate graduation year
-  useEffect(() => {
-    if (formData.educationStartYear && formData.eduCourseDuration) {
-      const startYear = parseInt(formData.educationStartYear, 10);
-      const duration = parseInt(formData.eduCourseDuration, 10);
-      if (!isNaN(startYear) && !isNaN(duration)) {
-        handleChange("yearOfGraduation", (startYear + duration).toString());
-      }
-    }
-  }, [formData.educationStartYear, formData.eduCourseDuration, handleChange]);
-
-  const generateYearOptions = useCallback(
-    () =>
-      Array.from({ length: 55 }, (_, i) =>
-        (new Date().getFullYear() - i).toString()
-      ),
-    []
-  );
 
   // Memoized options for better performance
   const qualificationOptions = useMemo(
@@ -435,40 +362,8 @@ const Professional = ({ formData, onChange }) => {
     []
   );
 
-  const boardOptions = useMemo(
-    () => [
-      "",
-      "State Board",
-      "CBSE",
-      "ICSE",
-      "State University",
-      "Central University",
-      "Deemed University",
-      "Private University",
-      "Foreign University",
-      "Other",
-    ],
-    []
-  );
-
-  const durationOptions = useMemo(() => ["", "1", "2", "3", "4", "5", "6"], []);
-  const modeOptions = useMemo(
-    () => ["", "Full-Time", "Part-Time", "Distance Learning", "Online"],
-    []
-  );
   const gradeTypeOptions = useMemo(
-    () => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)", "Grade"],
-    []
-  );
-  const divisionOptions = useMemo(
-    () => [
-      "",
-      "First Division",
-      "Second Division",
-      "Third Division",
-      "Distinction",
-      "Pass",
-    ],
+    () => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)"],
     []
   );
 
@@ -602,10 +497,10 @@ const Professional = ({ formData, onChange }) => {
             ? "Use custom practical duration field above"
             : "Auto-calculated from training period",
       },
-      { label: "Working Under", field: "workingUnder" },
-      { label: "HRMS ID", field: "hrmsId" },
-      { label: "PF/NPS/UPS No.", field: "pfNoNpsUps" },
-      { label: "Employee Number", field: "employeeNumber" },
+      { label: "Working Under", field: "workingUnder", required: false },
+      { label: "HRMS ID", field: "hrmsId", required: false },
+      { label: "PF/NPS/UPS No.", field: "pfNoNpsUps", required: false },
+      { label: "Employee Number", field: "employeeNumber", required: false },
     ],
     [
       formData.modeOfAppointment,
@@ -633,38 +528,8 @@ const Professional = ({ formData, onChange }) => {
         label: "Specify Qualification",
         field: "otherQualification",
       },
-      { label: "Field of Study/Specialization", field: "fieldOfStudy" },
-      { label: "University/Institution", field: "institution" },
-      {
-        label: "Board/University Type",
-        field: "boardType",
-        type: "select",
-        options: boardOptions,
-      },
-      {
-        label: "Start Year",
-        field: "educationStartYear",
-        type: "select",
-        options: ["", ...generateYearOptions()],
-      },
-      {
-        label: "Course Duration (years)",
-        field: "eduCourseDuration",
-        type: "select",
-        options: durationOptions,
-      },
-      {
-        label: "Year of Graduation",
-        field: "yearOfGraduation",
-        disabled: true,
-        helpText: "Auto-calculated from start year and duration",
-      },
-      {
-        label: "Mode of Study",
-        field: "modeOfStudy",
-        type: "select",
-        options: modeOptions,
-      },
+      { label: "Field of Study", field: "fieldOfStudy" },
+      { label: "Institution", field: "institution" },
       {
         label: "Grade Type",
         field: "gradeType",
@@ -672,62 +537,25 @@ const Professional = ({ formData, onChange }) => {
         options: gradeTypeOptions,
       },
       {
-        label: "Grade/Percentage/CGPA",
+        label: "Grade Value",
         field: "gradeValue",
+        type: "number",
+        step: "0.01",
         helpText:
           formData.gradeType === "CGPA (out of 10)"
             ? "Enter CGPA between 0-10"
             : formData.gradeType === "CGPA (out of 4)"
-            ? "Enter CGPA between 0-4"
-            : formData.gradeType === "Percentage"
-            ? "Enter percentage between 0-100"
-            : formData.gradeType === "Grade"
-            ? "Enter grade (A+, A, B+, B, C+, C, D+, D, F, O)"
-            : "",
-      },
-      {
-        label: "Division/Class",
-        field: "division",
-        type: "select",
-        options: divisionOptions,
-      },
-      {
-        label: "Additional Qualification?",
-        field: "hasAdditionalQualification",
-        type: "select",
-        options: ["", "Yes", "No"],
-      },
-      formData.hasAdditionalQualification === "Yes" && {
-        label: "Certification Name",
-        field: "additionalQualificationName",
-      },
-      formData.hasAdditionalQualification === "Yes" && {
-        label: "Issuing Organization",
-        field: "additionalQualificationOrg",
-      },
-      formData.hasAdditionalQualification === "Yes" && {
-        label: "Year of Completion",
-        field: "additionalQualificationYear",
-        type: "select",
-        options: ["", ...generateYearOptions()],
-      },
-      {
-        label: "Thesis/Project Title (if applicable)",
-        field: "thesisTitle",
-        required: false,
+              ? "Enter CGPA between 0-4"
+              : formData.gradeType === "Percentage"
+                ? "Enter percentage between 0-100"
+                : "",
       },
     ],
     [
       formData.highestQualification,
-      formData.hasAdditionalQualification,
       formData.gradeType,
       qualificationOptions,
-      boardOptions,
-      durationOptions,
-      modeOptions,
       gradeTypeOptions,
-      divisionOptions,
-      generateYearOptions,
     ]
   );
 
@@ -753,9 +581,8 @@ const Professional = ({ formData, onChange }) => {
                 <select
                   value={formData[field] || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                    errors[field] ? "border-red-500" : "border-gray-300"
-                  } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                    } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   disabled={disabled}
                 >
                   {options.map((opt) => (
@@ -769,9 +596,8 @@ const Professional = ({ formData, onChange }) => {
                   type={type}
                   value={formData[field] || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
-                    errors[field] ? "border-red-500" : "border-gray-300"
-                  } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                    } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder={`Enter ${label.toLowerCase()}`}
                   disabled={disabled}
                 />
