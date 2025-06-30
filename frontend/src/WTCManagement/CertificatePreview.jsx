@@ -43,7 +43,7 @@ const CertificatePreview = () => {
     const element = certificateRef.current;
     const opt = {
       margin: [10, 10, 10, 10],
-      filename: `Certificate_${ticketNo}.pdf`,
+      filename: `Certificate_${traineeId + ticketNo}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
