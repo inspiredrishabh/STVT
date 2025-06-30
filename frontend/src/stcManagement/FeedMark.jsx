@@ -288,7 +288,7 @@ const mockAPI = {
     { id: 4, ticketNumber: 'STC2024004', name: 'Neha Gupta', courseCode: 'MJR-C&W' },
     { id: 5, ticketNumber: 'STC2024005', name: 'Vikash Yadav', courseCode: 'MJR-D' },
     { id: 6, ticketNumber: 'STC2024006', name: 'Sunita Devi', courseCode: 'MJR-W' },
-    { id: 7, ticketNumber: 'STC2024007', name: 'Rajesh Verma', courseCode: 'MJI-C&W' },
+    { id: 7, ticketNumber: 'STC2024007', name: 'Abhijeet Malik', courseCode: 'MJI-C&W' },
     { id: 8, ticketNumber: 'STC2024008', name: 'Anjali Kumari', courseCode: 'MJI-D' },
     { id: 9, ticketNumber: 'STC2024009', name: 'Manoj Kumar', courseCode: 'MJI-W' },
     { id: 10, ticketNumber: 'STC2024010', name: 'Pooja Singh', courseCode: 'MJP-C&W' },
@@ -356,6 +356,7 @@ const FeedMark = () => {
   const [candidateData, setCandidateData] = useState(null);
   const [courseCode, setCourseCode] = useState('');
   const [marks, setMarks] = useState({});
+  const [clearedSupplementary, setClearedSupplementary] = useState({}); // Track cleared supplementary subjects
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
@@ -539,9 +540,14 @@ const FeedMark = () => {
 
     try {
       const result = await mockAPI.clearSubjectSupplementary(candidateData.ticketNumber, session, paper);
+
+      // Mark this subject as cleared from supplementary
+      setClearedSupplementary(prev => ({
+        ...prev,
+        [`${session}_${paper}`]: true
+      }));
+
       setMessage({ type: 'success', text: result.message });
-      // Optionally refresh candidate data to reflect changes
-      await loadCandidateData(candidateData.ticketNumber);
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to clear supplementary status' });
     } finally {
@@ -555,6 +561,7 @@ const FeedMark = () => {
     setCandidateData(null);
     setCourseCode('');
     setMarks({});
+    setClearedSupplementary({}); // Reset cleared supplementary status
     setMessage({ type: '', text: '' });
   };
 
@@ -563,6 +570,18 @@ const FeedMark = () => {
     if (!paperMarks || !maxMarks) return false;
     const passingMarks = Math.ceil(maxMarks * 0.6); // 60% of max marks
     return paperMarks < passingMarks;
+  };
+
+  // Check if a subject's supplementary status has been cleared
+  const isSupplementaryCleared = (session, paper) => {
+    return clearedSupplementary[`${session}_${paper}`] === true;
+  };
+
+  // Check if a subject should show as failed (below passing marks and not cleared)
+  const shouldShowAsFailed = (session, paper, paperMarks, maxMarks) => {
+    const isEligible = isSupplementaryEligible(paperMarks, maxMarks);
+    const isCleared = isSupplementaryCleared(session, paper);
+    return isEligible && !isCleared;
   };
 
   // Get passing marks (60% of max marks)
@@ -577,7 +596,10 @@ const FeedMark = () => {
       Object.entries(papers).forEach(([paper, config]) => {
         const paperMarks = marks[session]?.[paper];
         const passingMarks = getPassingMarks(config.maxMarks);
-        if (paperMarks && paperMarks < passingMarks) {
+        const isCleared = isSupplementaryCleared(session, paper);
+
+        // Only include in failed subjects if below passing marks AND not cleared
+        if (paperMarks && paperMarks < passingMarks && !isCleared) {
           failedSubjects.push({
             session,
             paper,
@@ -852,15 +874,24 @@ const FeedMark = () => {
                       {Object.entries(papers).map(([paper, config]) => {
                         const paperMarks = marks[session]?.[paper];
                         const passingMarks = getPassingMarks(config.maxMarks);
-                        const isFailingGrade = paperMarks && paperMarks < passingMarks;
+                        const isFailingGrade = shouldShowAsFailed(session, paper, paperMarks, config.maxMarks);
                         const isOverMaxMarks = paperMarks > config.maxMarks;
+                        const isCleared = isSupplementaryCleared(session, paper);
+                        const isBelowPassing = paperMarks && paperMarks < passingMarks;
 
                         return (
-                          <div key={paper} className={`p-4 rounded-xl border space-y-3 ${isFailingGrade ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'
+                          <div key={paper} className={`p-4 rounded-xl border space-y-3 ${isFailingGrade ? 'bg-red-50 border-red-300' :
+                            isCleared && isBelowPassing ? 'bg-yellow-50 border-yellow-300' :
+                              'bg-white border-gray-200'
                             }`}>
                             <div className="flex items-center justify-between">
                               <label className="block text-sm font-semibold text-gray-800">
                                 {paper}
+                                {isCleared && isBelowPassing && (
+                                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                                    Supplementary Cleared
+                                  </span>
+                                )}
                               </label>
                               <div className="text-right">
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
@@ -890,7 +921,9 @@ const FeedMark = () => {
                                 ? 'border-red-300 bg-red-50'
                                 : isFailingGrade
                                   ? 'border-red-400 bg-red-50'
-                                  : 'border-gray-300'
+                                  : isCleared && isBelowPassing
+                                    ? 'border-yellow-400 bg-yellow-50'
+                                    : 'border-gray-300'
                                 }`}
                             />
 
@@ -898,6 +931,14 @@ const FeedMark = () => {
                               <p className="text-xs text-red-600 font-medium">
                                 ⚠️ Marks cannot exceed {config.maxMarks}
                               </p>
+                            )}
+
+                            {isCleared && isBelowPassing && !isOverMaxMarks && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-yellow-700 font-medium">
+                                  ✓ Supplementary status cleared. Main marks ({paperMarks}) will be used in marksheet.
+                                </p>
+                              </div>
                             )}
 
                             {isFailingGrade && !isOverMaxMarks && (
@@ -957,7 +998,6 @@ const FeedMark = () => {
                         </div>
                         <div className="text-right">
                           <span className="text-red-600 font-bold">{subject.marks}/{subject.maxMarks}</span>
-                          <span className="text-xs text-red-500 block">Needs {subject.shortfall} more marks</span>
                         </div>
                       </div>
                     ))}

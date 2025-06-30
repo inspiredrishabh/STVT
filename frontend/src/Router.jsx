@@ -21,7 +21,6 @@ const LineTraining = lazy(() => import("./stcManagement/LineTraining"));
 const Marksheet = lazy(() => import("./stcManagement/Marksheet"));
 const ManageCandidate = lazy(() => import("./manage/CandidateManagementPage"));
 const WTCTranieeProfile = lazy(() => import("./WTCManagement/TraineeProfile"));
-const AttendanceSystem = lazy(() => import("./WTCManagement/AttendanceSystem"));
 const Letter = lazy(() => import("./WTCManagement/Letter"));
 const LetterPreview = lazy(() => import("./WTCManagement/LetterPreview"));
 const Certificate = lazy(() => import("./WTCManagement/Cerificate"));
@@ -132,9 +131,9 @@ const Router = () => {
         {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            // <ProtectedLayout>
-            <FeedMark />
-            // </ProtectedLayout>
+            <ProtectedLayout>
+              <FeedMark />
+            </ProtectedLayout>
           }
         />
 
@@ -166,10 +165,15 @@ const Router = () => {
           }
         />
 
-        {/* WTC Management */}
-        <Route path="/wtc-management" element={<ProtectedLayout> <HomePageWTC /></ProtectedLayout>} />
+        {/* WTC Management Homepage */}
+        <Route path="/wtc-management"
+          element={
+            <ProtectedLayout>
+              <HomePageWTC />
+            </ProtectedLayout>
+          }
+        />
         <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
-        <Route path="/wtc/attendance" element={<ProtectedLayout><AttendanceSystem /></ProtectedLayout>} />
         <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
         <Route path="/wtc/letter/preview" element={<ProtectedLayout><LetterPreview /></ProtectedLayout>} />
         <Route path="/wtc/certificate" element={<ProtectedLayout><Certificate /></ProtectedLayout>} />
