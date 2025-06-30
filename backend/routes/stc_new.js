@@ -37,11 +37,11 @@ router.get('/health', (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const formData = req.body;
-    
+
     // Basic validation
     const requiredFields = ['name', 'email', 'phoneNumber', 'designation'];
     const missingFields = requiredFields.filter(field => !formData[field]);
-    
+
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,

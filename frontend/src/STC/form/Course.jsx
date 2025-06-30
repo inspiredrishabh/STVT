@@ -21,16 +21,16 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   });
 
   const courseModules = {
-    "MSE-C": 52,
+    "MSE-C&W": 52,
     "MSE-D": 52,
     "MSE-W": 52,
-    "MJR-C": 52,
+    "MJR-C&W": 52,
     "MJR-D": 52,
     "MJR-W": 52,
-    "MJI-C": 52,
+    "MJI-C&W": 52,
     "MJI-D": 52,
     "MJ1-W": 52,
-    "MJP-C": 13,
+    "MJP-C&W": 13,
     "MJP-D": 13,
     "MJP-W": 13,
     ASE: 52,

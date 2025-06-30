@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, FileText, Download, Printer, ArrowLeft, GraduationCap, Award, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Search, FileText, Download, Printer, ArrowLeft, GraduationCap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -334,26 +334,6 @@ const Marksheet = () => {
     }
   }, [candidates, loadCandidateData]);
 
-  const handleGenerateMarksheet = useCallback(async (sessionWise = false) => {
-    if (!candidateData) {
-      setMessage({ type: 'error', text: 'No candidate selected' });
-      return;
-    }
-
-    setGenerating(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const result = await marksheetService.exportMarksheetPDF(candidateData.ticketNumber, { sessionWise });
-      setMessage({ type: 'success', text: result.message });
-    } catch (error) {
-      console.error('Failed to generate marksheet:', error);
-      setMessage({ type: 'error', text: 'Failed to generate marksheet' });
-    } finally {
-      setGenerating(false);
-    }
-  }, [candidateData]);
-
   const handlePrintMarksheet = useCallback(() => {
     if (!marksheetRef.current || !candidateData) {
       setMessage({ type: 'error', text: 'No marksheet data available for printing' });
@@ -619,7 +599,7 @@ const Marksheet = () => {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   Generate Marksheet
@@ -655,7 +635,7 @@ const Marksheet = () => {
           {/* Search Section */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
                 <Search className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -669,7 +649,7 @@ const Marksheet = () => {
               <button
                 onClick={() => setSearchMethod('ticket')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'ticket'
-                  ? 'bg-blue-600 text-white shadow-lg'
+                  ? 'bg-orange-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
@@ -678,7 +658,7 @@ const Marksheet = () => {
               <button
                 onClick={() => setSearchMethod('dropdown')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
-                  ? 'bg-blue-600 text-white shadow-lg'
+                  ? 'bg-orange-600 text-white shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
@@ -698,7 +678,7 @@ const Marksheet = () => {
                     value={ticketNumber}
                     onChange={(e) => setTicketNumber(e.target.value)}
                     placeholder="Enter ticket number (e.g., STC2024001)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     onKeyPress={(e) => e.key === 'Enter' && handleSearchCandidate()}
                   />
                 </div>
@@ -713,7 +693,7 @@ const Marksheet = () => {
                       setSelectedCandidate(e.target.value);
                       handleCandidateSelect(e.target.value);
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     disabled={loading}
                   >
                     <option value="">Select a candidate...</option>
@@ -734,7 +714,7 @@ const Marksheet = () => {
                   <button
                     onClick={handleSearchCandidate}
                     disabled={loading || !ticketNumber.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -774,7 +754,7 @@ const Marksheet = () => {
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -793,7 +773,7 @@ const Marksheet = () => {
                   <button
                     onClick={handleExportPDF}
                     disabled={generating || !candidateData}
-                    className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex items-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {generating ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -801,18 +781,6 @@ const Marksheet = () => {
                       <Download className="w-5 h-5" />
                     )}
                     {generating ? 'Exporting...' : 'Export PDF'}
-                  </button>
-                  <button
-                    onClick={() => handleGenerateMarksheet(viewMode === 'sessionWise')}
-                    disabled={generating}
-                    className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {generating ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Award className="w-5 h-5" />
-                    )}
-                    {generating ? 'Generating...' : 'Generate'}
                   </button>
                 </div>
               </div>
@@ -826,7 +794,7 @@ const Marksheet = () => {
                   <select
                     value={viewMode}
                     onChange={(e) => setViewMode(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                   >
                     <option value="complete">Complete Marksheet (Annual)</option>
                     <option value="sessionWise">Sessional Marksheet</option>
@@ -841,7 +809,7 @@ const Marksheet = () => {
                     <select
                       value={selectedSession}
                       onChange={(e) => setSelectedSession(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     >
                       <option value="all">All Sessions</option>
                       {currentCourseStructure && Object.keys(currentCourseStructure).map(session => (
@@ -852,10 +820,10 @@ const Marksheet = () => {
                 )}
 
                 <div className="flex items-end">
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 w-full">
-                    <p className="text-sm font-semibold text-blue-700">Total Marks</p>
-                    <p className="text-2xl font-bold text-blue-900">{total}/{maxTotal}</p>
-                    <p className="text-sm text-blue-600">{percentage}%</p>
+                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 w-full">
+                    <p className="text-sm font-semibold text-orange-700">Total Marks</p>
+                    <p className="text-2xl font-bold text-orange-900">{total}/{maxTotal}</p>
+                    <p className="text-sm text-orange-600">{percentage}%</p>
                   </div>
                 </div>
               </div>

@@ -1,39 +1,7 @@
 const express = require('express');
-const { stcController } = require('../controllers/stcController');
-
 const router = express.Router();
 
-// GET /api/stc/trainees - Get all trainees with pagination
-router.get('/trainees', async (req, res) => {
-  await stcController.getAllTrainees(req, res);
-});
-
-// GET /api/stc/trainee/:traineeId - Get specific trainee by ID
-router.get('/trainee/:traineeId', async (req, res) => {
-  await stcController.getTraineeById(req, res);
-});
-
-// GET /api/stc/trainee/ticket/:ticketNo - Get trainee by ticket number
-router.get('/trainee/ticket/:ticketNo', async (req, res) => {
-  await stcController.getTraineeByTicket(req, res);
-});
-
-// GET /api/stc/trainees/search - Search trainees
-router.get('/trainees/search', async (req, res) => {
-  await stcController.searchTrainees(req, res);
-});
-
-// GET /api/stc/trainees/statistics - Get trainee statistics
-router.get('/trainees/statistics', async (req, res) => {
-  await stcController.getTraineeStatistics(req, res);
-});
-
-// GET /api/stc/health - Health check for STC service
-router.get('/health', (req, res) => {
-  stcController.healthCheck(req, res);
-});
-
-// POST /api/stc/register - Submit STC registration form (legacy endpoint)
+// POST /api/stc/register - Submit STC registration form
 router.post('/register', async (req, res) => {
   try {
     const formData = req.body;
@@ -58,12 +26,15 @@ router.post('/register', async (req, res) => {
       submittedAt: new Date().toISOString()
     });
 
+    // TODO: Save to database here
+    // const savedRecord = await STCModel.create(formData);
+
     // Success response
     res.status(201).json({
       success: true,
       message: 'Registration submitted successfully',
       data: {
-        id: Date.now(),
+        id: Date.now(), // Replace with actual database ID
         submittedAt: new Date().toISOString(),
         name: formData.name,
         email: formData.email
@@ -77,6 +48,15 @@ router.post('/register', async (req, res) => {
       message: 'Internal server error'
     });
   }
+});
+
+// GET /api/stc/health - Health check
+router.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'STC Registration API',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 module.exports = router;

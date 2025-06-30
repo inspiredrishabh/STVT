@@ -443,7 +443,7 @@ const LineTraining = () => {
           </Link>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 -r bg-purple-500 hover:bg-purple-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               Line Training
@@ -491,7 +491,7 @@ const LineTraining = () => {
           <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12  bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center">
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -598,11 +598,10 @@ const LineTraining = () => {
                       <div
                         key={trainee.id}
                         onClick={() => handleTicketSelection(trainee.ticketNo)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedTickets.includes(trainee.ticketNo)
-                            ? "border-purple-500 bg-purple-50"
-                            : "border-gray-200 hover:border-purple-300"
-                        }`}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticketNo)
+                          ? "border-purple-500 bg-purple-50"
+                          : "border-gray-200 hover:border-purple-300"
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -617,11 +616,10 @@ const LineTraining = () => {
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${
-                              selectedTickets.includes(trainee.ticketNo)
-                                ? "bg-purple-500 border-purple-500"
-                                : "border-gray-300"
-                            }`}
+                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticketNo)
+                              ? "bg-purple-500 border-purple-500"
+                              : "border-gray-300"
+                              }`}
                           >
                             {selectedTickets.includes(trainee.ticketNo) && (
                               <CheckCircle className="w-4 h-4 text-white" />
@@ -794,7 +792,7 @@ const LineTraining = () => {
                   All time
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-500 hover:bg-blue-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -814,7 +812,7 @@ const LineTraining = () => {
                   In progress
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-xl flex items-center justify-center">
                 <Clock className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -834,7 +832,7 @@ const LineTraining = () => {
                   Unique trainees
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-purple-500 hover:bg-purple-600 rounded-xl flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -854,7 +852,7 @@ const LineTraining = () => {
                   {stats.completedPrograms} completed
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-xl flex items-center justify-center">
                 <Award className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -1224,11 +1222,10 @@ const LineTraining = () => {
                       <div
                         key={trainee.id}
                         onClick={() => handleTicketSelection(trainee.ticketNo)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedTickets.includes(trainee.ticketNo)
-                            ? "border-purple-500 bg-purple-50"
-                            : "border-gray-200 hover:border-purple-300"
-                        }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticketNo)
+                          ? "border-purple-500 bg-purple-50"
+                          : "border-gray-200 hover:border-purple-300"
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -1243,11 +1240,10 @@ const LineTraining = () => {
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${
-                              selectedTickets.includes(trainee.ticketNo)
-                                ? "bg-purple-500 border-purple-500"
-                                : "border-gray-300"
-                            }`}
+                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticketNo)
+                              ? "bg-purple-500 border-purple-500"
+                              : "border-gray-300"
+                              }`}
                           >
                             {selectedTickets.includes(trainee.ticketNo) && (
                               <CheckCircle className="w-4 h-4 text-white" />
