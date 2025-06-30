@@ -892,9 +892,8 @@ const Marksheet = () => {
                 }}>
                   {/* Railway Logo */}
                   <div style={{
-                    width: '80px',
-                    height: '80px',
-                    border: '2px solid black',
+                    width: '100px',
+                    height: '100px',
                     backgroundColor: 'white',
                     display: 'flex',
                     alignItems: 'center',
