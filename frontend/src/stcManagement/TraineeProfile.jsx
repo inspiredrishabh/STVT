@@ -40,7 +40,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'rahul.kumar@railway.gov.in',
       phone: '9876543210',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/men/1.jpg',
       courseCode: 'MSE-C&W',
       course: {
         moduleNo: 'MSE-C&W',
@@ -64,7 +64,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'priya.sharma@railway.gov.in',
       phone: '9876543211',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/women/1.jpg',
       courseCode: 'MSE-D',
       course: {
         moduleNo: 'MSE-D',
@@ -88,7 +88,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'amit.singh@railway.gov.in',
       phone: '9876543212',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/men/2.jpg',
       courseCode: 'MSE-W',
       course: {
         moduleNo: 'MSE-W',
@@ -112,7 +112,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'neha.gupta@railway.gov.in',
       phone: '9876543213',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/women/2.jpg',
       courseCode: 'MJR-C&W',
       course: {
         moduleNo: 'MJR-C&W',
@@ -136,7 +136,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'vikash.yadav@railway.gov.in',
       phone: '9876543214',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/men/3.jpg',
       courseCode: 'MJR-D',
       course: {
         moduleNo: 'MJR-D',
@@ -160,7 +160,7 @@ const TraineeProfile = () => {
       batch: '2024-2025',
       email: 'sunita.devi@railway.gov.in',
       phone: '9876543215',
-      picture: null,
+      picture: 'https://randomuser.me/api/portraits/women/3.jpg',
       courseCode: 'MJR-W',
       course: {
         moduleNo: 'MJR-W',
@@ -230,9 +230,13 @@ const TraineeProfile = () => {
   // Handle edit trainee - redirect to manage candidate
   const handleEditTrainee = (trainee) => {
     try {
-      // Store trainee ID in localStorage for manage candidate page
+      // Store trainee information in localStorage for manage candidate page
       localStorage.setItem('editTraineeId', trainee.id);
       localStorage.setItem('editTraineeName', trainee.name);
+      localStorage.setItem('editTraineeTicket', trainee.ticketNo);
+      localStorage.setItem('editTraineeDesignation', trainee.designation);
+
+      console.log(`Navigating to manage candidate for: ${trainee.name} (${trainee.ticketNo})`);
 
       // Navigate to manage candidate page
       navigate('/manage-candidate');
@@ -305,11 +309,32 @@ const TraineeProfile = () => {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">
-                        {trainee.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
+                    {trainee.picture ? (
+                      <div className="relative">
+                        <img
+                          src={trainee.picture}
+                          alt={trainee.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
+                          onError={(e) => {
+                            // Hide the image and show fallback
+                            e.target.style.display = 'none';
+                            const fallback = e.target.parentNode.querySelector('.fallback-avatar');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                        <div className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0" style={{ display: 'none' }}>
+                          <span className="text-white font-bold text-sm">
+                            {trainee.name.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold text-sm">
+                          {trainee.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold text-gray-900">{trainee.name}</h3>
                       <p className="text-sm text-gray-500">{trainee.ticketNo}</p>
