@@ -856,10 +856,14 @@ const Marksheet = () => {
                 <div style={{
                   display: 'flex',
                   alignItems: 'flex-start',
-                  gap: '24px'
+                  justifyContent: 'center',
+                  position: 'relative',
+                  width: '100%'
                 }}>
                   {/* Railway Logo */}
                   <div style={{
+                    position: 'absolute',
+                    left: '0',
                     width: '100px',
                     height: '100px',
                     backgroundColor: 'white',
@@ -895,10 +899,12 @@ const Marksheet = () => {
                     </div>
                   </div>
 
-                  {/* Header text */}
+                  {/* Header text - Centered */}
                   <div style={{
                     textAlign: 'center',
-                    flex: '1'
+                    flex: '1',
+                    paddingLeft: '100px',
+                    paddingRight: '100px'
                   }}>
                     <h1 style={{
                       fontSize: '18px',

@@ -51,6 +51,46 @@ const LineTraining = () => {
     description: "",
   });
 
+  const [formErrors, setFormErrors] = useState({});
+
+  // Date validation function
+  const validateDates = (startDate, endDate) => {
+    const errors = {};
+    const today = new Date().toISOString().split('T')[0];
+
+    if (startDate && endDate) {
+      if (new Date(startDate) >= new Date(endDate)) {
+        errors.endDate = "End date must be after start date";
+      }
+    }
+
+    return errors;
+  };
+
+  // Function to determine status based on start date
+  const determineStatus = (startDate) => {
+    const today = new Date().toISOString().split('T')[0];
+    return new Date(startDate) <= new Date(today) ? "In Progress" : "Scheduled";
+  };
+
+  // Handle form data changes with validation
+  const handleFormDataChange = (field, value) => {
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+
+    // Clear previous errors for this field
+    setFormErrors(prev => ({ ...prev, [field]: "" }));
+
+    // Validate dates if start or end date changed
+    if (field === "startDate" || field === "endDate") {
+      const dateErrors = validateDates(
+        field === "startDate" ? value : formData.startDate,
+        field === "endDate" ? value : formData.endDate
+      );
+      setFormErrors(prev => ({ ...prev, ...dateErrors }));
+    }
+  };
+
   // Check if coming from trainee profile
   const urlParams = new URLSearchParams(location.search);
   const preselectedTraineeId = urlParams.get("traineeId");
@@ -196,10 +236,21 @@ const LineTraining = () => {
       return;
     }
 
+    // Validate dates before submission
+    const dateErrors = validateDates(formData.startDate, formData.endDate);
+    if (Object.keys(dateErrors).length > 0) {
+      setFormErrors(dateErrors);
+      alert("Please fix the date validation errors before submitting");
+      return;
+    }
+
+    // Determine status based on start date
+    const status = determineStatus(formData.startDate);
+
     const trainingData = {
       ...formData,
       ticketNumbers: selectedTickets,
-      status: "Scheduled",
+      status: status,
     };
 
     try {
@@ -230,11 +281,12 @@ const LineTraining = () => {
         supervisor: "",
         description: "",
       });
+      setFormErrors({});
       setSelectedTickets([]);
       setSelectedTraineeInfo(null);
       setIsAddMode(false);
 
-      alert("Line training scheduled successfully!");
+      alert(`Line training ${status === "In Progress" ? "started" : "scheduled"} successfully!`);
     } catch (error) {
       console.error("Error creating training:", error);
       alert("Error scheduling training. Please try again.");
@@ -329,6 +381,7 @@ const LineTraining = () => {
       supervisor: training.supervisor || "",
       description: training.description || "",
     });
+    setFormErrors({});
     setSelectedTickets(training.ticketNumbers);
   };
 
@@ -372,10 +425,22 @@ const LineTraining = () => {
       return;
     }
 
+    // Validate dates before submission
+    const dateErrors = validateDates(formData.startDate, formData.endDate);
+    if (Object.keys(dateErrors).length > 0) {
+      setFormErrors(dateErrors);
+      alert("Please fix the date validation errors before submitting");
+      return;
+    }
+
+    // Determine status based on start date
+    const status = determineStatus(formData.startDate);
+
     const updatedTraining = {
       ...editModal.training,
       ...formData,
       ticketNumbers: selectedTickets,
+      status: status,
     };
 
     try {
@@ -408,6 +473,7 @@ const LineTraining = () => {
 
     setEditModal({ isOpen: false, training: null });
     setSelectedTickets([]);
+    setFormErrors({});
     setFormData({
       activityCentre: "",
       startDate: "",
@@ -685,14 +751,13 @@ const LineTraining = () => {
                     type="date"
                     required
                     value={formData.startDate}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        startDate: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    onChange={(e) => handleFormDataChange("startDate", e.target.value)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.startDate ? "border-red-500" : "border-gray-300"
+                      }`}
                   />
+                  {formErrors.startDate && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.startDate}</p>
+                  )}
                 </div>
 
                 <div>
@@ -703,14 +768,13 @@ const LineTraining = () => {
                     type="date"
                     required
                     value={formData.endDate}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        endDate: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    onChange={(e) => handleFormDataChange("endDate", e.target.value)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.endDate ? "border-red-500" : "border-gray-300"
+                      }`}
                   />
+                  {formErrors.endDate && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.endDate}</p>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">
@@ -1307,14 +1371,13 @@ const LineTraining = () => {
                       type="date"
                       required
                       value={formData.startDate}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          startDate: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      onChange={(e) => handleFormDataChange("startDate", e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.startDate ? "border-red-500" : "border-gray-300"
+                        }`}
                     />
+                    {formErrors.startDate && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.startDate}</p>
+                    )}
                   </div>
 
                   <div>
@@ -1325,14 +1388,13 @@ const LineTraining = () => {
                       type="date"
                       required
                       value={formData.endDate}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          endDate: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      onChange={(e) => handleFormDataChange("endDate", e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.endDate ? "border-red-500" : "border-gray-300"
+                        }`}
                     />
+                    {formErrors.endDate && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.endDate}</p>
+                    )}
                   </div>
 
                   <div className="md:col-span-2">

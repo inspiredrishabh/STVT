@@ -53,6 +53,11 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       "gradeValue",
     ];
 
+    // Add durationOption as required field for Summer Vacation training
+    if (formData.designation === "Summer Vacation training") {
+      requiredFields.push("durationOption");
+    }
+
     const validationErrors = {};
     requiredFields.forEach((field) => {
       const error = validateField(field, formData[field]);
@@ -107,9 +112,16 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       total: "03 W",
     },
     "Summer Vacation training": {
-      theory: "00 W",
-      practical: "06 W",
-      total: "06 W",
+      "4W": {
+        theory: "00 W",
+        practical: "04 W",
+        total: "04 W",
+      },
+      "6W": {
+        theory: "00 W",
+        practical: "06 W",
+        total: "06 W",
+      },
     },
   };
 
@@ -124,6 +136,11 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     if (!formData.designation || formData.courseType === "Custom") {
       return { theory: "", practical: "", total: "" };
     }
+    
+    if (formData.designation === "Summer Vacation training" && formData.durationOption) {
+      return durationMapping[formData.designation][formData.durationOption] || { theory: "", practical: "", total: "" };
+    }
+    
     return (
       durationMapping[formData.designation] || {
         theory: "",
@@ -256,6 +273,24 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
+        {formData.designation === "Summer Vacation training" && (
+          <div>
+            <RequiredLabel>Duration Option</RequiredLabel>
+            <select
+              value={formData.durationOption || ""}
+              onChange={(e) => handleChange("durationOption", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            >
+              <option value="">Select duration</option>
+              <option value="4W">4 Weeks</option>
+              <option value="6W">6 Weeks</option>
+            </select>
+            {errors.durationOption && (
+              <p className="text-sm text-red-500 mt-1">{errors.durationOption}</p>
+            )}
+          </div>
+        )}
+
         <div>
           <RequiredLabel>Duration</RequiredLabel>
           <input
@@ -265,7 +300,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter duration"
             readOnly={
-              formData.courseType === "Non Railway" && formData.designation
+              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" && formData.durationOption)
             }
           />
           {errors.duration && (
@@ -284,7 +320,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              formData.courseType === "Non Railway" && formData.designation
+              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" && formData.durationOption)
             }
           />
         </div>
@@ -300,7 +337,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              formData.courseType === "Non Railway" && formData.designation
+              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" && formData.durationOption)
             }
           />
         </div>
