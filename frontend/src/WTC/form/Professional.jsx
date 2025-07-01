@@ -4,7 +4,7 @@ const Professional = ({ formData, onChange }) => {
   const [errors, setErrors] = useState({});
 
   // Course type to designation mapping
-  const designationMap = {
+  const designationMap = useMemo(() => ({
     "Induction Course": [
       "CG Apprentice Technician III",
       "RRB Apprentice Technician III",
@@ -21,10 +21,10 @@ const Professional = ({ formData, onChange }) => {
       "Basic Welding Training for Beginners",
       "Pre-selection Coaching for JE Selection",
     ],
-  };
+  }), []);
 
   // Designation to unit mapping
-  const unitMap = {
+  const unitMap = useMemo(() => ({
     "CG Apprentice Technician III": [
       "Dy. CME (Diesel)/ RSW/CB",
       "Dy. CEE /CB",
@@ -56,39 +56,110 @@ const Professional = ({ formData, onChange }) => {
       "Dy. CEE (W)/AMV",
       "LKO Division",
     ],
+  }), []);
+
+  // Designation-Unit specific training period mapping based on PDF data
+  const designationUnitTrainingMap = useMemo(() => ({
+    // CG Apprentice Technician III
+    "CG Apprentice Technician III|Dy. CME (Diesel)/ RSW/CB": ["02 Years", "01 Year", "06 Months"],
+    "CG Apprentice Technician III|Dy. CEE /CB": ["02 Years", "01 Year", "06 Months"],
+    "CG Apprentice Technician III|Dy. CEE (W)/AMV": ["02 Years", "01 Year", "06 Months"],
+    "CG Apprentice Technician III|RDSO": ["02 Years", "01 Year", "06 Months"],
+    "CG Apprentice Technician III|LKO Division": ["02 Years", "01 Year", "06 Months"],
+
+
+    // RRB Apprentice Technician III
+    "RRB Apprentice Technician III|Dy. CME (Diesel)/ RSW/CB": ["01 Year", "06 Months"],
+    "RRB Apprentice Technician III|Dy. CEE /CB": ["01 Year", "06 Months"],
+    "RRB Apprentice Technician III|Dy. CEE (W)/AMV": ["01 Year", "06 Months"],
+
+    // RRC Assistant Workshop
+    "RRC Assistant Workshop|Dy. CEE /CB": ["12 Days"],
+    "RRC Assistant Workshop|Dy. CME (Diesel)/ RSW/CB": ["78 Days"],
+
+    // CG Assistant Workshop
+    "CG Assistant Workshop|Dy. CEE /CB": ["12 Days"],
+    "CG Assistant Workshop|Dy. CME (Diesel)/ RSW/CB": ["78 Days"],
+
+    // GDCE App. Tech. III
+    "GDCE App. Tech. III|Dy. CME (Diesel)/ RSW/CB": ["06 Months"],
+    "GDCE App. Tech. III|Dy. CEE /CB": ["06 Months"],
+    "GDCE App. Tech. III|LKO Division": ["06 Months"],
+
+    // Refresher Course for Welders
+    "Refresher Course for Welders|Northern Railway Units & Depot": ["03 Weeks"],
+
+    // Refresher Course for Artisans
+    "Refresher Course for Artisans|Northern Railway Units & Depot": ["02 Weeks"],
+
+    // Special Course on MIG/MAG Welding & Air Plasma Cutting
+    "Special Course on MIG/ MAG Welding & Air Plasma Cutting|Northern Railway Units & Depot": ["01 Week"],
+
+    // Basic Welding Training for Beginners
+    "Basic Welding Training for Beginners|Northern Railway Units & Depot": ["04 Weeks"],
+
+    // Pre-selection Coaching for JE Selection
+    "Pre-selection Coaching for JE Selection|Dy. CME (Diesel)/ RSW/CB": ["21 Days"],
+    "Pre-selection Coaching for JE Selection|Dy. CEE /CB": ["21 Days"],
+    "Pre-selection Coaching for JE Selection|Dy. CEE (W)/AMV": ["21 Days"],
+    "Pre-selection Coaching for JE Selection|LKO Division": ["21 Days"],
+  }), []);
+
+
+  const designationUnitPeriodToDurations = {
+    // CG Apprentice Technician III (Induction Course)
+    "CG Apprentice Technician III|Any|02 Years": ["06 Months", "18 Months"],
+    "CG Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
+    "CG Apprentice Technician III|Any|06 Months": ["03 Months", "03 Months"],
+
+    // RRB Apprentice Technician III
+    "RRB Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
+    "RRB Apprentice Technician III|Any|06 Months": ["03 Months", "03 Months"],
+
+    // RRC Assistant Workshop
+    "RRC Assistant Workshop|Dy. CEE /CB|12 Days": ["12 Days", "00 Days"],
+    "RRC Assistant Workshop|Dy. CME (Diesel)/ RSW/CB|78 Days": ["78 Days", "00 Days"],
+
+    // CG Assistant Workshop
+    "CG Assistant Workshop|Dy. CEE /CB|12 Days": ["12 Days", "00 Days"],
+    "CG Assistant Workshop|Dy. CME (Diesel)/ RSW/CB|78 Days": ["78 Days", "00 Days"],
+
+    // GDCE App. Tech. III (Promotional Course)
+    "GDCE App. Tech. III|Any|06 Months": ["01 Month", "05 Months"],
+
+    // Refresher Course for Welders
+    "Refresher Course for Welders|Northern Railway Units & Depot|03 Weeks": ["01 Week", "02 Weeks"],
+
+    // Refresher Course for Artisans
+    "Refresher Course for Artisans|Northern Railway Units & Depot|02 Weeks": ["02 Weeks", "00 Weeks"],
+
+    // Special Course on MIG/MAG Welding & Air Plasma Cutting
+    "Special Course on MIG/ MAG Welding & Air Plasma Cutting|Northern Railway Units & Depot|01 Week": ["01 Week", "00 Weeks"],
+
+    // Basic Welding Training for Beginners
+    "Basic Welding Training for Beginners|Northern Railway Units & Depot|04 Weeks": ["1.5 Weeks", "2.5 Weeks"],
+
+    // Pre-selection Coaching for JE Selection
+    "Pre-selection Coaching for JE Selection|Dy. CME (Diesel)/ RSW/CB|21 Days": ["21 Days", "00 Days"],
+    "Pre-selection Coaching for JE Selection|Dy. CEE /CB|21 Days": ["21 Days", "00 Days"],
+    "Pre-selection Coaching for JE Selection|Dy. CEE (W)/AMV|21 Days": ["21 Days", "00 Days"],
+    "Pre-selection Coaching for JE Selection|LKO Division|21 Days": ["21 Days", "00 Days"],
+
+    // RRC Act Apprentice 1961
+    "RRC Act Apprentice 1961|Any|01 Year": ["01 Week", "51 Weeks"],
+
+    // Act Junior Apprentices
+    "Act Junior Apprentices|Any|01 Year": ["04 Weeks", "48 Weeks"],
+
+    // Rail Kaushal Vikas Yojana
+    "Rail Kaushal Vikas Yojana - Welder|Any|03 Weeks": ["01 Week", "02 Weeks"],
+    "Rail Kaushal Vikas Yojana - Electrician|Any|03 Weeks": ["01 Week", "02 Weeks"],
+
+    // Summer Vocation Training
+    "Summer Vocation training|Any|04 Weeks": ["00 Weeks", "04 Weeks"],
+    "Summer Vocation training|Any|06 Weeks": ["00 Weeks", "06 Weeks"],
   };
 
-  // Unit to training period mapping based on your data
-  const unitTrainingMap = {
-    // CG Apprentice Technician III units
-    "Dy. CME (Diesel)/ RSW/CB": ["02 Years", "01 Year", "06 Months"],
-    "Dy. CEE /CB": ["02 Years", "01 Year", "06 Months", "12 Days", "78 Days"],
-    "Dy. CEE (W)/AMV": ["02 Years", "01 Year", "06 Months"],
-    RDSO: ["02 Years", "01 Year", "06 Months"],
-    "LKO Division": ["02 Years", "01 Year", "06 Months", "21 Days"],
-
-    // Northern Railway Units
-    "Northern Railway Units & Depot": [
-      "3 Weeks",
-      "2 Weeks",
-      "1 Week",
-      "4 Weeks",
-    ],
-  };
-
-  // Updated training period to theory/practical mapping based on your data
-  const trainingMap = {
-    "02 Years": ["6 Months", "18 Months"],
-    "01 Year": ["3 Months", "9 Months"],
-    "06 Months": ["3 Months", "3 Months"],
-    "12 Days": ["12 Days", "0 Days"],
-    "78 Days": ["78 Days", "0 Days"],
-    "4 Weeks": ["1.5 Weeks", "2.5 Weeks"],
-    "3 Weeks": ["1 Week", "2 Weeks"],
-    "2 Weeks": ["2 Weeks", "0 Weeks"],
-    "1 Week": ["1 Week", "0 Weeks"],
-    "21 Days": ["21 Days", "0 Days"],
-  };
 
   const handleChange = useCallback(
     (field, value) => {
@@ -133,25 +204,38 @@ const Professional = ({ formData, onChange }) => {
         if (value === "Custom") {
           onChange("theoryDuration", "");
           onChange("practicalDuration", "");
-        } else if (trainingMap[value]) {
-          const [theory, practical] = trainingMap[value];
-          onChange("theoryDuration", theory);
-          onChange("practicalDuration", practical);
-          // Clear custom fields when selecting predefined period
-          onChange("customTrainingPeriod", "");
-          onChange("customTheoryDuration", "");
-          onChange("customPracticalDuration", "");
+        } else {
+          const exactKey = `${formData.designation}|${formData.unit}|${value}`;
+          const fallbackKey = `${formData.designation}|Any|${value}`;
+          const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
+
+          console.log('Auto-calculation debug:', {
+            designation: formData.designation,
+            unit: formData.unit,
+            trainingPeriod: value,
+            exactKey,
+            fallbackKey,
+            durations,
+            availableKeys: Object.keys(designationUnitPeriodToDurations)
+          });
+
+          if (durations) {
+            const [theory, practical] = durations;
+            onChange("theoryDuration", theory);
+            onChange("practicalDuration", practical);
+            // Clear custom fields
+            onChange("customTrainingPeriod", "");
+            onChange("customTheoryDuration", "");
+            onChange("customPracticalDuration", "");
+          } else {
+            // No match found
+            onChange("theoryDuration", "");
+            onChange("practicalDuration", "");
+          }
         }
       }
-
-      // Handle custom training period changes
-      if (field === "customTrainingPeriod") {
-        // Clear predefined durations when custom is entered
-        onChange("theoryDuration", "");
-        onChange("practicalDuration", "");
-      }
     },
-    [onChange]
+    [onChange, formData]
   );
 
   // Enhanced validation with comprehensive type checking
@@ -287,7 +371,9 @@ const Professional = ({ formData, onChange }) => {
       const value = formData[field];
       const error = validateField(field, value);
       if (error) newErrors[field] = error;
-    });      // Validate conditional fields for "Other" selections
+    });
+
+    // Validate conditional fields for "Other" selections
     if (
       formData.modeOfAppointment === "Other" &&
       !formData.modeOfAppointmentOther?.trim()
@@ -394,19 +480,25 @@ const Professional = ({ formData, onChange }) => {
   const designationOptions = useMemo(() => {
     if (!formData.courseType || formData.courseType === "Other") return [""];
     return ["", ...(designationMap[formData.courseType] || []), "Other"];
-  }, [formData.courseType]);
+  }, [designationMap, formData.courseType]);
 
   // Get unit options based on selected designation
   const unitOptionsForDesignation = useMemo(() => {
     if (!formData.designation || formData.designation === "Other") return [""];
     return ["", ...(unitMap[formData.designation] || []), "Other"];
-  }, [formData.designation]);
+  }, [formData.designation, unitMap]);
 
-  // Get training period options based on selected unit
-  const trainingPeriodOptionsForUnit = useMemo(() => {
-    if (!formData.unit || formData.unit === "Other") return [""];
-    return ["", ...(unitTrainingMap[formData.unit] || []), "Custom"];
-  }, [formData.unit]);
+  // Get training period options based on selected designation-unit combination
+  const trainingPeriodOptionsForDesignationUnit = useMemo(() => {
+    if (!formData.designation || !formData.unit ||
+      formData.designation === "Other" || formData.unit === "Other") {
+      return [""];
+    }
+
+    const key = `${formData.designation}|${formData.unit}`;
+    const periods = designationUnitTrainingMap[key] || [];
+    return ["", ...periods, "Custom"];
+  }, [designationUnitTrainingMap, formData.designation, formData.unit]);
 
   const professionalFields = useMemo(
     () => [
@@ -461,7 +553,7 @@ const Professional = ({ formData, onChange }) => {
         label: "Training Period",
         field: "trainingPeriod",
         type: "select",
-        options: trainingPeriodOptionsForUnit,
+        options: trainingPeriodOptionsForDesignationUnit,
         disabled: !formData.unit || formData.unit === "Other",
       },
       formData.trainingPeriod === "Custom" && {
@@ -512,7 +604,7 @@ const Professional = ({ formData, onChange }) => {
       courseTypeOptions,
       designationOptions,
       unitOptionsForDesignation,
-      trainingPeriodOptionsForUnit,
+      trainingPeriodOptionsForDesignationUnit,
     ]
   );
 
@@ -540,7 +632,7 @@ const Professional = ({ formData, onChange }) => {
         label: "Grade Value",
         field: "gradeValue",
         type: "number",
-        step: "0.01",
+        step: 0.01,
         helpText:
           formData.gradeType === "CGPA (out of 10)"
             ? "Enter CGPA between 0-10"
@@ -572,6 +664,7 @@ const Professional = ({ formData, onChange }) => {
             disabled = false,
             required = true,
             helpText,
+            step,
           }) => (
             <div key={field}>
               <label className="block text-gray-700 font-medium mb-1">
@@ -600,6 +693,7 @@ const Professional = ({ formData, onChange }) => {
                     } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder={`Enter ${label.toLowerCase()}`}
                   disabled={disabled}
+                  step={step}
                 />
               )}
               {helpText && (
