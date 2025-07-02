@@ -1250,7 +1250,7 @@ const Marksheet = () => {
               }}>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gridTemplateColumns: '1fr 1fr',
                   gap: '32px'
                 }}>
                   <div style={{ textAlign: 'center' }}>
@@ -1259,7 +1259,7 @@ const Marksheet = () => {
                       color: 'black',
                       fontSize: '13px',
                       margin: '0'
-                    }}>Checked By</p>
+                    }}>Senior Lecturer (IC)</p>
                     <div style={{ height: '48px', marginTop: '32px' }}></div>
                     <div style={{
                       borderTop: '2px solid black',
@@ -1273,7 +1273,7 @@ const Marksheet = () => {
                       color: 'black',
                       fontSize: '13px',
                       margin: '0'
-                    }}>Principal / Director</p>
+                    }}>Director</p>
                     <div style={{ height: '48px', marginTop: '32px' }}></div>
                     <div style={{
                       borderTop: '2px solid black',
@@ -1289,20 +1289,6 @@ const Marksheet = () => {
                     }}>
                       Date of Generation: {new Date().toLocaleDateString("en-IN")}
                     </p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{
-                      fontWeight: '600',
-                      color: 'black',
-                      fontSize: '13px',
-                      margin: '0'
-                    }}>Prepared By</p>
-                    <div style={{ height: '48px', marginTop: '32px' }}></div>
-                    <div style={{
-                      borderTop: '2px solid black',
-                      width: '128px',
-                      margin: '0 auto'
-                    }}></div>
                   </div>
                 </div>
               </div>

@@ -28,6 +28,13 @@ const TraineeProfile = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showResignationModal, setShowResignationModal] = useState(false);
+  const [selectedTraineeForResignation, setSelectedTraineeForResignation] = useState(null);
+  const [resignationData, setResignationData] = useState({
+    date: '',
+    reason: ''
+  });
+  const [submittingResignation, setSubmittingResignation] = useState(false);
 
   // Mock data matching FeedMark.jsx candidatesData
   const mockTraineesData = [
@@ -46,7 +53,8 @@ const TraineeProfile = () => {
         moduleNo: 'MSE-C&W',
         duration: '52 Weeks',
         joiningDate: '2024-01-15',
-        sparingDate: '2025-01-15'
+        sparingDate: '2025-01-15',
+        coordinator: 'Mr. R.K. Sharma'
       },
       lineTraining: {
         status: 'Completed',
@@ -70,7 +78,8 @@ const TraineeProfile = () => {
         moduleNo: 'MSE-D',
         duration: '52 Weeks',
         joiningDate: '2024-02-01',
-        sparingDate: '2025-02-01'
+        sparingDate: '2025-02-01',
+        coordinator: 'Mrs. S.K. Verma'
       },
       lineTraining: {
         status: 'In Progress',
@@ -94,7 +103,8 @@ const TraineeProfile = () => {
         moduleNo: 'MSE-W',
         duration: '52 Weeks',
         joiningDate: '2024-03-01',
-        sparingDate: '2025-03-01'
+        sparingDate: '2025-03-01',
+        coordinator: 'Mr. A.K. Singh'
       },
       lineTraining: {
         status: 'Scheduled',
@@ -118,7 +128,8 @@ const TraineeProfile = () => {
         moduleNo: 'MJR-C&W',
         duration: '52 Weeks',
         joiningDate: '2024-01-15',
-        sparingDate: '2025-01-15'
+        sparingDate: '2025-01-15',
+        coordinator: 'Mrs. N.P. Gupta'
       },
       lineTraining: {
         status: 'Completed',
@@ -142,7 +153,8 @@ const TraineeProfile = () => {
         moduleNo: 'MJR-D',
         duration: '52 Weeks',
         joiningDate: '2024-02-01',
-        sparingDate: '2025-02-01'
+        sparingDate: '2025-02-01',
+        coordinator: 'Mr. V.K. Yadav'
       },
       lineTraining: {
         status: 'In Progress',
@@ -166,7 +178,8 @@ const TraineeProfile = () => {
         moduleNo: 'MJR-W',
         duration: '52 Weeks',
         joiningDate: '2024-03-01',
-        sparingDate: '2025-03-01'
+        sparingDate: '2025-03-01',
+        coordinator: 'Mrs. S.D. Sharma'
       },
       lineTraining: {
         status: 'Scheduled',
@@ -181,6 +194,61 @@ const TraineeProfile = () => {
   useEffect(() => {
     fetchTrainees();
   }, []);
+
+  // Backend API endpoints
+  const API_BASE = '/api/stc';
+
+  const apiCall = async (endpoint, options = {}) => {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        ...options
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`API call failed for ${endpoint}:`, error);
+      throw error;
+    }
+  };
+
+  // API Functions
+  const resignTrainee = async (traineeId, resignationDate, reason) => {
+    return await apiCall('/trainees/resign', {
+      method: 'POST',
+      body: JSON.stringify({
+        traineeId,
+        resignationDate,
+        reason,
+        processedBy: 'Admin', // This would come from auth context in real app
+        processedAt: new Date().toISOString()
+      })
+    });
+  };
+
+  const getTraineeResignationHistory = async (traineeId) => {
+    return await apiCall(`/trainees/${traineeId}/resignation-history`);
+  };
+
+  const updateTraineeStatus = async (traineeId, status, metadata = {}) => {
+    return await apiCall('/trainees/status', {
+      method: 'PUT',
+      body: JSON.stringify({
+        traineeId,
+        status,
+        metadata,
+        updatedBy: 'Admin',
+        updatedAt: new Date().toISOString()
+      })
+    });
+  };
 
   const fetchTrainees = async () => {
     try {
@@ -253,6 +321,92 @@ const TraineeProfile = () => {
     } catch (error) {
       console.error('Error navigating to line training:', error);
     }
+  };
+
+  // Handle resignation
+  const handleResignation = (trainee) => {
+    setSelectedTraineeForResignation(trainee);
+    setResignationData({ date: '', reason: '' });
+    setShowResignationModal(true);
+  };
+
+  const handleResignationSubmit = async () => {
+    if (!resignationData.date || !resignationData.reason.trim()) {
+      alert('Please provide both resignation date and reason');
+      return;
+    }
+
+    setSubmittingResignation(true);
+
+    try {
+      // Call resignation API
+      await resignTrainee(
+        selectedTraineeForResignation.id,
+        resignationData.date,
+        resignationData.reason.trim()
+      );
+
+      // Update local state
+      const updatedTrainees = trainees.map(trainee =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+            ...trainee,
+            status: 'Resigned',
+            resignationDate: resignationData.date,
+            resignationReason: resignationData.reason.trim()
+          }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(updatedTrainees.filter(trainee =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: '', reason: '' });
+
+      alert(`${selectedTraineeForResignation.name} has been marked as resigned successfully.`);
+    } catch (error) {
+      console.error('Error processing resignation:', error);
+      alert('Failed to process resignation. This is a demo - in production, this would save to the database.');
+
+      // For demo purposes, still update the UI
+      const updatedTrainees = trainees.map(trainee =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+            ...trainee,
+            status: 'Resigned',
+            resignationDate: resignationData.date,
+            resignationReason: resignationData.reason.trim()
+          }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(updatedTrainees.filter(trainee =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: '', reason: '' });
+    } finally {
+      setSubmittingResignation(false);
+    }
+  };
+
+  const closeResignationModal = () => {
+    setShowResignationModal(false);
+    setSelectedTraineeForResignation(null);
+    setResignationData({ date: '', reason: '' });
   };
 
   if (loading) {
@@ -341,8 +495,10 @@ const TraineeProfile = () => {
                     </div>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === 'Active'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : trainee.status === 'Resigned'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
                     }`}>
                     {trainee.status}
                   </span>
@@ -356,7 +512,7 @@ const TraineeProfile = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Award className="w-4 h-4 mr-2" />
-                    {trainee.designation} - {trainee.unit}
+                    {trainee.courseCode} - {trainee.unit}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <GraduationCap className="w-4 h-4 mr-2" />
@@ -380,6 +536,8 @@ const TraineeProfile = () => {
                   <p>Module: {trainee.course.moduleNo}</p>
                   <p>Duration: {trainee.course.duration}</p>
                   <p>Joining: {new Date(trainee.course.joiningDate).toLocaleDateString()}</p>
+                  <p>Sparing: {new Date(trainee.course.sparingDate).toLocaleDateString()}</p>
+                  <p>Coordinator: {trainee.course.coordinator}</p>
                 </div>
               </div>
 
@@ -422,7 +580,7 @@ const TraineeProfile = () => {
 
               {/* Actions */}
               <div className="p-4 border-t border-gray-100">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <button
                     onClick={() => handleEditTrainee(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
@@ -440,12 +598,25 @@ const TraineeProfile = () => {
                     <FileText className="w-4 h-4 mr-1" />
                     {hasMarksData(trainee.id) ? 'View Marks' : 'Add Marks'}
                   </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleLineTraining(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
                   >
                     <GraduationCap className="w-4 h-4 mr-1" />
                     Training
+                  </button>
+                  <button
+                    onClick={() => handleResignation(trainee)}
+                    disabled={trainee.status === 'Resigned'}
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === 'Resigned'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-red-500 text-white hover:bg-red-600'
+                      }`}
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    {trainee.status === 'Resigned' ? 'Resigned' : 'Resign'}
                   </button>
                 </div>
               </div>
@@ -462,6 +633,93 @@ const TraineeProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Resignation Modal */}
+      {showResignationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">Process Resignation</h3>
+              <button
+                onClick={closeResignationModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {selectedTraineeForResignation && (
+              <div className="mb-6">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {selectedTraineeForResignation.picture ? (
+                    <img
+                      src={selectedTraineeForResignation.picture}
+                      alt={selectedTraineeForResignation.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
+                        {selectedTraineeForResignation.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedTraineeForResignation.name}</p>
+                    <p className="text-sm text-gray-500">{selectedTraineeForResignation.ticketNo}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resignation Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={resignationData.date}
+                  onChange={(e) => setResignationData(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Resignation <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={resignationData.reason}
+                  onChange={(e) => setResignationData(prev => ({ ...prev, reason: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows="4"
+                  placeholder="Enter the reason for resignation..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={closeResignationModal}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResignationSubmit}
+                disabled={submittingResignation || !resignationData.date || !resignationData.reason.trim()}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {submittingResignation ? 'Processing...' : 'Confirm Resignation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

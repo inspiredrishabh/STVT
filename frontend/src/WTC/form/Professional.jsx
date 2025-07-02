@@ -11,7 +11,7 @@ const Professional = ({ formData, onChange }) => {
       "RRC Assistant Workshop",
       "CG Assistant Workshop",
     ],
-    "Promotional Course": ["GDCE App. Tech. III"],
+    "Promotional Course": ["GDCE App. Tech. III", "SSC", "JE"],
     "Refresher Course": [
       "Refresher Course for Welders",
       "Refresher Course for Artisans",
@@ -42,6 +42,18 @@ const Professional = ({ formData, onChange }) => {
     "GDCE App. Tech. III": [
       "Dy. CME (Diesel)/ RSW/CB",
       "Dy. CEE /CB",
+      "LKO Division",
+    ],
+    "SSC": [
+      "Dy. CME (Diesel)/ RSW/CB",
+      "Dy. CEE /CB",
+      "Dy. CEE (W)/AMV",
+      "LKO Division",
+    ],
+    "JE": [
+      "Dy. CME (Diesel)/ RSW/CB",
+      "Dy. CEE /CB",
+      "Dy. CEE (W)/AMV",
       "LKO Division",
     ],
     "Refresher Course for Welders": ["Northern Railway Units & Depot"],
@@ -86,6 +98,18 @@ const Professional = ({ formData, onChange }) => {
     "GDCE App. Tech. III|Dy. CEE /CB": ["06 Months"],
     "GDCE App. Tech. III|LKO Division": ["06 Months"],
 
+    // SSC
+    "SSC|Dy. CME (Diesel)/ RSW/CB": ["06 Months", "01 Year"],
+    "SSC|Dy. CEE /CB": ["06 Months", "01 Year"],
+    "SSC|Dy. CEE (W)/AMV": ["06 Months", "01 Year"],
+    "SSC|LKO Division": ["06 Months", "01 Year"],
+
+    // JE
+    "JE|Dy. CME (Diesel)/ RSW/CB": ["06 Months", "01 Year"],
+    "JE|Dy. CEE /CB": ["06 Months", "01 Year"],
+    "JE|Dy. CEE (W)/AMV": ["06 Months", "01 Year"],
+    "JE|LKO Division": ["06 Months", "01 Year"],
+
     // Refresher Course for Welders
     "Refresher Course for Welders|Northern Railway Units & Depot": ["03 Weeks"],
 
@@ -126,6 +150,14 @@ const Professional = ({ formData, onChange }) => {
 
     // GDCE App. Tech. III (Promotional Course)
     "GDCE App. Tech. III|Any|06 Months": ["01 Month", "05 Months"],
+
+    // SSC (Promotional Course)
+    "SSC|Any|06 Months": ["02 Months", "04 Months"],
+    "SSC|Any|01 Year": ["04 Months", "08 Months"],
+
+    // JE (Promotional Course)
+    "JE|Any|06 Months": ["02 Months", "04 Months"],
+    "JE|Any|01 Year": ["04 Months", "08 Months"],
 
     // Refresher Course for Welders
     "Refresher Course for Welders|Northern Railway Units & Depot|03 Weeks": ["01 Week", "02 Weeks"],
@@ -357,8 +389,6 @@ const Professional = ({ formData, onChange }) => {
       "highestQualification",
       "fieldOfStudy",
       "institution",
-      "gradeType",
-      "gradeValue",
     ],
     []
   );
@@ -402,6 +432,13 @@ const Professional = ({ formData, onChange }) => {
       !formData.otherQualification?.trim()
     ) {
       newErrors.otherQualification = "Please specify the qualification";
+    }
+
+    if (
+      formData.fieldOfStudy === "Other" &&
+      !formData.customFieldOfStudy?.trim()
+    ) {
+      newErrors.customFieldOfStudy = "Please specify the field of study";
     }
 
     // Validate custom training period fields
@@ -453,10 +490,88 @@ const Professional = ({ formData, onChange }) => {
     []
   );
 
+  const getFieldOfStudyOptions = useCallback(() => {
+    const qualification = formData.highestQualification;
+
+    switch (qualification) {
+      case "Diploma":
+        return [
+          "",
+          "Mechanical Engineering",
+          "Electrical Engineering",
+          "Civil Engineering",
+          "Electronics Engineering",
+          "Computer Engineering",
+          "Automobile Engineering",
+          "Railway Engineering",
+          "Other"
+        ];
+      case "Bachelor's Degree":
+        return [
+          "",
+          "B.Tech - Mechanical Engineering",
+          "B.Tech - Electrical Engineering",
+          "B.Tech - Civil Engineering",
+          "B.Tech - Electronics & Communication",
+          "B.Tech - Computer Science",
+          "B.Tech - Railway Engineering",
+          "B.E - Mechanical Engineering",
+          "B.E - Electrical Engineering",
+          "B.E - Civil Engineering",
+          "BCA - Computer Applications",
+          "B.Sc - Physics",
+          "B.Sc - Mathematics",
+          "B.Sc - Chemistry",
+          "B.Com - Commerce",
+          "Other"
+        ];
+      case "Master's Degree":
+        return [
+          "",
+          "M.Tech - Mechanical Engineering",
+          "M.Tech - Electrical Engineering",
+          "M.Tech - Civil Engineering",
+          "M.Tech - Electronics & Communication",
+          "M.Tech - Computer Science",
+          "M.Tech - Railway Engineering",
+          "M.E - Mechanical Engineering",
+          "M.E - Electrical Engineering",
+          "M.E - Civil Engineering",
+          "MCA - Computer Applications",
+          "M.Sc - Physics",
+          "M.Sc - Mathematics",
+          "M.Sc - Chemistry",
+          "MBA - Business Administration",
+          "M.Com - Commerce",
+          "Other"
+        ];
+      case "Ph.D":
+        return [
+          "",
+          "Ph.D - Mechanical Engineering",
+          "Ph.D - Electrical Engineering",
+          "Ph.D - Civil Engineering",
+          "Ph.D - Electronics & Communication",
+          "Ph.D - Computer Science",
+          "Ph.D - Railway Engineering",
+          "Ph.D - Physics",
+          "Ph.D - Mathematics",
+          "Ph.D - Chemistry",
+          "Ph.D - Management",
+          "Other"
+        ];
+      default:
+        return ["", "Other"];
+    }
+  }, [formData.highestQualification]);
+
+  const fieldOfStudyOptions = useMemo(() => getFieldOfStudyOptions(), [getFieldOfStudyOptions]);
+
   const appointmentModeOptions = useMemo(
     () => [
       "",
       "RRB",
+      "CG",
       "Promotion Through LDCE",
       "Promotion Through Seniority",
       "Other",
@@ -620,19 +735,30 @@ const Professional = ({ formData, onChange }) => {
         label: "Specify Qualification",
         field: "otherQualification",
       },
-      { label: "Field of Study", field: "fieldOfStudy" },
+      {
+        label: "Field of Study",
+        field: "fieldOfStudy",
+        type: "select",
+        options: fieldOfStudyOptions,
+      },
+      formData.fieldOfStudy === "Other" && {
+        label: "Custom Field of Study",
+        field: "customFieldOfStudy",
+      },
       { label: "Institution", field: "institution" },
       {
         label: "Grade Type",
         field: "gradeType",
         type: "select",
         options: gradeTypeOptions,
+        required: false,
       },
       {
         label: "Grade Value",
         field: "gradeValue",
         type: "number",
         step: 0.01,
+        required: false,
         helpText:
           formData.gradeType === "CGPA (out of 10)"
             ? "Enter CGPA between 0-10"
@@ -645,8 +771,10 @@ const Professional = ({ formData, onChange }) => {
     ],
     [
       formData.highestQualification,
+      formData.fieldOfStudy,
       formData.gradeType,
       qualificationOptions,
+      fieldOfStudyOptions,
       gradeTypeOptions,
     ]
   );

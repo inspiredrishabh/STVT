@@ -63,9 +63,52 @@ class DashboardAPI {
             endpoint: `${this.baseURL}/distribution`,
             method: 'GET'
         };
-    }    // GET /api/dashboard/stats - Overall Statistics
+    }    // Helper function to calculate working days in a month (excluding government holidays in UP)
+    calculateWorkingDays(year, month) {
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let workingDays = 0;
+
+        // Government holidays in UP (approximate dates for calculation)
+        const holidays = {
+            1: [1, 26], // January: New Year, Republic Day
+            2: [], // February
+            3: [8], // March: Holi (varies, using approximate)
+            4: [14], // April: Ambedkar Jayanti
+            5: [1], // May: Labour Day
+            6: [], // June
+            7: [], // July
+            8: [15], // August: Independence Day
+            9: [], // September
+            10: [2], // October: Gandhi Jayanti
+            11: [], // November: Diwali (varies)
+            12: [25] // December: Christmas
+        };
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month - 1, day);
+            const dayOfWeek = date.getDay();
+
+            // Skip Sundays (0) and check if it's not a holiday
+            if (dayOfWeek !== 0 && !holidays[month]?.includes(day)) {
+                workingDays++;
+            }
+        }
+
+        return workingDays;
+    }
+
+    // GET /api/dashboard/stats - Overall Statistics
     async getOverallStats() {
         await this.delay();
+
+        const classroomCapacity = 126;
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        // Calculate working days for current month
+        const workingDaysThisMonth = this.calculateWorkingDays(currentYear, currentMonth);
+        const trainingCapacity = classroomCapacity * workingDaysThisMonth;
 
         // Updated stats based on Railway (STC + WTC) vs Non-Railway structure
         const mockData = {
@@ -77,7 +120,9 @@ class DashboardAPI {
             activeCourses: 35,
             completedCourses: 95,
             pendingApplications: 67,
-            successRate: 89.5,
+            trainingCapacity: trainingCapacity,
+            classroomCapacity: classroomCapacity,
+            workingDaysThisMonth: workingDaysThisMonth,
             totalBatches: 18,
             monthlyGrowth: 12.5
         };
@@ -434,12 +479,15 @@ function Dashboard() {
                             <div className="flex items-center">
                                 <div className="p-3 bg-yellow-100 rounded-full">
                                     <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                                    <p className="text-2xl font-bold text-gray-900">{overallStats.successRate}%</p>
+                                    <p className="text-sm font-medium text-gray-600">Training Capacity</p>
+                                    <p className="text-2xl font-bold text-gray-900">{overallStats.trainingCapacity}</p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {overallStats.classroomCapacity} × {overallStats.workingDaysThisMonth} days
+                                    </p>
                                 </div>
                             </div>
                         </div>

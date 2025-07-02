@@ -46,8 +46,6 @@ const LineTraining = () => {
     activityCentre: "",
     startDate: "",
     endDate: "",
-    parentUnit: "",
-    supervisor: "",
     description: "",
   });
 
@@ -168,28 +166,253 @@ const LineTraining = () => {
   const mockTrainees = [
     {
       id: 1,
-      ticketNo: "ASE00001",
+      ticketNo: "STC2024001",
       name: "Rahul Sharma",
-      designation: "ASE",
+      designation: "MSE-C&W",
       unit: "JAT",
       batch: "2024-2025",
       status: "Active",
     },
     {
       id: 2,
-      ticketNo: "AJE00001",
+      ticketNo: "STC2024002",
       name: "Priya Singh",
-      designation: "AJE",
+      designation: "MSE-D",
       unit: "FZD",
       batch: "2024-2025",
       status: "Active",
     },
     {
       id: 3,
-      ticketNo: "IJE00001",
+      ticketNo: "STC2024003",
       name: "Amit Kumar",
-      designation: "IJE",
+      designation: "MSE-W",
       unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 4,
+      ticketNo: "STC2024004",
+      name: "Neha Gupta",
+      designation: "MJR-C&W",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 5,
+      ticketNo: "STC2024005",
+      name: "Vikash Yadav",
+      designation: "MJR-D",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 6,
+      ticketNo: "STC2024006",
+      name: "Sunita Devi",
+      designation: "MJR-W",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 7,
+      ticketNo: "STC2024007",
+      name: "Abhijeet Malik",
+      designation: "MJI-C&W",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 8,
+      ticketNo: "STC2024008",
+      name: "Anjali Kumari",
+      designation: "MJI-D",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 9,
+      ticketNo: "STC2024009",
+      name: "Manoj Kumar",
+      designation: "MJI-W",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 10,
+      ticketNo: "STC2024010",
+      name: "Pooja Singh",
+      designation: "MJP-C&W",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 11,
+      ticketNo: "STC2024011",
+      name: "Sandeep Kumar",
+      designation: "MJP-D",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 12,
+      ticketNo: "STC2024012",
+      name: "Kavita Sharma",
+      designation: "MJP-W",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 13,
+      ticketNo: "STC2024013",
+      name: "Ravi Patel",
+      designation: "ASE",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 14,
+      ticketNo: "STC2024014",
+      name: "Sita Ram",
+      designation: "AJE-E",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 15,
+      ticketNo: "STC2024015",
+      name: "Deepak Singh",
+      designation: "IJE-E",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 16,
+      ticketNo: "STC2024016",
+      name: "Meera Joshi",
+      designation: "RJE-C&W",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 17,
+      ticketNo: "STC2024017",
+      name: "Ramesh Verma",
+      designation: "RCW-C&W",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 18,
+      ticketNo: "STC2024018",
+      name: "Sonal Agarwal",
+      designation: "RD-D",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 19,
+      ticketNo: "STC2024019",
+      name: "Arjun Yadav",
+      designation: "TS-S&T",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 20,
+      ticketNo: "STC2024020",
+      name: "Preeti Sharma",
+      designation: "LH-I-D",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 21,
+      ticketNo: "STC2024021",
+      name: "Suresh Kumar",
+      designation: "LH-II-D",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 22,
+      ticketNo: "STC2024022",
+      name: "Anita Singh",
+      designation: "FM-E",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 23,
+      ticketNo: "STC2024023",
+      name: "Rajesh Gupta",
+      designation: "WT-C&W",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 24,
+      ticketNo: "STC2024024",
+      name: "Nisha Patel",
+      designation: "DM-D",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 25,
+      ticketNo: "STC2024025",
+      name: "Vinod Kumar",
+      designation: "WE-C&W",
+      unit: "JAT",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 26,
+      ticketNo: "STC2024026",
+      name: "Rekha Sharma",
+      designation: "NDT-C&W",
+      unit: "FZD",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 27,
+      ticketNo: "STC2024027",
+      name: "Ajay Singh",
+      designation: "EA-E",
+      unit: "MB",
+      batch: "2024-2025",
+      status: "Active",
+    },
+    {
+      id: 28,
+      ticketNo: "STC2024028",
+      name: "Shanti Devi",
+      designation: "3DMP-C&W",
+      unit: "JAT",
       batch: "2024-2025",
       status: "Active",
     },
@@ -198,25 +421,30 @@ const LineTraining = () => {
   const mockTrainings = [
     {
       id: 1,
-      ticketNumbers: ["ASE00001"],
+      ticketNumbers: ["STC2024001", "STC2024013"],
       activityCentre: "JAT Diesel Shed",
       startDate: "2024-06-01",
       endDate: "2024-08-31",
-      parentUnit: "JAT Division",
-      supervisor: "Mr. R.K. Sharma",
       status: "In Progress",
       description: "Practical training on diesel locomotive maintenance",
     },
     {
       id: 2,
-      ticketNumbers: ["AJE00001", "IJE00001"],
+      ticketNumbers: ["STC2024002", "STC2024014", "STC2024008"],
       activityCentre: "FZD Electric Shed",
       startDate: "2024-07-01",
       endDate: "2024-09-30",
-      parentUnit: "FZD Division",
-      supervisor: "Mr. S.K. Verma",
       status: "Scheduled",
       description: "Electric traction training program",
+    },
+    {
+      id: 3,
+      ticketNumbers: ["STC2024004", "STC2024010"],
+      activityCentre: "MB Carriage Workshop",
+      startDate: "2024-05-15",
+      endDate: "2024-08-15",
+      status: "In Progress",
+      description: "Carriage and wagon maintenance training",
     },
   ];
 
@@ -277,8 +505,6 @@ const LineTraining = () => {
         activityCentre: "",
         startDate: "",
         endDate: "",
-        parentUnit: "",
-        supervisor: "",
         description: "",
       });
       setFormErrors({});
@@ -377,8 +603,6 @@ const LineTraining = () => {
       activityCentre: training.activityCentre,
       startDate: training.startDate,
       endDate: training.endDate,
-      parentUnit: training.parentUnit,
-      supervisor: training.supervisor || "",
       description: training.description || "",
     });
     setFormErrors({});
@@ -478,8 +702,6 @@ const LineTraining = () => {
       activityCentre: "",
       startDate: "",
       endDate: "",
-      parentUnit: "",
-      supervisor: "",
       description: "",
     });
   };
@@ -721,30 +943,6 @@ const LineTraining = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Parent Unit <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.parentUnit}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        parentUnit: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  >
-                    <option value="">Select Parent Unit</option>
-                    <option value="JAT Division">JAT Division</option>
-                    <option value="FZD Division">FZD Division</option>
-                    <option value="MB Division">MB Division</option>
-                    <option value="LKO Division">LKO Division</option>
-                    <option value="DLI Division">DLI Division</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Start Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -775,24 +973,6 @@ const LineTraining = () => {
                   {formErrors.endDate && (
                     <p className="text-red-500 text-sm mt-1">{formErrors.endDate}</p>
                   )}
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Supervisor
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.supervisor}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        supervisor: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="e.g., Mr. R.K. Sharma"
-                  />
                 </div>
 
                 <div className="md:col-span-2">
@@ -968,9 +1148,9 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(trainings.map((t) => t.parentUnit)).size}
+                {new Set(trainings.map((t) => t.activityCentre)).size}
               </p>
-              <p className="text-sm text-gray-600">Active Units</p>
+              <p className="text-sm text-gray-600">Active Centres</p>
             </div>
           </div>
         </div>
@@ -1022,7 +1202,7 @@ const LineTraining = () => {
                         {training.description}
                       </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center text-gray-600">
                           <Calendar className="w-4 h-4 mr-2" />
                           {new Date(
@@ -1031,20 +1211,10 @@ const LineTraining = () => {
                           {new Date(training.endDate).toLocaleDateString()}
                         </div>
                         <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {training.parentUnit}
-                        </div>
-                        <div className="flex items-center text-gray-600">
                           <Users className="w-4 h-4 mr-2" />
                           {training.ticketNumbers.length} Trainee(s)
                         </div>
                       </div>
-
-                      {training.supervisor && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          <strong>Supervisor:</strong> {training.supervisor}
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex space-x-2 ml-4">
@@ -1127,14 +1297,6 @@ const LineTraining = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Parent Unit
-                    </label>
-                    <p className="text-gray-900">
-                      {viewModal.training?.parentUnit}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Start Date
                     </label>
                     <p className="text-gray-900">
@@ -1165,14 +1327,6 @@ const LineTraining = () => {
                       {getStatusIcon(viewModal.training?.status)}
                       <span className="ml-1">{viewModal.training?.status}</span>
                     </span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Supervisor
-                    </label>
-                    <p className="text-gray-900">
-                      {viewModal.training?.supervisor || "Not assigned"}
-                    </p>
                   </div>
                 </div>
 
@@ -1341,30 +1495,6 @@ const LineTraining = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Parent Unit <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      required
-                      value={formData.parentUnit}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          parentUnit: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="">Select Parent Unit</option>
-                      <option value="JAT Division">JAT Division</option>
-                      <option value="FZD Division">FZD Division</option>
-                      <option value="MB Division">MB Division</option>
-                      <option value="LKO Division">LKO Division</option>
-                      <option value="DLI Division">DLI Division</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Start Date <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1399,23 +1529,6 @@ const LineTraining = () => {
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Supervisor
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.supervisor}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          supervisor: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description
                     </label>
                     <textarea
@@ -1442,8 +1555,6 @@ const LineTraining = () => {
                         activityCentre: "",
                         startDate: "",
                         endDate: "",
-                        parentUnit: "",
-                        supervisor: "",
                         description: "",
                       });
                     }}

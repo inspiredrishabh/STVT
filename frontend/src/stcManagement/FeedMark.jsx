@@ -319,7 +319,7 @@ const mockAPI = {
   getExistingMarks: async (ticketNumber) => {
     await mockAPI.delay();
     // Mock existing marks data with some failed subjects for demonstration
-    return {
+    const mainMarks = {
       'Session 1': {
         'Paper 1': 85,
         'Paper 2': 78,
@@ -330,12 +330,28 @@ const mockAPI = {
         'Paper 2': 89
       }
     };
+
+    // No mock supplementary marks - admin must input these manually
+    const supplementaryMarks = {};
+
+    // Mock practical centers data for demonstration
+    const practicalCenters = {
+      'Session 1': {
+        numCenters: 2,
+        centers: [
+          { name: 'Main Workshop', marks: 15, maxMarks: 20 },
+          { name: 'Field Training Center', marks: 10, maxMarks: 30 }
+        ]
+      }
+    };
+
+    return { mainMarks, supplementaryMarks, practicalCenters };
   },
 
   // Save marks
-  saveMarks: async (ticketNumber, marks) => {
+  saveMarks: async (ticketNumber, marks, supplementaryMarks = {}, practicalCenters = {}) => {
     await mockAPI.delay(800);
-    console.log('Saving marks for:', ticketNumber, marks);
+    console.log('Saving marks for:', ticketNumber, { mainMarks: marks, supplementaryMarks, practicalCenters });
     return { success: true, message: 'Marks saved successfully' };
   },
 
@@ -356,7 +372,9 @@ const FeedMark = () => {
   const [candidateData, setCandidateData] = useState(null);
   const [courseCode, setCourseCode] = useState('');
   const [marks, setMarks] = useState({});
+  const [supplementaryMarks, setSupplementaryMarks] = useState({}); // Track supplementary exam marks
   const [clearedSupplementary, setClearedSupplementary] = useState({}); // Track cleared supplementary subjects
+  const [practicalCenters, setPracticalCenters] = useState({}); // Track practical centers data
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
@@ -379,8 +397,10 @@ const FeedMark = () => {
       setCourseCode(candidate.courseCode);
 
       // Load existing marks
-      const existingMarks = await mockAPI.getExistingMarks(ticketNo);
-      setMarks(existingMarks);
+      const marksData = await mockAPI.getExistingMarks(ticketNo);
+      setMarks(marksData.mainMarks);
+      setSupplementaryMarks(marksData.supplementaryMarks);
+      setPracticalCenters(marksData.practicalCenters || {});
 
       setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Marks ready for viewing/editing` });
     } catch (error) {
@@ -388,6 +408,7 @@ const FeedMark = () => {
       setCandidateData(null);
       setCourseCode('');
       setMarks({});
+      setSupplementaryMarks({});
     } finally {
       setLoading(false);
     }
@@ -448,8 +469,10 @@ const FeedMark = () => {
       setCourseCode(candidate.courseCode);
 
       // Load existing marks
-      const existingMarks = await mockAPI.getExistingMarks(ticketNumber);
-      setMarks(existingMarks);
+      const marksData = await mockAPI.getExistingMarks(ticketNumber);
+      setMarks(marksData.mainMarks);
+      setSupplementaryMarks(marksData.supplementaryMarks);
+      setPracticalCenters(marksData.practicalCenters || {});
 
       setMessage({ type: 'success', text: `Candidate found: ${candidate.name}` });
     } catch (error) {
@@ -457,6 +480,7 @@ const FeedMark = () => {
       setCandidateData(null);
       setCourseCode('');
       setMarks({});
+      setSupplementaryMarks({});
     } finally {
       setLoading(false);
     }
@@ -484,8 +508,10 @@ const FeedMark = () => {
       setTicketNumber(candidate.ticketNumber);
 
       // Load existing marks
-      const existingMarks = await mockAPI.getExistingMarks(candidate.ticketNumber);
-      setMarks(existingMarks);
+      const marksData = await mockAPI.getExistingMarks(candidate.ticketNumber);
+      setMarks(marksData.mainMarks);
+      setSupplementaryMarks(marksData.supplementaryMarks);
+      setPracticalCenters(marksData.practicalCenters || {});
 
       setMessage({ type: 'success', text: `Candidate selected: ${candidate.name}` });
     } catch (error) {
@@ -516,13 +542,25 @@ const FeedMark = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      await mockAPI.saveMarks(candidateData.ticketNumber, marks);
-      setMessage({ type: 'success', text: 'Marks saved successfully!' });
+      // Save main marks, supplementary marks, and practical centers data
+      await mockAPI.saveMarks(candidateData.ticketNumber, marks, supplementaryMarks, practicalCenters);
+      setMessage({ type: 'success', text: 'Marks saved successfully! (Including supplementary exam records and practical centers data)' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save marks' });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSupplementaryMarksChange = (session, paper, value) => {
+    const numValue = value === '' ? '' : parseInt(value);
+    setSupplementaryMarks(prev => ({
+      ...prev,
+      [session]: {
+        ...prev[session],
+        [paper]: numValue
+      }
+    }));
   };
 
   const handleClearSubjectSupplementary = async (session, paper) => {
@@ -531,7 +569,25 @@ const FeedMark = () => {
       return;
     }
 
-    if (!confirm(`Are you sure you want to clear supplementary status for ${session} - ${paper}? This will use only main marks for this subject in marksheet generation.`)) {
+    // Check if supplementary marks are entered and passing
+    const suppMarks = supplementaryMarks[session]?.[paper];
+    const paperConfig = currentCourseStructure[session][paper];
+    const passingMarks = getPassingMarks(paperConfig.maxMarks);
+
+    if (!suppMarks) {
+      setMessage({ type: 'error', text: 'Please enter supplementary exam marks first before clearing supplementary status.' });
+      return;
+    }
+
+    if (suppMarks < passingMarks) {
+      setMessage({ type: 'error', text: `Cannot clear supplementary status. Supplementary marks (${suppMarks}) are still below passing marks (${passingMarks}). Student remains in supplementary status.` });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to clear supplementary status for ${session} - ${paper}? 
+    
+Supplementary marks: ${suppMarks}/${paperConfig.maxMarks} (PASSING ✓)
+This will use only main marks for this subject in marksheet generation.`)) {
       return;
     }
 
@@ -547,12 +603,87 @@ const FeedMark = () => {
         [`${session}_${paper}`]: true
       }));
 
-      setMessage({ type: 'success', text: result.message });
+      setMessage({ type: 'success', text: `${result.message} Supplementary marks: ${suppMarks}/${paperConfig.maxMarks} (PASSED)` });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to clear supplementary status' });
     } finally {
       setClearing(false);
     }
+  };
+
+  // Practical marks multi-center handlers
+  const handlePracticalCentersChange = (session, field, value) => {
+    setPracticalCenters(prev => ({
+      ...prev,
+      [session]: {
+        ...prev[session],
+        [field]: value,
+        centers: field === 'numCenters' ?
+          Array.from({ length: value }, (_, i) => prev[session]?.centers?.[i] || { name: '', marks: '', maxMarks: '' }) :
+          prev[session]?.centers || []
+      }
+    }));
+  };
+
+  const handlePracticalCenterNameChange = (session, index, name) => {
+    setPracticalCenters(prev => {
+      const centers = [...(prev[session]?.centers || [])];
+      centers[index] = { ...centers[index], name };
+      return {
+        ...prev,
+        [session]: {
+          ...prev[session],
+          centers
+        }
+      };
+    });
+  };
+
+  const handlePracticalCenterMarksChange = (session, index, marks) => {
+    const numValue = marks === '' ? '' : parseInt(marks);
+    setPracticalCenters(prev => {
+      const centers = [...(prev[session]?.centers || [])];
+      centers[index] = { ...centers[index], marks: numValue };
+      return {
+        ...prev,
+        [session]: {
+          ...prev[session],
+          centers
+        }
+      };
+    });
+
+    // Update the main marks with combined result
+    const updatedCenters = [...(practicalCenters[session]?.centers || [])];
+    updatedCenters[index] = { ...updatedCenters[index], marks: numValue };
+    const combinedMarks = updatedCenters.reduce((sum, center) => sum + (center.marks || 0), 0);
+
+    handleMarksChange(session, 'Practical', combinedMarks);
+  };
+
+  const handlePracticalCenterMaxMarksChange = (session, index, maxMarks) => {
+    const numValue = maxMarks === '' ? '' : parseInt(maxMarks);
+    setPracticalCenters(prev => {
+      const centers = [...(prev[session]?.centers || [])];
+      centers[index] = { ...centers[index], maxMarks: numValue };
+      return {
+        ...prev,
+        [session]: {
+          ...prev[session],
+          centers
+        }
+      };
+    });
+  };
+
+  const getCombinedPracticalMarks = (session) => {
+    const centers = practicalCenters[session]?.centers || [];
+    return centers.reduce((sum, center) => sum + (center.marks || 0), 0);
+  };
+
+  const getCombinedPracticalMaxMarks = (session) => {
+    const centers = practicalCenters[session]?.centers || [];
+    return centers.reduce((sum, center) => sum + (center.maxMarks || 0), 0);
   };
 
   const resetForm = () => {
@@ -561,7 +692,9 @@ const FeedMark = () => {
     setCandidateData(null);
     setCourseCode('');
     setMarks({});
+    setSupplementaryMarks({}); // Reset supplementary marks
     setClearedSupplementary({}); // Reset cleared supplementary status
+    setPracticalCenters({}); // Reset practical centers data
     setMessage({ type: '', text: '' });
   };
 
@@ -586,6 +719,19 @@ const FeedMark = () => {
 
   // Get passing marks (60% of max marks)
   const getPassingMarks = (maxMarks) => Math.ceil(maxMarks * 0.6);
+
+  // Check if supplementary marks are passing
+  const isSupplementaryPassing = (session, paper, maxMarks) => {
+    const suppMarks = supplementaryMarks[session]?.[paper];
+    if (!suppMarks) return false;
+    const passingMarks = getPassingMarks(maxMarks);
+    return suppMarks >= passingMarks;
+  };
+
+  // Check if supplementary marks are entered
+  const hasSupplementaryMarks = (session, paper) => {
+    return supplementaryMarks[session]?.[paper] ? true : false;
+  };
 
   // Get all failed subjects for supplementary message
   const getFailedSubjects = () => {
@@ -873,9 +1019,15 @@ const FeedMark = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {Object.entries(papers).map(([paper, config]) => {
                         const paperMarks = marks[session]?.[paper];
-                        const passingMarks = getPassingMarks(config.maxMarks);
-                        const isFailingGrade = shouldShowAsFailed(session, paper, paperMarks, config.maxMarks);
-                        const isOverMaxMarks = paperMarks > config.maxMarks;
+
+                        // For practical marks, use combined max marks if available
+                        const effectiveMaxMarks = paper === 'Practical' && getCombinedPracticalMaxMarks(session) > 0
+                          ? getCombinedPracticalMaxMarks(session)
+                          : config.maxMarks;
+
+                        const passingMarks = getPassingMarks(effectiveMaxMarks);
+                        const isFailingGrade = shouldShowAsFailed(session, paper, paperMarks, effectiveMaxMarks);
+                        const isOverMaxMarks = paperMarks > effectiveMaxMarks;
                         const isCleared = isSupplementaryCleared(session, paper);
                         const isBelowPassing = paperMarks && paperMarks < passingMarks;
 
@@ -895,7 +1047,9 @@ const FeedMark = () => {
                               </label>
                               <div className="text-right">
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                  Max: {config.maxMarks}
+                                  Max: {paper === 'Practical' && getCombinedPracticalMaxMarks(session) > 0
+                                    ? `${getCombinedPracticalMaxMarks(session)} (Combined)`
+                                    : config.maxMarks}
                                 </span>
                                 <span className="text-xs text-gray-500 block mt-1">
                                   Pass: {passingMarks} (60%)
@@ -910,22 +1064,132 @@ const FeedMark = () => {
                               </div>
                             )}
 
-                            <input
-                              type="number"
-                              min="0"
-                              max={config.maxMarks}
-                              value={paperMarks || ''}
-                              onChange={(e) => handleMarksChange(session, paper, e.target.value)}
-                              placeholder={`Enter marks (0-${config.maxMarks})`}
-                              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isOverMaxMarks
-                                ? 'border-red-300 bg-red-50'
-                                : isFailingGrade
-                                  ? 'border-red-400 bg-red-50'
-                                  : isCleared && isBelowPassing
-                                    ? 'border-yellow-400 bg-yellow-50'
-                                    : 'border-gray-300'
-                                }`}
-                            />
+                            {paper === 'Practical' ? (
+                              // Multi-center practical marks section
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Number of Centers:
+                                  </label>
+                                  {practicalCenters[session]?.isCustomNumber ? (
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        max="20"
+                                        value={practicalCenters[session]?.numCenters || ''}
+                                        onChange={(e) => handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value) || 1)}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-20"
+                                        placeholder="1-20"
+                                      />
+                                      <button
+                                        onClick={() => handlePracticalCentersChange(session, 'isCustomNumber', false)}
+                                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+                                      >
+                                        Back
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <select
+                                      value={practicalCenters[session]?.numCenters === 'custom' ? 'custom' : (practicalCenters[session]?.numCenters || 1)}
+                                      onChange={(e) => {
+                                        if (e.target.value === 'custom') {
+                                          handlePracticalCentersChange(session, 'isCustomNumber', true);
+                                          handlePracticalCentersChange(session, 'numCenters', 1);
+                                        } else {
+                                          handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value));
+                                        }
+                                      }}
+                                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                      {[1, 2, 3, 4, 5].map(num => (
+                                        <option key={num} value={num}>{num}</option>
+                                      ))}
+                                      <option value="custom">Other (Custom)</option>
+                                    </select>
+                                  )}
+                                </div>
+
+                                {Array.from({ length: practicalCenters[session]?.numCenters || 1 }, (_, index) => (
+                                  <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="text-sm font-medium text-gray-700">Center {index + 1}:</span>
+                                      <input
+                                        type="text"
+                                        value={practicalCenters[session]?.centers?.[index]?.name || ''}
+                                        onChange={(e) => handlePracticalCenterNameChange(session, index, e.target.value)}
+                                        placeholder="Enter center name"
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <label className="block text-xs text-gray-600 mb-1">Marks Obtained:</label>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={practicalCenters[session]?.centers?.[index]?.marks || ''}
+                                          onChange={(e) => handlePracticalCenterMarksChange(session, index, e.target.value)}
+                                          placeholder="Enter marks"
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-xs text-gray-600 mb-1">Max Marks:</label>
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          value={practicalCenters[session]?.centers?.[index]?.maxMarks || ''}
+                                          onChange={(e) => handlePracticalCenterMaxMarksChange(session, index, e.target.value)}
+                                          placeholder="Enter max marks"
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                        />
+                                      </div>
+                                    </div>
+                                    {practicalCenters[session]?.centers?.[index]?.marks && practicalCenters[session]?.centers?.[index]?.maxMarks && (
+                                      <div className="mt-2 text-xs text-gray-600">
+                                        Percentage: {((practicalCenters[session].centers[index].marks / practicalCenters[session].centers[index].maxMarks) * 100).toFixed(1)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+
+                                {practicalCenters[session]?.centers?.length > 0 && (
+                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-sm font-medium text-blue-800">Combined Result:</span>
+                                      <span className="text-sm font-bold text-blue-900">
+                                        {getCombinedPracticalMarks(session)} / {getCombinedPracticalMaxMarks(session)}
+                                      </span>
+                                    </div>
+                                    <div className="text-xs text-blue-700">
+                                      Overall Percentage: {getCombinedPracticalMaxMarks(session) > 0 ? ((getCombinedPracticalMarks(session) / getCombinedPracticalMaxMarks(session)) * 100).toFixed(1) : 0}%
+                                    </div>
+                                    <div className="text-xs text-blue-700 mt-1">
+                                      Status: {getCombinedPracticalMaxMarks(session) > 0 && getCombinedPracticalMarks(session) >= (getCombinedPracticalMaxMarks(session) * 0.6) ? 'PASS' : 'FAIL'}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              // Regular paper marks input
+                              <input
+                                type="number"
+                                min="0"
+                                max={config.maxMarks}
+                                value={paperMarks || ''}
+                                onChange={(e) => handleMarksChange(session, paper, e.target.value)}
+                                placeholder={`Enter marks (0-${config.maxMarks})`}
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isOverMaxMarks
+                                  ? 'border-red-300 bg-red-50'
+                                  : isFailingGrade
+                                    ? 'border-red-400 bg-red-50'
+                                    : isCleared && isBelowPassing
+                                      ? 'border-yellow-400 bg-yellow-50'
+                                      : 'border-gray-300'
+                                  }`}
+                              />
+                            )}
 
                             {isOverMaxMarks && (
                               <p className="text-xs text-red-600 font-medium">
@@ -946,19 +1210,52 @@ const FeedMark = () => {
                                 <p className="text-xs text-red-600 font-medium">
                                   ⚠️ Below passing marks ({passingMarks}). Eligible for supplementary exam.
                                 </p>
+                                {hasSupplementaryMarks(session, paper) && (
+                                  <div className={`text-xs p-2 rounded-lg ${isSupplementaryPassing(session, paper, config.maxMarks)
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}>
+                                    Supplementary: {supplementaryMarks[session][paper]}/{config.maxMarks} - {
+                                      isSupplementaryPassing(session, paper, config.maxMarks)
+                                        ? '✓ PASSING'
+                                        : '✗ STILL FAILING'
+                                    }
+                                  </div>
+                                )}
                                 <button
                                   onClick={() => handleClearSubjectSupplementary(session, paper)}
-                                  disabled={clearing}
-                                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-white text-xs rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                                  title={`Clear supplementary status for ${session} - ${paper}`}
+                                  disabled={clearing || !hasSupplementaryMarks(session, paper) || !isSupplementaryPassing(session, paper, config.maxMarks)}
+                                  className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded-lg transition-all duration-200 ${hasSupplementaryMarks(session, paper) && isSupplementaryPassing(session, paper, config.maxMarks)
+                                    ? 'bg-green-600 hover:bg-green-700'
+                                    : 'bg-gray-400 cursor-not-allowed'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                  title={
+                                    !hasSupplementaryMarks(session, paper)
+                                      ? 'Enter supplementary marks first'
+                                      : !isSupplementaryPassing(session, paper, config.maxMarks)
+                                        ? 'Supplementary marks must be passing to clear status'
+                                        : `Clear supplementary status for ${session} - ${paper}`
+                                  }
                                 >
                                   {clearing ? (
                                     <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
                                   ) : (
                                     <RefreshCw className="w-3 h-3" />
                                   )}
-                                  Clear Supplementary
+                                  {hasSupplementaryMarks(session, paper) && isSupplementaryPassing(session, paper, config.maxMarks)
+                                    ? 'Clear Supplementary ✓'
+                                    : 'Clear Supplementary'}
                                 </button>
+                                {!hasSupplementaryMarks(session, paper) && (
+                                  <p className="text-xs text-gray-500 text-center">
+                                    📝 Enter supplementary marks below to enable clearing
+                                  </p>
+                                )}
+                                {hasSupplementaryMarks(session, paper) && !isSupplementaryPassing(session, paper, config.maxMarks) && (
+                                  <p className="text-xs text-red-500 text-center">
+                                    ❌ Supplementary marks still below passing. Student remains in supplementary status.
+                                  </p>
+                                )}
                               </div>
                             )}
                           </div>
@@ -982,22 +1279,57 @@ const FeedMark = () => {
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
                     <div className="flex items-start gap-2">
                       <RefreshCw className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <p className="text-orange-800 text-sm">
-                        <strong>Note:</strong> Use the "Clear Supplementary" button on each failed subject to remove supplementary status and use only main marks for that subject in marksheet generation.
-                      </p>
+                      <div className="text-orange-800 text-sm">
+                        <p className="font-semibold mb-2">Process for Clearing Supplementary Status:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-xs">
+                          <li>Enter supplementary exam marks in the "Record Only" fields below</li>
+                          <li>If supplementary marks are ≥60% (passing), the "Clear Supplementary" button will be enabled</li>
+                          <li>Click "Clear Supplementary" to use main exam marks for marksheet generation</li>
+                          <li>If supplementary marks are still below 60%, student remains in supplementary status</li>
+                        </ol>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-2">
                     {failedSubjects.map((subject, index) => (
-                      <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg border border-red-200">
-                        <div>
-                          <span className="font-semibold text-red-800">{subject.session} - {subject.paper}</span>
-                          <span className="text-xs text-red-600 block">
-                            Required: {subject.passingMarks} (60% of {subject.maxMarks})
-                          </span>
+                      <div key={index} className="bg-white p-4 rounded-lg border border-red-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <span className="font-semibold text-red-800">{subject.session} - {subject.paper}</span>
+                            <span className="text-xs text-red-600 block">
+                              Required: {subject.passingMarks} (60% of {subject.maxMarks})
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-red-600 font-bold">{subject.marks}/{subject.maxMarks}</span>
+                            <span className="text-xs text-red-500 block">Main Exam</span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-red-600 font-bold">{subject.marks}/{subject.maxMarks}</span>
+
+                        {/* Supplementary Marks Input */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-blue-700 mb-1">
+                                Supplementary Exam Marks (Record Only)
+                              </label>
+                              <input
+                                type="number"
+                                min="0"
+                                max={subject.maxMarks}
+                                value={supplementaryMarks[subject.session]?.[subject.paper] || ''}
+                                onChange={(e) => handleSupplementaryMarksChange(subject.session, subject.paper, e.target.value)}
+                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder={`0-${subject.maxMarks}`}
+                              />
+                            </div>
+                            <div className="text-xs text-gray-500 pt-4">
+                              /{subject.maxMarks}
+                            </div>
+                          </div>
+                          <p className="text-xs text-blue-600 mt-1">
+                            💡 These marks are for record keeping only. Main exam marks will be used in marksheet generation.
+                          </p>
                         </div>
                       </div>
                     ))}
