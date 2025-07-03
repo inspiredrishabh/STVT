@@ -160,7 +160,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
               type={type}
               value={formData[field] || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter email (e.g., username@gmail.com)"
             />
 
@@ -190,14 +190,14 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
             placeholder={`Enter ${label.toLowerCase()}`}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
         ) : (
           <input
             type={type}
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder={`Enter ${label.toLowerCase()}`}
           />
         )}

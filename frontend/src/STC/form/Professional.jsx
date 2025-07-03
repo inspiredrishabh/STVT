@@ -176,7 +176,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             onChange={(e) =>
               handleChange("dateOfAppointmentInRailway", e.target.value)
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
           {errors.dateOfAppointmentInRailway && (
             <p className="text-sm text-red-500 mt-1">
@@ -190,18 +190,24 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.modeOfAppointment || ""}
             onChange={(e) => handleChange("modeOfAppointment", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select mode</option>
-            <option value="RRB">RRB</option>
-            <option value="CG">CG</option>
-            <option value="Promotion Through LDCE">
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select mode</option>
+            <option value="RRB" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>RRB</option>
+            <option value="CG" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CG</option>
+            <option value="Promotion Through LDCE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
               Promotion Through LDCE
             </option>
-            <option value="Promotion Through Seniority">
+            <option value="Promotion Through Seniority" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
               Promotion Through Seniority
             </option>
-            <option value="Other">Other</option>
+            <option value="Other" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Other</option>
           </select>
           {errors.modeOfAppointment && (
             <p className="text-sm text-red-500 mt-1">
@@ -217,7 +223,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.modeOfAppointmentOther || ""}
               onChange={(e) => handleChange("modeOfAppointmentOther", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter mode of appointment"
             />
             {errors.modeOfAppointmentOther && (
@@ -231,16 +237,22 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.designation || ""}
             onChange={(e) => handleChange("designation", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select designation</option>
-            <option value="ASE">ASE</option>
-            <option value="AJE">AJE</option>
-            <option value="IJE">IJE</option>
-            <option value="RJE">RJE</option>
-            <option value="SSC">SSC</option>
-            <option value="JE">JE</option>
-            <option value="Other">Other</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select designation</option>
+            <option value="ASE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>ASE</option>
+            <option value="AJE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>AJE</option>
+            <option value="IJE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>IJE</option>
+            <option value="RJE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>RJE</option>
+            <option value="SSC" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>SSC</option>
+            <option value="JE" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>JE</option>
+            <option value="Other" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Other</option>
           </select>
           {errors.designation && (
             <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
@@ -252,27 +264,33 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.unit || ""}
             onChange={(e) => handleChange("unit", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select unit</option>
-            <option value="AMVW">AMVW</option>
-            <option value="ASRW">ASRW</option>
-            <option value="CVW">CVW</option>
-            <option value="DLI">DLI</option>
-            <option value="DLIW">DLIW</option>
-            <option value="FZR">FZR</option>
-            <option value="FZRW">FZRW</option>
-            <option value="JAT">JAT</option>
-            <option value="JATW">JATW</option>
-            <option value="JUDW">JUDW</option>
-            <option value="KLKW">KLKW</option>
-            <option value="LKO">LKO</option>
-            <option value="LKOW">LKOW</option>
-            <option value="MB">MB</option>
-            <option value="MBW">MBW</option>
-            <option value="RCNKW">RCNKW</option>
-            <option value="UMBW">UMBW</option>
-            <option value="Other">Other</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select unit</option>
+            <option value="AMVW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>AMVW</option>
+            <option value="ASRW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>ASRW</option>
+            <option value="CVW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CVW</option>
+            <option value="DLI" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>DLI</option>
+            <option value="DLIW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>DLIW</option>
+            <option value="FZR" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>FZR</option>
+            <option value="FZRW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>FZRW</option>
+            <option value="JAT" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>JAT</option>
+            <option value="JATW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>JATW</option>
+            <option value="JUDW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>JUDW</option>
+            <option value="KLKW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>KLKW</option>
+            <option value="LKO" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>LKO</option>
+            <option value="LKOW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>LKOW</option>
+            <option value="MB" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>MB</option>
+            <option value="MBW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>MBW</option>
+            <option value="RCNKW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>RCNKW</option>
+            <option value="UMBW" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>UMBW</option>
+            <option value="Other" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Other</option>
           </select>
           {errors.unit && (
             <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
@@ -287,7 +305,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.workingUnder || ""}
             onChange={(e) => handleChange("workingUnder", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter working under"
           />
           {errors.workingUnder && (
@@ -303,7 +321,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.hrmsId || ""}
             onChange={(e) => handleChange("hrmsId", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter HRMS ID"
           />
           {errors.hrmsId && (
@@ -319,7 +337,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.pfNoNpsUps || ""}
             onChange={(e) => handleChange("pfNoNpsUps", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter PF/NPS/UPS number"
           />
           {errors.pfNoNpsUps && (
@@ -335,7 +353,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.employeeNumber || ""}
             onChange={(e) => handleChange("employeeNumber", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter employee number"
           />
           {errors.employeeNumber && (
@@ -361,13 +379,19 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             onChange={(e) =>
               handleChange("highestQualification", e.target.value)
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select qualification</option>
-            <option value="Diploma">Diploma</option>
-            <option value="Bachelor's Degree">Bachelor's Degree</option>
-            <option value="Master's Degree">Master's Degree</option>
-            <option value="Ph.D">Ph.D</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select qualification</option>
+            <option value="Diploma" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Diploma</option>
+            <option value="Bachelor's Degree" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Bachelor's Degree</option>
+            <option value="Master's Degree" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Master's Degree</option>
+            <option value="Ph.D" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Ph.D</option>
           </select>
           {errors.highestQualification && (
             <p className="text-sm text-red-500 mt-1">
@@ -381,11 +405,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.fieldOfStudy || ""}
             onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select field of study</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select field of study</option>
             {getFieldOfStudyOptions().map((option) => (
-              <option key={option} value={option}>
+              <option key={option} value={option} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                 {option}
               </option>
             ))}
@@ -402,7 +432,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.customFieldOfStudy || ""}
               onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter custom field of study"
             />
             {errors.customFieldOfStudy && (
@@ -417,7 +447,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.institution || ""}
             onChange={(e) => handleChange("institution", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter institution"
           />
           {errors.institution && (
@@ -430,12 +460,18 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.gradeType || ""}
             onChange={(e) => handleChange("gradeType", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select grade type</option>
-            <option value="Percentage">Percentage</option>
-            <option value="CGPA (out of 10)">CGPA (out of 10)</option>
-            <option value="CGPA (out of 4)">CGPA (out of 4)</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select grade type</option>
+            <option value="Percentage" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Percentage</option>
+            <option value="CGPA (out of 10)" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CGPA (out of 10)</option>
+            <option value="CGPA (out of 4)" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CGPA (out of 4)</option>
           </select>
           {errors.gradeType && (
             <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
@@ -449,7 +485,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             step="0.01"
             value={formData.gradeValue || ""}
             onChange={(e) => handleChange("gradeValue", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter grade value"
           />
           {errors.gradeValue && (

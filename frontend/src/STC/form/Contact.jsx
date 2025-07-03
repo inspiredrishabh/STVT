@@ -123,7 +123,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             value={formData.permanentAddress || ""}
             onChange={(e) => handleFieldChange("permanentAddress", e.target.value)}
             placeholder="Enter permanent address"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
           {errors.permanentAddress && <span className="text-red-500 text-sm">{errors.permanentAddress}</span>}
         </div>
@@ -133,7 +133,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
           <button
             type="button"
             onClick={handleCopyAddress}
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-sm text-gray-800"
+            className="px-4 py-3 bg-gray-200 rounded-xl hover:bg-gray-300 transition-all duration-200 text-sm text-gray-800 shadow-sm hover:shadow-md"
           >
             Same as Permanent Address
           </button>
@@ -147,7 +147,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             value={formData.currentAddress || ""}
             onChange={(e) => handleFieldChange("currentAddress", e.target.value)}
             placeholder="Enter current address"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
           {errors.currentAddress && <span className="text-red-500 text-sm">{errors.currentAddress}</span>}
         </div>
@@ -159,7 +159,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             type="tel"
             value={formData.phoneNumber || ""}
             onChange={(e) => handleFieldChange("phoneNumber", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter WhatsApp number"
           />
           {errors.phoneNumber && <span className="text-red-500 text-sm">{errors.phoneNumber}</span>}
@@ -172,7 +172,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             type="tel"
             value={formData.emergencyContactNumber || ""}
             onChange={(e) => handleFieldChange("emergencyContactNumber", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter emergency number"
           />
           {errors.emergencyContactNumber && <span className="text-red-500 text-sm">{errors.emergencyContactNumber}</span>}
@@ -186,7 +186,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
               type="email"
               value={formData.email || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter email (e.g., username@gmail.com)"
             />
 

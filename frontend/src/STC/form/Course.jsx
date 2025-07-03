@@ -195,7 +195,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               type="text"
               value={formData.ticketNo || ""}
               onChange={(e) => handleTicketChange(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
+              className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Auto-generated based on designation"
               readOnly={
                 !formData.designation || !ticketCounter[formData.designation]
@@ -205,7 +205,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               <button
                 type="button"
                 onClick={generateNewTicket}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+                className="px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium"
               >
                 🔄
               </button>
@@ -221,11 +221,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           <select
             value={formData.batch || ""}
             onChange={(e) => onChange("batch", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select batch</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select batch</option>
             {batchOptions.map((option) => (
-              <option key={option} value={option}>
+              <option key={option} value={option} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                 {option}
               </option>
             ))}
@@ -236,7 +242,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               placeholder="Enter custom batch"
               value={formData.customBatch || ""}
               onChange={(e) => onChange("customBatch", e.target.value)}
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="mt-2 w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             />
           )}
           {errors.batch && (
@@ -252,7 +258,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             onChange={(e) =>
               onChange("dateOfJoiningStcWtcNonRailway", e.target.value)
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
           {errors.dateOfJoiningStcWtcNonRailway && (
             <p className="text-sm text-red-500 mt-1">
@@ -266,11 +272,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           <select
             value={formData.moduleNo || ""}
             onChange={(e) => onChange("moduleNo", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select module</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select module</option>
             {moduleOptions.map((key) => (
-              <option key={key} value={key}>
+              <option key={key} value={key} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                 {key}
               </option>
             ))}
@@ -281,7 +293,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               placeholder="Enter custom module"
               value={formData.customModule || ""}
               onChange={(e) => onChange("customModule", e.target.value)}
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="mt-2 w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             />
           )}
           {errors.moduleNo && (
@@ -301,7 +313,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+            className={`w-full border-2 border-gray-300 rounded-xl px-4 py-3 shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${formData.moduleNo !== "Other" ? "bg-gray-50" : "bg-white"
               }`}
             readOnly={formData.moduleNo !== "Other"}
           />
@@ -322,7 +334,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+            className={`w-full border-2 border-gray-300 rounded-xl px-4 py-3 shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${formData.moduleNo !== "Other" ? "bg-gray-50" : "bg-white"
               }`}
             placeholder={formData.moduleNo === "Other" ? "Enter course duration" : "Auto-filled"}
             readOnly={formData.moduleNo !== "Other"}

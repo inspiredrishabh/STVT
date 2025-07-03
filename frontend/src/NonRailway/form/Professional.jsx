@@ -259,11 +259,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               handleChange("designation", "");
               handleChange("unitCustodian", "");
             }}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select course type</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select course type</option>
             {courseTypeOptions.map((type) => (
-              <option key={type} value={type}>
+              <option key={type} value={type} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                 {type}
               </option>
             ))}
@@ -280,7 +286,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.customCourseType || ""}
               onChange={(e) => handleChange("customCourseType", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter custom course type"
             />
             {errors.customCourseType && (
@@ -300,11 +306,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
                 handleChange("designation", e.target.value);
                 handleChange("unitCustodian", ""); // Reset unit when designation changes
               }}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.5em 1.5em'
+              }}
             >
-              <option value="">Select designation</option>
+              <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select designation</option>
               {designationOptions.map((designation) => (
-                <option key={designation} value={designation}>
+                <option key={designation} value={designation} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                   {designation}
                 </option>
               ))}
@@ -314,7 +326,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.designation || ""}
               onChange={(e) => handleChange("designation", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter designation"
               disabled={!formData.courseType}
             />
@@ -330,11 +342,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <select
               value={formData.unitCustodian || ""}
               onChange={(e) => handleChange("unitCustodian", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.5em 1.5em'
+              }}
             >
-              <option value="">Select unit/custodian</option>
+              <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select unit/custodian</option>
               {getAvailableUnits().map((unit) => (
-                <option key={unit} value={unit}>
+                <option key={unit} value={unit} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                   {unit}
                 </option>
               ))}
@@ -344,7 +362,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.unitCustodian || ""}
               onChange={(e) => handleChange("unitCustodian", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter unit/custodian details"
               disabled={!formData.courseType}
             />
@@ -360,11 +378,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <select
               value={formData.durationOption || ""}
               onChange={(e) => handleChange("durationOption", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.5em 1.5em'
+              }}
             >
-              <option value="">Select duration</option>
-              <option value="4W">4 Weeks</option>
-              <option value="6W">6 Weeks</option>
+              <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select duration</option>
+              <option value="4W" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>4 Weeks</option>
+              <option value="6W" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>6 Weeks</option>
             </select>
             {errors.durationOption && (
               <p className="text-sm text-red-500 mt-1">{errors.durationOption}</p>
@@ -378,7 +402,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.duration || getDurationInfo().total}
             onChange={(e) => handleChange("duration", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter duration"
             readOnly={
               (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
@@ -398,7 +422,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.theoryPeriod || getDurationInfo().theory}
             onChange={(e) => handleChange("theoryPeriod", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-gray-50 shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Auto-filled"
             readOnly={
               (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
@@ -415,7 +439,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.practicalPeriod || getDurationInfo().practical}
             onChange={(e) => handleChange("practicalPeriod", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-gray-50 shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Auto-filled"
             readOnly={
               (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
@@ -430,7 +454,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.workingUnder || ""}
             onChange={(e) => handleChange("workingUnder", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter working under"
           />
           {errors.workingUnder && (
@@ -443,7 +467,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <textarea
             value={formData.remark || ""}
             onChange={(e) => handleChange("remark", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter remark"
             rows="3"
           />
@@ -470,13 +494,19 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             onChange={(e) =>
               handleChange("highestQualification", e.target.value)
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select qualification</option>
-            <option value="Diploma">Diploma</option>
-            <option value="Bachelor's Degree">Bachelor's Degree</option>
-            <option value="Master's Degree">Master's Degree</option>
-            <option value="Ph.D">Ph.D</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select qualification</option>
+            <option value="Diploma" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Diploma</option>
+            <option value="Bachelor's Degree" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Bachelor's Degree</option>
+            <option value="Master's Degree" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Master's Degree</option>
+            <option value="Ph.D" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Ph.D</option>
           </select>
           {errors.highestQualification && (
             <p className="text-sm text-red-500 mt-1">
@@ -490,11 +520,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.fieldOfStudy || ""}
             onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select field of study</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select field of study</option>
             {getFieldOfStudyOptions().map((option) => (
-              <option key={option} value={option}>
+              <option key={option} value={option} style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>
                 {option}
               </option>
             ))}
@@ -511,7 +547,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               type="text"
               value={formData.customFieldOfStudy || ""}
               onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Enter custom field of study"
             />
             {errors.customFieldOfStudy && (
@@ -526,7 +562,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.institution || ""}
             onChange={(e) => handleChange("institution", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter institution"
           />
           {errors.institution && (
@@ -539,12 +575,18 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.gradeType || ""}
             onChange={(e) => handleChange("gradeType", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select grade type</option>
-            <option value="Percentage">Percentage</option>
-            <option value="CGPA (out of 10)">CGPA (out of 10)</option>
-            <option value="CGPA (out of 4)">CGPA (out of 4)</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select grade type</option>
+            <option value="Percentage" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Percentage</option>
+            <option value="CGPA (out of 10)" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CGPA (out of 10)</option>
+            <option value="CGPA (out of 4)" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>CGPA (out of 4)</option>
           </select>
           {errors.gradeType && (
             <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
@@ -558,7 +600,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             step="0.01"
             value={formData.gradeValue || ""}
             onChange={(e) => handleChange("gradeValue", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter grade value"
           />
           {errors.gradeValue && (

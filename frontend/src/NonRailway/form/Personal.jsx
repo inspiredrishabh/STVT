@@ -15,9 +15,8 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       case "name":
       case "fatherName":
         if (!trimmedValue)
-          return `${
-            fieldName === "name" ? "Name" : "Father's name"
-          } is required`;
+          return `${fieldName === "name" ? "Name" : "Father's name"
+            } is required`;
         if (trimmedValue.length < 2)
           return "Must be at least 2 characters long";
         if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
@@ -134,7 +133,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.name || ""}
             onChange={(e) => handleFieldChange("name", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter full name"
           />
           {errors.name && (
@@ -150,12 +149,18 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.sex || ""}
             onChange={(e) => handleFieldChange("sex", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select gender</option>
+            <option value="Male" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Male</option>
+            <option value="Female" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Female</option>
+            <option value="Other" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Other</option>
           </select>
           {errors.sex && (
             <span className="text-red-500 text-sm mt-1">{errors.sex}</span>
@@ -171,7 +176,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.fatherName || ""}
             onChange={(e) => handleFieldChange("fatherName", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter father's name"
           />
           {errors.fatherName && (
@@ -190,7 +195,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.motherName || ""}
             onChange={(e) => handleFieldChange("motherName", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter mother's name"
           />
           {errors.motherName && (
@@ -209,7 +214,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="date"
             value={formData.dob || ""}
             onChange={(e) => handleFieldChange("dob", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
           {errors.dob && (
             <span className="text-red-500 text-sm mt-1">{errors.dob}</span>
@@ -224,14 +229,20 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.category || ""}
             onChange={(e) => handleFieldChange("category", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select category</option>
-            <option value="General">General</option>
-            <option value="OBC">OBC</option>
-            <option value="SC">SC</option>
-            <option value="ST">ST</option>
-            <option value="EWS">EWS</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select category</option>
+            <option value="General" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>General</option>
+            <option value="OBC" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>OBC</option>
+            <option value="SC" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>SC</option>
+            <option value="ST" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>ST</option>
+            <option value="EWS" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>EWS</option>
           </select>
           {errors.category && (
             <span className="text-red-500 text-sm mt-1">{errors.category}</span>
@@ -246,11 +257,17 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           <select
             value={formData.pwd || ""}
             onChange={(e) => handleFieldChange("pwd", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
+            <option value="" style={{ padding: '8px 12px', backgroundColor: '#f8f9fa', color: '#6c757d' }}>Select</option>
+            <option value="Yes" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>Yes</option>
+            <option value="No" style={{ padding: '8px 12px', backgroundColor: 'white', color: '#374151' }}>No</option>
           </select>
           {errors.pwd && (
             <span className="text-red-500 text-sm mt-1">{errors.pwd}</span>
@@ -269,7 +286,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               onChange={(e) =>
                 handleFieldChange("typeOfDisability", e.target.value)
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
               placeholder="Specify disability"
             />
             {errors.typeOfDisability && (
@@ -289,7 +306,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.nationality || "Indian"}
             onChange={(e) => handleFieldChange("nationality", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             placeholder="Enter nationality"
           />
           {errors.nationality && (

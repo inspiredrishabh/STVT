@@ -802,12 +802,26 @@ const Professional = ({ formData, onChange }) => {
                 <select
                   value={formData[field] || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                  className={`w-full border-2 rounded-xl px-4 py-3 bg-white shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none cursor-pointer ${errors[field] ? "border-red-500" : "border-gray-300"
                     } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: 'right 0.75rem center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '1.5em 1.5em'
+                  }}
                   disabled={disabled}
                 >
-                  {options.map((opt) => (
-                    <option key={opt} value={opt}>
+                  {options.map((opt, index) => (
+                    <option
+                      key={opt}
+                      value={opt}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: index === 0 && !opt ? '#f8f9fa' : 'white',
+                        color: index === 0 && !opt ? '#6c757d' : '#374151'
+                      }}
+                    >
                       {opt || "Select option"}
                     </option>
                   ))}
