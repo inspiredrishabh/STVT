@@ -1,6 +1,10 @@
 /**
  * Database initialization script
  * Run with: npm run init-db
+ * this can be seperatly run to set up the database
+ * or can be run with npm start
+ * currenlty not used in production
+ * but can be used to reset the database
  */
 import sqlite3 from 'sqlite3';
 import { fileURLToPath } from 'url';

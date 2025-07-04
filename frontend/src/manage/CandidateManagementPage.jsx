@@ -24,7 +24,7 @@ class MockBackendAPI {
         counters: {
           ASE: 1, AJE: 1, IJE: 1, RJE: 1, RCW: 1, RD: 1,
           TS: 1, LHI: 1, LHII: 1, FM: 1, WT: 1, DM: 1,
-          WE: 1, NDT: 1, EA: 1, '3DMP': 1
+          WE: 1, NDT: 1, EA: 1, '3DMP': 1, MSE: 1, MJR: 1
         }
       };
       localStorage.setItem(this.storageKey, JSON.stringify(initialData));
@@ -47,53 +47,174 @@ class MockBackendAPI {
 
   getInitialCandidates() {
     return [
-      // STC Candidates (Railway)
+      // STC Candidates (Railway) - Adding trainees from TraineeProfile
       {
         id: 1,
-        name: "John Doe",
-        email: "john.doe@example.com",
-        ticketNumber: "ASE00001",
+        name: "Rahul Kumar",
+        email: "rahul.kumar@railway.gov.in",
+        ticketNumber: "STC2024001",
         serialNo: 1001,
         batch: "2024-2025",
         stream: "Railway",
-        workInfo: "ASE",
+        workInfo: "MSE",
         type: "STC",
         category: "Railway",
         picture: "https://randomuser.me/api/portraits/men/1.jpg",
         status: "Active",
+        designation: "MSE",
+        unit: "JAT",
+        phoneNumber: "9876543210",
         dateOfJoiningStcWtcNonRailway: "2024-01-15",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
         id: 2,
-        name: "Mike Johnson",
-        email: "mike.johnson@example.com",
-        ticketNumber: "AJE00001",
+        name: "Priya Sharma",
+        email: "priya.sharma@railway.gov.in",
+        ticketNumber: "STC2024002",
         serialNo: 1002,
         batch: "2024-2025",
         stream: "Railway",
-        workInfo: "AJE",
+        workInfo: "MSE",
         type: "STC",
         category: "Railway",
-        picture: "https://randomuser.me/api/portraits/men/2.jpg",
+        picture: "https://randomuser.me/api/portraits/women/1.jpg",
         status: "Active",
+        designation: "MSE",
+        unit: "FZD",
+        phoneNumber: "9876543211",
         dateOfJoiningStcWtcNonRailway: "2024-02-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
         id: 3,
+        name: "Amit Singh",
+        email: "amit.singh@railway.gov.in",
+        ticketNumber: "STC2024003",
+        serialNo: 1003,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "MSE",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/men/2.jpg",
+        status: "Active",
+        designation: "MSE",
+        unit: "MB",
+        phoneNumber: "9876543212",
+        dateOfJoiningStcWtcNonRailway: "2024-03-01",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        name: "Neha Gupta",
+        email: "neha.gupta@railway.gov.in",
+        ticketNumber: "STC2024004",
+        serialNo: 1004,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "MJR",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/women/2.jpg",
+        status: "Active",
+        designation: "MJR",
+        unit: "MB",
+        phoneNumber: "9876543213",
+        dateOfJoiningStcWtcNonRailway: "2024-01-15",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 5,
+        name: "Vikash Yadav",
+        email: "vikash.yadav@railway.gov.in",
+        ticketNumber: "STC2024005",
+        serialNo: 1005,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "MJR",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/men/3.jpg",
+        status: "Active",
+        designation: "MJR",
+        unit: "FZD",
+        phoneNumber: "9876543214",
+        dateOfJoiningStcWtcNonRailway: "2024-02-01",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 6,
+        name: "Sunita Devi",
+        email: "sunita.devi@railway.gov.in",
+        ticketNumber: "STC2024006",
+        serialNo: 1006,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "MJR",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/women/3.jpg",
+        status: "Active",
+        designation: "MJR",
+        unit: "JAT",
+        phoneNumber: "9876543215",
+        dateOfJoiningStcWtcNonRailway: "2024-03-01",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      // Original STC Candidates
+      {
+        id: 7,
+        name: "John Doe",
+        email: "john.doe@example.com",
+        ticketNumber: "ASE00001",
+        serialNo: 2001,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "ASE",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/men/4.jpg",
+        status: "Active",
+        dateOfJoiningStcWtcNonRailway: "2024-01-15",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 8,
+        name: "Mike Johnson",
+        email: "mike.johnson@example.com",
+        ticketNumber: "AJE00001",
+        serialNo: 2002,
+        batch: "2024-2025",
+        stream: "Railway",
+        workInfo: "AJE",
+        type: "STC",
+        category: "Railway",
+        picture: "https://randomuser.me/api/portraits/men/5.jpg",
+        status: "Active",
+        dateOfJoiningStcWtcNonRailway: "2024-02-01",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 9,
         name: "Robert Wilson",
         email: "robert.wilson@example.com",
         ticketNumber: "IJE00001",
-        serialNo: 1003,
+        serialNo: 2003,
         batch: "2023-2024",
         stream: "Railway",
         workInfo: "IJE",
         type: "STC",
         category: "Railway",
-        picture: "https://randomuser.me/api/portraits/men/3.jpg",
+        picture: "https://randomuser.me/api/portraits/men/6.jpg",
         status: "Inactive",
         dateOfJoiningStcWtcNonRailway: "2023-10-15",
         createdAt: new Date().toISOString(),
@@ -101,51 +222,51 @@ class MockBackendAPI {
       },
       // WTC Candidates (Railway)
       {
-        id: 4,
+        id: 10,
         name: "Jane Smith",
         email: "jane.smith@example.com",
         ticketNumber: "RJE00001",
-        serialNo: 2001,
+        serialNo: 3001,
         batch: "2024-2025",
         stream: "Railway",
         workInfo: "RJE",
         type: "WTC",
         category: "Railway",
-        picture: "https://randomuser.me/api/portraits/women/1.jpg",
+        picture: "https://randomuser.me/api/portraits/women/4.jpg",
         status: "Active",
         dateOfJoiningStcWtcNonRailway: "2024-03-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        id: 5,
+        id: 11,
         name: "Emily Davis",
         email: "emily.davis@example.com",
         ticketNumber: "RCW00001",
-        serialNo: 2002,
+        serialNo: 3002,
         batch: "2025-2026",
         stream: "Railway",
         workInfo: "RCW",
         type: "WTC",
         category: "Railway",
-        picture: "https://randomuser.me/api/portraits/women/2.jpg",
+        picture: "https://randomuser.me/api/portraits/women/5.jpg",
         status: "Active",
         dateOfJoiningStcWtcNonRailway: "2024-11-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        id: 6,
+        id: 12,
         name: "Lisa Anderson",
         email: "lisa.anderson@example.com",
         ticketNumber: "RD00001",
-        serialNo: 2003,
+        serialNo: 3003,
         batch: "2024-2025",
         stream: "Railway",
         workInfo: "RD",
         type: "WTC",
         category: "Railway",
-        picture: "https://randomuser.me/api/portraits/women/3.jpg",
+        picture: "https://randomuser.me/api/portraits/women/6.jpg",
         status: "Active",
         dateOfJoiningStcWtcNonRailway: "2024-04-15",
         createdAt: new Date().toISOString(),
@@ -153,173 +274,70 @@ class MockBackendAPI {
       },
       // Non Railway Candidates
       {
-        id: 7,
+        id: 13,
         name: "Sarah Wilson",
         email: "sarah.wilson@example.com",
         ticketNumber: "TS00001",
-        serialNo: 3001,
+        serialNo: 4001,
         batch: "2025-2026",
         stream: "Non Railway",
         workInfo: "TS",
         type: "Non Railway",
         category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/women/4.jpg",
+        picture: "https://randomuser.me/api/portraits/women/7.jpg",
         status: "Active",
         dateOfJoiningStcWtcNonRailway: "2024-12-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        id: 8,
+        id: 14,
         name: "David Brown",
         email: "david.brown@example.com",
         ticketNumber: "LHI00001",
-        serialNo: 3002,
+        serialNo: 4002,
         batch: "2024-2025",
         stream: "Non Railway",
         workInfo: "LHI",
         type: "Non Railway",
         category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/men/4.jpg",
+        picture: "https://randomuser.me/api/portraits/men/7.jpg",
         status: "Active",
         dateOfJoiningStcWtcNonRailway: "2024-05-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        id: 9,
+        id: 15,
         name: "Mark Taylor",
         email: "mark.taylor@example.com",
         ticketNumber: "LHII00001",
-        serialNo: 3003,
+        serialNo: 4003,
         batch: "2023-2024",
         stream: "Non Railway",
         workInfo: "LHII",
         type: "Non Railway",
         category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/men/5.jpg",
+        picture: "https://randomuser.me/api/portraits/men/8.jpg",
         status: "Inactive",
         dateOfJoiningStcWtcNonRailway: "2023-11-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
-        id: 10,
+        id: 16,
         name: "Anna Johnson",
         email: "anna.johnson@example.com",
         ticketNumber: "FM00001",
-        serialNo: 3004,
+        serialNo: 4004,
         batch: "2025-2026",
         stream: "Non Railway",
         workInfo: "FM",
         type: "Non Railway",
         category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/women/5.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-10-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      // Additional candidates with remaining work info types
-      {
-        id: 11,
-        name: "Tom Wilson",
-        email: "tom.wilson@example.com",
-        ticketNumber: "WT00001",
-        serialNo: 3005,
-        batch: "2024-2025",
-        stream: "Non Railway",
-        workInfo: "WT",
-        type: "Non Railway",
-        category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/men/6.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-06-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 12,
-        name: "Kate Davis",
-        email: "kate.davis@example.com",
-        ticketNumber: "DM00001",
-        serialNo: 3006,
-        batch: "2024-2025",
-        stream: "Non Railway",
-        workInfo: "DM",
-        type: "Non Railway",
-        category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/women/6.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-07-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 13,
-        name: "Alex Smith",
-        email: "alex.smith@example.com",
-        ticketNumber: "WE00001",
-        serialNo: 3007,
-        batch: "2023-2024",
-        stream: "Non Railway",
-        workInfo: "WE",
-        type: "Non Railway",
-        category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/men/7.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2023-12-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 14,
-        name: "Nina Brown",
-        email: "nina.brown@example.com",
-        ticketNumber: "NDT00001",
-        serialNo: 3008,
-        batch: "2024-2025",
-        stream: "Non Railway",
-        workInfo: "NDT",
-        type: "Non Railway",
-        category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/women/7.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-08-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 15,
-        name: "Paul Johnson",
-        email: "paul.johnson@example.com",
-        ticketNumber: "EA00001",
-        serialNo: 3009,
-        batch: "2025-2026",
-        stream: "Non Railway",
-        workInfo: "EA",
-        type: "Non Railway",
-        category: "Non Railway",
-        picture: "https://randomuser.me/api/portraits/men/8.jpg",
-        status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-09-01",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 16,
-        name: "Grace Lee",
-        email: "grace.lee@example.com",
-        ticketNumber: "3DMP00001",
-        serialNo: 3010,
-        batch: "2024-2025",
-        stream: "Non Railway",
-        workInfo: "3DMP",
-        type: "Non Railway",
-        category: "Non Railway",
         picture: "https://randomuser.me/api/portraits/women/8.jpg",
         status: "Active",
-        dateOfJoiningStcWtcNonRailway: "2024-08-15",
+        dateOfJoiningStcWtcNonRailway: "2024-10-01",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
@@ -494,11 +512,10 @@ const CandidateManagementPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
-  const [filterStream, setFilterStream] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All"); // Railway/Non Railway filter
-  const [filterType, setFilterType] = useState("All"); // STC/WTC/Non Railway filter
+  const [selectedFilters, setSelectedFilters] = useState(["STC", "WTC", "Non Railway"]);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidateId: null, candidateName: "" });
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [autoFilterNotification, setAutoFilterNotification] = useState(null);
 
   // State to control view ('list' or 'form') and the candidate being edited
   const [view, setView] = useState('list');
@@ -587,27 +604,67 @@ const CandidateManagementPage = () => {
     Promise.all([fetchCandidates(), fetchDropdownData()]);
   }, []);
 
-  const activeCandidates = useMemo(() => {
-    let filtered = candidates;
+  // Check for trainee data from TraineeProfile and auto-filter
+  useEffect(() => {
+    const editTraineeId = localStorage.getItem('editTraineeId');
+    const editTraineeName = localStorage.getItem('editTraineeName');
+    const editTraineeTicket = localStorage.getItem('editTraineeTicket');
+    const editTraineeDesignation = localStorage.getItem('editTraineeDesignation');
 
-    // Filter by category (Railway/Non Railway)
-    if (filterCategory !== "All") {
-      filtered = filtered.filter(c => c.category === filterCategory);
-    }
+    if (editTraineeId && editTraineeName && candidates.length > 0) {
+      // Try to find the candidate by different criteria
+      let searchCriteria = editTraineeName;
 
-    // Filter by type (STC/WTC/Non Railway)
-    if (filterType !== "All") {
-      if (filterType === "All Railway") {
-        filtered = filtered.filter(c => c.category === "Railway");
-      } else if (filterType === "Non Railway") {
-        filtered = filtered.filter(c => c.category === "Non Railway");
-      } else {
-        filtered = filtered.filter(c => c.type === filterType);
+      // If ticket number exists, use it for more precise matching
+      if (editTraineeTicket) {
+        searchCriteria = editTraineeTicket;
       }
+
+      // Set search term to automatically filter for the specific trainee
+      setSearchTerm(searchCriteria);
+
+      // Make sure STC filter is enabled since this is coming from STC management
+      if (!selectedFilters.includes('STC')) {
+        setSelectedFilters(prev => [...prev, 'STC']);
+      }
+
+      // Show notification about auto-filtering
+      setAutoFilterNotification({
+        traineeName: editTraineeName,
+        searchCriteria: searchCriteria,
+        ticketNo: editTraineeTicket
+      });
+
+      console.log(`Auto-filtering for trainee: ${editTraineeName} (${editTraineeTicket || 'No ticket'}) - Using search: ${searchCriteria}`);
+
+      // Clear the localStorage data after using it
+      localStorage.removeItem('editTraineeId');
+      localStorage.removeItem('editTraineeName');
+      localStorage.removeItem('editTraineeTicket');
+      localStorage.removeItem('editTraineeDesignation');
+    }
+  }, [candidates, selectedFilters]); // Run after candidates are loaded
+
+  const activeCandidates = useMemo(() => {
+    // If no filters are selected, return nothing
+    if (selectedFilters.length === 0) {
+      return [];
     }
 
-    return filtered;
-  }, [candidates, filterCategory, filterType]);
+    // Filter candidates based on selected filter types
+    return candidates.filter(candidate => {
+      if (selectedFilters.includes('STC') && candidate.type === 'STC') {
+        return true;
+      }
+      if (selectedFilters.includes('WTC') && candidate.type === 'WTC') {
+        return true;
+      }
+      if (selectedFilters.includes('Non Railway') && candidate.type === 'Non Railway') {
+        return true;
+      }
+      return false;
+    });
+  }, [candidates, selectedFilters]);
 
   const filteredCandidates = useMemo(() => activeCandidates.filter(candidate => {
     const searchLower = searchTerm.toLowerCase();
@@ -616,10 +673,9 @@ const CandidateManagementPage = () => {
       candidate.ticketNumber?.toLowerCase().includes(searchLower) ||
       candidate.serialNo?.toString().includes(searchTerm);
     const matchesBatch = !filterBatch || candidate.batch === filterBatch;
-    const matchesStream = !filterStream || candidate.stream === filterStream;
 
-    return matchesSearch && matchesBatch && matchesStream;
-  }), [activeCandidates, searchTerm, filterBatch, filterStream]);
+    return matchesSearch && matchesBatch;
+  }), [activeCandidates, searchTerm, filterBatch]);
 
   // Handle inline editing update
   const handleInlineUpdate = async (candidateId, updatedData) => {
@@ -633,12 +689,6 @@ const CandidateManagementPage = () => {
   // Handler to open the form for editing a specific candidate
   const handleEdit = (candidate) => {
     setCandidateToEdit(candidate);
-    setView('form');
-  };
-
-  // Handler to open the form for adding a new candidate
-  const handleAddNew = () => {
-    setCandidateToEdit(null); // Ensure we're not editing
     setView('form');
   };
 
@@ -678,11 +728,8 @@ const CandidateManagementPage = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setFilterBatch("");
-    setFilterStream("");
-    setFilterCategory("All");
-    setFilterType("All");
+    setSelectedFilters(["STC", "WTC", "Non Railway"]); // Reset to all filters selected
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-8xl mx-auto space-y-8">
@@ -692,13 +739,41 @@ const CandidateManagementPage = () => {
           </div>
         )}
 
+        {/* Auto-filter notification */}
+        {autoFilterNotification && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">
+                  Filtered for trainee: <strong>{autoFilterNotification.traineeName}</strong>
+                  {autoFilterNotification.ticketNo && (
+                    <span> (Ticket: {autoFilterNotification.ticketNo})</span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <button
+                onClick={() => setAutoFilterNotification(null)}
+                className="inline-flex text-blue-400 hover:text-blue-600 focus:outline-none focus:text-blue-600"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         <PageHeader
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          filterType={filterType}
-          setFilterType={setFilterType}
+          selectedFilters={selectedFilters}
+          setSelectedFilters={setSelectedFilters}
           isListView={view === 'list'}
-          dropdownData={dropdownData}
         />
 
         {loading ? (
@@ -711,8 +786,9 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-3 space-y-6">
                 <StatsCards
                   candidates={activeCandidates}
-                  filterCategory={filterCategory}
-                  filterType={filterType}
+                  filterType={selectedFilters.length === 1 ? selectedFilters[0] : "All"}
+                  filterCategory={selectedFilters.includes("Non Railway") && !selectedFilters.includes("STC") && !selectedFilters.includes("WTC") ? "Non Railway" :
+                    (!selectedFilters.includes("Non Railway") && (selectedFilters.includes("STC") || selectedFilters.includes("WTC"))) ? "Railway" : "All"}
                   mockAPI={mockAPI}
                 />
                 <SearchFilters
@@ -720,12 +796,6 @@ const CandidateManagementPage = () => {
                   setSearchTerm={setSearchTerm}
                   filterBatch={filterBatch}
                   setFilterBatch={setFilterBatch}
-                  filterStream={filterStream}
-                  setFilterStream={setFilterStream}
-                  filterCategory={filterCategory}
-                  setFilterCategory={setFilterCategory}
-                  filterType={filterType}
-                  setFilterType={setFilterType}
                   dropdownData={dropdownData}
                   onClearFilters={clearFilters}
                   mockAPI={mockAPI}
@@ -741,7 +811,6 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-1">
                 <ActivityPanel
                   candidates={activeCandidates}
-                  onAddNew={handleAddNew}
                   mockAPI={mockAPI}
                 />
               </div>

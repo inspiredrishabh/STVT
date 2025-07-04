@@ -1,22 +1,28 @@
+
+// Bhai Ye Tumne Phle Se Bnaya Hai Is Liye Mai Isme Changes Nhi Kar Rha Hu
+//I guess ye hatega
+
+
 const express = require('express');
 const router = express.Router();
 
 // POST /api/stc/register - Submit STC registration form
 router.post('/register', async (req, res) => {
+  console.log('Entered')
   try {
     const formData = req.body;
     
     // Basic validation
     const requiredFields = ['name', 'email', 'phoneNumber', 'designation'];
     const missingFields = requiredFields.filter(field => !formData[field]);
-    
+    console.log("1");
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: `Missing required fields: ${missingFields.join(', ')}`
       });
     }
-
+    console.log("2");
     // Log the received data (replace with database save)
     console.log('STC Registration Data:', {
       name: formData.name,
@@ -25,7 +31,7 @@ router.post('/register', async (req, res) => {
       phoneNumber: formData.phoneNumber,
       submittedAt: new Date().toISOString()
     });
-
+    console.log("3");
     // TODO: Save to database here
     // const savedRecord = await STCModel.create(formData);
 
@@ -40,6 +46,7 @@ router.post('/register', async (req, res) => {
         email: formData.email
       }
     });
+    console.log("4");
 
   } catch (error) {
     console.error('STC Registration Error:', error);

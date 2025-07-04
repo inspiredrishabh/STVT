@@ -13,10 +13,12 @@ const rolePermissions = {
     operator: ["add-candidate", "manage-candidates"]
 };
 
-export {
+
+
+module.exports = {
     PORT,
     CORS_ORIGIN,
     NODE_ENV,
     SESSION_EXPIRY,
-    rolePermissions
+    rolePermissions,
 };

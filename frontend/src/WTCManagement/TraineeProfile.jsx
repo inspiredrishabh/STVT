@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, Search, Edit, Eye, Users, Phone, Mail, MapPin, Calendar, GraduationCap, Award, FileText, Plus, Settings, Hash
+    ArrowLeft, Search, Edit, Eye, Users, Phone, Mail, MapPin, Calendar, GraduationCap, Award, FileText, Plus, Settings, Hash, Download, Printer
 } from 'lucide-react';
 
 const TraineeProfile = () => {
@@ -181,15 +181,6 @@ const TraineeProfile = () => {
         }
     };
 
-    // Handle letter Generation - redirect with trainee info
-    const handleLetterGeneration = (trainee) => {
-        try {
-            navigate(`/wtc/letter?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}&trade=${encodeURIComponent(trainee.designation || trainee.designationOther)}&from=${trainee.dateOfJoiningStcWtcNonRailway}&to=${trainee.dateOfSparingFromStcWtcNonRailway}`);
-        } catch (error) {
-            console.error('Error navigating to letter page:', error);
-        }
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -324,24 +315,15 @@ const TraineeProfile = () => {
                                 {/* Actions */}
                                 <div className="p-4 border-t border-gray-100">
                                     <div className="grid grid-cols-3 gap-2">
-                                        <button
-                                            onClick={() => handleEditTrainee(trainee)}
-                                            className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                                        >
+                                        <button onClick={() => handleEditTrainee(trainee)} className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
                                             <Settings className="w-4 h-4 mr-1" />
                                             Manage
                                         </button>
-                                        <Link
-                                            to={`/wtc/certificate?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`}
-                                            className="flex items-center justify-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
-                                        >
+                                        <button onClick={() => navigate(`/wtc/certificate/`)} className="flex items-center justify-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
                                             <FileText className="w-4 h-4 mr-1" />
                                             Certificate
-                                        </Link>
-                                        <button
-                                            onClick={() => handleLetterGeneration(trainee)}
-                                            className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
-                                        >
+                                        </button>
+                                        <button onClick={() => navigate("/wtc/Letter/")} className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm">
                                             <GraduationCap className="w-4 h-4 mr-1" />
                                             Letter
                                         </button>

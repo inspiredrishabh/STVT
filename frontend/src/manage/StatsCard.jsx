@@ -11,6 +11,7 @@ const StatsCards = ({ candidates, filterType, filterCategory, mockAPI }) => {
 
       setLoading(true);
       try {
+        // Pass the filter parameters to get appropriate statistics
         const response = await mockAPI.getStats({
           category: filterCategory,
           type: filterType

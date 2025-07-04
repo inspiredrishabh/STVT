@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Search, 
-  Edit, 
-  Eye, 
-  Users, 
-  Phone, 
-  Mail, 
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Search,
+  Edit,
+  Eye,
+  Users,
+  Phone,
+  Mail,
   MapPin,
   Calendar,
   GraduationCap,
@@ -22,116 +22,263 @@ import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [trainees, setTrainees] = useState([]);
   const [filteredTrainees, setFilteredTrainees] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showResignationModal, setShowResignationModal] = useState(false);
+  const [selectedTraineeForResignation, setSelectedTraineeForResignation] = useState(null);
+  const [resignationData, setResignationData] = useState({
+    date: '',
+    reason: ''
+  });
+  const [submittingResignation, setSubmittingResignation] = useState(false);
+
+  // Mock data matching FeedMark.jsx candidatesData
+  const mockTraineesData = [
+    {
+      id: 1,
+      ticketNo: 'STC2024001',
+      name: 'Rahul Kumar',
+      designation: 'MSE',
+      unit: 'JAT',
+      batch: '2024-2025',
+      email: 'rahul.kumar@railway.gov.in',
+      phone: '9876543210',
+      picture: 'https://randomuser.me/api/portraits/men/1.jpg',
+      courseCode: 'MSE-C&W',
+      course: {
+        moduleNo: 'MSE-C&W',
+        duration: '52 Weeks',
+        joiningDate: '2024-01-15',
+        sparingDate: '2025-01-15',
+        coordinator: 'Mr. R.K. Sharma'
+      },
+      lineTraining: {
+        status: 'Completed',
+        duration: '6 months',
+        location: 'JAT Division'
+      },
+      status: 'Active'
+    },
+    {
+      id: 2,
+      ticketNo: 'STC2024002',
+      name: 'Priya Sharma',
+      designation: 'MSE',
+      unit: 'FZD',
+      batch: '2024-2025',
+      email: 'priya.sharma@railway.gov.in',
+      phone: '9876543211',
+      picture: 'https://randomuser.me/api/portraits/women/1.jpg',
+      courseCode: 'MSE-D',
+      course: {
+        moduleNo: 'MSE-D',
+        duration: '52 Weeks',
+        joiningDate: '2024-02-01',
+        sparingDate: '2025-02-01',
+        coordinator: 'Mrs. S.K. Verma'
+      },
+      lineTraining: {
+        status: 'In Progress',
+        duration: '6 months',
+        location: 'FZD Division'
+      },
+      status: 'Active'
+    },
+    {
+      id: 3,
+      ticketNo: 'STC2024003',
+      name: 'Amit Singh',
+      designation: 'MSE',
+      unit: 'MB',
+      batch: '2024-2025',
+      email: 'amit.singh@railway.gov.in',
+      phone: '9876543212',
+      picture: 'https://randomuser.me/api/portraits/men/2.jpg',
+      courseCode: 'MSE-W',
+      course: {
+        moduleNo: 'MSE-W',
+        duration: '52 Weeks',
+        joiningDate: '2024-03-01',
+        sparingDate: '2025-03-01',
+        coordinator: 'Mr. A.K. Singh'
+      },
+      lineTraining: {
+        status: 'Scheduled',
+        duration: '6 months',
+        location: 'MB Division'
+      },
+      status: 'Active'
+    },
+    {
+      id: 4,
+      ticketNo: 'STC2024004',
+      name: 'Neha Gupta',
+      designation: 'MJR',
+      unit: 'MB',
+      batch: '2024-2025',
+      email: 'neha.gupta@railway.gov.in',
+      phone: '9876543213',
+      picture: 'https://randomuser.me/api/portraits/women/2.jpg',
+      courseCode: 'MJR-C&W',
+      course: {
+        moduleNo: 'MJR-C&W',
+        duration: '52 Weeks',
+        joiningDate: '2024-01-15',
+        sparingDate: '2025-01-15',
+        coordinator: 'Mrs. N.P. Gupta'
+      },
+      lineTraining: {
+        status: 'Completed',
+        duration: '6 months',
+        location: 'MB Division'
+      },
+      status: 'Active'
+    },
+    {
+      id: 5,
+      ticketNo: 'STC2024005',
+      name: 'Vikash Yadav',
+      designation: 'MJR',
+      unit: 'FZD',
+      batch: '2024-2025',
+      email: 'vikash.yadav@railway.gov.in',
+      phone: '9876543214',
+      picture: 'https://randomuser.me/api/portraits/men/3.jpg',
+      courseCode: 'MJR-D',
+      course: {
+        moduleNo: 'MJR-D',
+        duration: '52 Weeks',
+        joiningDate: '2024-02-01',
+        sparingDate: '2025-02-01',
+        coordinator: 'Mr. V.K. Yadav'
+      },
+      lineTraining: {
+        status: 'In Progress',
+        duration: '6 months',
+        location: 'FZD Division'
+      },
+      status: 'Active'
+    },
+    {
+      id: 6,
+      ticketNo: 'STC2024006',
+      name: 'Sunita Devi',
+      designation: 'MJR',
+      unit: 'JAT',
+      batch: '2024-2025',
+      email: 'sunita.devi@railway.gov.in',
+      phone: '9876543215',
+      picture: 'https://randomuser.me/api/portraits/women/3.jpg',
+      courseCode: 'MJR-W',
+      course: {
+        moduleNo: 'MJR-W',
+        duration: '52 Weeks',
+        joiningDate: '2024-03-01',
+        sparingDate: '2025-03-01',
+        coordinator: 'Mrs. S.D. Sharma'
+      },
+      lineTraining: {
+        status: 'Scheduled',
+        duration: '6 months',
+        location: 'JAT Division'
+      },
+      status: 'Active'
+    }
+  ];
 
   // Fetch trainees from backend
   useEffect(() => {
     fetchTrainees();
   }, []);
 
+  // Backend API endpoints
+  const API_BASE = '/api/stc';
+
+  const apiCall = async (endpoint, options = {}) => {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        ...options
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`API call failed for ${endpoint}:`, error);
+      throw error;
+    }
+  };
+
+  // API Functions
+  const resignTrainee = async (traineeId, resignationDate, reason) => {
+    return await apiCall('/trainees/resign', {
+      method: 'POST',
+      body: JSON.stringify({
+        traineeId,
+        resignationDate,
+        reason,
+        processedBy: 'Admin', // This would come from auth context in real app
+        processedAt: new Date().toISOString()
+      })
+    });
+  };
+
+  const getTraineeResignationHistory = async (traineeId) => {
+    return await apiCall(`/trainees/${traineeId}/resignation-history`);
+  };
+
+  const updateTraineeStatus = async (traineeId, status, metadata = {}) => {
+    return await apiCall('/trainees/status', {
+      method: 'PUT',
+      body: JSON.stringify({
+        traineeId,
+        status,
+        metadata,
+        updatedBy: 'Admin',
+        updatedAt: new Date().toISOString()
+      })
+    });
+  };
+
   const fetchTrainees = async () => {
     try {
       setLoading(true);
-      // Replace with your actual API endpoint
-      const response = await fetch('/api/trainees');
+      // Try to fetch from backend API endpoint
+      const response = await fetch('/api/stc/trainees');
       if (!response.ok) throw new Error('Failed to fetch trainees');
-      
+
       const data = await response.json();
       setTrainees(data);
       setFilteredTrainees(data);
     } catch (err) {
       setError(err.message);
-      // Mock data for development
-      const baseMockData = [
-        {
-          id: 1,
-          ticketNo: 'ASE00001',
-          name: 'Rahul Sharma',
-          designation: 'ASE',
-          unit: 'JAT',
-          batch: '2024-2025',
-          email: 'rahul.sharma@railway.gov.in',
-          phone: '9876543210',
-          picture: null,
-          course: {
-            moduleNo: 'ASE',
-            duration: '52 Weeks',
-            joiningDate: '2024-01-15',
-            sparingDate: '2025-01-15'
-          },
-          lineTraining: {
-            status: 'Completed',
-            duration: '6 months',
-            location: 'JAT Division'
-          },
-          status: 'Active'
-        },
-        {
-          id: 2,
-          ticketNo: 'AJE00001',
-          name: 'Priya Singh',
-          designation: 'AJE',
-          unit: 'FZD',
-          batch: '2024-2025',
-          email: 'priya.singh@railway.gov.in',
-          phone: '9876543211',
-          picture: null,
-          course: {
-            moduleNo: 'AJE',
-            duration: '52 Weeks',
-            joiningDate: '2024-02-01',
-            sparingDate: '2025-02-01'
-          },
-          lineTraining: {
-            status: 'In Progress',
-            duration: '6 months',
-            location: 'FZD Division'
-          },
-          status: 'Active'
-        },
-        {
-          id: 3,
-          ticketNo: 'IJE00001',
-          name: 'Amit Kumar',
-          designation: 'IJE',
-          unit: 'MB',
-          batch: '2024-2025',
-          email: 'amit.kumar@railway.gov.in',
-          phone: '9876543212',
-          picture: null,
-          course: {
-            moduleNo: 'IJE',
-            duration: '52 Weeks',
-            joiningDate: '2024-03-01',
-            sparingDate: '2025-03-01'
-          },
-          lineTraining: {
-            status: 'Scheduled',
-            duration: '6 months',
-            location: 'MB Division'
-          },
-          status: 'Active'
-        }
-      ];
+      // Use mock data when API is not available
+      console.log('Using mock data - API not available:', err.message);
 
-      // Enhance mock data with calculated marks from FeedMark data
-      const mockData = baseMockData.map(trainee => {
-        const calculatedMarks = hasMarksData(trainee.id) 
+      // Enhance mock data with calculated marks from marksUtils
+      const enhancedMockData = mockTraineesData.map(trainee => {
+        const calculatedMarks = hasMarksData(trainee.id)
           ? calculateOverallMarks(trainee.id)
           : { theory: 0, practical: 0, overall: 0 };
-        
+
         return {
           ...trainee,
           marks: calculatedMarks
         };
       });
-      
-      setTrainees(mockData);
-      setFilteredTrainees(mockData);
+
+      setTrainees(enhancedMockData);
+      setFilteredTrainees(enhancedMockData);
     } finally {
       setLoading(false);
     }
@@ -151,10 +298,14 @@ const TraineeProfile = () => {
   // Handle edit trainee - redirect to manage candidate
   const handleEditTrainee = (trainee) => {
     try {
-      // Store trainee ID in localStorage for manage candidate page
+      // Store trainee information in localStorage for manage candidate page
       localStorage.setItem('editTraineeId', trainee.id);
       localStorage.setItem('editTraineeName', trainee.name);
-      
+      localStorage.setItem('editTraineeTicket', trainee.ticketNo);
+      localStorage.setItem('editTraineeDesignation', trainee.designation);
+
+      console.log(`Navigating to manage candidate for: ${trainee.name} (${trainee.ticketNo})`);
+
       // Navigate to manage candidate page
       navigate('/manage-candidate');
     } catch (error) {
@@ -172,6 +323,92 @@ const TraineeProfile = () => {
     }
   };
 
+  // Handle resignation
+  const handleResignation = (trainee) => {
+    setSelectedTraineeForResignation(trainee);
+    setResignationData({ date: '', reason: '' });
+    setShowResignationModal(true);
+  };
+
+  const handleResignationSubmit = async () => {
+    if (!resignationData.date || !resignationData.reason.trim()) {
+      alert('Please provide both resignation date and reason');
+      return;
+    }
+
+    setSubmittingResignation(true);
+
+    try {
+      // Call resignation API
+      await resignTrainee(
+        selectedTraineeForResignation.id,
+        resignationData.date,
+        resignationData.reason.trim()
+      );
+
+      // Update local state
+      const updatedTrainees = trainees.map(trainee =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+            ...trainee,
+            status: 'Resigned',
+            resignationDate: resignationData.date,
+            resignationReason: resignationData.reason.trim()
+          }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(updatedTrainees.filter(trainee =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: '', reason: '' });
+
+      alert(`${selectedTraineeForResignation.name} has been marked as resigned successfully.`);
+    } catch (error) {
+      console.error('Error processing resignation:', error);
+      alert('Failed to process resignation. This is a demo - in production, this would save to the database.');
+
+      // For demo purposes, still update the UI
+      const updatedTrainees = trainees.map(trainee =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+            ...trainee,
+            status: 'Resigned',
+            resignationDate: resignationData.date,
+            resignationReason: resignationData.reason.trim()
+          }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(updatedTrainees.filter(trainee =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: '', reason: '' });
+    } finally {
+      setSubmittingResignation(false);
+    }
+  };
+
+  const closeResignationModal = () => {
+    setShowResignationModal(false);
+    setSelectedTraineeForResignation(null);
+    setResignationData({ date: '', reason: '' });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -187,25 +424,6 @@ const TraineeProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Main Content */}
       <div className="w-full px-8 py-8">
-        {/* Page Header */}
-        <div className="flex items-center space-x-4 mb-8">
-          <Link
-            to="/stc-management"
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200 group"
-          >
-            <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              Trainee Profile
-            </h1>
-            <p className="text-gray-600 text-sm mt-1">View and manage trainee profiles</p>
-          </div>
-        </div>
-
         {/* Search and Filters */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -245,21 +463,43 @@ const TraineeProfile = () => {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">
-                        {trainee.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
+                    {trainee.picture ? (
+                      <div className="relative">
+                        <img
+                          src={trainee.picture}
+                          alt={trainee.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
+                          onError={(e) => {
+                            // Hide the image and show fallback
+                            e.target.style.display = 'none';
+                            const fallback = e.target.parentNode.querySelector('.fallback-avatar');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                        <div className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0" style={{ display: 'none' }}>
+                          <span className="text-white font-bold text-sm">
+                            {trainee.name.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold text-sm">
+                          {trainee.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold text-gray-900">{trainee.name}</h3>
                       <p className="text-sm text-gray-500">{trainee.ticketNo}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    trainee.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === 'Active'
+                      ? 'bg-green-100 text-green-800'
+                      : trainee.status === 'Resigned'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
                     {trainee.status}
                   </span>
                 </div>
@@ -272,7 +512,7 @@ const TraineeProfile = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Award className="w-4 h-4 mr-2" />
-                    {trainee.designation} - {trainee.unit}
+                    {trainee.courseCode} - {trainee.unit}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <GraduationCap className="w-4 h-4 mr-2" />
@@ -296,6 +536,8 @@ const TraineeProfile = () => {
                   <p>Module: {trainee.course.moduleNo}</p>
                   <p>Duration: {trainee.course.duration}</p>
                   <p>Joining: {new Date(trainee.course.joiningDate).toLocaleDateString()}</p>
+                  <p>Sparing: {new Date(trainee.course.sparingDate).toLocaleDateString()}</p>
+                  <p>Coordinator: {trainee.course.coordinator}</p>
                 </div>
               </div>
 
@@ -338,7 +580,7 @@ const TraineeProfile = () => {
 
               {/* Actions */}
               <div className="p-4 border-t border-gray-100">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <button
                     onClick={() => handleEditTrainee(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
@@ -347,22 +589,34 @@ const TraineeProfile = () => {
                     Manage
                   </button>
                   <Link
-                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`}
-                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${
-                      hasMarksData(trainee.id) 
-                        ? 'bg-green-500 hover:bg-green-600' 
-                        : 'bg-orange-500 hover:bg-orange-600'
-                    }`}
+                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}&courseCode=${trainee.courseCode}&autoSelect=true`}
+                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${hasMarksData(trainee.id)
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : 'bg-orange-500 hover:bg-orange-600'
+                      }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
                     {hasMarksData(trainee.id) ? 'View Marks' : 'Add Marks'}
                   </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleLineTraining(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
                   >
                     <GraduationCap className="w-4 h-4 mr-1" />
                     Training
+                  </button>
+                  <button
+                    onClick={() => handleResignation(trainee)}
+                    disabled={trainee.status === 'Resigned'}
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === 'Resigned'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-red-500 text-white hover:bg-red-600'
+                      }`}
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    {trainee.status === 'Resigned' ? 'Resigned' : 'Resign'}
                   </button>
                 </div>
               </div>
@@ -379,6 +633,93 @@ const TraineeProfile = () => {
           </div>
         )}
       </div>
+
+      {/* Resignation Modal */}
+      {showResignationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">Process Resignation</h3>
+              <button
+                onClick={closeResignationModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {selectedTraineeForResignation && (
+              <div className="mb-6">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {selectedTraineeForResignation.picture ? (
+                    <img
+                      src={selectedTraineeForResignation.picture}
+                      alt={selectedTraineeForResignation.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
+                        {selectedTraineeForResignation.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedTraineeForResignation.name}</p>
+                    <p className="text-sm text-gray-500">{selectedTraineeForResignation.ticketNo}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resignation Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={resignationData.date}
+                  onChange={(e) => setResignationData(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Resignation <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={resignationData.reason}
+                  onChange={(e) => setResignationData(prev => ({ ...prev, reason: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows="4"
+                  placeholder="Enter the reason for resignation..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={closeResignationModal}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResignationSubmit}
+                disabled={submittingResignation || !resignationData.date || !resignationData.reason.trim()}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {submittingResignation ? 'Processing...' : 'Confirm Resignation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

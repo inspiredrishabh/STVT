@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Clock, Plus, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Clock, Activity } from 'lucide-react';
 
 /**
  * ActivityPanel Component
  * 
- * Displays recent candidate activity and provides quick access to add new candidates.
+ * Displays recent candidate activity
  * Integrates with mock API for activity data and provides real-time updates.
  * 
  * @param {Object} props - Component props
@@ -14,8 +13,7 @@ import { useNavigate } from 'react-router-dom';
  * @param {Function} props.onAddNew - Callback function for adding new candidates
  * @param {Object} props.mockAPI - Mock API instance for data operations
  */
-const ActivityPanel = ({ candidates = [], onAddNew, mockAPI }) => {
-  const navigate = useNavigate();
+const ActivityPanel = ({ candidates = [], mockAPI }) => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -79,23 +77,8 @@ const ActivityPanel = ({ candidates = [], onAddNew, mockAPI }) => {
     fetchRecentActivity();
   }, [fetchRecentActivity]);
 
-  // Handle add new candidate button click
-  const handleAddNewClick = useCallback(() => {
-    try {
-      if (onAddNew) {
-        onAddNew();
-      } else {
-        navigate('/add-candidate');
-      }
-    } catch (err) {
-      console.error('Error handling add new click:', err);
-    }
-  }, [onAddNew, navigate]);
-
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-200 h-full flex flex-col">
-      {/* Add New Candidate Button */}
-      <AddCandidateButton onClick={handleAddNewClick} />
 
       {/* Recent Activity Header */}
       <ActivityHeader />
@@ -228,21 +211,6 @@ const ActivityList = ({ activities }) => {
 };
 
 /**
- * Add Candidate Button Component
- */
-const AddCandidateButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition-all duration-200 shadow-lg mb-6"
-    type="button"
-    aria-label="Add new candidate"
-  >
-    <Plus className="h-5 w-5" />
-    <span className="font-semibold">Add New Candidate</span>
-  </button>
-);
-
-/**
  * Activity Header Component
  */
 const ActivityHeader = () => (
@@ -352,7 +320,7 @@ const ActivityItem = ({ activity }) => {
  * @param {number} active - Number of active candidates
  */
 const ActivitySummary = ({ total, active }) => {
-  const inactiveCount = total - active;
+  // const inactiveCount = total - active;
   const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
 
   return (

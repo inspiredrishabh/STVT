@@ -1,5 +1,0 @@
-Sam Branch --- Frontend Manage (Somesh,Venky,Rishabh,Awanish,Priyanshu)
-awanish Branch --- Backend Manage (Awanish, Rishabh)
-Shivam Branch --- Optimization (Shivam)
-dev Branch --- Backend MAnage (Pratyush,Rishabh)
-dharor Branch --- Cloning for review (Shivansh,Pallavi)

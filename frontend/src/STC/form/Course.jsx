@@ -21,16 +21,16 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   });
 
   const courseModules = {
-    "MSE-C": 52,
+    "MSE-C&W": 52,
     "MSE-D": 52,
     "MSE-W": 52,
-    "MJR-C": 52,
+    "MJR-C&W": 52,
     "MJR-D": 52,
     "MJR-W": 52,
-    "MJI-C": 52,
+    "MJI-C&W": 52,
     "MJI-D": 52,
     "MJ1-W": 52,
-    "MJP-C": 13,
+    "MJP-C&W": 13,
     "MJP-D": 13,
     "MJP-W": 13,
     ASE: 52,
@@ -79,7 +79,11 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   }, [formData.designation]);
 
   useEffect(() => {
-    if (courseModules[formData.moduleNo]) {
+    if (formData.moduleNo === "Other") {
+      // For custom module, clear auto-calculated values
+      onChange("courseDuration", "");
+      onChange("dateOfSparing", "");
+    } else if (courseModules[formData.moduleNo]) {
       const duration = courseModules[formData.moduleNo];
       onChange(
         "courseDuration",
@@ -96,7 +100,8 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     const moduleNo = formData.moduleNo;
     const duration = courseModules[moduleNo];
 
-    if (joiningDate && duration && moduleNo !== "") {
+    // Only auto-calculate for non-custom modules
+    if (joiningDate && duration && moduleNo !== "" && moduleNo !== "Other") {
       const joining = new Date(joiningDate);
 
       if (typeof duration === "number") {
@@ -112,9 +117,11 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
       const isoString = joining.toISOString().split("T")[0];
       onChange("dateOfSparing", isoString);
-    } else if (!joiningDate || !moduleNo || moduleNo === "") {
-      // Clear date of sparing when required fields are empty
-      onChange("dateOfSparing", "");
+    } else if (!joiningDate || !moduleNo || moduleNo === "" || moduleNo === "Other") {
+      // Clear date of sparing when required fields are empty or custom module selected
+      if (moduleNo !== "Other") {
+        onChange("dateOfSparing", "");
+      }
     }
   }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo]);
 
@@ -145,8 +152,13 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
-      "courseDuration",
     ];
+
+    // Add courseDuration to required fields only if moduleNo is not "Other"
+    if (formData.moduleNo !== "Other") {
+      requiredFields.push("courseDuration");
+    }
+
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -280,24 +292,40 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             Date of Sparing{" "}
-            <span className="text-xs text-gray-500">(Auto-calculated)</span>
+            {formData.moduleNo !== "Other" && (
+              <span className="text-xs text-gray-500">(Auto-calculated)</span>
+            )}
+            {formData.moduleNo === "Other" && <span className="text-red-500">*</span>}
           </label>
           <input
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
+            readOnly={formData.moduleNo !== "Other"}
           />
+          {errors.dateOfSparing && (
+            <p className="text-sm text-red-500 mt-1">{errors.dateOfSparing}</p>
+          )}
         </div>
 
         <div>
-          <RequiredLabel>Course Duration</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">
+            Course Duration
+            {formData.moduleNo !== "Other" && (
+              <span className="text-xs text-gray-500"> (Auto-filled)</span>
+            )}
+            {formData.moduleNo === "Other" && <span className="text-xs text-gray-500"> (Optional)</span>}
+          </label>
           <input
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
-            placeholder="Auto-filled"
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
+            placeholder={formData.moduleNo === "Other" ? "Enter course duration" : "Auto-filled"}
+            readOnly={formData.moduleNo !== "Other"}
           />
           {errors.courseDuration && (
             <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>

@@ -1,5 +1,5 @@
-import User from '../models/User.js';
-import { createSession, removeSession } from '../utils/session.js';
+const User = require('../models/User');
+const { createSession, removeSession } = require('../utils/session');
 
 // Login controller
 const login = async (req, res) => {
@@ -23,61 +23,58 @@ const login = async (req, res) => {
         }
 
         // Create session
-        const { token } = createSession(user);
+        const session = createSession(user);
 
-        // Return success response
         res.json({
             success: true,
-            token,
-            user
+            message: 'Login successful',
+            token: session.token,
+            expires: session.expires,
+            user: {
+                role: user.role,
+                name: user.name,
+                permissions: user.permissions
+            }
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'An error occurred during login' });
     }
 };
 
 // Verify token controller
 const verifyToken = (req, res) => {
-    // Authentication middleware already validated the token
-    // Just return the user info
+    // If middleware passes, token is valid
     res.json({
-        success: true,
-        user: req.user
+        message: 'Token is valid',
+        user: {
+            role: req.user.role,
+            name: req.user.name,
+            permissions: req.user.permissions
+        }
     });
 };
 
 // Logout controller
 const logout = (req, res) => {
-    try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-        if (token) {
-            removeSession(token);
-        }
-
-        res.json({ success: true, message: 'Logged out successfully' });
-    } catch (error) {
-        console.error('Logout error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (token) {
+        removeSession(token);
     }
+
+    res.json({ message: 'Logout successful' });
 };
 
-// Get user permissions
+// Get permissions controller
 const getPermissions = (req, res) => {
-    try {
-        res.json({
-            role: req.user.role,
-            permissions: req.user.permissions
-        });
-    } catch (error) {
-        console.error('Get permissions error:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
+    res.json({
+        permissions: req.user.permissions
+    });
 };
 
-export {
+module.exports = {
     login,
     verifyToken,
     logout,

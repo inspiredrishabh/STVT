@@ -1,4 +1,4 @@
-import { sessions } from '../utils/session.js';
+const { sessions } = require('../utils/session');
 
 // Authentication middleware to check and validate tokens
 const authenticateToken = (req, res, next) => {
@@ -21,4 +21,4 @@ const authenticateToken = (req, res, next) => {
     next();
 };
 
-export { authenticateToken };
+module.exports = { authenticateToken };

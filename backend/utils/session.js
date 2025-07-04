@@ -1,4 +1,4 @@
-import { SESSION_EXPIRY } from '../config/config.js';
+const { SESSION_EXPIRY } = require('../config/config');
 
 // Session storage (in-memory for simplicity)
 const sessions = new Map();
@@ -38,11 +38,27 @@ const getSessionCount = () => {
     return sessions.size;
 };
 
-export {
+// Clean up expired sessions
+const cleanSessions = () => {
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    sessions.forEach((session, token) => {
+        if (session.expires < now) {
+            sessions.delete(token);
+            cleanedCount++;
+        }
+    });
+
+    return cleanedCount;
+};
+
+// Schedule regular cleanup
+setInterval(cleanSessions, 60 * 60 * 1000); // Run hourly
+
+module.exports = {
     sessions,
-    generateSessionToken,
     createSession,
     removeSession,
-    getSession,
-    getSessionCount
+    cleanSessions
 };

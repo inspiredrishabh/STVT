@@ -1,5 +1,5 @@
-import { db } from '../config/db.js';
-import { rolePermissions } from '../config/config.js';
+const { db } = require('../config/db');
+const { rolePermissions } = require('../config/config');
 
 class User {
     // Verify user credentials
@@ -23,7 +23,8 @@ class User {
                     const user = {
                         id: row.id,
                         role: row.role,
-                        permissions: rolePermissions[row.role] || []
+                        permissions: rolePermissions[row.role] || [],
+                        name: row.name || row.role.charAt(0).toUpperCase() + row.role.slice(1),
                     };
 
                     resolve(user);
@@ -31,7 +32,6 @@ class User {
             );
         });
     }
-
 }
 
-export default User;
+module.exports = User;
