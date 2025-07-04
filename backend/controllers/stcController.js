@@ -11,18 +11,17 @@ class StcController {
     async createCandidate(req, res) {
         try {
             console.log('Creating STC candidate...');
-
+            const candidateData = req.body;
             // console.log("Request body:", req.body);
             // console.log("Request file:", req.file);
-            // const candidateData = req.body;
             // console.log(candidateData)
             // console.log('1');
 
             // Generate ticket number
             const ticketNumber =  await generateTicketNumber(candidateData.designation);
             candidateData.ticket_no = ticketNumber;
-            /* console.log('2') */
-            // Handle image upload
+            // /* console.log('2') */
+            // // Handle image upload
             if (req.file) {
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
                 candidateData.picture = imagePath;
