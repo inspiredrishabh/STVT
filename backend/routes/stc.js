@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
     });
     console.log("3");
     // TODO: Save to database here
-    // const savedRecord = await STCModel.create(formData);
+    const savedRecord = await STCModel.create(formData);
 
     // Success response
     res.status(201).json({

@@ -67,7 +67,8 @@ class StcController {
         try {
             const { ticketNumber } = req.params;
             const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
-            
+            console.log(`candidate Name  :- ${candidate.name}`);
+            // console.log(`candidate fetched from database :- ${JSON.stringify(candidate, null, 2)}`);
             if (!candidate) {
                 return res.status(404).json({
                     success: false,

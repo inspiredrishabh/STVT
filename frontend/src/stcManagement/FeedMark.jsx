@@ -442,7 +442,7 @@ const FeedMark = () => {
 
     if (autoSelect === 'true' && ticketNo) {
       // Set the form state immediately
-      setticketNo(ticketNo);
+      setTicketNo(ticketNo);
       setSearchMethod('ticket');
 
       // Clear any existing messages
@@ -455,7 +455,7 @@ const FeedMark = () => {
     }
   }, [searchParams]);
 
-  // ---------------   Load candidates for dropdown------------- 
+  // ---------------   Load candidates from dropdown------------- 
   useEffect(() => {
     if (searchMethod === 'dropdown') {
       loadCandidates();
@@ -544,7 +544,7 @@ const FeedMark = () => {
 
       setCandidateData(candidate);
       setCourseCode(candidate.module_no);
-      setticketNo(candidate.ticketNo);
+      setTicketNo(candidate.ticketNo);
 
       // Load existing marks
       const marksData = await mockAPI.getExistingMarks(candidate.ticketNo);
@@ -946,7 +946,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
                 {searchMethod === 'ticket' && (
                   <button
                     onClick={handleSearchCandidate}
-                    disabled={loading || !ticketNo.trim()}
+                    disabled={loading || !ticketNo}
                     className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {loading ? (
@@ -1002,7 +1002,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <label className="block text-sm font-semibold text-blue-700 mb-1">Ticket Number</label>
-                  <p className="text-lg font-bold text-blue-900">{candidateData.ticketNo}</p>
+                  <p className="text-lg font-bold text-blue-900">{candidateData.ticket_no}</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-xl border border-green-200">
                   <label className="block text-sm font-semibold text-green-700 mb-1">Name</label>
@@ -1010,7 +1010,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
                 </div>
                 <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
                   <label className="block text-sm font-semibold text-purple-700 mb-1">Course Code</label>
-                  <p className="text-lg font-bold text-purple-900">{candidateData.courseCode}</p>
+                  <p className="text-lg font-bold text-purple-900">{candidateData.module_no}</p>
                 </div>
               </div>
             </div>
