@@ -12,7 +12,6 @@ class StcController {
             const candidateData = req.body;
 
             // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation);
             const ticketNumber = await generateTicketNumber(candidateData.designation, 'stc');
             candidateData.ticket_no = ticketNumber;
 
