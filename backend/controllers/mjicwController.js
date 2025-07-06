@@ -8,6 +8,7 @@ class MjiCwController {
 
     async createScore(req, res) {
         try {
+            console.log('Creating MJI - C&W score...');
             const scoreData = req.body;
             
             const newScore = await this.mjiCwModel.create(scoreData);
