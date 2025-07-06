@@ -2,7 +2,6 @@ const { generateTicketNumber } = require('../utils/ticketGenerator');
 const fs = require('fs');
 const path = require('path');
 
-
 class StcController {
     constructor(stcModel) {
         this.stcModel = stcModel;
@@ -10,19 +9,19 @@ class StcController {
 
     async createCandidate(req, res) {
         try {
-            console.log('Creating STC candidate...');
             const candidateData = req.body;
 
             // Generate ticket number
+            const ticketNumber = await generateTicketNumber(candidateData.designation);
             const ticketNumber = await generateTicketNumber(candidateData.designation, 'stc');
             candidateData.ticket_no = ticketNumber;
 
-            // // Handle image upload
+            // Handle image upload
             if (req.file) {
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
                 candidateData.picture = imagePath;
             }
-            // console.log('3');
+
             const newCandidate = await this.stcModel.create(candidateData);
             res.status(201).json({
                 success: true,
@@ -63,8 +62,7 @@ class StcController {
         try {
             const { ticketNumber } = req.params;
             const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
-            console.log(`candidate Name  :- ${candidate.name}`);
-            // console.log(`candidate fetched from database :- ${JSON.stringify(candidate, null, 2)}`);
+
             if (!candidate) {
                 return res.status(404).json({
                     success: false,

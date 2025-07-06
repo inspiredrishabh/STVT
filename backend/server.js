@@ -7,8 +7,9 @@ const authRoutes = require('./routes/authRoutes');
 const stcRoutes = require('./routes/stcRoutes');
 const wtcRoutes = require('./routes/wtcRoutes');
 const mjiCwRoutes = require('./routes/mjiCwRoutes');
+const mjpCwRoutes = require('./routes/mjpcwRoutes');
 const nonRailwayRoutes = require('./routes/nonRailwayRoutes');
-const { initializeDatabase } = require('./config/db');
+const {  initializeDatabase } = require('./config/db');
 const app = express();
 
 // Initialize the database
@@ -27,6 +28,7 @@ app.use('/api/stc', stcRoutes);
 app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
 app.use('/api/mji-cw', mjiCwRoutes)
+app.use('/api/mjpcw', mjpCwRoutes )
 
 // Health check route
 app.get('/api/health', (req, res) => {

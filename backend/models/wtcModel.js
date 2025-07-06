@@ -1,5 +1,5 @@
-const { db } = require('../config/db.js'); // Get the db instancenst sqlite3 = require('sqlite3').verbose();
-
+const sqlite3 = require('sqlite3').verbose();
+const {db} = require('../config/db');
 
 class WtcModel {
     constructor() {
@@ -11,6 +11,7 @@ class WtcModel {
         db.run(`CREATE TABLE IF NOT EXISTS ${this.tableName} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             
+            -- Personal Information
             picture TEXT,
             name TEXT,
             sex TEXT,
@@ -22,12 +23,14 @@ class WtcModel {
             type_of_disability TEXT,
             nationality TEXT DEFAULT 'INDIAN',
 
+            -- Contact Information
             permanent_address TEXT,
             current_address TEXT,
             phone_number TEXT,
             emergency_contact_number TEXT,
             email TEXT,
 
+            -- Professional Information
             date_of_appointment_in_railway TEXT,
             mode_of_appointment TEXT,
             course_type TEXT,
@@ -41,19 +44,23 @@ class WtcModel {
             pf_no_nps_ups TEXT,
             employee_number TEXT,
 
+            -- Education Information
             highest_qualification TEXT,
             field_of_study TEXT,
             institution TEXT,
             grade_type TEXT,
             grade_value TEXT,
             
-            ticket_no TEXT UNIQUE NOT NULL, 
+            -- Course Information
+            ticket_no TEXT UNIQUE NOT NULL,  -- Main unique identifier
             batch TEXT,
             date_of_joining_stc_wtc_non_railway TEXT,
             module_no TEXT,
             date_of_sparing TEXT,
             course_duration TEXT,
+            course_coordinator TEXT,
 
+            -- System fields
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
@@ -71,7 +78,7 @@ class WtcModel {
                 grade_value, ticket_no, batch, date_of_joining_stc_wtc_non_railway, module_no, 
                 date_of_sparing, course_duration
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
+            
             db.run(sql, [
                 candidateData.picture || candidateData.imagePath,
                 candidateData.name,
@@ -111,7 +118,7 @@ class WtcModel {
                 candidateData.module_no,
                 candidateData.date_of_sparing,
                 candidateData.course_duration
-            ], function (err) {
+            ], function(err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         reject(new Error('Ticket number already exists'));
@@ -119,7 +126,7 @@ class WtcModel {
                         reject(err);
                     }
                 } else {
-                    resolve({
+                    resolve({ 
                         id: this.lastID,
                         ticket_no: candidateData.ticket_no || candidateData.ticketNumber,
                         ...candidateData
@@ -158,7 +165,7 @@ class WtcModel {
                 grade_value = ?, batch = ?, date_of_joining_stc_wtc_non_railway = ?, 
                 module_no = ?, date_of_sparing = ?, course_duration = ?, updated_at = CURRENT_TIMESTAMP 
                 WHERE ticket_no = ?`;
-
+                
             db.run(sql, [
                 candidateData.picture || candidateData.imagePath,
                 candidateData.name,
@@ -198,7 +205,7 @@ class WtcModel {
                 candidateData.date_of_sparing,
                 candidateData.course_duration,
                 ticketNumber
-            ], function (err) {
+            ], function(err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -212,7 +219,7 @@ class WtcModel {
     deleteByTicketNumber(ticketNumber) {
         return new Promise((resolve, reject) => {
             const sql = `DELETE FROM ${this.tableName} WHERE ticket_no = ?`;
-            db.run(sql, [ticketNumber], function (err) {
+            db.run(sql, [ticketNumber], function(err) {
                 if (err) {
                     reject(err);
                 } else {

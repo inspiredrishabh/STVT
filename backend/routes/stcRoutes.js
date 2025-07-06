@@ -8,9 +8,7 @@ const upload = require('../middleware/upload');
 const stcModel = new StcModel();
 const stcController = new StcController(stcModel);
 
-
 // Main Routes - Using Ticket Number
-
 router.post('/', upload.single('image'), (req, res) => {
     stcController.createCandidate(req, res);
 });
@@ -29,7 +27,7 @@ router.put('/:ticketNumber', upload.single('image'), (req, res) => {
 
 router.delete('/:ticketNumber', (req, res) => {
     stcController.deleteCandidateByTicketNumber(req, res);
-})
+});
 
 // Filter Routes
 router.get('/filter/designation/:designation', (req, res) => {
