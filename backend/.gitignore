@@ -2,11 +2,6 @@
 node_modules/
 *node_modules
 
-# SQLite database files
-*.sqlite
-*.db
-db.sqlite
-
 # Logs
 logs/
 *.log
