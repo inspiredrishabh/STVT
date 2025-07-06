@@ -21,7 +21,7 @@ const TraineeProfile = () => {
         try {
             setLoading(true);
             // Replace with your actual API endpoint
-            const response = await fetch('/api/trainees');
+            const response = await fetch('/api/wtc');
             if (!response.ok) throw new Error('Failed to fetch trainees');
 
             const data = await response.json();
@@ -29,125 +29,6 @@ const TraineeProfile = () => {
             setFilteredTrainees(data);
         } catch (err) {
             setError(err.message);
-            // Mock data for development
-            // Update the mock data section (around line 41)
-
-            // Mock data for development
-            const mockData = [
-                {
-                    id: 1,
-                    // Personal details
-                    name: 'Rahul Sharma',
-                    gender: 'Male',
-                    dateOfBirth: '1995-06-15',
-                    fatherName: 'Suresh Sharma',
-                    category: 'General',
-
-                    // Professional details
-                    ticketNo: 'WTC/24/001',
-                    courseType: 'Induction Course',
-                    designation: 'CG Apprentice Technician III',
-                    designationOther: '',
-                    unit: 'Dy. CEE /CB',
-                    unitOther: '',
-
-                    // Course details
-                    batch: '2024-2025',
-                    moduleNo: 'ASE',
-                    moduleDescription: 'Advanced Service Engineering',
-                    duration: '52 Weeks',
-                    dateOfJoiningStcWtcNonRailway: '2024-01-15',
-                    dateOfSparingFromStcWtcNonRailway: '2025-01-14',
-
-                    // Contact details
-                    phoneNumber: '9876543210',
-                    email: 'rahul.sharma@railway.gov.in',
-                    permanentAddress: {
-                        address: '123 Railway Colony',
-                        city: 'New Delhi',
-                        state: 'Delhi',
-                        pincode: '110001'
-                    },
-
-                    status: 'Active'
-                },
-                {
-                    id: 2,
-                    // Personal details
-                    name: 'Priya Singh',
-                    gender: 'Female',
-                    dateOfBirth: '1997-03-22',
-                    fatherName: 'Rajesh Singh',
-                    category: 'OBC',
-
-                    // Professional details
-                    ticketNo: 'WTC/24/002',
-                    courseType: 'Induction Course',
-                    designation: 'RRB Apprentice Technician III',
-                    designationOther: '',
-                    unit: 'Dy. CEE /CB',
-                    unitOther: '',
-
-                    // Course details
-                    batch: '2024-2025',
-                    moduleNo: 'AJE',
-                    moduleDescription: 'Advanced Junior Engineering',
-                    duration: '52 Weeks',
-                    dateOfJoiningStcWtcNonRailway: '2024-02-01',
-                    dateOfSparingFromStcWtcNonRailway: '2025-01-31',
-
-                    // Contact details
-                    phoneNumber: '9876543211',
-                    email: 'priya.singh@railway.gov.in',
-                    permanentAddress: {
-                        address: '456 Railway Quarter',
-                        city: 'Mumbai',
-                        state: 'Maharashtra',
-                        pincode: '400001'
-                    },
-
-                    status: 'Active'
-                },
-                {
-                    id: 3,
-                    // Personal details
-                    name: 'Amit Kumar',
-                    gender: 'Male',
-                    dateOfBirth: '1994-11-10',
-                    fatherName: 'Mohan Kumar',
-                    category: 'SC',
-
-                    // Professional details
-                    ticketNo: 'WTC/24/003',
-                    courseType: 'Promotional Course',
-                    designation: 'GDCE App. Tech. III',
-                    designationOther: '',
-                    unit: 'MB',
-                    unitOther: '',
-
-                    // Course details
-                    batch: '2024-2025',
-                    moduleNo: 'IJE',
-                    moduleDescription: 'Intermediate Junior Engineering',
-                    duration: '52 Weeks',
-                    dateOfJoiningStcWtcNonRailway: '2024-03-01',
-                    dateOfSparingFromStcWtcNonRailway: '2025-02-28',
-
-                    // Contact details
-                    phoneNumber: '9876543212',
-                    email: 'amit.kumar@railway.gov.in',
-                    permanentAddress: {
-                        address: '789 Railway Staff Quarters',
-                        city: 'Kolkata',
-                        state: 'West Bengal',
-                        pincode: '700001'
-                    },
-
-                    status: 'Active'
-                }
-            ];
-            setTrainees(mockData);
-            setFilteredTrainees(mockData);
         } finally {
             setLoading(false);
         }

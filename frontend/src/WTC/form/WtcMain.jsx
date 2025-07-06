@@ -128,9 +128,9 @@ const WtcMain = () => {
         }
       });
 
-      const response = await fetch("http://localhost:5000/api/wtc/", {
+      const response = await fetch("api/wtc/", {
         method: "POST",
-        body: formDataToSend,
+        // body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -162,9 +162,9 @@ const WtcMain = () => {
     try {
       const result = await submitToAPI(formData);
       console.log("Submission successful:", result);
-      alert(
-        `Registration completed successfully! Registration ID: ${result.registrationId}`
-      );
+      // alert(
+      //   `Registration completed successfully! Registration ID: ${result.registrationId}`
+      // );
 
       // Optional: Reset form after successful submission
       // setFormData(initialFormData);

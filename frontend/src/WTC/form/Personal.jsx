@@ -144,10 +144,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         </label>
         {type === "file" ? (
           <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
-            <label
-              htmlFor="pictureUpload"
-              className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
-            >
+            <label htmlFor="pictureUpload" className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4">
               Choose File
             </label>
             <input
@@ -158,7 +155,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               className="hidden"
             />
             <span className="text-gray-500 text-sm truncate">
-              {formData[field] ? formData[field].name : "No file chosen"}
+              {formData[field] ? formData[field].name : "No file chosen ,File must be 3.5cm x 4.5cm in size"}
             </span>
           </div>
         ) : type === "select" ? (
