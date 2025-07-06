@@ -1,6 +1,63 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo, useState, useRef } from "react";
 
 const Contact = ({ formData, onChange, errors = {} }) => {
+  const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
+  const [emailSuggestions, setEmailSuggestions] = useState([]);
+  const emailInputRef = useRef(null);
+
+  const emailDomains = [
+    "gmail.com",
+    "yahoo.com",
+    "outlook.com",
+    "hotmail.com",
+    "rediffmail.com",
+    "zoho.com",
+    "protonmail.com",
+    "icloud.com",
+    "yandex.com",
+    "mail.com"
+  ];
+
+  const handleEmailChange = useCallback((value) => {
+    onChange("email", value);
+
+    // Check if user typed @ and show suggestions
+    if (value.includes("@") && !value.includes(".")) {
+      const parts = value.split("@");
+      if (parts.length === 2 && parts[1] === "") {
+        // User just typed @, show all suggestions
+        const suggestions = emailDomains.map(domain => `${parts[0]}@${domain}`);
+        setEmailSuggestions(suggestions);
+        setShowEmailSuggestions(true);
+      } else if (parts.length === 2 && parts[1].length > 0) {
+        // User is typing domain, filter suggestions
+        const filtered = emailDomains
+          .filter(domain => domain.toLowerCase().startsWith(parts[1].toLowerCase()))
+          .map(domain => `${parts[0]}@${domain}`);
+        setEmailSuggestions(filtered);
+        setShowEmailSuggestions(filtered.length > 0);
+      }
+    } else {
+      setShowEmailSuggestions(false);
+    }
+  }, [onChange, emailDomains]);
+
+  const selectEmailSuggestion = useCallback((suggestion) => {
+    onChange("email", suggestion);
+    setShowEmailSuggestions(false);
+  }, [onChange]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emailInputRef.current && !emailInputRef.current.contains(event.target)) {
+        setShowEmailSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const validateField = useCallback((fieldName, value) => {
     const validations = {
       permanentAddress: (v) =>
@@ -97,7 +154,37 @@ const Contact = ({ formData, onChange, errors = {} }) => {
             Same as Permanent Address
           </button>
         )}
-        {type === "textarea" ? (
+        {field === "email" ? (
+          <div className="relative" ref={emailInputRef}>
+            <input
+              type={type}
+              value={formData[field] || ""}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter email (e.g., username@gmail.com)"
+            />
+
+            {/* Email Suggestions Dropdown */}
+            {showEmailSuggestions && emailSuggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {emailSuggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    onClick={() => selectEmailSuggestion(suggestion)}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-800">{suggestion}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Type your email address. After typing "@", select from suggested domains.
+            </p>
+          </div>
+        ) : type === "textarea" ? (
           <textarea
             rows="3"
             value={formData[field] || ""}

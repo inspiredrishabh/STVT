@@ -7,7 +7,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     if (!trimmedValue) return "This field is required";
 
     if (
-      ["workingUnder", "institution", "fieldOfStudy"].includes(field) &&
+      ["workingUnder", "institution", "fieldOfStudy", "customFieldOfStudy", "modeOfAppointmentOther"].includes(field) &&
       trimmedValue.length < 2
     ) {
       return "Must be at least 2 characters";
@@ -41,9 +41,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       "highestQualification",
       "fieldOfStudy",
       "institution",
-      "gradeType",
-      "gradeValue",
     ];
+
+    // Add customFieldOfStudy to required fields if "Other" is selected
+    if (formData.fieldOfStudy === "Other") {
+      requiredFields.push("customFieldOfStudy");
+    }
+
+    // Add modeOfAppointmentOther to required fields if "Other" is selected
+    if (formData.modeOfAppointment === "Other") {
+      requiredFields.push("modeOfAppointmentOther");
+    }
 
     const validationErrors = {};
     requiredFields.forEach((field) => {
@@ -57,6 +65,77 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     };
   };
 
+  const getFieldOfStudyOptions = () => {
+    const qualification = formData.highestQualification;
+
+    switch (qualification) {
+      case "Diploma":
+        return [
+          "Mechanical Engineering",
+          "Electrical Engineering",
+          "Civil Engineering",
+          "Electronics Engineering",
+          "Computer Engineering",
+          "Automobile Engineering",
+          "Railway Engineering",
+          "Other"
+        ];
+      case "Bachelor's Degree":
+        return [
+          "B.Tech - Mechanical Engineering",
+          "B.Tech - Electrical Engineering",
+          "B.Tech - Civil Engineering",
+          "B.Tech - Electronics & Communication",
+          "B.Tech - Computer Science",
+          "B.Tech - Railway Engineering",
+          "B.E - Mechanical Engineering",
+          "B.E - Electrical Engineering",
+          "B.E - Civil Engineering",
+          "BCA - Computer Applications",
+          "B.Sc - Physics",
+          "B.Sc - Mathematics",
+          "B.Sc - Chemistry",
+          "B.Com - Commerce",
+          "Other"
+        ];
+      case "Master's Degree":
+        return [
+          "M.Tech - Mechanical Engineering",
+          "M.Tech - Electrical Engineering",
+          "M.Tech - Civil Engineering",
+          "M.Tech - Electronics & Communication",
+          "M.Tech - Computer Science",
+          "M.Tech - Railway Engineering",
+          "M.E - Mechanical Engineering",
+          "M.E - Electrical Engineering",
+          "M.E - Civil Engineering",
+          "MCA - Computer Applications",
+          "M.Sc - Physics",
+          "M.Sc - Mathematics",
+          "M.Sc - Chemistry",
+          "MBA - Business Administration",
+          "M.Com - Commerce",
+          "Other"
+        ];
+      case "Ph.D":
+        return [
+          "Ph.D - Mechanical Engineering",
+          "Ph.D - Electrical Engineering",
+          "Ph.D - Civil Engineering",
+          "Ph.D - Electronics & Communication",
+          "Ph.D - Computer Science",
+          "Ph.D - Railway Engineering",
+          "Ph.D - Physics",
+          "Ph.D - Mathematics",
+          "Ph.D - Chemistry",
+          "Ph.D - Management",
+          "Other"
+        ];
+      default:
+        return ["Other"];
+    }
+  };
+
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
@@ -68,6 +147,12 @@ const Professional = ({ formData, onChange, errors = {} }) => {
   const RequiredLabel = ({ children }) => (
     <label className="block text-gray-700 font-medium mb-1">
       {children} <span className="text-red-500">*</span>
+    </label>
+  );
+
+  const OptionalLabel = ({ children }) => (
+    <label className="block text-gray-700 font-medium mb-1">
+      {children}
     </label>
   );
 
@@ -109,6 +194,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           >
             <option value="">Select mode</option>
             <option value="RRB">RRB</option>
+            <option value="CG">CG</option>
             <option value="Promotion Through LDCE">
               Promotion Through LDCE
             </option>
@@ -124,6 +210,22 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
+        {formData.modeOfAppointment === "Other" && (
+          <div>
+            <RequiredLabel>Specify Mode of Appointment</RequiredLabel>
+            <input
+              type="text"
+              value={formData.modeOfAppointmentOther || ""}
+              onChange={(e) => handleChange("modeOfAppointmentOther", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter mode of appointment"
+            />
+            {errors.modeOfAppointmentOther && (
+              <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointmentOther}</p>
+            )}
+          </div>
+        )}
+
         <div>
           <RequiredLabel>Designation</RequiredLabel>
           <select
@@ -136,6 +238,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <option value="AJE">AJE</option>
             <option value="IJE">IJE</option>
             <option value="RJE">RJE</option>
+            <option value="SSC">SSC</option>
+            <option value="JE">JE</option>
             <option value="Other">Other</option>
           </select>
           {errors.designation && (
@@ -151,11 +255,23 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           >
             <option value="">Select unit</option>
-            <option value="JAT">JAT</option>
-            <option value="FZD">FZD</option>
-            <option value="MB">MB</option>
-            <option value="LKO">LKO</option>
+            <option value="AMVW">AMVW</option>
+            <option value="ASRW">ASRW</option>
+            <option value="CVW">CVW</option>
             <option value="DLI">DLI</option>
+            <option value="DLIW">DLIW</option>
+            <option value="FZR">FZR</option>
+            <option value="FZRW">FZRW</option>
+            <option value="JAT">JAT</option>
+            <option value="JATW">JATW</option>
+            <option value="JUDW">JUDW</option>
+            <option value="KLKW">KLKW</option>
+            <option value="LKO">LKO</option>
+            <option value="LKOW">LKOW</option>
+            <option value="MB">MB</option>
+            <option value="MBW">MBW</option>
+            <option value="RCNKW">RCNKW</option>
+            <option value="UMBW">UMBW</option>
             <option value="Other">Other</option>
           </select>
           {errors.unit && (
@@ -262,17 +378,38 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
         <div>
           <RequiredLabel>Field of Study</RequiredLabel>
-          <input
-            type="text"
+          <select
             value={formData.fieldOfStudy || ""}
             onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter field of study"
-          />
+          >
+            <option value="">Select field of study</option>
+            {getFieldOfStudyOptions().map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
           {errors.fieldOfStudy && (
             <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
           )}
         </div>
+
+        {formData.fieldOfStudy === "Other" && (
+          <div>
+            <RequiredLabel>Custom Field of Study</RequiredLabel>
+            <input
+              type="text"
+              value={formData.customFieldOfStudy || ""}
+              onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter custom field of study"
+            />
+            {errors.customFieldOfStudy && (
+              <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
+            )}
+          </div>
+        )}
 
         <div>
           <RequiredLabel>Institution</RequiredLabel>
@@ -289,7 +426,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         </div>
 
         <div>
-          <RequiredLabel>Grade Type</RequiredLabel>
+          <OptionalLabel>Grade Type</OptionalLabel>
           <select
             value={formData.gradeType || ""}
             onChange={(e) => handleChange("gradeType", e.target.value)}
@@ -306,7 +443,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         </div>
 
         <div>
-          <RequiredLabel>Grade Value</RequiredLabel>
+          <OptionalLabel>Grade Value</OptionalLabel>
           <input
             type="number"
             step="0.01"
