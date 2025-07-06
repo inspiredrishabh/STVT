@@ -1,5 +1,5 @@
-import User from '../models/User.js';
-import { createSession, removeSession } from '../utils/session.js';
+const  User  = require ('../models/User.js');
+const { createSession, removeSession } =  require ('../utils/session.js');
 
 // Login controller
 const login = async (req, res) => {
@@ -77,7 +77,7 @@ const getPermissions = (req, res) => {
     }
 };
 
-export {
+module.exports= {
     login,
     verifyToken,
     logout,

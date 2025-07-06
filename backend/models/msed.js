@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = require('./database');
+const { db } = require('../config/db.js');
 
 class MseDModel {
     constructor() {
