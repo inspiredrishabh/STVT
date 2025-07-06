@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const MjrDController = require('../controllers/mjrDController');
 const MjrDModel = require('../models/mjrd');
+const StcModel = require('../models/stcModel');
 
-// Initialize model and controller
+// Initialize models and controller
 const mjrDModel = new MjrDModel();
-const mjrDController = new MjrDController(mjrDModel);
+const stcModel = new StcModel();
+const mjrDController = new MjrDController(mjrDModel, stcModel);
 
-// Main Routes - Using Ticket Number
+// Main CRUD Routes - Using Ticket Number
 router.post('/', (req, res) => {
     mjrDController.createScore(req, res);
 });
@@ -28,16 +30,38 @@ router.delete('/:ticketNumber', (req, res) => {
     mjrDController.deleteScoreByTicketNumber(req, res);
 });
 
-// Scores with Candidate Details Routes
-router.get('/details/all', (req, res) => {
+// Paper-specific Updates
+router.put('/:ticketNumber/paper/:paperCode', (req, res) => {
+    mjrDController.updatePaperMarks(req, res);
+});
+
+// Marks Summary and Details
+router.get('/:ticketNumber/summary', (req, res) => {
+    mjrDController.getMarksSummary(req, res);
+});
+
+router.get('/details/with-candidates', (req, res) => {
     mjrDController.getScoresWithCandidateDetails(req, res);
 });
 
-router.get('/details/:ticketNumber', (req, res) => {
+router.get('/:ticketNumber/details', (req, res) => {
     mjrDController.getScoreWithCandidateDetails(req, res);
 });
 
-// Bulk Operations Routes
+// Session-wise Routes
+router.get('/:ticketNumber/session/:session', (req, res) => {
+    mjrDController.getSessionMarks(req, res);
+});
+
+router.get('/analysis/session/:session', (req, res) => {
+    mjrDController.getSessionAnalysis(req, res);
+});
+
+router.get('/analysis/course/overview', (req, res) => {
+    mjrDController.getCourseAnalysis(req, res);
+});
+
+// Bulk Operations
 router.post('/bulk/upload', (req, res) => {
     mjrDController.bulkUploadScores(req, res);
 });
@@ -46,7 +70,7 @@ router.post('/upsert', (req, res) => {
     mjrDController.upsertScore(req, res);
 });
 
-// Backward Compatibility Routes (Optional)
+// Backward Compatibility Routes
 router.get('/legacy/:id', (req, res) => {
     mjrDController.getScoreById(req, res);
 });

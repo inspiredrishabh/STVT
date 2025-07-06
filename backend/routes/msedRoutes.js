@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const MseDController = require('../controllers/mseDController');
 const MseDModel = require('../models/msed');
+const StcModel = require('../models/stcModel');
 
-// Initialize model and controller
+// Initialize models and controller
 const mseDModel = new MseDModel();
-const mseDController = new MseDController(mseDModel);
+const stcModel = new StcModel();
+const mseDController = new MseDController(mseDModel, stcModel);
 
-// Main Routes - Using Ticket Number
+// Main CRUD Routes - Using Ticket Number
 router.post('/', (req, res) => {
     mseDController.createScore(req, res);
 });
@@ -28,16 +30,38 @@ router.delete('/:ticketNumber', (req, res) => {
     mseDController.deleteScoreByTicketNumber(req, res);
 });
 
-// Scores with Candidate Details Routes
-router.get('/details/all', (req, res) => {
+// Paper-specific Updates
+router.put('/:ticketNumber/paper/:paperCode', (req, res) => {
+    mseDController.updatePaperMarks(req, res);
+});
+
+// Marks Summary and Details
+router.get('/:ticketNumber/summary', (req, res) => {
+    mseDController.getMarksSummary(req, res);
+});
+
+router.get('/details/with-candidates', (req, res) => {
     mseDController.getScoresWithCandidateDetails(req, res);
 });
 
-router.get('/details/:ticketNumber', (req, res) => {
+router.get('/:ticketNumber/details', (req, res) => {
     mseDController.getScoreWithCandidateDetails(req, res);
 });
 
-// Bulk Operations Routes
+// Session-wise Routes
+router.get('/:ticketNumber/session/:session', (req, res) => {
+    mseDController.getSessionMarks(req, res);
+});
+
+router.get('/analysis/session/:session', (req, res) => {
+    mseDController.getSessionAnalysis(req, res);
+});
+
+router.get('/analysis/course/overview', (req, res) => {
+    mseDController.getCourseAnalysis(req, res);
+});
+
+// Bulk Operations
 router.post('/bulk/upload', (req, res) => {
     mseDController.bulkUploadScores(req, res);
 });
@@ -46,7 +70,7 @@ router.post('/upsert', (req, res) => {
     mseDController.upsertScore(req, res);
 });
 
-// Backward Compatibility Routes (Optional)
+// Backward Compatibility Routes
 router.get('/legacy/:id', (req, res) => {
     mseDController.getScoreById(req, res);
 });

@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const MjpWController = require('../controllers/mjpWController');
 const MjpWModel = require('../models/mjpw');
+const StcModel = require('../models/stcModel');
 
-// Initialize model and controller
+// Initialize models and controller
 const mjpWModel = new MjpWModel();
-const mjpWController = new MjpWController(mjpWModel);
+const stcModel = new StcModel();
+const mjpWController = new MjpWController(mjpWModel, stcModel);
 
-// Main Routes - Using Ticket Number
+// Main CRUD Routes - Using Ticket Number
 router.post('/', (req, res) => {
     mjpWController.createScore(req, res);
 });
@@ -28,16 +30,38 @@ router.delete('/:ticketNumber', (req, res) => {
     mjpWController.deleteScoreByTicketNumber(req, res);
 });
 
-// Scores with Candidate Details Routes
-router.get('/details/all', (req, res) => {
+// Paper-specific Updates
+router.put('/:ticketNumber/paper/:paperCode', (req, res) => {
+    mjpWController.updatePaperMarks(req, res);
+});
+
+// Marks Summary and Details
+router.get('/:ticketNumber/summary', (req, res) => {
+    mjpWController.getMarksSummary(req, res);
+});
+
+router.get('/details/with-candidates', (req, res) => {
     mjpWController.getScoresWithCandidateDetails(req, res);
 });
 
-router.get('/details/:ticketNumber', (req, res) => {
+router.get('/:ticketNumber/details', (req, res) => {
     mjpWController.getScoreWithCandidateDetails(req, res);
 });
 
-// Bulk Operations Routes
+// Session-wise Routes
+router.get('/:ticketNumber/session/:session', (req, res) => {
+    mjpWController.getSessionMarks(req, res);
+});
+
+router.get('/analysis/session/:session', (req, res) => {
+    mjpWController.getSessionAnalysis(req, res);
+});
+
+router.get('/analysis/course/overview', (req, res) => {
+    mjpWController.getCourseAnalysis(req, res);
+});
+
+// Bulk Operations
 router.post('/bulk/upload', (req, res) => {
     mjpWController.bulkUploadScores(req, res);
 });
@@ -46,7 +70,7 @@ router.post('/upsert', (req, res) => {
     mjpWController.upsertScore(req, res);
 });
 
-// Backward Compatibility Routes (Optional)
+// Backward Compatibility Routes
 router.get('/legacy/:id', (req, res) => {
     mjpWController.getScoreById(req, res);
 });
