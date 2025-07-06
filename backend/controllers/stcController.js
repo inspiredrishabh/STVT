@@ -12,15 +12,11 @@ class StcController {
         try {
             console.log('Creating STC candidate...');
             const candidateData = req.body;
-            // console.log("Request body:", req.body);
-            // console.log("Request file:", req.file);
-            // console.log(candidateData)
-            // console.log('1');
 
             // Generate ticket number
-            const ticketNumber =  await generateTicketNumber(candidateData.designation);
+            const ticketNumber = await generateTicketNumber(candidateData.designation, 'stc');
             candidateData.ticket_no = ticketNumber;
-            // /* console.log('2') */
+
             // // Handle image upload
             if (req.file) {
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
@@ -33,7 +29,7 @@ class StcController {
                 message: 'STC Candidate created successfully',
                 data: newCandidate
             });
-            
+
             // console.log('4 done');
 
         } catch (error) {
@@ -113,13 +109,13 @@ class StcController {
                         fs.unlinkSync(oldImagePath);
                     }
                 }
-                
+
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
                 updatedData.picture = imagePath;
             }
 
             const updatedCandidate = await this.stcModel.updateByTicketNumber(ticketNumber, updatedData);
-            
+
             res.status(200).json({
                 success: true,
                 message: 'STC Candidate updated successfully',
@@ -137,7 +133,7 @@ class StcController {
     async deleteCandidateByTicketNumber(req, res) {
         try {
             const { ticketNumber } = req.params;
-            
+
             // Get candidate to check image
             const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
             if (!candidate) {
@@ -149,7 +145,7 @@ class StcController {
 
             // Delete candidate
             const deleted = await this.stcModel.deleteByTicketNumber(ticketNumber);
-            
+
             // Delete image file if exists
             if (candidate.picture) {
                 const imagePath = path.join(__dirname, '../../', candidate.picture);
@@ -157,7 +153,7 @@ class StcController {
                     fs.unlinkSync(imagePath);
                 }
             }
-            
+
             res.status(200).json({
                 success: true,
                 message: 'STC Candidate deleted successfully'
@@ -175,7 +171,7 @@ class StcController {
         try {
             const { designation } = req.params;
             const candidates = await this.stcModel.getByDesignation(designation);
-            
+
             res.status(200).json({
                 success: true,
                 message: `STC Candidates with designation ${designation} retrieved successfully`,
@@ -195,7 +191,7 @@ class StcController {
         try {
             const { unit } = req.params;
             const candidates = await this.stcModel.getByUnit(unit);
-            
+
             res.status(200).json({
                 success: true,
                 message: `STC Candidates with unit ${unit} retrieved successfully`,
@@ -217,7 +213,7 @@ class StcController {
             const oldPath = file.path;
             const fileExtension = path.extname(file.originalname);
             const newFileName = `${ticketNumber}${fileExtension}`;
-            
+
             const uploadDir = path.join(__dirname, '../../uploads', traineeType);
             const newFullPath = path.join(uploadDir, newFileName);
             const relativePath = `uploads/${traineeType}/${newFileName}`;
@@ -229,14 +225,14 @@ class StcController {
 
             // Move file with new name
             fs.renameSync(oldPath, newFullPath);
-            
+
             return relativePath;
         } catch (error) {
             throw new Error('Error handling image upload: ' + error.message);
         }
     }
 
-    
+
     // async getCandidatesByTrainingPeriod(req, res) {
     //     try {
     //         const { trainingPeriod } = req.params;

@@ -1,18 +1,23 @@
 const sqlite3 = require('sqlite3').verbose();
 const { db } = require('../config/db');
 
-const generateTicketNumber = async (designation) => {
-    console.log(`Generating ticket number for designation: ${designation}`);
+const generateTicketNumber = async (designation, traineeType) => {
+    console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
+
+    if (!traineeType) {
+        return Promise.reject(new Error("Trainee type is required to generate a ticket number."));
+    }
 
     // Convert designation to lowercase for the prefix
-    const prefix = designation.toLowerCase();
+    const prefix = designation;
+    const tableName = `${traineeType}_candidates`;
 
     // The table you need to query is 'stc_candidates', not the designation itself.
     // You need to find the last ticket number for the given designation.
     // Assuming ticket_no looks like "aje00001", "ase00002" etc.
     const query = `
         SELECT ticket_no
-        FROM stc_candidates
+        FROM ${tableName}
         WHERE ticket_no LIKE ? || '%'
         ORDER BY ticket_no DESC
         LIMIT 1

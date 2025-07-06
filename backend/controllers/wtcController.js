@@ -1,6 +1,7 @@
 const { generateTicketNumber } = require('../utils/ticketGenerator');
 const fs = require('fs');
 const path = require('path');
+const upload = require('../middleware/upload');
 
 class WtcController {
     constructor(wtcModel) {
@@ -9,17 +10,18 @@ class WtcController {
 
     async createCandidate(req, res) {
         try {
-            const candidateData = req.body;
-            
-            // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation);
-            candidateData.ticket_no = ticketNumber;
-
-            // Handle image upload
             if (req.file) {
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'wtc');
                 candidateData.picture = imagePath;
             }
+
+            const candidateData = req.body;
+
+            // Generate ticket number
+            const ticketNumber = await generateTicketNumber(candidateData.designation, 'wtc');
+            candidateData.ticket_no = ticketNumber;
+
+            // Handle image upload
 
             const newCandidate = await this.wtcModel.create(candidateData);
             res.status(201).json({
@@ -58,7 +60,7 @@ class WtcController {
         try {
             const { ticketNumber } = req.params;
             const candidate = await this.wtcModel.getByTicketNumber(ticketNumber);
-            
+
             if (!candidate) {
                 return res.status(404).json({
                     success: false,
@@ -103,13 +105,13 @@ class WtcController {
                         fs.unlinkSync(oldImagePath);
                     }
                 }
-                
+
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'wtc');
                 updatedData.picture = imagePath;
             }
 
             const updatedCandidate = await this.wtcModel.updateByTicketNumber(ticketNumber, updatedData);
-            
+
             res.status(200).json({
                 success: true,
                 message: 'WTC Candidate updated successfully',
@@ -127,7 +129,7 @@ class WtcController {
     async deleteCandidateByTicketNumber(req, res) {
         try {
             const { ticketNumber } = req.params;
-            
+
             // Get candidate to check image
             const candidate = await this.wtcModel.getByTicketNumber(ticketNumber);
             if (!candidate) {
@@ -139,7 +141,7 @@ class WtcController {
 
             // Delete candidate
             const deleted = await this.wtcModel.deleteByTicketNumber(ticketNumber);
-            
+
             // Delete image file if exists
             if (candidate.picture) {
                 const imagePath = path.join(__dirname, '../../', candidate.picture);
@@ -147,7 +149,7 @@ class WtcController {
                     fs.unlinkSync(imagePath);
                 }
             }
-            
+
             res.status(200).json({
                 success: true,
                 message: 'WTC Candidate deleted successfully'
@@ -165,7 +167,7 @@ class WtcController {
         try {
             const { designation } = req.params;
             const candidates = await this.wtcModel.getByDesignation(designation);
-            
+
             res.status(200).json({
                 success: true,
                 message: `WTC Candidates with designation ${designation} retrieved successfully`,
@@ -186,7 +188,7 @@ class WtcController {
         try {
             const { courseType } = req.params;
             const candidates = await this.wtcModel.getByCourseType(courseType);
-            
+
             res.status(200).json({
                 success: true,
                 message: `WTC Candidates with course type ${courseType} retrieved successfully`,
@@ -206,7 +208,7 @@ class WtcController {
         try {
             const { unit } = req.params;
             const candidates = await this.wtcModel.getByUnit(unit);
-            
+
             res.status(200).json({
                 success: true,
                 message: `WTC Candidates with unit ${unit} retrieved successfully`,
@@ -226,7 +228,7 @@ class WtcController {
     //     try {
     //         const { trainingPeriod } = req.params;
     //         const candidates = await this.wtcModel.getByTrainingPeriod(trainingPeriod);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `WTC Candidates with training period ${trainingPeriod} retrieved successfully`,
@@ -246,7 +248,7 @@ class WtcController {
     //     try {
     //         const { theoryDuration } = req.params;
     //         const candidates = await this.wtcModel.getByTheoryDuration(theoryDuration);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `WTC Candidates with theory duration ${theoryDuration} retrieved successfully`,
@@ -266,7 +268,7 @@ class WtcController {
     //     try {
     //         const { practicalDuration } = req.params;
     //         const candidates = await this.wtcModel.getByPracticalDuration(practicalDuration);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `WTC Candidates with practical duration ${practicalDuration} retrieved successfully`,
@@ -283,13 +285,13 @@ class WtcController {
     // }
 
     // Image upload handler
-    
+
     async handleImageUpload(file, ticketNumber, traineeType) {
         try {
             const oldPath = file.path;
             const fileExtension = path.extname(file.originalname);
             const newFileName = `${ticketNumber}${fileExtension}`;
-            
+
             const uploadDir = path.join(__dirname, '../../uploads', traineeType);
             const newFullPath = path.join(uploadDir, newFileName);
             const relativePath = `uploads/${traineeType}/${newFileName}`;
@@ -301,7 +303,7 @@ class WtcController {
 
             // Move file with new name
             fs.renameSync(oldPath, newFullPath);
-            
+
             return relativePath;
         } catch (error) {
             throw new Error('Error handling image upload: ' + error.message);

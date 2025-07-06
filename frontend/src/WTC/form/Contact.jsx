@@ -5,7 +5,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
   const [emailSuggestions, setEmailSuggestions] = useState([]);
   const emailInputRef = useRef(null);
 
-  const emailDomains = [
+  const emailDomains = useMemo(() => [
     "gmail.com",
     "yahoo.com",
     "outlook.com",
@@ -16,7 +16,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
     "icloud.com",
     "yandex.com",
     "mail.com"
-  ];
+  ], []);
 
   const handleEmailChange = useCallback((value) => {
     onChange("email", value);

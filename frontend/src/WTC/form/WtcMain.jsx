@@ -4,6 +4,7 @@ import Contact from "./Contact";
 import Professional from "./Professional";
 import Course from "./Course";
 
+// ...existing code...
 const WtcMain = () => {
   const [formData, setFormData] = useState({
     picture: null,
@@ -16,30 +17,48 @@ const WtcMain = () => {
     pwd: "",
     typeOfDisability: "",
     nationality: "INDIAN",
+
+
     currentAddress: "",
     permanentAddress: "",
     phoneNumber: "",
     emergencyContactNumber: "",
     email: "",
+
     dateOfAppointmentInRailway: "",
     modeOfAppointment: "",
+    modeOfAppointmentOther: "",
+    courseType: "",
+    courseTypeOther: "",
     designation: "",
+    designationOther: "",
     unit: "",
+    unitOther: "",
+    trainingPeriod: "",
+    customTrainingPeriod: "",
+    theoryDuration: "",
+    customTheoryDuration: "",
+    practicalDuration: "",
+    customPracticalDuration: "",
     workingUnder: "",
     hrmsId: "",
     pfNoNpsUps: "",
     employeeNumber: "",
+
     highestQualification: "",
     otherQualification: "",
     fieldOfStudy: "",
+    customFieldOfStudy: "",
     institution: "",
     gradeType: "",
     gradeValue: "",
-    ticketNo: "",
+
     batch: "",
+    customBatch: "",
     dateOfJoiningStcWtcNonRailway: "",
     dateOfSparing: "",
     moduleNo: "",
+    customModuleNo: "",
     courseDuration: "",
   });
 
@@ -59,7 +78,7 @@ const WtcMain = () => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       if (errors[field]) {
         setErrors((prev) => {
-          const { [field]: removed, ...rest } = prev;
+          const { [field]: _, ...rest } = prev;
           return rest;
         });
       }
@@ -122,15 +141,19 @@ const WtcMain = () => {
     setIsSubmitting(true);
     try {
       const formDataToSend = new FormData();
+
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
+        if (key === 'picture' && value) {
+          // The backend expects the file under the key 'image'
+          formDataToSend.append('image', value);
+        } else if (value !== null && value !== undefined && value !== "") {
           formDataToSend.append(key, value);
         }
       });
 
-      const response = await fetch("api/wtc/", {
+      const response = await fetch("/api/wtc", {
         method: "POST",
-        // body: formDataToSend,
+        body: formDataToSend,
       });
 
       if (!response.ok) {

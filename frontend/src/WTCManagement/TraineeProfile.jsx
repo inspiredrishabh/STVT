@@ -23,10 +23,10 @@ const TraineeProfile = () => {
             // Replace with your actual API endpoint
             const response = await fetch('/api/wtc');
             if (!response.ok) throw new Error('Failed to fetch trainees');
-
             const data = await response.json();
-            setTrainees(data);
-            setFilteredTrainees(data);
+            const traineeArray = Array.isArray(data.data) ? data.data : [];
+            setTrainees(traineeArray);
+            setFilteredTrainees(traineeArray);
         } catch (err) {
             setError(err.message);
         } finally {
