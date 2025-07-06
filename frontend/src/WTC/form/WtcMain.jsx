@@ -16,6 +16,7 @@ const WtcMain = () => {
     pwd: "",
     typeOfDisability: "",
     nationality: "INDIAN",
+    maritalStatus: "",
     currentAddress: "",
     permanentAddress: "",
     phoneNumber: "",
@@ -33,8 +34,19 @@ const WtcMain = () => {
     otherQualification: "",
     fieldOfStudy: "",
     institution: "",
+    boardType: "",
+    educationStartYear: "",
+    eduCourseDuration: "",
+    yearOfGraduation: "",
+    modeOfStudy: "",
     gradeType: "",
     gradeValue: "",
+    division: "",
+    hasAdditionalQualification: "",
+    additionalQualificationName: "",
+    additionalQualificationOrg: "",
+    additionalQualificationYear: "",
+    thesisTitle: "",
     ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -128,7 +140,7 @@ const WtcMain = () => {
         }
       });
 
-      const response = await fetch("http://localhost:5000/api/wtc/", {
+      const response = await fetch("http://localhost:5000/api/wtc/submit", {
         method: "POST",
         body: formDataToSend,
       });

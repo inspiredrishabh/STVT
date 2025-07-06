@@ -12,7 +12,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         "workingUnder",
         "institution",
         "fieldOfStudy",
-        "customFieldOfStudy",
         "designation",
         "unitCustodian",
       ].includes(field) &&
@@ -50,17 +49,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       "highestQualification",
       "fieldOfStudy",
       "institution",
+      "gradeType",
+      "gradeValue",
     ];
-
-    // Add durationOption as required field for Summer Vacation training
-    if (formData.designation === "Summer Vacation training") {
-      requiredFields.push("durationOption");
-    }
-
-    // Add customFieldOfStudy to required fields if "Other" is selected
-    if (formData.fieldOfStudy === "Other") {
-      requiredFields.push("customFieldOfStudy");
-    }
 
     const validationErrors = {};
     requiredFields.forEach((field) => {
@@ -72,77 +63,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
     };
-  };
-
-  const getFieldOfStudyOptions = () => {
-    const qualification = formData.highestQualification;
-
-    switch (qualification) {
-      case "Diploma":
-        return [
-          "Mechanical Engineering",
-          "Electrical Engineering",
-          "Civil Engineering",
-          "Electronics Engineering",
-          "Computer Engineering",
-          "Automobile Engineering",
-          "Railway Engineering",
-          "Other"
-        ];
-      case "Bachelor's Degree":
-        return [
-          "B.Tech - Mechanical Engineering",
-          "B.Tech - Electrical Engineering",
-          "B.Tech - Civil Engineering",
-          "B.Tech - Electronics & Communication",
-          "B.Tech - Computer Science",
-          "B.Tech - Railway Engineering",
-          "B.E - Mechanical Engineering",
-          "B.E - Electrical Engineering",
-          "B.E - Civil Engineering",
-          "BCA - Computer Applications",
-          "B.Sc - Physics",
-          "B.Sc - Mathematics",
-          "B.Sc - Chemistry",
-          "B.Com - Commerce",
-          "Other"
-        ];
-      case "Master's Degree":
-        return [
-          "M.Tech - Mechanical Engineering",
-          "M.Tech - Electrical Engineering",
-          "M.Tech - Civil Engineering",
-          "M.Tech - Electronics & Communication",
-          "M.Tech - Computer Science",
-          "M.Tech - Railway Engineering",
-          "M.E - Mechanical Engineering",
-          "M.E - Electrical Engineering",
-          "M.E - Civil Engineering",
-          "MCA - Computer Applications",
-          "M.Sc - Physics",
-          "M.Sc - Mathematics",
-          "M.Sc - Chemistry",
-          "MBA - Business Administration",
-          "M.Com - Commerce",
-          "Other"
-        ];
-      case "Ph.D":
-        return [
-          "Ph.D - Mechanical Engineering",
-          "Ph.D - Electrical Engineering",
-          "Ph.D - Civil Engineering",
-          "Ph.D - Electronics & Communication",
-          "Ph.D - Computer Science",
-          "Ph.D - Railway Engineering",
-          "Ph.D - Physics",
-          "Ph.D - Mathematics",
-          "Ph.D - Chemistry",
-          "Ph.D - Management",
-          "Other"
-        ];
-      default:
-        return ["Other"];
-    }
   };
 
   useEffect(() => {
@@ -187,16 +107,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       total: "03 W",
     },
     "Summer Vacation training": {
-      "4W": {
-        theory: "00 W",
-        practical: "04 W",
-        total: "04 W",
-      },
-      "6W": {
-        theory: "00 W",
-        practical: "06 W",
-        total: "06 W",
-      },
+      theory: "00 W",
+      practical: "06 W",
+      total: "06 W",
     },
   };
 
@@ -211,11 +124,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     if (!formData.designation || formData.courseType === "Custom") {
       return { theory: "", practical: "", total: "" };
     }
-
-    if (formData.designation === "Summer Vacation training" && formData.durationOption) {
-      return durationMapping[formData.designation][formData.durationOption] || { theory: "", practical: "", total: "" };
-    }
-
     return (
       durationMapping[formData.designation] || {
         theory: "",
@@ -228,12 +136,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
   const RequiredLabel = ({ children }) => (
     <label className="block text-gray-700 font-medium mb-1">
       {children} <span className="text-red-500">*</span>
-    </label>
-  );
-
-  const OptionalLabel = ({ children }) => (
-    <label className="block text-gray-700 font-medium mb-1">
-      {children}
     </label>
   );
 
@@ -354,24 +256,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
-        {formData.designation === "Summer Vacation training" && (
-          <div>
-            <RequiredLabel>Duration Option</RequiredLabel>
-            <select
-              value={formData.durationOption || ""}
-              onChange={(e) => handleChange("durationOption", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            >
-              <option value="">Select duration</option>
-              <option value="4W">4 Weeks</option>
-              <option value="6W">6 Weeks</option>
-            </select>
-            {errors.durationOption && (
-              <p className="text-sm text-red-500 mt-1">{errors.durationOption}</p>
-            )}
-          </div>
-        )}
-
         <div>
           <RequiredLabel>Duration</RequiredLabel>
           <input
@@ -381,8 +265,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter duration"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              formData.courseType === "Non Railway" && formData.designation
             }
           />
           {errors.duration && (
@@ -401,8 +284,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              formData.courseType === "Non Railway" && formData.designation
             }
           />
         </div>
@@ -418,8 +300,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              formData.courseType === "Non Railway" && formData.designation
             }
           />
         </div>
@@ -487,38 +368,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
         <div>
           <RequiredLabel>Field of Study</RequiredLabel>
-          <select
+          <input
+            type="text"
             value={formData.fieldOfStudy || ""}
             onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-          >
-            <option value="">Select field of study</option>
-            {getFieldOfStudyOptions().map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            placeholder="Enter field of study"
+          />
           {errors.fieldOfStudy && (
             <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
           )}
         </div>
-
-        {formData.fieldOfStudy === "Other" && (
-          <div>
-            <RequiredLabel>Custom Field of Study</RequiredLabel>
-            <input
-              type="text"
-              value={formData.customFieldOfStudy || ""}
-              onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter custom field of study"
-            />
-            {errors.customFieldOfStudy && (
-              <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
-            )}
-          </div>
-        )}
 
         <div>
           <RequiredLabel>Institution</RequiredLabel>
@@ -535,7 +395,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         </div>
 
         <div>
-          <OptionalLabel>Grade Type</OptionalLabel>
+          <RequiredLabel>Grade Type</RequiredLabel>
           <select
             value={formData.gradeType || ""}
             onChange={(e) => handleChange("gradeType", e.target.value)}
@@ -552,7 +412,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         </div>
 
         <div>
-          <OptionalLabel>Grade Value</OptionalLabel>
+          <RequiredLabel>Grade Value</RequiredLabel>
           <input
             type="number"
             step="0.01"

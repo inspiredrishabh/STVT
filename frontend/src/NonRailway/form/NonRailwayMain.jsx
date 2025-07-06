@@ -136,7 +136,7 @@ const NonRailwayMain = () => {
     try {
       const submissionData = prepareFormDataForSubmission();
 
-      const response = await fetch(`${API_BASE}/api/candidates/nonrailway`, {
+      const response = await fetch("/api/candidates/nonrailway", {
         method: "POST",
         body: submissionData,
         headers: {

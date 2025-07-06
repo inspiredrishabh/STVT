@@ -18,8 +18,8 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           !v
             ? "Gender is required"
             : !["Male", "Female", "Other"].includes(v)
-              ? "Please select a valid gender"
-              : "",
+            ? "Please select a valid gender"
+            : "",
         dob: (v) => {
           if (!v) return "Date of birth is required";
           const dobDate = new Date(v);
@@ -34,14 +34,14 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           !v
             ? "Category is required"
             : !["General", "OBC", "SC", "ST", "EWS"].includes(v)
-              ? "Please select a valid category"
-              : "",
+            ? "Please select a valid category"
+            : "",
         pwd: (v) =>
           !v
             ? "PWD selection is required"
             : !["Yes", "No"].includes(v)
-              ? "Please select Yes or No for PWD"
-              : "",
+            ? "Please select Yes or No for PWD"
+            : "",
         typeOfDisability: (v) => {
           if (formData.pwd === "Yes" && (!v || !v.trim()))
             return "Type of disability is required when PWD is Yes";
@@ -50,6 +50,10 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           return "";
         },
         nationality: (v) => validateName(v, "Nationality"),
+        maritalStatus: (v) =>
+          v && !["Single", "Married", "Divorced", "Widowed"].includes(v)
+            ? "Please select a valid marital status"
+            : "",
       };
 
       return validations[fieldName]?.(value) || "";
@@ -75,7 +79,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       "pwd",
       "nationality",
     ];
-    const optionalFields = ["motherName", "typeOfDisability"];
+    const optionalFields = ["motherName", "typeOfDisability", "maritalStatus"];
     const validationErrors = {};
 
     [...requiredFields, ...optionalFields.filter((field) => formData[field])].forEach(
@@ -131,6 +135,12 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         field: "nationality",
         defaultValue: "Indian",
         required: true,
+      },
+      {
+        label: "Marital Status",
+        field: "maritalStatus",
+        type: "select",
+        options: ["", "Single", "Married", "Divorced", "Widowed"],
       },
     ],
     [formData.pwd]
@@ -206,3 +216,4 @@ const Personal = ({ formData, onChange, errors = {} }) => {
 };
 
 export default Personal;
+         

@@ -132,9 +132,9 @@ const Router = () => {
         {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
-              <FeedMark />
-            </ProtectedLayout>
+            // <ProtectedLayout>
+            <FeedMark />
+            // </ProtectedLayout>
           }
         />
 
@@ -161,19 +161,13 @@ const Router = () => {
           path="/stc/marksheet"
           element={
             <ProtectedLayout>
-              <Marksheet />
+              < Marksheet />
             </ProtectedLayout>
           }
         />
 
-        {/* WTC Management Homepage */}
-        <Route path="/wtc-management"
-          element={
-            <ProtectedLayout>
-              <HomePageWTC />
-            </ProtectedLayout>
-          }
-        />
+        {/* WTC Management */}
+        <Route path="/wtc-management" element={<ProtectedLayout> <HomePageWTC /></ProtectedLayout>} />
         <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
         <Route path="/wtc/attendance" element={<ProtectedLayout><AttendanceSystem /></ProtectedLayout>} />
         <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />

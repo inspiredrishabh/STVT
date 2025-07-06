@@ -296,7 +296,6 @@ const AttendanceSystem = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceView, setAttendanceView] = useState('mark'); // 'mark', 'summary', 'records'
   const [filterBatch, setFilterBatch] = useState('');
-  const [exporting, setExporting] = useState(false);
 
   // Load trainees for dropdown
   useEffect(() => {
@@ -403,98 +402,6 @@ const AttendanceSystem = () => {
     setMessage({ type: '', text: '' });
     setSelectedDate(new Date().toISOString().split('T')[0]);
   }, []);
-
-  const handleExportReport = useCallback(async () => {
-    if (!traineeData) {
-      setMessage({ type: 'error', text: 'No trainee selected for export' });
-      return;
-    }
-
-    setExporting(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      // Generate CSV content
-      const csvContent = generateCSVContent();
-      
-      // Create and download the file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Attendance_Report_${traineeData.ticketNo}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      URL.revokeObjectURL(url);
-      
-      setMessage({ 
-        type: 'success', 
-        text: `Attendance report exported successfully for ${traineeData.name}` 
-      });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to export attendance report' });
-      console.error('Export error:', error);
-    } finally {
-      setExporting(false);
-    }
-  }, [traineeData, attendanceData]);
-
-  const generateCSVContent = useCallback(() => {
-    if (!traineeData || !attendanceData) return '';
-
-    const headers = [
-      'Trainee Name',
-      'Ticket Number',
-      'Trade',
-      'Date',
-      'Theory Attendance',
-      'Practical Attendance'
-    ];
-
-    let csvContent = headers.join(',') + '\n';
-
-    // Add trainee info and attendance records
-    if (attendanceData.attendanceRecords.length > 0) {
-      attendanceData.attendanceRecords.forEach(record => {
-        const row = [
-          `"${traineeData.name}"`,
-          `"${traineeData.ticketNo}"`,
-          `"${traineeData.trade}"`,
-          `"${new Date(record.date).toLocaleDateString('en-IN')}"`,
-          `"${record.theory === 'present' ? 'Present' : 'Absent'}"`,
-          `"${record.practical === 'present' ? 'Present' : 'Absent'}"`
-        ];
-        csvContent += row.join(',') + '\n';
-      });
-    } else {
-      // If no records, add a row with trainee info and no attendance data
-      const row = [
-        `"${traineeData.name}"`,
-        `"${traineeData.ticketNo}"`,
-        `"${traineeData.trade}"`,
-        '"No records available"',
-        '"N/A"',
-        '"N/A"'
-      ];
-      csvContent += row.join(',') + '\n';
-    }
-
-    // Add summary statistics
-    csvContent += '\n';
-    csvContent += 'ATTENDANCE SUMMARY\n';
-    csvContent += `Theory Attendance,${attendanceData.theoryAttendance}%\n`;
-    csvContent += `Practical Attendance,${attendanceData.practicalAttendance}%\n`;
-    csvContent += `Overall Average,${Math.round((attendanceData.theoryAttendance + attendanceData.practicalAttendance) / 2)}%\n`;
-    csvContent += `Total Records,${attendanceData.attendanceRecords.length}\n`;
-    csvContent += `Export Date,"${new Date().toLocaleDateString('en-IN')}"\n`;
-
-    return csvContent;
-  }, [traineeData, attendanceData]);
 
   // Computed values
   const filteredTrainees = useMemo(() => {
@@ -917,16 +824,11 @@ const AttendanceSystem = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900">Attendance Records</h3>
                     <button
-                      onClick={handleExportReport}
-                      disabled={exporting}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => attendanceAPI.exportAttendanceReport(traineeData.ticketNo)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      {exporting ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
-                      {exporting ? 'Exporting...' : 'Export Report'}
+                      <Download className="w-4 h-4" />
+                      Export Report
                     </button>
                   </div>
 

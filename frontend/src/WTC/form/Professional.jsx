@@ -4,14 +4,14 @@ const Professional = ({ formData, onChange }) => {
   const [errors, setErrors] = useState({});
 
   // Course type to designation mapping
-  const designationMap = useMemo(() => ({
+  const designationMap = {
     "Induction Course": [
       "CG Apprentice Technician III",
       "RRB Apprentice Technician III",
       "RRC Assistant Workshop",
       "CG Assistant Workshop",
     ],
-    "Promotional Course": ["GDCE App. Tech. III", "SSC", "JE"],
+    "Promotional Course": ["GDCE App. Tech. III"],
     "Refresher Course": [
       "Refresher Course for Welders",
       "Refresher Course for Artisans",
@@ -21,10 +21,10 @@ const Professional = ({ formData, onChange }) => {
       "Basic Welding Training for Beginners",
       "Pre-selection Coaching for JE Selection",
     ],
-  }), []);
+  };
 
   // Designation to unit mapping
-  const unitMap = useMemo(() => ({
+  const unitMap = {
     "CG Apprentice Technician III": [
       "Dy. CME (Diesel)/ RSW/CB",
       "Dy. CEE /CB",
@@ -44,18 +44,6 @@ const Professional = ({ formData, onChange }) => {
       "Dy. CEE /CB",
       "LKO Division",
     ],
-    "SSC": [
-      "Dy. CME (Diesel)/ RSW/CB",
-      "Dy. CEE /CB",
-      "Dy. CEE (W)/AMV",
-      "LKO Division",
-    ],
-    "JE": [
-      "Dy. CME (Diesel)/ RSW/CB",
-      "Dy. CEE /CB",
-      "Dy. CEE (W)/AMV",
-      "LKO Division",
-    ],
     "Refresher Course for Welders": ["Northern Railway Units & Depot"],
     "Refresher Course for Artisans": ["Northern Railway Units & Depot"],
     "Special Course on MIG/ MAG Welding & Air Plasma Cutting": [
@@ -68,130 +56,39 @@ const Professional = ({ formData, onChange }) => {
       "Dy. CEE (W)/AMV",
       "LKO Division",
     ],
-  }), []);
-
-  // Designation-Unit specific training period mapping based on PDF data
-  const designationUnitTrainingMap = useMemo(() => ({
-    // CG Apprentice Technician III
-    "CG Apprentice Technician III|Dy. CME (Diesel)/ RSW/CB": ["02 Years", "01 Year", "06 Months"],
-    "CG Apprentice Technician III|Dy. CEE /CB": ["02 Years", "01 Year", "06 Months"],
-    "CG Apprentice Technician III|Dy. CEE (W)/AMV": ["02 Years", "01 Year", "06 Months"],
-    "CG Apprentice Technician III|RDSO": ["02 Years", "01 Year", "06 Months"],
-    "CG Apprentice Technician III|LKO Division": ["02 Years", "01 Year", "06 Months"],
-
-
-    // RRB Apprentice Technician III
-    "RRB Apprentice Technician III|Dy. CME (Diesel)/ RSW/CB": ["01 Year", "06 Months"],
-    "RRB Apprentice Technician III|Dy. CEE /CB": ["01 Year", "06 Months"],
-    "RRB Apprentice Technician III|Dy. CEE (W)/AMV": ["01 Year", "06 Months"],
-
-    // RRC Assistant Workshop
-    "RRC Assistant Workshop|Dy. CEE /CB": ["12 Days"],
-    "RRC Assistant Workshop|Dy. CME (Diesel)/ RSW/CB": ["78 Days"],
-
-    // CG Assistant Workshop
-    "CG Assistant Workshop|Dy. CEE /CB": ["12 Days"],
-    "CG Assistant Workshop|Dy. CME (Diesel)/ RSW/CB": ["78 Days"],
-
-    // GDCE App. Tech. III
-    "GDCE App. Tech. III|Dy. CME (Diesel)/ RSW/CB": ["06 Months"],
-    "GDCE App. Tech. III|Dy. CEE /CB": ["06 Months"],
-    "GDCE App. Tech. III|LKO Division": ["06 Months"],
-
-    // SSC
-    "SSC|Dy. CME (Diesel)/ RSW/CB": ["06 Months", "01 Year"],
-    "SSC|Dy. CEE /CB": ["06 Months", "01 Year"],
-    "SSC|Dy. CEE (W)/AMV": ["06 Months", "01 Year"],
-    "SSC|LKO Division": ["06 Months", "01 Year"],
-
-    // JE
-    "JE|Dy. CME (Diesel)/ RSW/CB": ["06 Months", "01 Year"],
-    "JE|Dy. CEE /CB": ["06 Months", "01 Year"],
-    "JE|Dy. CEE (W)/AMV": ["06 Months", "01 Year"],
-    "JE|LKO Division": ["06 Months", "01 Year"],
-
-    // Refresher Course for Welders
-    "Refresher Course for Welders|Northern Railway Units & Depot": ["03 Weeks"],
-
-    // Refresher Course for Artisans
-    "Refresher Course for Artisans|Northern Railway Units & Depot": ["02 Weeks"],
-
-    // Special Course on MIG/MAG Welding & Air Plasma Cutting
-    "Special Course on MIG/ MAG Welding & Air Plasma Cutting|Northern Railway Units & Depot": ["01 Week"],
-
-    // Basic Welding Training for Beginners
-    "Basic Welding Training for Beginners|Northern Railway Units & Depot": ["04 Weeks"],
-
-    // Pre-selection Coaching for JE Selection
-    "Pre-selection Coaching for JE Selection|Dy. CME (Diesel)/ RSW/CB": ["21 Days"],
-    "Pre-selection Coaching for JE Selection|Dy. CEE /CB": ["21 Days"],
-    "Pre-selection Coaching for JE Selection|Dy. CEE (W)/AMV": ["21 Days"],
-    "Pre-selection Coaching for JE Selection|LKO Division": ["21 Days"],
-  }), []);
-
-
-  const designationUnitPeriodToDurations = {
-    // CG Apprentice Technician III (Induction Course)
-    "CG Apprentice Technician III|Any|02 Years": ["06 Months", "18 Months"],
-    "CG Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
-    "CG Apprentice Technician III|Any|06 Months": ["03 Months", "03 Months"],
-
-    // RRB Apprentice Technician III
-    "RRB Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
-    "RRB Apprentice Technician III|Any|06 Months": ["03 Months", "03 Months"],
-
-    // RRC Assistant Workshop
-    "RRC Assistant Workshop|Dy. CEE /CB|12 Days": ["12 Days", "00 Days"],
-    "RRC Assistant Workshop|Dy. CME (Diesel)/ RSW/CB|78 Days": ["78 Days", "00 Days"],
-
-    // CG Assistant Workshop
-    "CG Assistant Workshop|Dy. CEE /CB|12 Days": ["12 Days", "00 Days"],
-    "CG Assistant Workshop|Dy. CME (Diesel)/ RSW/CB|78 Days": ["78 Days", "00 Days"],
-
-    // GDCE App. Tech. III (Promotional Course)
-    "GDCE App. Tech. III|Any|06 Months": ["01 Month", "05 Months"],
-
-    // SSC (Promotional Course)
-    "SSC|Any|06 Months": ["02 Months", "04 Months"],
-    "SSC|Any|01 Year": ["04 Months", "08 Months"],
-
-    // JE (Promotional Course)
-    "JE|Any|06 Months": ["02 Months", "04 Months"],
-    "JE|Any|01 Year": ["04 Months", "08 Months"],
-
-    // Refresher Course for Welders
-    "Refresher Course for Welders|Northern Railway Units & Depot|03 Weeks": ["01 Week", "02 Weeks"],
-
-    // Refresher Course for Artisans
-    "Refresher Course for Artisans|Northern Railway Units & Depot|02 Weeks": ["02 Weeks", "00 Weeks"],
-
-    // Special Course on MIG/MAG Welding & Air Plasma Cutting
-    "Special Course on MIG/ MAG Welding & Air Plasma Cutting|Northern Railway Units & Depot|01 Week": ["01 Week", "00 Weeks"],
-
-    // Basic Welding Training for Beginners
-    "Basic Welding Training for Beginners|Northern Railway Units & Depot|04 Weeks": ["1.5 Weeks", "2.5 Weeks"],
-
-    // Pre-selection Coaching for JE Selection
-    "Pre-selection Coaching for JE Selection|Dy. CME (Diesel)/ RSW/CB|21 Days": ["21 Days", "00 Days"],
-    "Pre-selection Coaching for JE Selection|Dy. CEE /CB|21 Days": ["21 Days", "00 Days"],
-    "Pre-selection Coaching for JE Selection|Dy. CEE (W)/AMV|21 Days": ["21 Days", "00 Days"],
-    "Pre-selection Coaching for JE Selection|LKO Division|21 Days": ["21 Days", "00 Days"],
-
-    // RRC Act Apprentice 1961
-    "RRC Act Apprentice 1961|Any|01 Year": ["01 Week", "51 Weeks"],
-
-    // Act Junior Apprentices
-    "Act Junior Apprentices|Any|01 Year": ["04 Weeks", "48 Weeks"],
-
-    // Rail Kaushal Vikas Yojana
-    "Rail Kaushal Vikas Yojana - Welder|Any|03 Weeks": ["01 Week", "02 Weeks"],
-    "Rail Kaushal Vikas Yojana - Electrician|Any|03 Weeks": ["01 Week", "02 Weeks"],
-
-    // Summer Vocation Training
-    "Summer Vocation training|Any|04 Weeks": ["00 Weeks", "04 Weeks"],
-    "Summer Vocation training|Any|06 Weeks": ["00 Weeks", "06 Weeks"],
   };
 
+  // Unit to training period mapping based on your data
+  const unitTrainingMap = {
+    // CG Apprentice Technician III units
+    "Dy. CME (Diesel)/ RSW/CB": ["02 Years", "01 Year", "06 Months"],
+    "Dy. CEE /CB": ["02 Years", "01 Year", "06 Months", "12 Days", "78 Days"],
+    "Dy. CEE (W)/AMV": ["02 Years", "01 Year", "06 Months"],
+    RDSO: ["02 Years", "01 Year", "06 Months"],
+    "LKO Division": ["02 Years", "01 Year", "06 Months", "21 Days"],
+
+    // Northern Railway Units
+    "Northern Railway Units & Depot": [
+      "3 Weeks",
+      "2 Weeks",
+      "1 Week",
+      "4 Weeks",
+    ],
+  };
+
+  // Updated training period to theory/practical mapping based on your data
+  const trainingMap = {
+    "02 Years": ["6 Months", "18 Months"],
+    "01 Year": ["3 Months", "9 Months"],
+    "06 Months": ["3 Months", "3 Months"],
+    "12 Days": ["12 Days", "0 Days"],
+    "78 Days": ["78 Days", "0 Days"],
+    "4 Weeks": ["1.5 Weeks", "2.5 Weeks"],
+    "3 Weeks": ["1 Week", "2 Weeks"],
+    "2 Weeks": ["2 Weeks", "0 Weeks"],
+    "1 Week": ["1 Week", "0 Weeks"],
+    "21 Days": ["21 Days", "0 Days"],
+  };
 
   const handleChange = useCallback(
     (field, value) => {
@@ -236,38 +133,25 @@ const Professional = ({ formData, onChange }) => {
         if (value === "Custom") {
           onChange("theoryDuration", "");
           onChange("practicalDuration", "");
-        } else {
-          const exactKey = `${formData.designation}|${formData.unit}|${value}`;
-          const fallbackKey = `${formData.designation}|Any|${value}`;
-          const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
-
-          console.log('Auto-calculation debug:', {
-            designation: formData.designation,
-            unit: formData.unit,
-            trainingPeriod: value,
-            exactKey,
-            fallbackKey,
-            durations,
-            availableKeys: Object.keys(designationUnitPeriodToDurations)
-          });
-
-          if (durations) {
-            const [theory, practical] = durations;
-            onChange("theoryDuration", theory);
-            onChange("practicalDuration", practical);
-            // Clear custom fields
-            onChange("customTrainingPeriod", "");
-            onChange("customTheoryDuration", "");
-            onChange("customPracticalDuration", "");
-          } else {
-            // No match found
-            onChange("theoryDuration", "");
-            onChange("practicalDuration", "");
-          }
+        } else if (trainingMap[value]) {
+          const [theory, practical] = trainingMap[value];
+          onChange("theoryDuration", theory);
+          onChange("practicalDuration", practical);
+          // Clear custom fields when selecting predefined period
+          onChange("customTrainingPeriod", "");
+          onChange("customTheoryDuration", "");
+          onChange("customPracticalDuration", "");
         }
       }
+
+      // Handle custom training period changes
+      if (field === "customTrainingPeriod") {
+        // Clear predefined durations when custom is entered
+        onChange("theoryDuration", "");
+        onChange("practicalDuration", "");
+      }
     },
-    [onChange, formData]
+    [onChange]
   );
 
   // Enhanced validation with comprehensive type checking
@@ -307,6 +191,32 @@ const Professional = ({ formData, onChange }) => {
         // Check for valid characters (letters, numbers, spaces, common punctuation)
         if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
           return "Contains invalid characters";
+        }
+      }
+
+      // Year validation
+      if (
+        field === "educationStartYear" ||
+        field === "additionalQualificationYear"
+      ) {
+        const year = parseInt(stringValue, 10);
+        const currentYear = new Date().getFullYear();
+        if (isNaN(year)) {
+          return "Please enter a valid year";
+        }
+        if (year < 1970 || year > currentYear) {
+          return `Year must be between 1970 and ${currentYear}`;
+        }
+      }
+
+      // Course duration validation
+      if (field === "eduCourseDuration") {
+        const duration = parseInt(stringValue, 10);
+        if (isNaN(duration)) {
+          return "Please enter a valid number";
+        }
+        if (duration < 1 || duration > 6) {
+          return "Course duration must be between 1 and 6 years";
         }
       }
 
@@ -356,6 +266,10 @@ const Professional = ({ formData, onChange }) => {
           if (decimalPart && decimalPart.length > 2) {
             return "Percentage can have maximum 2 decimal places";
           }
+        } else if (gradeType === "Grade") {
+          if (!/^[A-F][+-]?$|^[O]$/.test(stringValue.toUpperCase())) {
+            return "Enter valid grade (A+, A, B+, B, C+, C, D+, D, F, O)";
+          }
         }
       }
 
@@ -386,9 +300,21 @@ const Professional = ({ formData, onChange }) => {
       "designation",
       "unit",
       "trainingPeriod",
+      "workingUnder",
+      "hrmsId",
+      "pfNoNpsUps",
+      "employeeNumber",
       "highestQualification",
       "fieldOfStudy",
       "institution",
+      "boardType",
+      "educationStartYear",
+      "eduCourseDuration",
+      "modeOfStudy",
+      "gradeType",
+      "gradeValue",
+      "division",
+      "hasAdditionalQualification",
     ],
     []
   );
@@ -434,13 +360,6 @@ const Professional = ({ formData, onChange }) => {
       newErrors.otherQualification = "Please specify the qualification";
     }
 
-    if (
-      formData.fieldOfStudy === "Other" &&
-      !formData.customFieldOfStudy?.trim()
-    ) {
-      newErrors.customFieldOfStudy = "Please specify the field of study";
-    }
-
     // Validate custom training period fields
     if (formData.trainingPeriod === "Custom") {
       if (!formData.customTrainingPeriod?.trim()) {
@@ -457,6 +376,18 @@ const Professional = ({ formData, onChange }) => {
       }
     }
 
+    // Validate additional qualification fields
+    if (formData.hasAdditionalQualification === "Yes") {
+      [
+        "additionalQualificationName",
+        "additionalQualificationOrg",
+        "additionalQualificationYear",
+      ].forEach((field) => {
+        const error = validateField(field, formData[field]);
+        if (error) newErrors[field] = error;
+      });
+    }
+
     setErrors(newErrors);
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -469,6 +400,25 @@ const Professional = ({ formData, onChange }) => {
       onChange.setValidationFunction(validateAllFields);
     }
   }, [validateAllFields, onChange]);
+
+  // Auto-calculate graduation year
+  useEffect(() => {
+    if (formData.educationStartYear && formData.eduCourseDuration) {
+      const startYear = parseInt(formData.educationStartYear, 10);
+      const duration = parseInt(formData.eduCourseDuration, 10);
+      if (!isNaN(startYear) && !isNaN(duration)) {
+        handleChange("yearOfGraduation", (startYear + duration).toString());
+      }
+    }
+  }, [formData.educationStartYear, formData.eduCourseDuration, handleChange]);
+
+  const generateYearOptions = useCallback(
+    () =>
+      Array.from({ length: 55 }, (_, i) =>
+        (new Date().getFullYear() - i).toString()
+      ),
+    []
+  );
 
   // Memoized options for better performance
   const qualificationOptions = useMemo(
@@ -485,93 +435,47 @@ const Professional = ({ formData, onChange }) => {
     []
   );
 
-  const gradeTypeOptions = useMemo(
-    () => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)"],
+  const boardOptions = useMemo(
+    () => [
+      "",
+      "State Board",
+      "CBSE",
+      "ICSE",
+      "State University",
+      "Central University",
+      "Deemed University",
+      "Private University",
+      "Foreign University",
+      "Other",
+    ],
     []
   );
 
-  const getFieldOfStudyOptions = useCallback(() => {
-    const qualification = formData.highestQualification;
-
-    switch (qualification) {
-      case "Diploma":
-        return [
-          "",
-          "Mechanical Engineering",
-          "Electrical Engineering",
-          "Civil Engineering",
-          "Electronics Engineering",
-          "Computer Engineering",
-          "Automobile Engineering",
-          "Railway Engineering",
-          "Other"
-        ];
-      case "Bachelor's Degree":
-        return [
-          "",
-          "B.Tech - Mechanical Engineering",
-          "B.Tech - Electrical Engineering",
-          "B.Tech - Civil Engineering",
-          "B.Tech - Electronics & Communication",
-          "B.Tech - Computer Science",
-          "B.Tech - Railway Engineering",
-          "B.E - Mechanical Engineering",
-          "B.E - Electrical Engineering",
-          "B.E - Civil Engineering",
-          "BCA - Computer Applications",
-          "B.Sc - Physics",
-          "B.Sc - Mathematics",
-          "B.Sc - Chemistry",
-          "B.Com - Commerce",
-          "Other"
-        ];
-      case "Master's Degree":
-        return [
-          "",
-          "M.Tech - Mechanical Engineering",
-          "M.Tech - Electrical Engineering",
-          "M.Tech - Civil Engineering",
-          "M.Tech - Electronics & Communication",
-          "M.Tech - Computer Science",
-          "M.Tech - Railway Engineering",
-          "M.E - Mechanical Engineering",
-          "M.E - Electrical Engineering",
-          "M.E - Civil Engineering",
-          "MCA - Computer Applications",
-          "M.Sc - Physics",
-          "M.Sc - Mathematics",
-          "M.Sc - Chemistry",
-          "MBA - Business Administration",
-          "M.Com - Commerce",
-          "Other"
-        ];
-      case "Ph.D":
-        return [
-          "",
-          "Ph.D - Mechanical Engineering",
-          "Ph.D - Electrical Engineering",
-          "Ph.D - Civil Engineering",
-          "Ph.D - Electronics & Communication",
-          "Ph.D - Computer Science",
-          "Ph.D - Railway Engineering",
-          "Ph.D - Physics",
-          "Ph.D - Mathematics",
-          "Ph.D - Chemistry",
-          "Ph.D - Management",
-          "Other"
-        ];
-      default:
-        return ["", "Other"];
-    }
-  }, [formData.highestQualification]);
-
-  const fieldOfStudyOptions = useMemo(() => getFieldOfStudyOptions(), [getFieldOfStudyOptions]);
+  const durationOptions = useMemo(() => ["", "1", "2", "3", "4", "5", "6"], []);
+  const modeOptions = useMemo(
+    () => ["", "Full-Time", "Part-Time", "Distance Learning", "Online"],
+    []
+  );
+  const gradeTypeOptions = useMemo(
+    () => ["", "Percentage", "CGPA (out of 10)", "CGPA (out of 4)", "Grade"],
+    []
+  );
+  const divisionOptions = useMemo(
+    () => [
+      "",
+      "First Division",
+      "Second Division",
+      "Third Division",
+      "Distinction",
+      "Pass",
+    ],
+    []
+  );
 
   const appointmentModeOptions = useMemo(
     () => [
       "",
       "RRB",
-      "CG",
       "Promotion Through LDCE",
       "Promotion Through Seniority",
       "Other",
@@ -595,25 +499,19 @@ const Professional = ({ formData, onChange }) => {
   const designationOptions = useMemo(() => {
     if (!formData.courseType || formData.courseType === "Other") return [""];
     return ["", ...(designationMap[formData.courseType] || []), "Other"];
-  }, [designationMap, formData.courseType]);
+  }, [formData.courseType]);
 
   // Get unit options based on selected designation
   const unitOptionsForDesignation = useMemo(() => {
     if (!formData.designation || formData.designation === "Other") return [""];
     return ["", ...(unitMap[formData.designation] || []), "Other"];
-  }, [formData.designation, unitMap]);
+  }, [formData.designation]);
 
-  // Get training period options based on selected designation-unit combination
-  const trainingPeriodOptionsForDesignationUnit = useMemo(() => {
-    if (!formData.designation || !formData.unit ||
-      formData.designation === "Other" || formData.unit === "Other") {
-      return [""];
-    }
-
-    const key = `${formData.designation}|${formData.unit}`;
-    const periods = designationUnitTrainingMap[key] || [];
-    return ["", ...periods, "Custom"];
-  }, [designationUnitTrainingMap, formData.designation, formData.unit]);
+  // Get training period options based on selected unit
+  const trainingPeriodOptionsForUnit = useMemo(() => {
+    if (!formData.unit || formData.unit === "Other") return [""];
+    return ["", ...(unitTrainingMap[formData.unit] || []), "Custom"];
+  }, [formData.unit]);
 
   const professionalFields = useMemo(
     () => [
@@ -668,7 +566,7 @@ const Professional = ({ formData, onChange }) => {
         label: "Training Period",
         field: "trainingPeriod",
         type: "select",
-        options: trainingPeriodOptionsForDesignationUnit,
+        options: trainingPeriodOptionsForUnit,
         disabled: !formData.unit || formData.unit === "Other",
       },
       formData.trainingPeriod === "Custom" && {
@@ -704,10 +602,10 @@ const Professional = ({ formData, onChange }) => {
             ? "Use custom practical duration field above"
             : "Auto-calculated from training period",
       },
-      { label: "Working Under", field: "workingUnder", required: false },
-      { label: "HRMS ID", field: "hrmsId", required: false },
-      { label: "PF/NPS/UPS No.", field: "pfNoNpsUps", required: false },
-      { label: "Employee Number", field: "employeeNumber", required: false },
+      { label: "Working Under", field: "workingUnder" },
+      { label: "HRMS ID", field: "hrmsId" },
+      { label: "PF/NPS/UPS No.", field: "pfNoNpsUps" },
+      { label: "Employee Number", field: "employeeNumber" },
     ],
     [
       formData.modeOfAppointment,
@@ -719,7 +617,7 @@ const Professional = ({ formData, onChange }) => {
       courseTypeOptions,
       designationOptions,
       unitOptionsForDesignation,
-      trainingPeriodOptionsForDesignationUnit,
+      trainingPeriodOptionsForUnit,
     ]
   );
 
@@ -735,47 +633,101 @@ const Professional = ({ formData, onChange }) => {
         label: "Specify Qualification",
         field: "otherQualification",
       },
+      { label: "Field of Study/Specialization", field: "fieldOfStudy" },
+      { label: "University/Institution", field: "institution" },
       {
-        label: "Field of Study",
-        field: "fieldOfStudy",
+        label: "Board/University Type",
+        field: "boardType",
         type: "select",
-        options: fieldOfStudyOptions,
+        options: boardOptions,
       },
-      formData.fieldOfStudy === "Other" && {
-        label: "Custom Field of Study",
-        field: "customFieldOfStudy",
+      {
+        label: "Start Year",
+        field: "educationStartYear",
+        type: "select",
+        options: ["", ...generateYearOptions()],
       },
-      { label: "Institution", field: "institution" },
+      {
+        label: "Course Duration (years)",
+        field: "eduCourseDuration",
+        type: "select",
+        options: durationOptions,
+      },
+      {
+        label: "Year of Graduation",
+        field: "yearOfGraduation",
+        disabled: true,
+        helpText: "Auto-calculated from start year and duration",
+      },
+      {
+        label: "Mode of Study",
+        field: "modeOfStudy",
+        type: "select",
+        options: modeOptions,
+      },
       {
         label: "Grade Type",
         field: "gradeType",
         type: "select",
         options: gradeTypeOptions,
-        required: false,
       },
       {
-        label: "Grade Value",
+        label: "Grade/Percentage/CGPA",
         field: "gradeValue",
-        type: "number",
-        step: 0.01,
-        required: false,
         helpText:
           formData.gradeType === "CGPA (out of 10)"
             ? "Enter CGPA between 0-10"
             : formData.gradeType === "CGPA (out of 4)"
-              ? "Enter CGPA between 0-4"
-              : formData.gradeType === "Percentage"
-                ? "Enter percentage between 0-100"
-                : "",
+            ? "Enter CGPA between 0-4"
+            : formData.gradeType === "Percentage"
+            ? "Enter percentage between 0-100"
+            : formData.gradeType === "Grade"
+            ? "Enter grade (A+, A, B+, B, C+, C, D+, D, F, O)"
+            : "",
+      },
+      {
+        label: "Division/Class",
+        field: "division",
+        type: "select",
+        options: divisionOptions,
+      },
+      {
+        label: "Additional Qualification?",
+        field: "hasAdditionalQualification",
+        type: "select",
+        options: ["", "Yes", "No"],
+      },
+      formData.hasAdditionalQualification === "Yes" && {
+        label: "Certification Name",
+        field: "additionalQualificationName",
+      },
+      formData.hasAdditionalQualification === "Yes" && {
+        label: "Issuing Organization",
+        field: "additionalQualificationOrg",
+      },
+      formData.hasAdditionalQualification === "Yes" && {
+        label: "Year of Completion",
+        field: "additionalQualificationYear",
+        type: "select",
+        options: ["", ...generateYearOptions()],
+      },
+      {
+        label: "Thesis/Project Title (if applicable)",
+        field: "thesisTitle",
+        required: false,
       },
     ],
     [
       formData.highestQualification,
-      formData.fieldOfStudy,
+      formData.hasAdditionalQualification,
       formData.gradeType,
       qualificationOptions,
-      fieldOfStudyOptions,
+      boardOptions,
+      durationOptions,
+      modeOptions,
       gradeTypeOptions,
+      divisionOptions,
+      generateYearOptions,
     ]
   );
 
@@ -792,7 +744,6 @@ const Professional = ({ formData, onChange }) => {
             disabled = false,
             required = true,
             helpText,
-            step,
           }) => (
             <div key={field}>
               <label className="block text-gray-700 font-medium mb-1">
@@ -802,8 +753,9 @@ const Professional = ({ formData, onChange }) => {
                 <select
                   value={formData[field] || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
-                    } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    errors[field] ? "border-red-500" : "border-gray-300"
+                  } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   disabled={disabled}
                 >
                   {options.map((opt) => (
@@ -817,11 +769,11 @@ const Professional = ({ formData, onChange }) => {
                   type={type}
                   value={formData[field] || ""}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
-                    } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+                    errors[field] ? "border-red-500" : "border-gray-300"
+                  } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder={`Enter ${label.toLowerCase()}`}
                   disabled={disabled}
-                  step={step}
                 />
               )}
               {helpText && (
