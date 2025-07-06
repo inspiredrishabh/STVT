@@ -11,16 +11,6 @@ import {
 const HomePageSTC = () => {
   const managementOptions = [
     {
-      id: "feed-marks",
-      title: "Feed Marks",
-      description: "Input and manage trainee marks",
-      icon: ClipboardList,
-      path: "/stc/feed-marks",
-      color: "bg-blue-500 hover:bg-blue-600",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    {
       id: "trainee-profile",
       title: "Trainee Profile",
       description: "View and manage trainee profiles",
@@ -29,6 +19,16 @@ const HomePageSTC = () => {
       color: "bg-green-500 hover:bg-green-600",
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
+    },
+    {
+      id: "feed-marks",
+      title: "Feed Marks",
+      description: "Input and manage trainee marks",
+      icon: ClipboardList,
+      path: "/stc/feed-marks",
+      color: "bg-blue-500 hover:bg-blue-600",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
     },
     {
       id: "line-training",

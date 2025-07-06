@@ -582,7 +582,7 @@ const FeedMark = () => {
 
     try {
       // Save main marks, supplementary marks, and practical centers data
-      await mockAPI.saveMarks(candidateData.ticketNo, marks, supplementaryMarks, practicalCenters);
+      await mockAPI.saveMarks(candidateData.ticketNo, marks, supplementaryMarks, practicalCenters);//use real Api here fecth ('/api/mjpcw') and send data in body using POST method 
       setMessage({ type: 'success', text: 'Marks saved successfully! (Including supplementary exam records and practical centers data)' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save marks' });
