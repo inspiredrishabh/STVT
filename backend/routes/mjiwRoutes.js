@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const MjiWController = require('../controllers/mjiWController');
+const MjiWController = require('../controllers/mjiwController');
 const MjiWModel = require('../models/mjiw');
 
 // Initialize model and controller
