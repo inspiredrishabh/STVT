@@ -18,7 +18,7 @@ import {
   Hash,
   CheckCircle
 } from 'lucide-react';
-import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
+// import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
@@ -35,160 +35,6 @@ const TraineeProfile = () => {
     reason: ''
   });
   const [submittingResignation, setSubmittingResignation] = useState(false);
-
-  // Mock data matching FeedMark.jsx candidatesData
-  const mockTraineesData = [
-    {
-      id: 1,
-      ticketNo: 'STC2024001',
-      name: 'Rahul Kumar',
-      designation: 'MSE',
-      unit: 'JAT',
-      batch: '2024-2025',
-      email: 'rahul.kumar@railway.gov.in',
-      phone: '9876543210',
-      picture: 'https://randomuser.me/api/portraits/men/1.jpg',
-      courseCode: 'MSE-C&W',
-      course: {
-        moduleNo: 'MSE-C&W',
-        duration: '52 Weeks',
-        joiningDate: '2024-01-15',
-        sparingDate: '2025-01-15',
-        coordinator: 'Mr. R.K. Sharma'
-      },
-      lineTraining: {
-        status: 'Completed',
-        duration: '6 months',
-        location: 'JAT Division'
-      },
-      status: 'Active'
-    },
-    {
-      id: 2,
-      ticketNo: 'STC2024002',
-      name: 'Priya Sharma',
-      designation: 'MSE',
-      unit: 'FZD',
-      batch: '2024-2025',
-      email: 'priya.sharma@railway.gov.in',
-      phone: '9876543211',
-      picture: 'https://randomuser.me/api/portraits/women/1.jpg',
-      courseCode: 'MSE-D',
-      course: {
-        moduleNo: 'MSE-D',
-        duration: '52 Weeks',
-        joiningDate: '2024-02-01',
-        sparingDate: '2025-02-01',
-        coordinator: 'Mrs. S.K. Verma'
-      },
-      lineTraining: {
-        status: 'In Progress',
-        duration: '6 months',
-        location: 'FZD Division'
-      },
-      status: 'Active'
-    },
-    {
-      id: 3,
-      ticketNo: 'STC2024003',
-      name: 'Amit Singh',
-      designation: 'MSE',
-      unit: 'MB',
-      batch: '2024-2025',
-      email: 'amit.singh@railway.gov.in',
-      phone: '9876543212',
-      picture: 'https://randomuser.me/api/portraits/men/2.jpg',
-      courseCode: 'MSE-W',
-      course: {
-        moduleNo: 'MSE-W',
-        duration: '52 Weeks',
-        joiningDate: '2024-03-01',
-        sparingDate: '2025-03-01',
-        coordinator: 'Mr. A.K. Singh'
-      },
-      lineTraining: {
-        status: 'Scheduled',
-        duration: '6 months',
-        location: 'MB Division'
-      },
-      status: 'Active'
-    },
-    {
-      id: 4,
-      ticketNo: 'STC2024004',
-      name: 'Neha Gupta',
-      designation: 'MJR',
-      unit: 'MB',
-      batch: '2024-2025',
-      email: 'neha.gupta@railway.gov.in',
-      phone: '9876543213',
-      picture: 'https://randomuser.me/api/portraits/women/2.jpg',
-      courseCode: 'MJR-C&W',
-      course: {
-        moduleNo: 'MJR-C&W',
-        duration: '52 Weeks',
-        joiningDate: '2024-01-15',
-        sparingDate: '2025-01-15',
-        coordinator: 'Mrs. N.P. Gupta'
-      },
-      lineTraining: {
-        status: 'Completed',
-        duration: '6 months',
-        location: 'MB Division'
-      },
-      status: 'Active'
-    },
-    {
-      id: 5,
-      ticketNo: 'STC2024005',
-      name: 'Vikash Yadav',
-      designation: 'MJR',
-      unit: 'FZD',
-      batch: '2024-2025',
-      email: 'vikash.yadav@railway.gov.in',
-      phone: '9876543214',
-      picture: 'https://randomuser.me/api/portraits/men/3.jpg',
-      courseCode: 'MJR-D',
-      course: {
-        moduleNo: 'MJR-D',
-        duration: '52 Weeks',
-        joiningDate: '2024-02-01',
-        sparingDate: '2025-02-01',
-        coordinator: 'Mr. V.K. Yadav'
-      },
-      lineTraining: {
-        status: 'In Progress',
-        duration: '6 months',
-        location: 'FZD Division'
-      },
-      status: 'Active'
-    },
-    {
-      id: 6,
-      ticketNo: 'STC2024006',
-      name: 'Sunita Devi',
-      designation: 'MJR',
-      unit: 'JAT',
-      batch: '2024-2025',
-      email: 'sunita.devi@railway.gov.in',
-      phone: '9876543215',
-      picture: 'https://randomuser.me/api/portraits/women/3.jpg',
-      courseCode: 'MJR-W',
-      course: {
-        moduleNo: 'MJR-W',
-        duration: '52 Weeks',
-        joiningDate: '2024-03-01',
-        sparingDate: '2025-03-01',
-        coordinator: 'Mrs. S.D. Sharma'
-      },
-      lineTraining: {
-        status: 'Scheduled',
-        duration: '6 months',
-        location: 'JAT Division'
-      },
-      status: 'Active'
-    }
-  ];
 
   // Fetch trainees from backend
   useEffect(() => {
@@ -254,31 +100,18 @@ const TraineeProfile = () => {
     try {
       setLoading(true);
       // Try to fetch from backend API endpoint
-      const response = await fetch('/api/stc/trainees');
+      const response = await fetch('/api/stc');
       if (!response.ok) throw new Error('Failed to fetch trainees');
-
       const data = await response.json();
-      setTrainees(data);
-      setFilteredTrainees(data);
+
+      const TraineeArray = Array.isArray(data.data) ? data.data : [];
+      console.log('Fetched trainees:', TraineeArray);
+
+      setTrainees(TraineeArray);
+      setFilteredTrainees(TraineeArray);
     } catch (err) {
       setError(err.message);
-      // Use mock data when API is not available
-      console.log('Using mock data - API not available:', err.message);
-
-      // Enhance mock data with calculated marks from marksUtils
-      const enhancedMockData = mockTraineesData.map(trainee => {
-        const calculatedMarks = hasMarksData(trainee.id)
-          ? calculateOverallMarks(trainee.id)
-          : { theory: 0, practical: 0, overall: 0 };
-
-        return {
-          ...trainee,
-          marks: calculatedMarks
-        };
-      });
-
-      setTrainees(enhancedMockData);
-      setFilteredTrainees(enhancedMockData);
+      console.log('API not available:', err.message);
     } finally {
       setLoading(false);
     }
@@ -495,10 +328,10 @@ const TraineeProfile = () => {
                     </div>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === 'Active'
-                      ? 'bg-green-100 text-green-800'
-                      : trainee.status === 'Resigned'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 text-green-800'
+                    : trainee.status === 'Resigned'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
                     }`}>
                     {trainee.status}
                   </span>
@@ -533,16 +366,16 @@ const TraineeProfile = () => {
               <div className="p-4 bg-gray-50">
                 <h4 className="font-medium text-gray-900 mb-2">Course Details</h4>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <p>Module: {trainee.course.moduleNo}</p>
-                  <p>Duration: {trainee.course.duration}</p>
-                  <p>Joining: {new Date(trainee.course.joiningDate).toLocaleDateString()}</p>
-                  <p>Sparing: {new Date(trainee.course.sparingDate).toLocaleDateString()}</p>
-                  <p>Coordinator: {trainee.course.coordinator}</p>
+                  <p>Module: {trainee.moduleNo}</p>
+                  <p>Duration: {trainee.duration}</p>
+                  <p>Joining: {new Date(trainee.joiningDate).toLocaleDateString()}</p>
+                  <p>Sparing: {new Date(trainee.sparingDate).toLocaleDateString()}</p>
+                  <p>Coordinator: {trainee.coordinator}</p>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="p-4 border-t border-gray-100">
+              {/* <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Academic Performance</span>
                   {hasMarksData(trainee.id) ? (
@@ -576,7 +409,7 @@ const TraineeProfile = () => {
                     <div className="text-xs text-gray-500">Overall</div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Actions */}
               <div className="p-4 border-t border-gray-100">
@@ -590,13 +423,13 @@ const TraineeProfile = () => {
                   </button>
                   <Link
                     to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}&courseCode=${trainee.courseCode}&autoSelect=true`}
-                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${hasMarksData(trainee.id)
+                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${trainee.id
                       ? 'bg-green-500 hover:bg-green-600'
                       : 'bg-orange-500 hover:bg-orange-600'
                       }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
-                    {hasMarksData(trainee.id) ? 'View Marks' : 'Add Marks'}
+                    {trainee.id ? 'View Marks' : 'Add Marks'}
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -611,8 +444,8 @@ const TraineeProfile = () => {
                     onClick={() => handleResignation(trainee)}
                     disabled={trainee.status === 'Resigned'}
                     className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === 'Resigned'
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-red-500 text-white hover:bg-red-600'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-red-500 text-white hover:bg-red-600'
                       }`}
                   >
                     <Users className="w-4 h-4 mr-1" />
