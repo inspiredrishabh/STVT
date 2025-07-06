@@ -1,26 +1,49 @@
+const { generateTicketNumber } = require('../utils/ticketGenerator');
 const fs = require('fs');
 const path = require('path');
 
 class MjpWController {
-    constructor(mjpWModel) {
+    constructor(mjpWModel, stcModel) {
         this.mjpWModel = mjpWModel;
+        this.stcModel = stcModel;
     }
 
     async createScore(req, res) {
         try {
             const scoreData = req.body;
             
+            // Validate if STC candidate exists
+            if (scoreData.ticket_no || scoreData.ticketNumber) {
+                const ticketNo = scoreData.ticket_no || scoreData.ticketNumber;
+                const stcCandidate = await this.stcModel.getByTicketNumber(ticketNo);
+                
+                if (!stcCandidate) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'STC Candidate not found. Please create STC candidate first.'
+                    });
+                }
+                
+                // Validate designation
+                if (stcCandidate.designation !== 'MJP-W') {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Candidate designation is ${stcCandidate.designation}, not MJP-W`
+                    });
+                }
+            }
+
             const newScore = await this.mjpWModel.create(scoreData);
             res.status(201).json({
                 success: true,
-                message: 'MJP - W Score created successfully',
+                message: 'MJP-W Score created successfully',
                 data: newScore
             });
         } catch (error) {
-            console.error('Error creating MJP - W score:', error);
+            console.error('Error creating MJP-W score:', error);
             res.status(500).json({
                 success: false,
-                message: error.message || 'Failed to create MJP - W score'
+                message: error.message || 'Failed to create MJP-W score'
             });
         }
     }
@@ -30,15 +53,15 @@ class MjpWController {
             const scores = await this.mjpWModel.getAll();
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Scores retrieved successfully',
+                message: 'MJP-W Scores retrieved successfully',
                 data: scores,
                 count: scores.length
             });
         } catch (error) {
-            console.error('Error getting MJP - W scores:', error);
+            console.error('Error getting MJP-W scores:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve MJP - W scores'
+                message: 'Failed to retrieve MJP-W scores'
             });
         }
     }
@@ -51,20 +74,20 @@ class MjpWController {
             if (!score) {
                 return res.status(404).json({
                     success: false,
-                    message: 'MJP - W Score not found'
+                    message: 'MJP-W Score not found'
                 });
             }
 
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Score retrieved successfully',
+                message: 'MJP-W Score retrieved successfully',
                 data: score
             });
         } catch (error) {
-            console.error('Error getting MJP - W score:', error);
+            console.error('Error getting MJP-W score:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve MJP - W score'
+                message: 'Failed to retrieve MJP-W score'
             });
         }
     }
@@ -79,7 +102,7 @@ class MjpWController {
             if (!existingScore) {
                 return res.status(404).json({
                     success: false,
-                    message: 'MJP - W Score not found'
+                    message: 'MJP-W Score not found'
                 });
             }
 
@@ -87,14 +110,14 @@ class MjpWController {
             
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Score updated successfully',
+                message: 'MJP-W Score updated successfully',
                 data: updatedScore
             });
         } catch (error) {
-            console.error('Error updating MJP - W score:', error);
+            console.error('Error updating MJP-W score:', error);
             res.status(500).json({
                 success: false,
-                message: error.message || 'Failed to update MJP - W score'
+                message: error.message || 'Failed to update MJP-W score'
             });
         }
     }
@@ -108,22 +131,92 @@ class MjpWController {
             if (!score) {
                 return res.status(404).json({
                     success: false,
-                    message: 'MJP - W Score not found'
+                    message: 'MJP-W Score not found'
                 });
             }
 
-            // Delete score
             const deleted = await this.mjpWModel.deleteByTicketNumber(ticketNumber);
             
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Score deleted successfully'
+                message: 'MJP-W Score deleted successfully'
             });
         } catch (error) {
-            console.error('Error deleting MJP - W score:', error);
+            console.error('Error deleting MJP-W score:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to delete MJP - W score'
+                message: 'Failed to delete MJP-W score'
+            });
+        }
+    }
+
+    async updatePaperMarks(req, res) {
+        try {
+            const { ticketNumber, paperCode } = req.params;
+            const { marks } = req.body;
+
+            // Validate marks
+            if (marks === undefined || marks === null) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Marks value is required'
+                });
+            }
+
+            // Check if score exists
+            const existingScore = await this.mjpWModel.getByTicketNumber(ticketNumber);
+            if (!existingScore) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'MJP-W Score not found'
+                });
+            }
+
+            const updated = await this.mjpWModel.updatePaperMarks(ticketNumber, paperCode, marks);
+            
+            if (!updated) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Failed to update paper marks'
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: `${paperCode} marks updated successfully`,
+                data: { ticketNumber, paperCode, marks }
+            });
+        } catch (error) {
+            console.error('Error updating paper marks:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update paper marks'
+            });
+        }
+    }
+
+    async getMarksSummary(req, res) {
+        try {
+            const { ticketNumber } = req.params;
+            const summary = await this.mjpWModel.getMarksSummary(ticketNumber);
+            
+            if (!summary) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'MJP-W Score not found'
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: 'MJP-W Marks summary retrieved successfully',
+                data: summary
+            });
+        } catch (error) {
+            console.error('Error getting marks summary:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve marks summary'
             });
         }
     }
@@ -133,15 +226,15 @@ class MjpWController {
             const scoresWithDetails = await this.mjpWModel.getScoresWithCandidateDetails();
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Scores with candidate details retrieved successfully',
+                message: 'MJP-W Scores with candidate details retrieved successfully',
                 data: scoresWithDetails,
                 count: scoresWithDetails.length
             });
         } catch (error) {
-            console.error('Error getting MJP - W scores with candidate details:', error);
+            console.error('Error getting scores with candidate details:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve MJP - W scores with candidate details'
+                message: 'Failed to retrieve scores with candidate details'
             });
         }
     }
@@ -154,25 +247,263 @@ class MjpWController {
             if (!scoreWithDetails) {
                 return res.status(404).json({
                     success: false,
-                    message: 'MJP - W Score with candidate details not found'
+                    message: 'MJP-W Candidate or Score not found'
                 });
             }
 
             res.status(200).json({
                 success: true,
-                message: 'MJP - W Score with candidate details retrieved successfully',
+                message: 'MJP-W Score with candidate details retrieved successfully',
                 data: scoreWithDetails
             });
         } catch (error) {
-            console.error('Error getting MJP - W score with candidate details:', error);
+            console.error('Error getting score with candidate details:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve MJP - W score with candidate details'
+                message: 'Failed to retrieve score with candidate details'
             });
         }
     }
 
-    // Bulk upload scores
+    // Session-wise marks methods
+    async getSessionMarks(req, res) {
+        try {
+            const { ticketNumber, session } = req.params;
+            const score = await this.mjpWModel.getByTicketNumber(ticketNumber);
+            
+            if (!score) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'MJP-W Score not found'
+                });
+            }
+
+            let sessionMarks = {};
+            switch(session) {
+                case '1':
+                    sessionMarks = {
+                        s1p1_marks: score.s1p1_marks,
+                        s1p2_marks: score.s1p2_marks,
+                        total: (score.s1p1_marks || 0) + (score.s1p2_marks || 0),
+                        max_total: 300 // 150 + 150
+                    };
+                    break;
+                case '2':
+                    sessionMarks = {
+                        s2p1_marks: score.s2p1_marks,
+                        s2pr_marks: score.s2pr_marks,
+                        s2int_marks: score.s2int_marks,
+                        total: (score.s2p1_marks || 0) + (score.s2pr_marks || 0) + (score.s2int_marks || 0),
+                        max_total: 200 // 100 + 50 + 50
+                    };
+                    break;
+                default:
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid session number. Valid sessions are 1, 2'
+                    });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: `MJP-W Session ${session} marks retrieved successfully`,
+                data: {
+                    ticket_no: ticketNumber,
+                    session: session,
+                    marks: sessionMarks
+                }
+            });
+        } catch (error) {
+            console.error('Error getting session marks:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve session marks'
+            });
+        }
+    }
+
+    // Analysis methods
+    async getSessionAnalysis(req, res) {
+        try {
+            const { session } = req.params;
+            const allScores = await this.mjpWModel.getAll();
+            
+            if (allScores.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No MJP-W scores found'
+                });
+            }
+
+            let analysis = {};
+            switch(session) {
+                case '1':
+                    analysis = this.calculateSessionAnalysis(allScores, 's1', ['p1', 'p2'], 300);
+                    break;
+                case '2':
+                    analysis = this.calculateSessionAnalysis(allScores, 's2', ['p1', 'pr', 'int'], 200);
+                    break;
+                default:
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid session number. Valid sessions are 1, 2'
+                    });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: `MJP-W Session ${session} analysis retrieved successfully`,
+                data: analysis
+            });
+        } catch (error) {
+            console.error('Error getting session analysis:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve session analysis'
+            });
+        }
+    }
+
+    calculateSessionAnalysis(scores, sessionPrefix, papers, maxTotal) {
+        const analysis = {
+            total_candidates: scores.length,
+            session_stats: {
+                max_possible: maxTotal,
+                highest_score: 0,
+                lowest_score: maxTotal,
+                average_score: 0,
+                pass_count: 0,
+                pass_percentage: 0
+            },
+            paper_stats: {}
+        };
+
+        let totalSessionScores = 0;
+        const passThreshold = maxTotal * 0.5; // 50% pass mark
+
+        scores.forEach(score => {
+            let sessionTotal = 0;
+            
+            papers.forEach(paper => {
+                const paperField = `${sessionPrefix}${paper}_marks`;
+                const marks = score[paperField] || 0;
+                sessionTotal += marks;
+                
+                if (!analysis.paper_stats[paper]) {
+                    const maxMarks = paper === 'p1' && sessionPrefix === 's1' ? 150 :
+                                   paper === 'p2' && sessionPrefix === 's1' ? 150 :
+                                   paper === 'p1' && sessionPrefix === 's2' ? 100 :
+                                   paper === 'pr' && sessionPrefix === 's2' ? 50 :
+                                   paper === 'int' && sessionPrefix === 's2' ? 50 : 100;
+                    
+                    analysis.paper_stats[paper] = {
+                        highest: 0,
+                        lowest: maxMarks,
+                        average: 0,
+                        total: 0,
+                        max_marks: maxMarks
+                    };
+                }
+                
+                analysis.paper_stats[paper].highest = Math.max(analysis.paper_stats[paper].highest, marks);
+                analysis.paper_stats[paper].lowest = Math.min(analysis.paper_stats[paper].lowest, marks);
+                analysis.paper_stats[paper].total += marks;
+            });
+
+            totalSessionScores += sessionTotal;
+            analysis.session_stats.highest_score = Math.max(analysis.session_stats.highest_score, sessionTotal);
+            analysis.session_stats.lowest_score = Math.min(analysis.session_stats.lowest_score, sessionTotal);
+            
+            if (sessionTotal >= passThreshold) {
+                analysis.session_stats.pass_count++;
+            }
+        });
+
+        // Calculate averages
+        analysis.session_stats.average_score = totalSessionScores / scores.length;
+        analysis.session_stats.pass_percentage = (analysis.session_stats.pass_count / scores.length) * 100;
+
+        papers.forEach(paper => {
+            analysis.paper_stats[paper].average = analysis.paper_stats[paper].total / scores.length;
+            delete analysis.paper_stats[paper].total;
+        });
+
+        return analysis;
+    }
+
+    // Overall course analysis
+    async getCourseAnalysis(req, res) {
+        try {
+            const allScores = await this.mjpWModel.getAll();
+            
+            if (allScores.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No MJP-W scores found'
+                });
+            }
+
+            const totalMaxMarks = 500; // 300 + 200
+            const passThreshold = totalMaxMarks * 0.5; // 50% pass mark
+
+            const analysis = {
+                total_candidates: allScores.length,
+                course_stats: {
+                    max_possible: totalMaxMarks,
+                    highest_score: 0,
+                    lowest_score: totalMaxMarks,
+                    average_score: 0,
+                    pass_count: 0,
+                    pass_percentage: 0
+                },
+                session_breakdown: {
+                    session_1: { max: 300, avg: 0 },
+                    session_2: { max: 200, avg: 0 }
+                }
+            };
+
+            let totalCourseScores = 0;
+            let totalS1Scores = 0;
+            let totalS2Scores = 0;
+
+            allScores.forEach(score => {
+                const s1Total = (score.s1p1_marks || 0) + (score.s1p2_marks || 0);
+                const s2Total = (score.s2p1_marks || 0) + (score.s2pr_marks || 0) + (score.s2int_marks || 0);
+                const courseTotal = s1Total + s2Total;
+
+                totalCourseScores += courseTotal;
+                totalS1Scores += s1Total;
+                totalS2Scores += s2Total;
+
+                analysis.course_stats.highest_score = Math.max(analysis.course_stats.highest_score, courseTotal);
+                analysis.course_stats.lowest_score = Math.min(analysis.course_stats.lowest_score, courseTotal);
+                
+                if (courseTotal >= passThreshold) {
+                    analysis.course_stats.pass_count++;
+                }
+            });
+
+            // Calculate averages
+            analysis.course_stats.average_score = totalCourseScores / allScores.length;
+            analysis.course_stats.pass_percentage = (analysis.course_stats.pass_count / allScores.length) * 100;
+            analysis.session_breakdown.session_1.avg = totalS1Scores / allScores.length;
+            analysis.session_breakdown.session_2.avg = totalS2Scores / allScores.length;
+
+            res.status(200).json({
+                success: true,
+                message: 'MJP-W Course analysis retrieved successfully',
+                data: analysis
+            });
+        } catch (error) {
+            console.error('Error getting course analysis:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve course analysis'
+            });
+        }
+    }
+
+    // Bulk upload scores with STC validation
     async bulkUploadScores(req, res) {
         try {
             const { scores } = req.body;
@@ -190,6 +521,21 @@ class MjpWController {
             for (let i = 0; i < scores.length; i++) {
                 try {
                     const score = scores[i];
+                    
+                    // Validate STC candidate for each score
+                    const ticketNo = score.ticket_no || score.ticketNumber;
+                    if (ticketNo) {
+                        const stcCandidate = await this.stcModel.getByTicketNumber(ticketNo);
+                        
+                        if (!stcCandidate) {
+                            throw new Error('STC Candidate not found');
+                        }
+                        
+                        if (stcCandidate.designation !== 'MJP-W') {
+                            throw new Error(`Candidate designation is ${stcCandidate.designation}, not MJP-W`);
+                        }
+                    }
+                    
                     const newScore = await this.mjpWModel.create(score);
                     results.push(newScore);
                 } catch (error) {
@@ -215,7 +561,7 @@ class MjpWController {
                 }
             });
         } catch (error) {
-            console.error('Error in bulk upload MJP - W scores:', error);
+            console.error('Error in bulk upload MJP-W scores:', error);
             res.status(500).json({
                 success: false,
                 message: 'Failed to process bulk upload'
@@ -236,6 +582,23 @@ class MjpWController {
                 });
             }
 
+            // Validate STC candidate
+            const stcCandidate = await this.stcModel.getByTicketNumber(ticketNumber);
+            
+            if (!stcCandidate) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'STC Candidate not found. Please create STC candidate first.'
+                });
+            }
+            
+            if (stcCandidate.designation !== 'MJP-W') {
+                return res.status(400).json({
+                    success: false,
+                    message: `Candidate designation is ${stcCandidate.designation}, not MJP-W`
+                });
+            }
+
             // Check if score exists
             const existingScore = await this.mjpWModel.getByTicketNumber(ticketNumber);
 
@@ -245,11 +608,11 @@ class MjpWController {
             if (existingScore) {
                 // Update existing score
                 result = await this.mjpWModel.updateByTicketNumber(ticketNumber, scoreData);
-                message = 'MJP - W Score updated successfully';
+                message = 'MJP-W Score updated successfully';
             } else {
                 // Create new score
                 result = await this.mjpWModel.create(scoreData);
-                message = 'MJP - W Score created successfully';
+                message = 'MJP-W Score created successfully';
             }
 
             res.status(200).json({
@@ -259,10 +622,10 @@ class MjpWController {
                 operation: existingScore ? 'updated' : 'created'
             });
         } catch (error) {
-            console.error('Error in upsert MJP - W score:', error);
+            console.error('Error in upsert MJP-W score:', error);
             res.status(500).json({
                 success: false,
-                message: error.message || 'Failed to upsert MJP - W score'
+                message: error.message || 'Failed to upsert MJP-W score'
             });
         }
     }
