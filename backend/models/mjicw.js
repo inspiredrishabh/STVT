@@ -1,9 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const db = require('./database');
 
-class MseCwModel {
+class MjiCwModel {
     constructor() {
-        this.tableName = 'mse_cw_candidates';
+        this.tableName = 'mji_cw_candidates';
         this.createTable();
     }
 
@@ -14,41 +14,55 @@ class MseCwModel {
             -- Main identifier
             ticket_no TEXT UNIQUE NOT NULL,  -- Main unique identifier
             
-            -- Session 1 Papers with marks
+            -- Session 1 Papers with marks (7 papers)
             s1p1_marks REAL DEFAULT 0,  -- Session 1 Paper 1 marks
             s1p1_max_marks INTEGER DEFAULT 100,
             s1p2_marks REAL DEFAULT 0,  -- Session 1 Paper 2 marks
             s1p2_max_marks INTEGER DEFAULT 100,
-            s1pr_marks REAL DEFAULT 0,  -- Session 1 Practical marks
-            s1pr_max_marks INTEGER DEFAULT 50,
+            s1p3_marks REAL DEFAULT 0,  -- Session 1 Paper 3 marks
+            s1p3_max_marks INTEGER DEFAULT 100,
+            s1p4_marks REAL DEFAULT 0,  -- Session 1 Paper 4 marks
+            s1p4_max_marks INTEGER DEFAULT 100,
+            s1p5_marks REAL DEFAULT 0,  -- Session 1 Paper 5 marks
+            s1p5_max_marks INTEGER DEFAULT 100,
+            s1p6_marks REAL DEFAULT 0,  -- Session 1 Paper 6 marks
+            s1p6_max_marks INTEGER DEFAULT 100,
+            s1p7_marks REAL DEFAULT 0,  -- Session 1 Paper 7 marks
+            s1p7_max_marks INTEGER DEFAULT 100,
             
-            -- Session 2 Papers with marks
+            -- Session 2 Papers with marks (8 papers)
             s2p1_marks REAL DEFAULT 0,  -- Session 2 Paper 1 marks
-            s2p1_max_marks INTEGER DEFAULT 75,
+            s2p1_max_marks INTEGER DEFAULT 100,
             s2p2_marks REAL DEFAULT 0,  -- Session 2 Paper 2 marks
             s2p2_max_marks INTEGER DEFAULT 100,
-            s2pr_marks REAL DEFAULT 0,  -- Session 2 Practical marks
-            s2pr_max_marks INTEGER DEFAULT 50,
+            s2p3_marks REAL DEFAULT 0,  -- Session 2 Paper 3 marks
+            s2p3_max_marks INTEGER DEFAULT 100,
+            s2p4_marks REAL DEFAULT 0,  -- Session 2 Paper 4 marks
+            s2p4_max_marks INTEGER DEFAULT 100,
+            s2p5_marks REAL DEFAULT 0,  -- Session 2 Paper 5 marks
+            s2p5_max_marks INTEGER DEFAULT 50,
+            s2p6_marks REAL DEFAULT 0,  -- Session 2 Paper 6 marks
+            s2p6_max_marks INTEGER DEFAULT 25,
+            s2p7_marks REAL DEFAULT 0,  -- Session 2 Paper 7 marks
+            s2p7_max_marks INTEGER DEFAULT 50,
+            s2p8_marks REAL DEFAULT 0,  -- Session 2 Paper 8 marks
+            s2p8_max_marks INTEGER DEFAULT 50,
             
-            -- Session 3 Papers with marks
+            -- Session 3 Papers with marks (2 papers)
             s3p1_marks REAL DEFAULT 0,  -- Session 3 Paper 1 marks
-            s3p1_max_marks INTEGER DEFAULT 100,
+            s3p1_max_marks INTEGER DEFAULT 125,
             s3p2_marks REAL DEFAULT 0,  -- Session 3 Paper 2 marks
-            s3p2_max_marks INTEGER DEFAULT 50,
-            s3p3_marks REAL DEFAULT 0,  -- Session 3 Paper 3 marks
-            s3p3_max_marks INTEGER DEFAULT 25,
-            s3p4_marks REAL DEFAULT 0,  -- Session 3 Paper 4 marks
-            s3p4_max_marks INTEGER DEFAULT 50,
-            s3pr_marks REAL DEFAULT 0,  -- Session 3 Practical marks
-            s3pr_max_marks INTEGER DEFAULT 50,
+            s3p2_max_marks INTEGER DEFAULT 100,
             
             -- Session 4 Papers with marks
             s4p1_marks REAL DEFAULT 0,  -- Session 4 Paper 1 marks
             s4p1_max_marks INTEGER DEFAULT 100,
+            s4p2_marks REAL DEFAULT 0,  -- Session 4 Paper 2 marks
+            s4p2_max_marks INTEGER DEFAULT 100,
             s4pr_marks REAL DEFAULT 0,  -- Session 4 Practical marks
             s4pr_max_marks INTEGER DEFAULT 50,
             s4int_marks REAL DEFAULT 0, -- Session 4 Interview marks
-            s4int_max_marks INTEGER DEFAULT 100,
+            s4int_max_marks INTEGER DEFAULT 50,
 
             -- System fields
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -61,28 +75,34 @@ class MseCwModel {
     create(scoreData) {
         return new Promise((resolve, reject) => {
             const sql = `INSERT INTO ${this.tableName} (
-                ticket_no, s1p1_marks, s1p2_marks, s1pr_marks, 
-                s2p1_marks, s2p2_marks, s2pr_marks, 
-                s3p1_marks, s3p2_marks, s3p3_marks, s3p4_marks, s3pr_marks,
-                s4p1_marks, s4pr_marks, s4int_marks
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                ticket_no, s1p1_marks, s1p2_marks, s1p3_marks, s1p4_marks, s1p5_marks, s1p6_marks, s1p7_marks,
+                s2p1_marks, s2p2_marks, s2p3_marks, s2p4_marks, s2p5_marks, s2p6_marks, s2p7_marks, s2p8_marks,
+                s3p1_marks, s3p2_marks, s4p1_marks, s4p2_marks, s4pr_marks, s4int_marks
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             
             db.run(sql, [
                 scoreData.ticket_no || scoreData.ticketNumber,
                 scoreData.s1p1_marks || scoreData.s1p1 || 0,
                 scoreData.s1p2_marks || scoreData.s1p2 || 0,
-                scoreData.s1pr_marks || scoreData.s1pr || 0,
+                scoreData.s1p3_marks || scoreData.s1p3 || 0,
+                scoreData.s1p4_marks || scoreData.s1p4 || 0,
+                scoreData.s1p5_marks || scoreData.s1p5 || 0,
+                scoreData.s1p6_marks || scoreData.s1p6 || 0,
+                scoreData.s1p7_marks || scoreData.s1p7 || 0,
                 scoreData.s2p1_marks || scoreData.s2p1 || 0,
                 scoreData.s2p2_marks || scoreData.s2p2 || 0,
-                scoreData.s2pr_marks || scoreData.s2pr || 0,
+                scoreData.s2p3_marks || scoreData.s2p3 || 0,
+                scoreData.s2p4_marks || scoreData.s2p4 || 0,
+                scoreData.s2p5_marks || scoreData.s2p5 || 0,
+                scoreData.s2p6_marks || scoreData.s2p6 || 0,
+                scoreData.s2p7_marks || scoreData.s2p7 || 0,
+                scoreData.s2p8_marks || scoreData.s2p8 || 0,
                 scoreData.s3p1_marks || scoreData.s3p1 || 0,
                 scoreData.s3p2_marks || scoreData.s3p2 || 0,
-                scoreData.s3p3_marks || scoreData.s3p3 || 0,
-                scoreData.s3p4_marks || scoreData.s3p4 || 0,
-                scoreData.s3pr_marks || scoreData.s3pr || 0,
                 scoreData.s4p1_marks || scoreData.s4p1 || 0,
-                scoreData.s4pr_marks || scoreData.s4pr || 0,
-                scoreData.s4int_marks || scoreData.s4int || scoreData.s4i || 0
+                scoreData.s4p2_marks || scoreData.s4p2 || 0,
+                scoreData.s4pr_marks || scoreData.s4p || 0,
+                scoreData.s4int_marks || scoreData.s4i || 0
             ], function(err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
@@ -119,28 +139,34 @@ class MseCwModel {
     updateByTicketNumber(ticketNumber, scoreData) {
         return new Promise((resolve, reject) => {
             const sql = `UPDATE ${this.tableName} SET 
-                s1p1_marks = ?, s1p2_marks = ?, s1pr_marks = ?, 
-                s2p1_marks = ?, s2p2_marks = ?, s2pr_marks = ?, 
-                s3p1_marks = ?, s3p2_marks = ?, s3p3_marks = ?, s3p4_marks = ?, s3pr_marks = ?, 
-                s4p1_marks = ?, s4pr_marks = ?, s4int_marks = ?, 
+                s1p1_marks = ?, s1p2_marks = ?, s1p3_marks = ?, s1p4_marks = ?, s1p5_marks = ?, s1p6_marks = ?, s1p7_marks = ?,
+                s2p1_marks = ?, s2p2_marks = ?, s2p3_marks = ?, s2p4_marks = ?, s2p5_marks = ?, s2p6_marks = ?, s2p7_marks = ?, s2p8_marks = ?,
+                s3p1_marks = ?, s3p2_marks = ?, s4p1_marks = ?, s4p2_marks = ?, s4pr_marks = ?, s4int_marks = ?,
                 updated_at = CURRENT_TIMESTAMP 
                 WHERE ticket_no = ?`;
                 
             db.run(sql, [
                 scoreData.s1p1_marks || scoreData.s1p1 || 0,
                 scoreData.s1p2_marks || scoreData.s1p2 || 0,
-                scoreData.s1pr_marks || scoreData.s1pr || 0,
+                scoreData.s1p3_marks || scoreData.s1p3 || 0,
+                scoreData.s1p4_marks || scoreData.s1p4 || 0,
+                scoreData.s1p5_marks || scoreData.s1p5 || 0,
+                scoreData.s1p6_marks || scoreData.s1p6 || 0,
+                scoreData.s1p7_marks || scoreData.s1p7 || 0,
                 scoreData.s2p1_marks || scoreData.s2p1 || 0,
                 scoreData.s2p2_marks || scoreData.s2p2 || 0,
-                scoreData.s2pr_marks || scoreData.s2pr || 0,
+                scoreData.s2p3_marks || scoreData.s2p3 || 0,
+                scoreData.s2p4_marks || scoreData.s2p4 || 0,
+                scoreData.s2p5_marks || scoreData.s2p5 || 0,
+                scoreData.s2p6_marks || scoreData.s2p6 || 0,
+                scoreData.s2p7_marks || scoreData.s2p7 || 0,
+                scoreData.s2p8_marks || scoreData.s2p8 || 0,
                 scoreData.s3p1_marks || scoreData.s3p1 || 0,
                 scoreData.s3p2_marks || scoreData.s3p2 || 0,
-                scoreData.s3p3_marks || scoreData.s3p3 || 0,
-                scoreData.s3p4_marks || scoreData.s3p4 || 0,
-                scoreData.s3pr_marks || scoreData.s3pr || 0,
                 scoreData.s4p1_marks || scoreData.s4p1 || 0,
-                scoreData.s4pr_marks || scoreData.s4pr || 0,
-                scoreData.s4int_marks || scoreData.s4int || scoreData.s4i || 0,
+                scoreData.s4p2_marks || scoreData.s4p2 || 0,
+                scoreData.s4pr_marks || scoreData.s4p || 0,
+                scoreData.s4int_marks || scoreData.s4i || 0,
                 ticketNumber
             ], function(err) {
                 if (err) {
@@ -199,10 +225,12 @@ class MseCwModel {
     getMarksSummary(ticketNumber) {
         return new Promise((resolve, reject) => {
             const sql = `SELECT *,
-                (s1p1_marks + s1p2_marks + s1pr_marks + s2p1_marks + s2p2_marks + s2pr_marks + 
-                 s3p1_marks + s3p2_marks + s3p3_marks + s3p4_marks + s3pr_marks + s4p1_marks + s4pr_marks + s4int_marks) as total_marks,
-                (s1p1_max_marks + s1p2_max_marks + s1pr_max_marks + s2p1_max_marks + s2p2_max_marks + s2pr_max_marks + 
-                 s3p1_max_marks + s3p2_max_marks + s3p3_max_marks + s3p4_max_marks + s3pr_max_marks + s4p1_max_marks + s4pr_max_marks + s4int_max_marks) as total_max_marks
+                (s1p1_marks + s1p2_marks + s1p3_marks + s1p4_marks + s1p5_marks + s1p6_marks + s1p7_marks +
+                 s2p1_marks + s2p2_marks + s2p3_marks + s2p4_marks + s2p5_marks + s2p6_marks + s2p7_marks + s2p8_marks +
+                 s3p1_marks + s3p2_marks + s4p1_marks + s4p2_marks + s4pr_marks + s4int_marks) as total_marks,
+                (s1p1_max_marks + s1p2_max_marks + s1p3_max_marks + s1p4_max_marks + s1p5_max_marks + s1p6_max_marks + s1p7_max_marks +
+                 s2p1_max_marks + s2p2_max_marks + s2p3_max_marks + s2p4_max_marks + s2p5_max_marks + s2p6_max_marks + s2p7_max_marks + s2p8_max_marks +
+                 s3p1_max_marks + s3p2_max_marks + s4p1_max_marks + s4p2_max_marks + s4pr_max_marks + s4int_max_marks) as total_max_marks
                 FROM ${this.tableName} WHERE ticket_no = ?`;
             
             db.get(sql, [ticketNumber], (err, row) => {
@@ -221,14 +249,14 @@ class MseCwModel {
             const sql = `
                 SELECT 
                     sc.*, 
-                    mse.s1p1_marks, mse.s1p2_marks, mse.s1pr_marks,
-                    mse.s2p1_marks, mse.s2p2_marks, mse.s2pr_marks,
-                    mse.s3p1_marks, mse.s3p2_marks, mse.s3p3_marks, mse.s3p4_marks, mse.s3pr_marks,
-                    mse.s4p1_marks, mse.s4pr_marks, mse.s4int_marks,
-                    (mse.s1p1_marks + mse.s1p2_marks + mse.s1pr_marks + mse.s2p1_marks + mse.s2p2_marks + mse.s2pr_marks + 
-                     mse.s3p1_marks + mse.s3p2_marks + mse.s3p3_marks + mse.s3p4_marks + mse.s3pr_marks + mse.s4p1_marks + mse.s4pr_marks + mse.s4int_marks) as total_marks
+                    mji.s1p1_marks, mji.s1p2_marks, mji.s1p3_marks, mji.s1p4_marks, mji.s1p5_marks, mji.s1p6_marks, mji.s1p7_marks,
+                    mji.s2p1_marks, mji.s2p2_marks, mji.s2p3_marks, mji.s2p4_marks, mji.s2p5_marks, mji.s2p6_marks, mji.s2p7_marks, mji.s2p8_marks,
+                    mji.s3p1_marks, mji.s3p2_marks, mji.s4p1_marks, mji.s4p2_marks, mji.s4pr_marks, mji.s4int_marks,
+                    (mji.s1p1_marks + mji.s1p2_marks + mji.s1p3_marks + mji.s1p4_marks + mji.s1p5_marks + mji.s1p6_marks + mji.s1p7_marks +
+                     mji.s2p1_marks + mji.s2p2_marks + mji.s2p3_marks + mji.s2p4_marks + mji.s2p5_marks + mji.s2p6_marks + mji.s2p7_marks + mji.s2p8_marks +
+                     mji.s3p1_marks + mji.s3p2_marks + mji.s4p1_marks + mji.s4p2_marks + mji.s4pr_marks + mji.s4int_marks) as total_marks
                 FROM stc_candidates sc
-                LEFT JOIN ${this.tableName} mse ON sc.ticket_no = mse.ticket_no
+                LEFT JOIN ${this.tableName} mji ON sc.ticket_no = mji.ticket_no
                 ORDER BY sc.created_at DESC
             `;
             db.all(sql, [], (err, rows) => {
@@ -247,14 +275,14 @@ class MseCwModel {
             const sql = `
                 SELECT 
                     sc.*, 
-                    mse.s1p1_marks, mse.s1p2_marks, mse.s1pr_marks,
-                    mse.s2p1_marks, mse.s2p2_marks, mse.s2pr_marks,
-                    mse.s3p1_marks, mse.s3p2_marks, mse.s3p3_marks, mse.s3p4_marks, mse.s3pr_marks,
-                    mse.s4p1_marks, mse.s4pr_marks, mse.s4int_marks,
-                    (mse.s1p1_marks + mse.s1p2_marks + mse.s1pr_marks + mse.s2p1_marks + mse.s2p2_marks + mse.s2pr_marks + 
-                     mse.s3p1_marks + mse.s3p2_marks + mse.s3p3_marks + mse.s3p4_marks + mse.s3pr_marks + mse.s4p1_marks + mse.s4pr_marks + mse.s4int_marks) as total_marks
+                    mji.s1p1_marks, mji.s1p2_marks, mji.s1p3_marks, mji.s1p4_marks, mji.s1p5_marks, mji.s1p6_marks, mji.s1p7_marks,
+                    mji.s2p1_marks, mji.s2p2_marks, mji.s2p3_marks, mji.s2p4_marks, mji.s2p5_marks, mji.s2p6_marks, mji.s2p7_marks, mji.s2p8_marks,
+                    mji.s3p1_marks, mji.s3p2_marks, mji.s4p1_marks, mji.s4p2_marks, mji.s4pr_marks, mji.s4int_marks,
+                    (mji.s1p1_marks + mji.s1p2_marks + mji.s1p3_marks + mji.s1p4_marks + mji.s1p5_marks + mji.s1p6_marks + mji.s1p7_marks +
+                     mji.s2p1_marks + mji.s2p2_marks + mji.s2p3_marks + mji.s2p4_marks + mji.s2p5_marks + mji.s2p6_marks + mji.s2p7_marks + mji.s2p8_marks +
+                     mji.s3p1_marks + mji.s3p2_marks + mji.s4p1_marks + mji.s4p2_marks + mji.s4pr_marks + mji.s4int_marks) as total_marks
                 FROM stc_candidates sc
-                LEFT JOIN ${this.tableName} mse ON sc.ticket_no = mse.ticket_no
+                LEFT JOIN ${this.tableName} mji ON sc.ticket_no = mji.ticket_no
                 WHERE sc.ticket_no = ?
             `;
             db.get(sql, [ticketNumber], (err, row) => {
@@ -273,4 +301,4 @@ class MseCwModel {
     delete(id) { return this.deleteByTicketNumber(id); }
 }
 
-module.exports = MseCwModel;
+module.exports = MjiCwModel;
