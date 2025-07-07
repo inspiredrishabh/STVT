@@ -3,6 +3,8 @@ const router = express.Router();
 const MjiCwController = require('../controllers/mjicwController');
 const MjiCwModel = require('../models/mjicw');
 
+// router.use(express.json({limit:'2mb'}));
+
 // Initialize model and controller
 const mjiCwModel = new MjiCwModel();
 const mjiCwController = new MjiCwController(mjiCwModel);

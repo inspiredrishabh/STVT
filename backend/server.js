@@ -16,7 +16,7 @@ const app = express();
 initializeDatabase();
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Increased limit for larger payloads
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (uploaded images)

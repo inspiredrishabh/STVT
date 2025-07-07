@@ -571,6 +571,34 @@ const FeedMark = () => {
     }));
   };
 
+  // Helper to build formData dynamically for any courseCode
+  const buildFormData = (candidateData, marks, courseCode) => {
+    const structure = courseStructure[courseCode];
+    const formData = {
+      ticket_no: candidateData.ticket_no
+    };
+    let sessionIndex = 1;
+    for (const [sessionName, papers] of Object.entries(structure)) {
+      let paperIndex = 1;
+      for (const [paperName, config] of Object.entries(papers)) {
+        let key;
+        if (paperName === "Practical") {
+          key = `s${sessionIndex}pr_marks`;
+        } else if (paperName === "Interview") {
+          key = `s${sessionIndex}int_marks`;
+        } else {
+          key = `s${sessionIndex}p${paperIndex}_marks`;
+        }
+        formData[key] = marks[sessionName]?.[paperName] ?? 0;
+        if (paperName !== "Practical" && paperName !== "Interview") {
+          paperIndex++;
+        }
+      }
+      sessionIndex++;
+    }
+    return formData;
+  };
+
   const handleSaveMarks = async () => {
     if (!candidateData) {
       setMessage({ type: 'error', text: 'No candidate selected' });
@@ -581,14 +609,14 @@ const FeedMark = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      // Save main marks, supplementary marks, and practical centers data
-      // await mockAPI.saveMarks(candidateData.ticketNo, marks, supplementaryMarks, practicalCenters); //use real Api here fecth ('/api/mjpcw') and send data in body using POST method 
-      const response = await fetch('/api/mjicw', {
+      // Build formData dynamically using courseStructure and marks
+      const formData = buildFormData(candidateData, marks, courseCode);
+      const response = await fetch(`/api/${courseCode}`, {
         method: "POST",
         headers: {
           "Content-Type" : "application/json",
         },
-        body: JSON.stringify({ formData }), //make a objcet formdata include every thing which needs to send into database 
+        body: JSON.stringify(formData),
       })
       if(!response.ok){
         const errData = await response.json();
@@ -596,9 +624,8 @@ const FeedMark = () => {
       }
 
       const result = await response.json();
-      return { success: true, data: result };
-
       setMessage({ type: 'success', text: 'Marks saved successfully! (Including supplementary exam records and practical centers data)' });
+      return { success: true, data: result };
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save marks' });
     } finally {
