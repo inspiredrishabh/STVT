@@ -582,7 +582,22 @@ const FeedMark = () => {
 
     try {
       // Save main marks, supplementary marks, and practical centers data
-      await mockAPI.saveMarks(candidateData.ticketNo, marks, supplementaryMarks, practicalCenters);//use real Api here fecth ('/api/mjpcw') and send data in body using POST method 
+      // await mockAPI.saveMarks(candidateData.ticketNo, marks, supplementaryMarks, practicalCenters); //use real Api here fecth ('/api/mjpcw') and send data in body using POST method 
+      const response = await fetch('/api/mjicw', {
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json",
+        },
+        body: JSON.stringify({ formData }), //make a objcet formdata include every thing which needs to send into database 
+      })
+      if(!response.ok){
+        const errData = await response.json();
+        throw new Error(`HTTPS error! status: ${response.status}, message: ${errData.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+      return { success: true, data: result };
+
       setMessage({ type: 'success', text: 'Marks saved successfully! (Including supplementary exam records and practical centers data)' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save marks' });
@@ -726,7 +741,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
   };
 
   const resetForm = () => {
-    setticketNo('');
+    setTicketNo('');
     setSelectedCandidate('');
     setCandidateData(null);
     setCourseCode('');
