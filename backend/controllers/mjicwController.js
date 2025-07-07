@@ -10,6 +10,7 @@ class MjiCwController {
         try {
             console.log('Creating MJI - C&W score...');
             const scoreData = req.body;
+            console.log(scoreData);
             console.log('scoreData:', JSON.stringify(scoreData, null, 2));
 
             
