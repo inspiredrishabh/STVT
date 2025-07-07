@@ -16,7 +16,7 @@ const app = express();
 initializeDatabase();
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Increased limit for larger payloads
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (uploaded images)
@@ -29,6 +29,7 @@ app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
 app.use('/api/mjicw', mjiCwRoutes)
 app.use('/api/mjpcw', mjpCwRoutes )
+
 
 // Health check route
 app.get('/api/health', (req, res) => {
