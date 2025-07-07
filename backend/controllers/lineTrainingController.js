@@ -10,9 +10,11 @@ class LineTrainingController {
     async createCandidate(req, res) {
         try {
             const candidateData = req.body;
+            console.log('Creating Line Training candidate with data:', candidateData);
             
             // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation);
+            // const ticketNumber = await generateTicketNumber(candidateData.designation);  //neeed to add designation and traineeType in frontend formData sending and also in line-training table 
+            const ticketNumber = candidateData.ticketNumbers;
             candidateData.ticket_no = ticketNumber;
 
             const newCandidate = await this.lineTrainingModel.create(candidateData);

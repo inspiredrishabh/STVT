@@ -587,7 +587,7 @@ const FeedMark = () => {
         } else if (paperName === "Interview") {
           key = `s${sessionIndex}int_marks`;
         } else {
-          key = `s${sessionIndex}p${paperIndex}_marks`;
+          key = `s${sessionIndex}p${paperIndex}`;
         }
         formData[key] = marks[sessionName]?.[paperName] ?? 0;
         if (paperName !== "Practical" && paperName !== "Interview") {
@@ -611,7 +611,8 @@ const FeedMark = () => {
     try {
       // Build formData dynamically using courseStructure and marks
       const formData = buildFormData(candidateData, marks, courseCode);
-      const response = await fetch(`/api/${courseCode}`, {
+      const sendCourseCode = courseCode.toLowerCase();
+      const response = await fetch(`http://localhost:5000/api/${sendCourseCode}`, {
         method: "POST",
         headers: {
           "Content-Type" : "application/json",

@@ -1,9 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = require('../config/db');
+const {db} = require('../config/db');
 
-class WtcModel {
+class lineTrainingModel {
     constructor() {
-        this.tableName = 'wtc_candidates';
+        this.tableName = 'line_training_candidates';
         this.createTable();
     }
 
@@ -163,4 +163,4 @@ class WtcModel {
     delete(id) { return this.deleteByTicketNumber(id); }
 }
 
-module.exports = WtcModel;
+module.exports = lineTrainingModel;
