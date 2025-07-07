@@ -51,7 +51,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
     } else if (!formData.moduleNo) {
       onChange("courseDuration", "");
     }
-  }, [formData.moduleNo, courseModules, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.moduleNo, courseModules]); // Removed onChange from dependencies
 
   // Auto-calculate sparing date
   useEffect(() => {
@@ -72,10 +73,12 @@ const Course = ({ formData, onChange, errors = {} }) => {
     } else if (!dateOfJoiningStcWtcNonRailway || !moduleNo) {
       onChange("dateOfSparing", "");
     }
-  }, [formData, courseModules, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo, courseModules]); // Removed onChange from dependencies
 
   const validateAllFields = useCallback(() => {
     const requiredFields = [
+
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
@@ -100,7 +103,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
 
   useEffect(() => {
     onChange.setValidationFunction?.(validateAllFields);
-  }, [validateAllFields, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validateAllFields]); // Removed onChange from dependencies
 
   const courseFields = useMemo(
     () => [

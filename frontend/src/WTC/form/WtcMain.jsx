@@ -77,14 +77,15 @@ const WtcMain = () => {
   const handleChange = useCallback(
     (field, value) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
-      if (errors[field]) {
-        setErrors((prev) => {
-          const { [field]: _, ...rest } = prev;
+      setErrors((prevErrors) => {
+        if (prevErrors[field]) {
+          const { [field]: _, ...rest } = prevErrors;
           return rest;
-        });
-      }
+        }
+        return prevErrors;
+      });
     },
-    [errors]
+    []
   );
 
   const createChangeHandler = useCallback(
@@ -189,7 +190,7 @@ const WtcMain = () => {
       const result = await submitToAPI(formData);
       console.log("Submission successful:", result);
       alert(
-        `Registration completed successfully! Ticket Number: ${result.data.ticketNumber}`
+        `Registration completed successfully! Ticket Number: ${result.ticketNumber}`
       );
 
       // Optional: Reset form after successful submission

@@ -241,16 +241,6 @@ const Professional = ({ formData, onChange }) => {
           const fallbackKey = `${formData.designation}|Any|${value}`;
           const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
 
-          console.log('Auto-calculation debug:', {
-            designation: formData.designation,
-            unit: formData.unit,
-            trainingPeriod: value,
-            exactKey,
-            fallbackKey,
-            durations,
-            availableKeys: Object.keys(designationUnitPeriodToDurations)
-          });
-
           if (durations) {
             const [theory, practical] = durations;
             onChange("theoryDuration", theory);

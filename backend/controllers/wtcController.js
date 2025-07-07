@@ -1,7 +1,6 @@
 const { generateTicketNumber } = require('../utils/ticketGenerator');
 const fs = require('fs');
 const path = require('path');
-const upload = require('../middleware/upload');
 
 class WtcController {
     constructor(wtcModel) {
@@ -27,7 +26,6 @@ class WtcController {
             res.status(201).json({
                 success: true,
                 message: 'WTC Candidate created successfully',
-                data: newCandidate,
                 ticketNumber: ticketNumber
             });
         } catch (error) {
@@ -293,7 +291,7 @@ class WtcController {
             const fileExtension = path.extname(file.originalname);
             const newFileName = `${ticketNumber}${fileExtension}`;
 
-            const uploadDir = path.join(__dirname, '../../uploads', traineeType);
+            const uploadDir = path.join(__dirname, '../uploads', traineeType);
             const newFullPath = path.join(uploadDir, newFileName);
             const relativePath = `uploads/${traineeType}/${newFileName}`;
 
