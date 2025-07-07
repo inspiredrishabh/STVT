@@ -10,24 +10,25 @@ class WtcController {
 
     async createCandidate(req, res) {
         try {
+            const candidateData = req.body;
+            // Generate ticket number
+            const ticketNumber = await generateTicketNumber(candidateData.designation, 'wtc');
+            candidateData.ticket_no = ticketNumber;
+
             if (req.file) {
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'wtc');
                 candidateData.picture = imagePath;
             }
 
-            const candidateData = req.body;
-
-            // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation, 'wtc');
-            candidateData.ticket_no = ticketNumber;
 
             // Handle image upload
-
             const newCandidate = await this.wtcModel.create(candidateData);
+
             res.status(201).json({
                 success: true,
                 message: 'WTC Candidate created successfully',
-                data: newCandidate
+                data: newCandidate,
+                ticketNumber: ticketNumber
             });
         } catch (error) {
             console.error('Error creating WTC candidate:', error);

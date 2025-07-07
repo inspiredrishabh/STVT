@@ -1,5 +1,33 @@
 const sqlite3 = require('sqlite3').verbose();
-const {db} = require('../config/db');
+const { db } = require('../config/db');
+
+// --- HELPER FUNCTIONS for NAMING CONVENTION ---
+
+// Converts a camelCase string to snake_case
+const toSnakeCase = (str) => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+
+// Converts a snake_case string to camelCase
+const toCamelCase = (str) => str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+
+// Converts all keys of an object to snake_case
+const convertToSnakeCase = (obj) => {
+    if (!obj) return null;
+    const newObj = {};
+    for (const key in obj) {
+        newObj[toSnakeCase(key)] = obj[key];
+    }
+    return newObj;
+};
+
+// Converts all keys of an object to camelCase
+const convertToCamelCase = (obj) => {
+    if (!obj) return null;
+    const newObj = {};
+    for (const key in obj) {
+        newObj[toCamelCase(key)] = obj[key];
+    }
+    return newObj;
+};
 
 class WtcModel {
     constructor() {
@@ -24,8 +52,8 @@ class WtcModel {
             nationality TEXT DEFAULT 'INDIAN',
 
             -- Contact Information
-            permanent_address TEXT,
             current_address TEXT,
+            permanent_address TEXT,
             phone_number TEXT,
             emergency_contact_number TEXT,
             email TEXT,
@@ -35,9 +63,12 @@ class WtcModel {
             mode_of_appointment TEXT,
             course_type TEXT,
             designation TEXT,
+            designation_other TEXT,
             unit TEXT,
             training_period TEXT,
+            custom_training_period TEXT,
             theory_duration TEXT,
+            custom_theory_duration TEXT,
             practical_duration TEXT,
             working_under TEXT,
             hrms_id TEXT,
@@ -47,15 +78,17 @@ class WtcModel {
             -- Education Information
             highest_qualification TEXT,
             field_of_study TEXT,
+            custom_field_of_study TEXT,
             institution TEXT,
             grade_type TEXT,
             grade_value TEXT,
             
             -- Course Information
-            ticket_no TEXT UNIQUE NOT NULL,  -- Main unique identifier
+            ticket_no TEXT UNIQUE NOT NULL,
             batch TEXT,
             date_of_joining_stc_wtc_non_railway TEXT,
             module_no TEXT,
+            custom_module_no TEXT,
             date_of_sparing TEXT,
             course_duration TEXT,
             course_coordinator TEXT,
@@ -67,58 +100,15 @@ class WtcModel {
     }
 
     create(candidateData) {
+        const snakeCaseData = convertToSnakeCase(candidateData);
         return new Promise((resolve, reject) => {
-            const sql = `INSERT INTO ${this.tableName} (
-                picture, name, sex, father_name, mother_name, dob, category, pwd, 
-                type_of_disability, nationality, permanent_address, current_address, 
-                phone_number, emergency_contact_number, email, date_of_appointment_in_railway, 
-                mode_of_appointment, course_type, designation, unit, training_period, 
-                theory_duration, practical_duration, working_under, hrms_id, pf_no_nps_ups, 
-                employee_number, highest_qualification, field_of_study, institution, grade_type, 
-                grade_value, ticket_no, batch, date_of_joining_stc_wtc_non_railway, module_no, 
-                date_of_sparing, course_duration
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-            
-            db.run(sql, [
-                candidateData.picture || candidateData.imagePath,
-                candidateData.name,
-                candidateData.sex,
-                candidateData.father_name,
-                candidateData.mother_name,
-                candidateData.dob,
-                candidateData.category,
-                candidateData.pwd,
-                candidateData.type_of_disability,
-                candidateData.nationality || 'INDIAN',
-                candidateData.permanent_address,
-                candidateData.current_address,
-                candidateData.phone_number,
-                candidateData.emergency_contact_number,
-                candidateData.email,
-                candidateData.date_of_appointment_in_railway,
-                candidateData.mode_of_appointment,
-                candidateData.course_type,
-                candidateData.designation,
-                candidateData.unit,
-                candidateData.training_period,
-                candidateData.theory_duration,
-                candidateData.practical_duration,
-                candidateData.working_under,
-                candidateData.hrms_id,
-                candidateData.pf_no_nps_ups,
-                candidateData.employee_number,
-                candidateData.highest_qualification,
-                candidateData.field_of_study,
-                candidateData.institution,
-                candidateData.grade_type,
-                candidateData.grade_value,
-                candidateData.ticket_no || candidateData.ticketNumber,
-                candidateData.batch,
-                candidateData.date_of_joining_stc_wtc_non_railway,
-                candidateData.module_no,
-                candidateData.date_of_sparing,
-                candidateData.course_duration
-            ], function(err) {
+            const columns = Object.keys(snakeCaseData).filter(key => key !== 'id');
+            const placeholders = columns.map(() => '?').join(', ');
+            const values = columns.map(key => snakeCaseData[key]);
+
+            const sql = `INSERT INTO ${this.tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+
+            db.run(sql, values, function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         reject(new Error('Ticket number already exists'));
@@ -126,11 +116,7 @@ class WtcModel {
                         reject(err);
                     }
                 } else {
-                    resolve({ 
-                        id: this.lastID,
-                        ticket_no: candidateData.ticket_no || candidateData.ticketNumber,
-                        ...candidateData
-                    });
+                    resolve(convertToCamelCase({ id: this.lastID, ...snakeCaseData }));
                 }
             });
         });
@@ -144,7 +130,7 @@ class WtcModel {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(row);
+                    resolve(convertToCamelCase(row));
                 }
             });
         });
@@ -152,64 +138,29 @@ class WtcModel {
 
     // Update by ticket number
     updateByTicketNumber(ticketNumber, candidateData) {
+        const snakeCaseData = convertToSnakeCase(candidateData);
         return new Promise((resolve, reject) => {
+            const updateFields = Object.keys(snakeCaseData)
+                .filter(key => key !== 'id' && key !== 'ticket_no')
+                .map(key => `${key} = ?`)
+                .join(', ');
+
+            if (!updateFields) {
+                return resolve(null); // No fields to update
+            }
+
+            const values = [...Object.values(snakeCaseData).filter((v, k) => Object.keys(snakeCaseData)[k] !== 'id' && Object.keys(snakeCaseData)[k] !== 'ticket_no'), ticketNumber];
+
             const sql = `UPDATE ${this.tableName} SET 
-                picture = ?, name = ?, sex = ?, father_name = ?, mother_name = ?, dob = ?, 
-                category = ?, pwd = ?, type_of_disability = ?, nationality = ?, 
-                permanent_address = ?, current_address = ?, phone_number = ?, 
-                emergency_contact_number = ?, email = ?, date_of_appointment_in_railway = ?, 
-                mode_of_appointment = ?, course_type = ?, designation = ?, unit = ?, 
-                training_period = ?, theory_duration = ?, practical_duration = ?, 
-                working_under = ?, hrms_id = ?, pf_no_nps_ups = ?, employee_number = ?, 
-                highest_qualification = ?, field_of_study = ?, institution = ?, grade_type = ?, 
-                grade_value = ?, batch = ?, date_of_joining_stc_wtc_non_railway = ?, 
-                module_no = ?, date_of_sparing = ?, course_duration = ?, updated_at = CURRENT_TIMESTAMP 
+                ${updateFields}, 
+                updated_at = CURRENT_TIMESTAMP 
                 WHERE ticket_no = ?`;
-                
-            db.run(sql, [
-                candidateData.picture || candidateData.imagePath,
-                candidateData.name,
-                candidateData.sex,
-                candidateData.father_name,
-                candidateData.mother_name,
-                candidateData.dob,
-                candidateData.category,
-                candidateData.pwd,
-                candidateData.type_of_disability,
-                candidateData.nationality || 'INDIAN',
-                candidateData.permanent_address,
-                candidateData.current_address,
-                candidateData.phone_number,
-                candidateData.emergency_contact_number,
-                candidateData.email,
-                candidateData.date_of_appointment_in_railway,
-                candidateData.mode_of_appointment,
-                candidateData.course_type,
-                candidateData.designation,
-                candidateData.unit,
-                candidateData.training_period,
-                candidateData.theory_duration,
-                candidateData.practical_duration,
-                candidateData.working_under,
-                candidateData.hrms_id,
-                candidateData.pf_no_nps_ups,
-                candidateData.employee_number,
-                candidateData.highest_qualification,
-                candidateData.field_of_study,
-                candidateData.institution,
-                candidateData.grade_type,
-                candidateData.grade_value,
-                candidateData.batch,
-                candidateData.date_of_joining_stc_wtc_non_railway,
-                candidateData.module_no,
-                candidateData.date_of_sparing,
-                candidateData.course_duration,
-                ticketNumber
-            ], function(err) {
+
+            db.run(sql, values, function (err) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(this.changes > 0 ? { ticket_no: ticketNumber, ...candidateData } : null);
+                    resolve(this.changes > 0 ? convertToCamelCase({ ticket_no: ticketNumber, ...snakeCaseData }) : null);
                 }
             });
         });
@@ -219,7 +170,7 @@ class WtcModel {
     deleteByTicketNumber(ticketNumber) {
         return new Promise((resolve, reject) => {
             const sql = `DELETE FROM ${this.tableName} WHERE ticket_no = ?`;
-            db.run(sql, [ticketNumber], function(err) {
+            db.run(sql, [ticketNumber], function (err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -236,7 +187,7 @@ class WtcModel {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(rows);
+                    resolve(rows.map(row => convertToCamelCase(row)));
                 }
             });
         });
@@ -249,7 +200,7 @@ class WtcModel {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(rows);
+                    resolve(rows.map(row => convertToCamelCase(row)));
                 }
             });
         });
@@ -263,7 +214,7 @@ class WtcModel {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(rows);
+                    resolve(rows.map(row => convertToCamelCase(row)));
                 }
             });
         });
@@ -276,51 +227,11 @@ class WtcModel {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(rows);
+                    resolve(rows.map(row => convertToCamelCase(row)));
                 }
             });
         });
     }
-
-    // getByTrainingPeriod(trainingPeriod) {
-    //     return new Promise((resolve, reject) => {
-    //         const sql = `SELECT * FROM ${this.tableName} WHERE training_period = ?`;
-    //         db.all(sql, [trainingPeriod], (err, rows) => {
-    //             if (err) {
-    //                 reject(err);
-    //             } else {
-    //                 resolve(rows);
-    //             }
-    //         });
-    //     });
-    // }
-
-    // getByTheoryDuration(theoryDuration) {
-    //     return new Promise((resolve, reject) => {
-    //         const sql = `SELECT * FROM ${this.tableName} WHERE theory_duration = ?`;
-    //         db.all(sql, [theoryDuration], (err, rows) => {
-    //             if (err) {
-    //                 reject(err);
-    //             } else {
-    //                 resolve(rows);
-    //             }
-    //         });
-    //     });
-    // }
-
-    // getByPracticalDuration(practicalDuration) {
-    //     return new Promise((resolve, reject) => {
-    //         const sql = `SELECT * FROM ${this.tableName} WHERE practical_duration = ?`;
-    //         db.all(sql, [practicalDuration], (err, rows) => {
-    //             if (err) {
-    //                 reject(err);
-    //             } else {
-    //                 resolve(rows);
-    //             }
-    //         });
-    //     });
-    // }
-
 
     // Abhi tak Id Unique The Ab Ticket Number Ho Gya Hai Isliye - Backward Compatibility
     getById(id) { return this.getByTicketNumber(id); }

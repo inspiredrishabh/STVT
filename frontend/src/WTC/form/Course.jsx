@@ -72,16 +72,10 @@ const Course = ({ formData, onChange, errors = {} }) => {
     } else if (!dateOfJoiningStcWtcNonRailway || !moduleNo) {
       onChange("dateOfSparing", "");
     }
-  }, [
-    formData.dateOfJoiningStcWtcNonRailway,
-    formData.moduleNo,
-    courseModules,
-    onChange,
-  ]);
+  }, [formData, courseModules, onChange]);
 
   const validateAllFields = useCallback(() => {
     const requiredFields = [
-      "ticketNo",
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
@@ -110,7 +104,6 @@ const Course = ({ formData, onChange, errors = {} }) => {
 
   const courseFields = useMemo(
     () => [
-      { label: "Ticket Number", field: "ticketNo" },
       {
         label: "Batch",
         field: "batch",
@@ -183,7 +176,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
                 placeholder={`Enter custom ${label.toLowerCase()}`}
                 value={
                   formData[
-                    `custom${field.charAt(0).toUpperCase() + field.slice(1)}`
+                  `custom${field.charAt(0).toUpperCase() + field.slice(1)}`
                   ] || ""
                 }
                 onChange={(e) =>
@@ -201,9 +194,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
             type={type}
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
-              disabled ? "bg-gray-50" : ""
-            }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${disabled ? "bg-gray-50" : ""
+              }`}
             placeholder={
               disabled ? "Auto-filled" : `Enter ${label.toLowerCase()}`
             }

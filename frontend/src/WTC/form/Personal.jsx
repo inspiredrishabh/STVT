@@ -155,7 +155,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               className="hidden"
             />
             <span className="text-gray-500 text-sm truncate">
-              {formData[field] ? formData[field].name : "No file chosen ,File must be 3.5cm x 4.5cm in size"}
+              {formData[field] ? formData[field].name : "No file chosen ,File must be 4.5cm x 3.5cm in size"}
             </span>
           </div>
         ) : type === "select" ? (
