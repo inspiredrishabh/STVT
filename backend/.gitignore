@@ -22,3 +22,7 @@ Thumbs.db
 dist/
 build/
 .cache/
+
+*.sqlite
+*.sqlite3
+uploads/
