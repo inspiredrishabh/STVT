@@ -1,6 +1,21 @@
 const sqlite3 = require('sqlite3').verbose();
 const { db } = require('../config/db');
 
+// Helper function to create an acronym from a phrase
+const createAcronym = (phrase) => {
+    if (!phrase || typeof phrase !== 'string') {
+        return 'TKT'; // Return a default prefix if phrase is invalid
+    }
+    // Words to ignore when creating the acronym
+    const ignoreWords = ['for', 'of', 'in', 'a', 'an', 'the'];
+    return phrase
+        .split(' ')
+        .filter(word => !ignoreWords.includes(word.toLowerCase()))
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase();
+};
+
 const generateTicketNumber = async (designation, traineeType) => {
     console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
 
@@ -9,7 +24,7 @@ const generateTicketNumber = async (designation, traineeType) => {
     }
 
     // Convert designation to lowercase for the prefix
-    const prefix = designation;
+    const prefix = createAcronym(designation);
     const tableName = `${traineeType}_candidates`;
 
     // The table you need to query is 'stc_candidates', not the designation itself.

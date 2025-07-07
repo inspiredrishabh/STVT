@@ -9,7 +9,7 @@ const stcModel = new StcModel();
 const stcController = new StcController(stcModel);
 
 // Main Routes - Using Ticket Number
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', upload.single('picture'), (req, res) => {
     stcController.createCandidate(req, res);
 });
 

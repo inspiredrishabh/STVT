@@ -4,63 +4,64 @@ import Contact from "./Contact";
 import Professional from "./Professional";
 import Course from "./Course";
 
-// ...existing code...
+const initialFormData = {
+  picture: null,
+  name: "",
+  sex: "",
+  fatherName: "",
+  motherName: "",
+  dob: "",
+  category: "",
+  pwd: "",
+  typeOfDisability: "",
+  nationality: "INDIAN",
+
+
+  currentAddress: "",
+  permanentAddress: "",
+  phoneNumber: "",
+  emergencyContactNumber: "",
+  email: "",
+
+  dateOfAppointmentInRailway: "",
+  modeOfAppointment: "",
+  modeOfAppointmentOther: "",
+  courseType: "",
+  courseTypeOther: "",
+  designation: "",
+  designationOther: "",
+  unit: "",
+  unitOther: "",
+  trainingPeriod: "",
+  customTrainingPeriod: "",
+  theoryDuration: "",
+  customTheoryDuration: "",
+  practicalDuration: "",
+  customPracticalDuration: "",
+  workingUnder: "",
+  hrmsId: "",
+  pfNoNpsUps: "",
+  employeeNumber: "",
+
+  highestQualification: "",
+  otherQualification: "",
+  fieldOfStudy: "",
+  customFieldOfStudy: "",
+  institution: "",
+  gradeType: "",
+  gradeValue: "",
+
+  batch: "",
+  customBatch: "",
+  dateOfJoiningStcWtcNonRailway: "",
+  moduleNo: "",
+  dateOfSparing: "",
+  customModuleNo: "",
+  courseDuration: "",
+}
+
 const WtcMain = () => {
-  const [formData, setFormData] = useState({
-    picture: null,
-    name: "",
-    sex: "",
-    fatherName: "",
-    motherName: "",
-    dob: "",
-    category: "",
-    pwd: "",
-    typeOfDisability: "",
-    nationality: "INDIAN",
-
-
-    currentAddress: "",
-    permanentAddress: "",
-    phoneNumber: "",
-    emergencyContactNumber: "",
-    email: "",
-
-    dateOfAppointmentInRailway: "",
-    modeOfAppointment: "",
-    modeOfAppointmentOther: "",
-    courseType: "",
-    courseTypeOther: "",
-    designation: "",
-    designationOther: "",
-    unit: "",
-    unitOther: "",
-    trainingPeriod: "",
-    customTrainingPeriod: "",
-    theoryDuration: "",
-    customTheoryDuration: "",
-    practicalDuration: "",
-    customPracticalDuration: "",
-    workingUnder: "",
-    hrmsId: "",
-    pfNoNpsUps: "",
-    employeeNumber: "",
-
-    highestQualification: "",
-    otherQualification: "",
-    fieldOfStudy: "",
-    customFieldOfStudy: "",
-    institution: "",
-    gradeType: "",
-    gradeValue: "",
-
-    batch: "",
-    customBatch: "",
-    dateOfJoiningStcWtcNonRailway: "",
-    dateOfSparing: "",
-    moduleNo: "",
-    customModuleNo: "",
-    courseDuration: "",
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
@@ -162,6 +163,8 @@ const WtcMain = () => {
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
+
+
       return await response.json();
     } catch (error) {
       console.error("API submission error:", error);
@@ -185,18 +188,18 @@ const WtcMain = () => {
     try {
       const result = await submitToAPI(formData);
       console.log("Submission successful:", result);
-      // alert(
-      //   `Registration completed successfully! Registration ID: ${result.registrationId}`
-      // );
+      alert(
+        `Registration completed successfully! Ticket Number: ${result.data.ticketNumber}`
+      );
 
       // Optional: Reset form after successful submission
-      // setFormData(initialFormData);
-      // setStep(0);
+      setFormData(initialFormData);
+      setStep(0);
     } catch (error) {
       console.error("Submission failed:", error);
       alert(`Failed to submit registration: ${error.message}`);
     }
-  }, [isStepValid, submitToAPI, formData]);
+  }, [isStepValid, submitToAPI, formData,]);
 
   const renderForm = useCallback(() => {
     const formComponents = [Personal, Contact, Professional, Course];

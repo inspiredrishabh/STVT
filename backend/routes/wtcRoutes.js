@@ -10,7 +10,6 @@ const wtcController = new WtcController(wtcModel);
 
 // Main Routes - Using Ticket Number
 router.post('/', upload.single('image'), (req, res) => {
-    console.log("Creating candidate with data:", req.body);
     wtcController.createCandidate(req, res);
 });
 
