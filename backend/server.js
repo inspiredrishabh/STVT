@@ -6,10 +6,23 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const stcRoutes = require('./routes/stcRoutes');
 const wtcRoutes = require('./routes/wtcRoutes');
-const mjiCwRoutes = require('./routes/mjicwRoutes');
-const mjpCwRoutes = require('./routes/mjpcwRoutes');
 const nonRailwayRoutes = require('./routes/nonRailwayRoutes');
 const lineTrainingRoutes = require('./routes/lineTrainingRoutes');
+
+// ------- ---- course-specific routes ---- total 12 
+const mjiCwRoutes = require('./routes/mjicwRoutes');
+const mjidRoutes = require('./routes/mjidRoutes');
+const mjiwRoutes = require('./routes/mjiwRoutes');
+const mjpCwRoutes = require('./routes/mjpcwRoutes');
+const mjpdRoutes = require('./routes/mjpdRoutes');
+const mjpwRoutes = require('./routes/mjpwRoute');
+const mjrCwRoutes = require('./routes/mjrcwRoute');
+const mjrdRoutes = require('./routes/mjrdRoute');
+const mjrwRoutes = require('./routes/mrjwRoutes');
+const mseCwRoutes = require('./routes/msecwRoutes');
+const msedRoutes = require('./routes/msedRoutes');
+const msewRoutes = require('./routes/msewRoutes');
+
 
 const {  initializeDatabase } = require('./config/db');
 const app = express();
@@ -29,9 +42,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stc', stcRoutes);
 app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
-app.use('/api/mji-c&w', mjiCwRoutes)
-app.use('/api/mjp-c&w', mjpCwRoutes )
-app.use('/api/line-trainings', lineTrainingRoutes )
+app.use('/api/line-trainings', lineTrainingRoutes);
+
+// Course-specific routes based on course structure
+app.use('/api/mse-c&w', mseCwRoutes);
+app.use('/api/mse-d', msedRoutes);
+app.use('/api/mse-w', msewRoutes);
+app.use('/api/mjr-c&w', mjrCwRoutes);
+app.use('/api/mjr-d', mjrdRoutes);
+app.use('/api/mjr-w', mjrwRoutes);
+app.use('/api/mji-c&w', mjiCwRoutes);  //the first course for which i have started debugging and done 
+app.use('/api/mji-d', mjidRoutes);
+app.use('/api/mji-w', mjiwRoutes);
+app.use('/api/mjp-c&w', mjpCwRoutes);
+app.use('/api/mjp-d', mjpdRoutes);
+app.use('/api/mjp-w', mjpwRoutes);
 
 
 // Health check route
