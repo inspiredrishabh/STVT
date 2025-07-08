@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = require('../config/db');
+const {db} = require('../config/db');
 
 class MjpDModel {
     constructor() {
