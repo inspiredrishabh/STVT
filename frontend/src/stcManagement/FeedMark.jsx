@@ -297,7 +297,7 @@ const mockAPI = {
   // ],
 
   // Simulate API delay
-  delay: (ms = 300) => new Promise(resolve => setTimeout(resolve, ms)),
+  // delay: (ms = 300) => new Promise(resolve => setTimeout(resolve, ms)),
 
   // Get all candidates for dropdown   ------- DONE BY REAL API ------
   /* getCandidates: async () => {
