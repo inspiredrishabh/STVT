@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+// TEST COMMIT to back safe commit before major changes
+
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const stcRoutes = require('./routes/stcRoutes');
