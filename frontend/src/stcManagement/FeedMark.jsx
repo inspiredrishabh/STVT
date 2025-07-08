@@ -449,6 +449,7 @@ const FeedMark = () => {
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // Track if we're editing existing marks
   const [hasExistingMarks, setHasExistingMarks] = useState(false); // Track if candidate has existing marks
+  const [showMarksPanel, setShowMarksPanel] = useState(false); // Track if marks panel should be visible
 
   // Auto-search function for URL parameters
   const handleAutoSearch = async (ticketNo) => {
@@ -480,11 +481,12 @@ const FeedMark = () => {
       setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
       setIsEditMode(false); // Start in view mode
+      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
       } else {
-        setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Ready to enter marks` });
+        setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Click "Add Marks" to enter marks` });
       }
 
     } catch (error) {
@@ -495,6 +497,7 @@ const FeedMark = () => {
       setSupplementaryMarks({});
       setHasExistingMarks(false);
       setIsEditMode(false);
+      setShowMarksPanel(false);
     } finally {
       setLoading(false);
     }
@@ -582,11 +585,12 @@ const FeedMark = () => {
       setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
       setIsEditMode(false); // Start in view mode
+      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
       } else {
-        setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Ready to enter marks` });
+        setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Click "Add Marks" to enter marks` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
@@ -596,6 +600,7 @@ const FeedMark = () => {
       setSupplementaryMarks({});
       setHasExistingMarks(false);
       setIsEditMode(false);
+      setShowMarksPanel(false);
     } finally {
       setLoading(false);
     }
@@ -608,6 +613,7 @@ const FeedMark = () => {
       setMarks({});
       setHasExistingMarks(false);
       setIsEditMode(false);
+      setShowMarksPanel(false);
       return;
     }
 
@@ -631,11 +637,12 @@ const FeedMark = () => {
       setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
       setIsEditMode(false); // Start in view mode
+      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
       } else {
-        setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Ready to enter marks` });
+        setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Click "Add Marks" to enter marks` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to load candidate data' });
@@ -680,9 +687,11 @@ const FeedMark = () => {
       if (isEditMode) {
         setIsEditMode(false);
         setHasExistingMarks(true);
+        setShowMarksPanel(true);
       } else {
         // First time saving marks
         setHasExistingMarks(true);
+        setShowMarksPanel(true);
       }
       
       return { success: true, data: result };
@@ -691,6 +700,24 @@ const FeedMark = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAddMarks = () => {
+    setShowMarksPanel(true);
+    setIsEditMode(false);
+    setMessage({ type: 'info', text: 'Enter marks for all sessions and click "Save Marks" when done.' });
+  };
+
+  const handleCancelAddMarks = () => {
+    setShowMarksPanel(false);
+    setIsEditMode(false);
+    // Reset marks to empty if no existing marks
+    if (!hasExistingMarks) {
+      setMarks({});
+      setSupplementaryMarks({});
+      setPracticalCenters({});
+    }
+    setMessage({ type: '', text: '' });
   };
 
   const handleSupplementaryMarksChange = (session, paper, value) => {
@@ -844,6 +871,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
     setPracticalCenters({}); // Reset practical centers data
     setHasExistingMarks(false); // Reset existing marks status
     setIsEditMode(false); // Reset edit mode
+    setShowMarksPanel(false); // Reset marks panel visibility
     setMessage({ type: '', text: '' });
   };
 
@@ -1123,39 +1151,74 @@ This will use only main marks for this subject in marksheet generation.`)) {
                   <p className="text-lg font-bold text-purple-900">{candidateData.module_no}</p>
                 </div>
                 <div className={`p-4 rounded-xl border ${
-                  hasExistingMarks && !isEditMode 
+                  hasExistingMarks && !isEditMode && !showMarksPanel 
                     ? 'bg-gray-50 border-gray-200'
+                    : hasExistingMarks && !isEditMode && showMarksPanel
+                    ? 'bg-blue-50 border-blue-200'
                     : isEditMode 
                     ? 'bg-orange-50 border-orange-200'
+                    : showMarksPanel && !hasExistingMarks
+                    ? 'bg-green-50 border-green-200'
                     : 'bg-yellow-50 border-yellow-200'
                 }`}>
                   <label className={`block text-sm font-semibold mb-1 ${
-                    hasExistingMarks && !isEditMode 
+                    hasExistingMarks && !isEditMode && !showMarksPanel 
                       ? 'text-gray-700'
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                      ? 'text-blue-700'
                       : isEditMode 
                       ? 'text-orange-700'
+                      : showMarksPanel && !hasExistingMarks
+                      ? 'text-green-700'
                       : 'text-yellow-700'
                   }`}>Status</label>
                   <p className={`text-lg font-bold ${
-                    hasExistingMarks && !isEditMode 
+                    hasExistingMarks && !isEditMode && !showMarksPanel 
                       ? 'text-gray-900'
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                      ? 'text-blue-900'
                       : isEditMode 
                       ? 'text-orange-900'
+                      : showMarksPanel && !hasExistingMarks
+                      ? 'text-green-900'
                       : 'text-yellow-900'
                   }`}>
-                    {hasExistingMarks && !isEditMode 
+                    {hasExistingMarks && !isEditMode && showMarksPanel
                       ? 'View Mode'
                       : isEditMode 
                       ? 'Edit Mode'
-                      : 'Entry Mode'}
+                      : showMarksPanel && !hasExistingMarks
+                      ? 'Entry Mode'
+                      : hasExistingMarks
+                      ? 'Marks Available'
+                      : 'No Marks'}
                   </p>
                 </div>
               </div>
+
+              {/* Action Button for candidates without marks */}
+              {candidateData && !hasExistingMarks && !showMarksPanel && (
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-900">Ready to Add Marks</h3>
+                      <p className="text-blue-700 text-sm">No marks found for this candidate. Click the button to start entering marks.</p>
+                    </div>
+                    <button
+                      onClick={handleAddMarks}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      <BookOpen className="w-5 h-5" />
+                      Add Marks
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Marks Entry Form */}
-          {currentCourseStructure && (
+          {currentCourseStructure && showMarksPanel && (
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -1164,14 +1227,14 @@ This will use only main marks for this subject in marksheet generation.`)) {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
-                      {hasExistingMarks && !isEditMode ? 'View Marks' : isEditMode ? 'Edit Marks' : 'Enter Marks'} - {courseCode}
+                      {hasExistingMarks && !isEditMode ? 'View Marks' : isEditMode ? 'Edit Marks' : 'Add Marks'} - {courseCode}
                     </h2>
                     <p className="text-gray-600 text-sm">
                       {hasExistingMarks && !isEditMode 
                         ? 'Viewing existing marks - Click "Edit Marks" to modify' 
                         : isEditMode 
                         ? 'Editing examination marks - Click "Update Marks" to save changes'
-                        : 'Input examination marks for all sessions'}
+                        : 'Adding new examination marks - Fill in all sessions and click "Save Marks"'}
                     </p>
                   </div>
                 </div>
@@ -1186,16 +1249,14 @@ This will use only main marks for this subject in marksheet generation.`)) {
                       Edit Marks
                     </button>
                   ) : (
-                    // Edit mode or no existing marks - show save/update button
+                    // Edit mode or adding new marks - show save/update and cancel buttons
                     <>
-                      {isEditMode && (
-                        <button
-                          onClick={() => setIsEditMode(false)}
-                          className="flex items-center gap-2 px-4 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <button
+                        onClick={hasExistingMarks ? () => setIsEditMode(false) : handleCancelAddMarks}
+                        className="flex items-center gap-2 px-4 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
                       <button
                         onClick={handleSaveMarks}
                         disabled={saving}
