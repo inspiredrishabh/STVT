@@ -12,13 +12,13 @@ router.post('/', (req, res) => {
     lineTrainingController.createCandidate(req, res);
 });
 
-router.get('/', (req, res) => {
-    lineTrainingController.getCandidates(req, res);
-});
+// router.get('/', (req, res) => {
+//     lineTrainingController.getCandidates(req, res);
+// });
 
-router.get('/:ticketNumber', (req, res) => {
-    lineTrainingController.getCandidateByTicketNumber(req, res);
-});
+// router.get('/:ticketNumber', (req, res) => {
+//     lineTrainingController.getCandidateByTicketNumber(req, res);
+// });
 
 router.put('/:ticketNumber', (req, res) => {
     lineTrainingController.updateCandidateByTicketNumber(req, res);
@@ -33,19 +33,19 @@ router.get('/filter/designation/:designation', (req, res) => {
     lineTrainingController.getCandidatesByDesignation(req, res);
 });
 
-router.get('/filter/activityCentre/:activityCentre', (req, res) => {
-    lineTrainingController.getCandidatesByActivityCentre(req, res);
-});
+// router.get('/filter/activityCentre/:activityCentre', (req, res) => {
+//     lineTrainingController.getCandidatesByActivityCentre(req, res);
+// });
 
-// Date range filter (using query parameters)
-router.get('/filter/dateRange', (req, res) => {
-    lineTrainingController.getCandidatesByDateRange(req, res);
-});
+// // Date range filter (using query parameters)
+// router.get('/filter/dateRange', (req, res) => {
+//     lineTrainingController.getCandidatesByDateRange(req, res);
+// });
 
-// Backward Compatibility Routes (Optional)
-router.get('/legacy/:id', (req, res) => {
-    lineTrainingController.getCandidateById(req, res);
-});
+// // Backward Compatibility Routes (Optional)
+// router.get('/legacy/:id', (req, res) => {
+//     lineTrainingController.getCandidateById(req, res);
+// });
 
 router.put('/legacy/:id', (req, res) => {
     lineTrainingController.updateCandidate(req, res);
