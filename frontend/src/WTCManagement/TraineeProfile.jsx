@@ -80,7 +80,7 @@ const TraineeProfile = () => {
                 {/* Page Header */}
                 <div className="flex items-center space-x-4 mb-8">
                     <Link
-                        to="/wtc-management"
+                        to="/wtc"
                         className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200 group"
                     >
                         <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />

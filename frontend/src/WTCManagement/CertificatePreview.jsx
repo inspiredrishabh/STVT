@@ -1,151 +1,300 @@
-import React, { useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import BgImage from '../assets/rail.png';
+
+// Create styles for the PDF
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 30,
+    position: 'relative',
+  },
+  watermark: {
+    position: 'absolute',
+    top: 30,
+    left: 30,
+    right: 30,
+    bottom: 30,
+    width: 'auto',
+    height: 'auto',
+    opacity: 0.1,
+  },
+  certificateContainer: {
+    border: '4px double #000000',
+    padding: 20,
+    flexGrow: 1,
+  },
+  textCenter: {
+    textAlign: 'center',
+  },
+  uppercase: {
+    textTransform: 'uppercase',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    marginBottom: 5,
+  },
+  h2: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  p: {
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  signatureContainer: {
+    marginTop: 50,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  signature: {
+    borderTop: '1px solid #000000',
+    paddingTop: 5,
+    width: 150,
+    textAlign: 'center',
+  },
+});
+
+// Certificate Component for PDF
+const PDFCertificate = ({ trainee }) => (
+  <Page size="A4" orientation="landscape" style={styles.page}>
+    <Image src={BgImage} style={styles.watermark} />
+    <View style={styles.certificateContainer}>
+      <View style={styles.textCenter}>
+        <Text style={styles.h1}>Workshop Training Center</Text>
+        <Text style={styles.h2}>Northern Railway - Charbagh, Lucknow</Text>
+        <Text style={{ fontSize: 18, marginTop: 10, marginBottom: 20 }}>Certificate of Completion</Text>
+      </View>
+
+      <View style={styles.textCenter}>
+        <Text style={styles.p}>This is to certify that</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginTop: 10 }}>{trainee.name}</Text>
+        <Text style={{ ...styles.p, marginTop: 5 }}>Ticket No: {trainee.ticketNo}</Text>
+        <Text style={{ ...styles.p, marginTop: 10 }}>has successfully completed</Text>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 5 }}>{trainee.moduleDescription}</Text>
+        <Text style={styles.p}>({trainee.moduleNo})</Text>
+        <Text style={{ ...styles.p, marginTop: 10 }}>from</Text>
+        <Text style={{ ...styles.p, fontWeight: 'semibold' }}>
+          {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} to {formatDate(trainee.dateOfSparingFromStcWtcNonRailway)}
+        </Text>
+        <Text style={{ ...styles.p, marginTop: 5 }}>Duration: {trainee.duration}</Text>
+      </View>
+
+      <View style={styles.signatureContainer}>
+        <View style={styles.signature}>
+          <Text style={{ fontWeight: 'bold' }}>Date</Text>
+          <Text>{new Date().toLocaleDateString('en-IN')}</Text>
+        </View>
+        <View style={styles.signature}>
+          <Text style={{ fontWeight: 'bold' }}>WTC Director</Text>
+          <Text>Northern Railway</Text>
+        </View>
+      </View>
+    </View>
+  </Page>
+);
+
+// Document Component for PDF
+const CertificateDocument = ({ trainees }) => (
+  <Document>
+    {trainees.map(trainee => (
+      <PDFCertificate key={trainee.id} trainee={trainee} />
+    ))}
+  </Document>
+);
+
+// Format date for display (can be used by both components)
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
 
 const CertificatePreview = () => {
-  const location = useLocation();
-  const certificateRef = useRef(null);
-  const queryParams = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const [trainees, setTrainees] = useState([]);
 
-  // Get trainee data from URL params
-  const traineeId = queryParams.get('traineeId');
-  const ticketNo = queryParams.get('ticketNo');
-  const traineeName = queryParams.get('name');
-  const trade = queryParams.get('trade');
-  const fromDate = queryParams.get('from') ? new Date(queryParams.get('from')) : null;
-  const toDate = queryParams.get('to') ? new Date(queryParams.get('to')) : null;
+  // Load selected trainees from sessionStorage or URL params
+  useEffect(() => {
+    try {
+      const storedTrainees = sessionStorage.getItem('selectedTrainees');
+      if (storedTrainees) {
+        setTrainees(JSON.parse(storedTrainees));
+        return;
+      }
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+      const queryParams = new URLSearchParams(window.location.search);
+      const traineeIdsParam = queryParams.get('trainees');
+      if (traineeIdsParam) {
+        const traineeIds = JSON.parse(decodeURIComponent(traineeIdsParam));
+        fetch('/api/wtc')
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch trainees');
+            return response.json();
+          })
+          .then(data => {
+            const traineeArray = Array.isArray(data.data) ? data.data : [];
+            const selectedTrainees = traineeArray.filter(trainee =>
+              traineeIds.includes(trainee.id)
+            );
+            if (selectedTrainees.length > 0) {
+              setTrainees(selectedTrainees);
+            } else {
+              throw new Error('No matching trainees found');
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching trainee data:', err);
+            navigate('/wtc/certificate');
+          });
+        return;
+      }
 
-  // Calculate duration in weeks
-  const calculateDuration = () => {
-    if (!fromDate || !toDate) return 'N/A';
+      navigate('/wtc/certificate');
+    } catch (err) {
+      console.error('Error loading trainee data:', err);
+      navigate('/wtc/certificate');
+    }
 
-    const diffTime = Math.abs(toDate - fromDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffWeeks = Math.ceil(diffDays / 7);
-
-    return `${diffWeeks} Weeks`;
-  };
-
-  // Export to PDF
-  const exportToPdf = () => {
-    const element = certificateRef.current;
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: `Certificate_${traineeId + ticketNo}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    return () => {
+      sessionStorage.removeItem('selectedTrainees');
     };
+  }, [navigate]);
 
-    html2pdf().set(opt).from(element).save();
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header with back button and actions */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/wtc/certificate"
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-800">Certificate Preview</h1>
+  // Individual Certificate Component for HTML Preview
+  const CertificateTemplate = ({ trainee }) => {
+    return (
+      <div className={`certificate-container mb-8 page-break-after`} style={{ backgroundImage: `url(${BgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <div className="certificate border-4 border-double border-gray-800 p-8 bg-white bg-opacity-75">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold uppercase">Workshop Training Center</h1>
+            <h2 className="text-xl font-bold uppercase">Northern Railway - Charbagh, Lucknow</h2>
+            <div className="text-lg mt-2">Certificate of Completion</div>
           </div>
 
-          <div className="flex space-x-3">
-            <button
-              onClick={exportToPdf}
-              className="flex items-center space-x-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export as PDF</span>
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center space-x-2 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print</span>
-            </button>
+          <div className="text-center mb-8">
+            <p className="text-lg">This is to certify that</p>
+            <p className="text-xl font-bold mt-2">{trainee.name}</p>
+            <p className="text-lg mt-2">Ticket No: {trainee.ticketNo}</p>
+            <p className="text-lg">has successfully completed</p>
+            <p className="text-xl font-bold mt-2">{trainee.moduleDescription}</p>
+            <p className="text-lg">({trainee.moduleNo})</p>
+            <p className="text-lg mt-2">from</p>
+            <p className="text-lg font-semibold mt-1">
+              {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} to {formatDate(trainee.dateOfSparingFromStcWtcNonRailway)}
+            </p>
+            <p className="text-lg mt-2">Duration: {trainee.duration}</p>
           </div>
-        </div>
 
-        {/* Certificate Container */}
-        <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
-          <div ref={certificateRef} className="certificate">
-            <div className="certificate border-4 border-double border-gray-800 p-8 bg-white">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold uppercase">Workshop Training Center</h1>
-                <h2 className="text-xl font-bold uppercase">Northern Railway - Charbagh, Lucknow</h2>
-                <div className="text-lg mt-2">Certificate of Completion</div>
+          <div className="flex justify-between mt-16">
+            <div className="text-center">
+              <div className="border-t border-black pt-2 w-32 mx-auto">
+                <p className="font-semibold">Date</p>
+                <p>{new Date().toLocaleDateString('en-IN')}</p>
               </div>
-
-              <div className="text-center mb-8">
-                <p className="text-lg">This is to certify that</p>
-                <p className="text-xl font-bold mt-2">{traineeName}</p>
-                <p className="text-lg mt-2">Ticket No: {ticketNo}</p>
-                <p className="text-lg mt-2">has successfully completed</p>
-                <p className="text-xl font-bold mt-2">{trade}</p>
-                <p className="text-lg">Module</p>
-                <p className="text-lg mt-2">from</p>
-                <p className="text-lg font-semibold mt-1">
-                  {formatDate(fromDate)} to {formatDate(toDate)}
-                </p>
-                <p className="text-lg mt-2">Duration: {calculateDuration()}</p>
-              </div>
-
-              <div className="flex justify-between mt-16">
-                <div className="text-center">
-                  <div className="border-t border-black pt-2 w-32 mx-auto">
-                    <p className="font-semibold">Date</p>
-                    <p>{new Date().toLocaleDateString('en-IN')}</p>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="border-t border-black pt-2 w-32 mx-auto">
-                    <p className="font-semibold">WTC Director</p>
-                    <p>Northern Railway</p>
-                  </div>
-                </div>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-black pt-2 w-32 mx-auto">
+                <p className="font-semibold">WTC Director</p>
+                <p>Northern Railway</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-4">
+            <Link to="/wtc/certificate" className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200">
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Certificates Preview
+            </h1>
+          </div>
+
+          <div className="flex space-x-3">
+            <PDFDownloadLink
+              document={<CertificateDocument trainees={trainees} />}
+              fileName={`WTC_Certificates_Bulk_${new Date().toISOString().slice(0, 10)}.pdf`}
+              className="flex items-center space-x-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {({ loading }) =>
+                loading ? (
+                  'Loading document...'
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>Export All as PDF</span>
+                  </>
+                )
+              }
+            </PDFDownloadLink>
+
+            <button onClick={() => window.print()} className="flex items-center space-x-2 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+              <Printer className="w-4 h-4" />
+              <span>Print All</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Certificates Container for HTML Preview */}
+        <div className="certificates-container">
+          {trainees.map(trainee => (
+            <CertificateTemplate key={trainee.id} trainee={trainee} />
+          ))}
+        </div>
+      </div>
 
       {/* Add CSS for PDF printing */}
       <style jsx="true">{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .certificate, .certificate * {
-                        visibility: visible;
-                    }
-                    .certificate {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        padding: 40px;
-                    }
-                }
-            `}</style>
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .certificates-container, .certificates-container * {
+            visibility: visible;
+          }
+          .certificates-container {
+            position: absolute;
+            left: 0;
+            top: -20px;
+            width: 100%;
+            padding: 20px;
+          }
+          .page-break-after {
+            page-break-after: always;
+          }
+          .certificate {
+            height: 190mm;
+            width: 270mm;
+            margin: auto;
+            padding: 20mm;
+          }
+        }
+      `}</style>
     </div>
   );
 };
