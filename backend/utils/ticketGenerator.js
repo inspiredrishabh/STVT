@@ -1,6 +1,12 @@
 const sqlite3 = require('sqlite3').verbose();
 const { db } = require('../config/db');
 
+// Mutex to prevent race conditions in ticket generation
+let ticketGenerationQueue = [];
+let isProcessing = false;
+// Track highest generated numbers per prefix to avoid duplicates
+let generatedNumbers = {};
+
 // Helper function to create an acronym from a phrase
 const createAcronym = (phrase) => {
     if (!phrase || typeof phrase !== 'string') {
@@ -17,58 +23,109 @@ const createAcronym = (phrase) => {
 };
 
 const generateTicketNumber = async (designation, traineeType) => {
-    console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
-
-    if (!traineeType) {
-        return Promise.reject(new Error("Trainee type is required to generate a ticket number."));
-    }
-
-    // Convert designation to lowercase for the prefix
-    const prefix = createAcronym(designation);
-    const tableName = `${traineeType}_candidates`;
-
-    // The table you need to query is 'stc_candidates', not the designation itself.
-    // You need to find the last ticket number for the given designation.
-    // Assuming ticket_no looks like "aje00001", "ase00002" etc.
-    const query = `
-        SELECT ticket_no
-        FROM ${tableName}
-        WHERE ticket_no LIKE ? || '%'
-        ORDER BY ticket_no DESC
-        LIMIT 1
-    `;
-
     return new Promise((resolve, reject) => {
-        db.get(query, [prefix], (err, row) => {
-            if (err) {
-                console.error(`Error fetching last ticket number for ${designation}:`, err.message);
-                reject(err);
-            } else {
-                const lastTicketNumber = row ? row.ticket_no : null; // Use ticket_no
-                const newTicketNumber = createNewTicketNumber(prefix, lastTicketNumber);
-                console.log(`Generated new ticket number: ${newTicketNumber}`);
-                resolve(newTicketNumber);
-            }
+        console.log(`Queuing ticket generation for designation: ${designation} in ${traineeType}`);
+        
+        if (!traineeType) {
+            reject(new Error("Trainee type is required to generate a ticket number."));
+            return;
+        }
+
+        // Add to queue
+        ticketGenerationQueue.push({
+            designation,
+            traineeType,
+            resolve,
+            reject
         });
+
+        // Process queue if not already processing
+        if (!isProcessing) {
+            processTicketQueue();
+        }
     });
 };
 
-const createNewTicketNumber = (prefix, lastTicketNumber) => {
-    let newNumber = 1;
-    if (lastTicketNumber) {
-        // Assuming lastTicketNumber is like "prefixXXXXX" (e.g., "aje00001")
-        // Extract the numeric part after the prefix
-        const numericPart = lastTicketNumber.slice(prefix.length);
-        const lastNumber = parseInt(numericPart, 10);
-        if (!isNaN(lastNumber)) { // Ensure it's a valid number
-            newNumber = lastNumber + 1;
-        } else {
-            console.warn(`Could not parse numeric part from last ticket number: ${lastTicketNumber}`);
-            // Fallback to 1 if parsing fails
-            newNumber = 1;
+const processTicketQueue = async () => {
+    if (isProcessing || ticketGenerationQueue.length === 0) {
+        return;
+    }
+
+    isProcessing = true;
+
+    while (ticketGenerationQueue.length > 0) {
+        const { designation, traineeType, resolve, reject } = ticketGenerationQueue.shift();
+        
+        try {
+            const ticketNumber = await generateTicketNumberInternal(designation, traineeType);
+            resolve(ticketNumber);
+        } catch (error) {
+            reject(error);
         }
     }
-    return `${prefix}${String(newNumber).padStart(5, '0')}`;
+
+    isProcessing = false;
+};
+
+const generateTicketNumberInternal = async (designation, traineeType) => {
+    return new Promise((resolve, reject) => {
+        console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
+        
+        const prefix = createAcronym(designation);
+        const tableName = `${traineeType}_candidates`;
+        const prefixKey = `${traineeType}_${prefix.toLowerCase()}`;
+
+        // Simple query to get all tickets for this prefix, then find the max
+        const query = `
+            SELECT ticket_no
+            FROM ${tableName}
+            WHERE LOWER(ticket_no) LIKE LOWER(?) || '%'
+            ORDER BY ticket_no
+        `;
+
+        db.all(query, [`${prefix}`], (err, rows) => {
+            if (err) {
+                console.error(`Error fetching ticket numbers for ${designation}:`, err.message);
+                reject(err);
+                return;
+            }
+
+            let maxNumber = 0;
+            const prefixLower = prefix.toLowerCase();
+
+            // Find the highest number for this exact prefix
+            if (rows && rows.length > 0) {
+                rows.forEach(row => {
+                    const ticket = row.ticket_no;
+                    const ticketLower = ticket.toLowerCase();
+                    
+                    // Check if ticket starts with our prefix (case-insensitive)
+                    if (ticketLower.startsWith(prefixLower)) {
+                        const numericPart = ticket.slice(prefix.length);
+                        const number = parseInt(numericPart, 10);
+                        
+                        if (!isNaN(number) && number > maxNumber) {
+                            maxNumber = number;
+                        }
+                    }
+                });
+            }
+
+            // Check if we've generated any numbers for this prefix in this session
+            if (generatedNumbers[prefixKey] && generatedNumbers[prefixKey] > maxNumber) {
+                maxNumber = generatedNumbers[prefixKey];
+            }
+
+            const newNumber = maxNumber + 1;
+            const newTicketNumber = `${prefix}${String(newNumber).padStart(5, '0')}`;
+            
+            // Track this generated number
+            generatedNumbers[prefixKey] = newNumber;
+            
+            console.log(`Generated new ticket number: ${newTicketNumber} (prefix: ${prefix}, max found: ${maxNumber}, session max: ${generatedNumbers[prefixKey]})`);
+            resolve(newTicketNumber);
+        });
+    });
 };
 
 module.exports = {

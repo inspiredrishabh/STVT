@@ -30,7 +30,7 @@ app.use('/api/stc', stcRoutes);
 app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
 app.use('/api/mji-c&w', mjiCwRoutes)
-app.use('/api/mjpcw', mjpCwRoutes )
+app.use('/api/mjp-c&w', mjpCwRoutes )
 app.use('/api/line-trainings', lineTrainingRoutes )
 
 

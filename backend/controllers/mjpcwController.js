@@ -11,6 +11,7 @@ class MjpCwController {
     async createScore(req, res) {
         try {
             const scoreData = req.body;
+            console.log('Received score data:', scoreData);
             
             // Validate if STC candidate exists
             if (scoreData.ticket_no || scoreData.ticketNumber) {
