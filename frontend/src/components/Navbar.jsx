@@ -113,7 +113,7 @@ const Navbar = () => {
                                     <div className="border-t border-gray-100 my-1"></div>
 
                                     <Link
-                                        to="/wtc-management"
+                                        to="/wtc"
                                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                                     >
                                         <Settings className="w-4 h-4 mr-2" />
@@ -169,7 +169,7 @@ const Navbar = () => {
                         <Settings className="w-4 h-4 mr-2" />
                         STC Management System
                     </Link>
-                    <Link to="/wtc-management" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:bg-blue-50 rounded">
+                    <Link to="/wtc" className="flex items-center px-2 py-1 text-sm text-gray-700 hover:bg-blue-50 rounded">
                         <Settings className="w-4 h-4 mr-2" />
                         WTC Management System
                     </Link>

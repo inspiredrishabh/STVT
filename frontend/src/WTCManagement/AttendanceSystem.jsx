@@ -416,25 +416,25 @@ const AttendanceSystem = () => {
     try {
       // Generate CSV content
       const csvContent = generateCSVContent();
-      
+
       // Create and download the file
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      
+
       link.setAttribute('href', url);
       link.setAttribute('download', `Attendance_Report_${traineeData.ticketNo}_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       URL.revokeObjectURL(url);
-      
-      setMessage({ 
-        type: 'success', 
-        text: `Attendance report exported successfully for ${traineeData.name}` 
+
+      setMessage({
+        type: 'success',
+        text: `Attendance report exported successfully for ${traineeData.name}`
       });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to export attendance report' });
@@ -528,7 +528,7 @@ const AttendanceSystem = () => {
         <div className="w-full px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/wtc-management" className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group">
+              <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group">
                 <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
               </Link>
               <div>

@@ -429,7 +429,7 @@ const Letter = () => {
                 {/* Header with back button and actions */}
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center space-x-4">
-                        <Link to="/wtc-management" className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200">
+                        <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200">
                             <ArrowLeft className="w-4 h-4 text-gray-600" />
                         </Link>
                         <h1 className="text-2xl font-bold text-gray-800">
