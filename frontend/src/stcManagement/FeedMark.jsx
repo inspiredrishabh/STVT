@@ -278,91 +278,153 @@ const courseStructure = {
   }
 };
 
-// Mock API Functions
-const mockAPI = {
-  // Sample candidates data
-  // candidatesData: [
-  //   { id: 1, ticketNo: 'STC2024001', name: 'Rahul Kumar', courseCode: 'MSE-C&W' },
-  //   { id: 2, ticketNo: 'STC2024002', name: 'Priya Sharma', courseCode: 'MSE-D' },
-  //   { id: 3, ticketNo: 'STC2024003', name: 'Amit Singh', courseCode: 'MSE-W' },
-  //   { id: 4, ticketNo: 'STC2024004', name: 'Neha Gupta', courseCode: 'MJR-C&W' },
-  //   { id: 5, ticketNo: 'STC2024005', name: 'Vikash Yadav', courseCode: 'MJR-D' },
-  //   { id: 6, ticketNo: 'STC2024006', name: 'Sunita Devi', courseCode: 'MJR-W' },
-  //   { id: 7, ticketNo: 'STC2024007', name: 'Abhijeet Malik', courseCode: 'MJI-C&W' },
-  //   { id: 8, ticketNo: 'STC2024008', name: 'Anjali Kumari', courseCode: 'MJI-D' },
-  //   { id: 9, ticketNo: 'STC2024009', name: 'Manoj Kumar', courseCode: 'MJI-W' },
-  //   { id: 10, ticketNo: 'STC2024010', name: 'Pooja Singh', courseCode: 'MJP-C&W' },
-  //   { id: 11, ticketNo: 'STC2024011', name: 'Sandeep Kumar', courseCode: 'MJP-D' },
-  //   { id: 12, ticketNo: 'STC2024012', name: 'Kavita Sharma', courseCode: 'MJP-W' }
-  // ],
+// Real API Functions
+const realAPI = {
+  // Function to map flat DB marks to nested structure using courseStructure
+  mapDbMarksToNested: (courseCode, dbMarks) => {
+    const structure = courseStructure[courseCode];
+    if (!structure) return {};
 
-  // Simulate API delay
-  // delay: (ms = 300) => new Promise(resolve => setTimeout(resolve, ms)),
-
-  // Get all candidates for dropdown   ------- DONE BY REAL API ------
-  /* getCandidates: async () => {
-    await mockAPI.delay(500);
-    return mockAPI.candidatesData;
-  }, */
-
-  // Get candidate by ticket number
-
-  // ------ DONE BY REAL API ------- (do for every funtion when done )
-
-  /* getCandidateByTicket: async (ticketNo) => {
-    await mockAPI.delay();
-    const candidate = mockAPI.candidatesData.find(c => c.ticketNo === ticketNo);
-    if (!candidate) {
-      throw new Error('Candidate not found');
+    const nested = {};
+    let sessionIndex = 1;
+    for (const [sessionName, papers] of Object.entries(structure)) {
+      nested[sessionName] = {};
+      let paperIndex = 1;
+      for (const [paperName, config] of Object.entries(papers)) {
+        let key;
+        if (paperName === "Practical") {
+          key = `s${sessionIndex}pr_marks`;
+        } else if (paperName === "Interview") {
+          key = `s${sessionIndex}int_marks`;
+        } else {
+          key = `s${sessionIndex}p${paperIndex}_marks`;
+        }
+        nested[sessionName][paperName] = dbMarks[key] ?? 0;
+        if (paperName !== "Practical" && paperName !== "Interview") {
+          paperIndex++;
+        }
+      }
+      sessionIndex++;
     }
-    return candidate;
-  }, */
-
-  // Get existing marks for a candidate
-  getExistingMarks: async (ticketNo) => {
-    await mockAPI.delay();
-    // Mock existing marks data with some failed subjects for demonstration
-    const mainMarks = {
-      'Session 1': {
-        'Paper 1': 85,
-        'Paper 2': 78,
-        'Practical': 25 // This will be below 60% of 50 (which is 30)
-      },
-      'Session 2': {
-        'Paper 1': 40, // This will be below 60% of 75 (which is 45)
-        'Paper 2': 89
-      }
-    };
-
-    // No mock supplementary marks - admin must input these manually
-    const supplementaryMarks = {};
-
-    // Mock practical centers data for demonstration
-    const practicalCenters = {
-      'Session 1': {
-        numCenters: 2,
-        centers: [
-          { name: 'Main Workshop', marks: 15, maxMarks: 20 },
-          { name: 'Field Training Center', marks: 10, maxMarks: 30 }
-        ]
-      }
-    };
-
-    return { mainMarks, supplementaryMarks, practicalCenters };
+    return nested;
   },
 
-  // Save marks
-  saveMarks: async (ticketNo, marks, supplementaryMarks = {}, practicalCenters = {}) => {
-    await mockAPI.delay(800);
-    console.log('Saving marks for:', ticketNo, { mainMarks: marks, supplementaryMarks, practicalCenters });
-    return { success: true, message: 'Marks saved successfully' };
+  // Get existing marks for a candidate
+  getExistingMarks: async (ticketNo, courseCode) => {
+    try {
+      console.log('Fetching marks for:', { ticketNo, courseCode }); // Debug log
+      if (!ticketNo || !courseCode) {
+        throw new Error(`Missing parameters: ticketNo=${ticketNo}, courseCode=${courseCode}`);
+      }
+      
+      // Handle special characters in course code for URL
+      
+      const response = await fetch(`/api/${courseCode.toLowerCase()}/${ticketNo}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No marks found, return empty structure
+          return { mainMarks: {}, supplementaryMarks: {}, practicalCenters: {}, hasExistingMarks: false };
+        }
+        throw new Error(`Failed to fetch marks: ${response.statusText}`);
+      }
+      
+      const dbMarks = await response.json();
+      const mainMarks = realAPI.mapDbMarksToNested(courseCode, dbMarks.data || dbMarks);
+      
+      // Check if marks actually exist (not all zeros)
+      const hasExistingMarks = Object.values(mainMarks).some(session => 
+        Object.values(session).some(mark => mark && mark > 0)
+      );
+      
+      // For now, supplementary marks and practical centers are empty
+      // You can extend this based on your backend implementation
+      const supplementaryMarks = {};
+      const practicalCenters = {};
+
+      return { mainMarks, supplementaryMarks, practicalCenters, hasExistingMarks };
+    } catch (error) {
+      console.error('Error fetching marks:', error);
+      // Return empty structure if fetch fails
+      return { mainMarks: {}, supplementaryMarks: {}, practicalCenters: {}, hasExistingMarks: false };
+    }
+  },
+
+  // Save marks with PUT for updates and POST for new marks
+  saveMarks: async (ticketNo, marks, courseCode, supplementaryMarks = {}, practicalCenters = {}, isEditMode = false) => {
+    try {
+      // Build formData using the existing buildFormData function
+      const structure = courseStructure[courseCode];
+      const formData = { ticket_no: ticketNo };
+      
+      let sessionIndex = 1;
+      for (const [sessionName, papers] of Object.entries(structure)) {
+        let paperIndex = 1;
+        for (const [paperName, config] of Object.entries(papers)) {
+          let key;
+          if (paperName === "Practical") {
+            key = `s${sessionIndex}pr_marks`;
+          } else if (paperName === "Interview") {
+            key = `s${sessionIndex}int_marks`;
+          } else {
+            key = `s${sessionIndex}p${paperIndex}_marks`;
+          }
+          formData[key] = marks[sessionName]?.[paperName] ?? 0;
+          if (paperName !== "Practical" && paperName !== "Interview") {
+            paperIndex++;
+          }
+        }
+        sessionIndex++;
+      }
+
+      const method = isEditMode ? "PUT" : "POST";
+      const response = await fetch(`/api/${courseCode.toLowerCase()}${isEditMode ? `/${ticketNo}` : ''}`, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errData.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+      return { success: true, message: isEditMode ? 'Marks updated successfully!' : 'Marks saved successfully!', data: result };
+    } catch (error) {
+      console.error('Error saving marks:', error);
+      throw error;
+    }
   },
 
   // Clear supplementary status for a specific subject
-  clearSubjectSupplementary: async (ticketNo, session, paper) => {
-    await mockAPI.delay(600);
-    console.log('Clearing supplementary status for:', ticketNo, session, paper);
-    return { success: true, message: `Supplementary status cleared for ${session} - ${paper}. Only main marks will be used for this subject.` };
+  clearSubjectSupplementary: async (ticketNo, session, paper, courseCode, supplementaryMarks) => {
+    try {
+      const response = await fetch(`/api/${courseCode.toLowerCase()}/clear-supplementary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketNo,
+          session,
+          paper,
+          supplementaryMarks
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errData.message || response.statusText}`);
+      }
+
+      const result = await response.json();
+      return { 
+        success: true, 
+        message: `Supplementary status cleared for ${session} - ${paper}. Only main marks will be used for this subject.`,
+        data: result 
+      };
+    } catch (error) {
+      console.error('Error clearing supplementary status:', error);
+      throw error;
+    }
   }
 };
 
@@ -385,10 +447,12 @@ const FeedMark = () => {
   const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); // Track if we're editing existing marks
+  const [hasExistingMarks, setHasExistingMarks] = useState(false); // Track if candidate has existing marks
 
   // Auto-search function for URL parameters
   const handleAutoSearch = async (ticketNo) => {
-    if (ticketNo.trim() == "") {
+    if (ticketNo.trim() === "") {
       setMessage({ type: 'error', text: 'Invalid ticket number from URL' });
       return;
     }
@@ -402,24 +466,26 @@ const FeedMark = () => {
       if (!response.ok) {
         throw new Error(`Failed to fetch candidate with ticket ${ticketNo}`);
       }
-
-      if(ticketNo = "")
-      {
-        throw new Error(`Maro somesh bsdivale ko lakin ab value khali hai  `);
-      }
       
       const result = await response.json();
       const candidate = result.data;
 
       setCandidateData(candidate);
       setCourseCode(candidate.module_no);
+      setTicketNo(candidate.ticket_no);
 
-      const marksData = await mockAPI.getExistingMarks(ticketNo);
+      const marksData = await realAPI.getExistingMarks(ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
       setPracticalCenters(marksData.practicalCenters || {});
+      setHasExistingMarks(marksData.hasExistingMarks);
+      setIsEditMode(false); // Start in view mode
 
-      setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Marks ready for viewing/editing` });
+      if (marksData.hasExistingMarks) {
+        setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
+      } else {
+        setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Ready to enter marks` });
+      }
 
     } catch (error) {
       setMessage({ type: 'error', text: `Failed to auto-load trainee: ${error.message}` });
@@ -427,6 +493,8 @@ const FeedMark = () => {
       setCourseCode('');
       setMarks({});
       setSupplementaryMarks({});
+      setHasExistingMarks(false);
+      setIsEditMode(false);
     } finally {
       setLoading(false);
     }
@@ -436,13 +504,12 @@ const FeedMark = () => {
   // Handle URL parameters for auto-selection from TraineeProfile
   useEffect(() => {
     const traineeId = searchParams.get('traineeId');
-    // const ticketNo = searchParams.get('ticketNo');
-    // let ticketNo;
+    const urlTicketNo = searchParams.get('ticketNo');
     const autoSelect = searchParams.get('autoSelect');
 
-    if (autoSelect === 'true' && ticketNo) {
+    if (autoSelect === 'true' && urlTicketNo) {
       // Set the form state immediately
-      setTicketNo(ticketNo);
+      setTicketNo(urlTicketNo);
       setSearchMethod('ticket');
 
       // Clear any existing messages
@@ -450,7 +517,7 @@ const FeedMark = () => {
 
       // Auto-load the candidate data immediately with a small delay to ensure UI updates
       setTimeout(() => {
-        handleAutoSearch(ticketNo);
+        handleAutoSearch(urlTicketNo);
       }, 100);
     }
   }, [searchParams]);
@@ -506,20 +573,29 @@ const FeedMark = () => {
       const candidate = result.data;
       setCandidateData(candidate);
       setCourseCode(candidate.module_no);
+      setTicketNo(candidate.ticket_no);
 
       // Load existing marks
-      const marksData = await mockAPI.getExistingMarks(ticketNo);
+      const marksData = await realAPI.getExistingMarks(ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
       setPracticalCenters(marksData.practicalCenters || {});
+      setHasExistingMarks(marksData.hasExistingMarks);
+      setIsEditMode(false); // Start in view mode
 
-      setMessage({ type: 'success', text: `Candidate found: ${candidate.name}` });
+      if (marksData.hasExistingMarks) {
+        setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
+      } else {
+        setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Ready to enter marks` });
+      }
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
       setCandidateData(null);
       setCourseCode('');
       setMarks({});
       setSupplementaryMarks({});
+      setHasExistingMarks(false);
+      setIsEditMode(false);
     } finally {
       setLoading(false);
     }
@@ -530,6 +606,8 @@ const FeedMark = () => {
       setCandidateData(null);
       setCourseCode('');
       setMarks({});
+      setHasExistingMarks(false);
+      setIsEditMode(false);
       return;
     }
 
@@ -544,15 +622,21 @@ const FeedMark = () => {
 
       setCandidateData(candidate);
       setCourseCode(candidate.module_no);
-      setTicketNo(candidate.ticketNo);
+      setTicketNo(candidate.ticket_no || candidate.ticketNo);
 
       // Load existing marks
-      const marksData = await mockAPI.getExistingMarks(candidate.ticketNo);
+      const marksData = await realAPI.getExistingMarks(candidate.ticket_no || candidate.ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
       setPracticalCenters(marksData.practicalCenters || {});
+      setHasExistingMarks(marksData.hasExistingMarks);
+      setIsEditMode(false); // Start in view mode
 
-      setMessage({ type: 'success', text: `Candidate selected: ${candidate.name}` });
+      if (marksData.hasExistingMarks) {
+        setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
+      } else {
+        setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Ready to enter marks` });
+      }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to load candidate data' });
     } finally {
@@ -571,34 +655,6 @@ const FeedMark = () => {
     }));
   };
 
-  // Helper to build formData dynamically for any courseCode
-  const buildFormData = (candidateData, marks, courseCode) => {
-    const structure = courseStructure[courseCode];
-    const formData = {
-      ticket_no: candidateData.ticket_no
-    };
-    let sessionIndex = 1;
-    for (const [sessionName, papers] of Object.entries(structure)) {
-      let paperIndex = 1;
-      for (const [paperName, config] of Object.entries(papers)) {
-        let key;
-        if (paperName === "Practical") {
-          key = `s${sessionIndex}pr_marks`;
-        } else if (paperName === "Interview") {
-          key = `s${sessionIndex}int_marks`;
-        } else {
-          key = `s${sessionIndex}p${paperIndex}`;
-        }
-        formData[key] = marks[sessionName]?.[paperName] ?? 0;
-        if (paperName !== "Practical" && paperName !== "Interview") {
-          paperIndex++;
-        }
-      }
-      sessionIndex++;
-    }
-    return formData;
-  };
-
   const handleSaveMarks = async () => {
     if (!candidateData) {
       setMessage({ type: 'error', text: 'No candidate selected' });
@@ -609,26 +665,29 @@ const FeedMark = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      // Build formData dynamically using courseStructure and marks
-      const formData = buildFormData(candidateData, marks, courseCode);
-      const sendCourseCode = courseCode.toLowerCase();
-      const response = await fetch(`http://localhost:5000/api/${sendCourseCode}`, {
-        method: "POST",
-        headers: {
-          "Content-Type" : "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-      if(!response.ok){
-        const errData = await response.json();
-        throw new Error(`HTTPS error! status: ${response.status}, message: ${errData.message || response.statusText}`);
+      const result = await realAPI.saveMarks(
+        candidateData.ticket_no, 
+        marks, 
+        courseCode, 
+        supplementaryMarks, 
+        practicalCenters,
+        isEditMode
+      );
+      
+      setMessage({ type: 'success', text: result.message });
+      
+      // If we were in edit mode, update the state
+      if (isEditMode) {
+        setIsEditMode(false);
+        setHasExistingMarks(true);
+      } else {
+        // First time saving marks
+        setHasExistingMarks(true);
       }
-
-      const result = await response.json();
-      setMessage({ type: 'success', text: 'Marks saved successfully! (Including supplementary exam records and practical centers data)' });
+      
       return { success: true, data: result };
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save marks' });
+      setMessage({ type: 'error', text: `Failed to save marks: ${error.message}` });
     } finally {
       setSaving(false);
     }
@@ -677,7 +736,13 @@ This will use only main marks for this subject in marksheet generation.`)) {
     setMessage({ type: '', text: '' });
 
     try {
-      const result = await mockAPI.clearSubjectSupplementary(candidateData.ticketNo, session, paper);
+      const result = await realAPI.clearSubjectSupplementary(
+        candidateData.ticket_no, 
+        session, 
+        paper, 
+        courseCode, 
+        supplementaryMarks[session]?.[paper]
+      );
 
       // Mark this subject as cleared from supplementary
       setClearedSupplementary(prev => ({
@@ -687,7 +752,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
 
       setMessage({ type: 'success', text: `${result.message} Supplementary marks: ${suppMarks}/${paperConfig.maxMarks} (PASSED)` });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to clear supplementary status' });
+      setMessage({ type: 'error', text: `Failed to clear supplementary status: ${error.message}` });
     } finally {
       setClearing(false);
     }
@@ -777,6 +842,8 @@ This will use only main marks for this subject in marksheet generation.`)) {
     setSupplementaryMarks({}); // Reset supplementary marks
     setClearedSupplementary({}); // Reset cleared supplementary status
     setPracticalCenters({}); // Reset practical centers data
+    setHasExistingMarks(false); // Reset existing marks status
+    setIsEditMode(false); // Reset edit mode
     setMessage({ type: '', text: '' });
   };
 
@@ -975,7 +1042,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
                     <option value="">Select a candidate...</option>
                     {candidates.map(candidate => (
                       <option key={candidate.id} value={candidate.id}>
-                        {candidate.ticketNo} - {candidate.name} ({candidate.module_no})
+                        {candidate.ticket_no || candidate.ticketNo} - {candidate.name} ({candidate.module_no})
                       </option>
                     ))}
                   </select>
@@ -1042,7 +1109,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                   <label className="block text-sm font-semibold text-blue-700 mb-1">Ticket Number</label>
                   <p className="text-lg font-bold text-blue-900">{candidateData.ticket_no}</p>
@@ -1054,6 +1121,34 @@ This will use only main marks for this subject in marksheet generation.`)) {
                 <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
                   <label className="block text-sm font-semibold text-purple-700 mb-1">Course Code</label>
                   <p className="text-lg font-bold text-purple-900">{candidateData.module_no}</p>
+                </div>
+                <div className={`p-4 rounded-xl border ${
+                  hasExistingMarks && !isEditMode 
+                    ? 'bg-gray-50 border-gray-200'
+                    : isEditMode 
+                    ? 'bg-orange-50 border-orange-200'
+                    : 'bg-yellow-50 border-yellow-200'
+                }`}>
+                  <label className={`block text-sm font-semibold mb-1 ${
+                    hasExistingMarks && !isEditMode 
+                      ? 'text-gray-700'
+                      : isEditMode 
+                      ? 'text-orange-700'
+                      : 'text-yellow-700'
+                  }`}>Status</label>
+                  <p className={`text-lg font-bold ${
+                    hasExistingMarks && !isEditMode 
+                      ? 'text-gray-900'
+                      : isEditMode 
+                      ? 'text-orange-900'
+                      : 'text-yellow-900'
+                  }`}>
+                    {hasExistingMarks && !isEditMode 
+                      ? 'View Mode'
+                      : isEditMode 
+                      ? 'Edit Mode'
+                      : 'Entry Mode'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1068,23 +1163,53 @@ This will use only main marks for this subject in marksheet generation.`)) {
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Enter Marks - {courseCode}</h2>
-                    <p className="text-gray-600 text-sm">Input examination marks for all sessions</p>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {hasExistingMarks && !isEditMode ? 'View Marks' : isEditMode ? 'Edit Marks' : 'Enter Marks'} - {courseCode}
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      {hasExistingMarks && !isEditMode 
+                        ? 'Viewing existing marks - Click "Edit Marks" to modify' 
+                        : isEditMode 
+                        ? 'Editing examination marks - Click "Update Marks" to save changes'
+                        : 'Input examination marks for all sessions'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleSaveMarks}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {saving ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
+                  {hasExistingMarks && !isEditMode ? (
+                    // View mode - show edit button
+                    <button
+                      onClick={() => setIsEditMode(true)}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
                       <Save className="w-5 h-5" />
-                    )}
-                    {saving ? 'Saving...' : 'Save Marks'}
-                  </button>
+                      Edit Marks
+                    </button>
+                  ) : (
+                    // Edit mode or no existing marks - show save/update button
+                    <>
+                      {isEditMode && (
+                        <button
+                          onClick={() => setIsEditMode(false)}
+                          className="flex items-center gap-2 px-4 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        onClick={handleSaveMarks}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        {saving ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Save className="w-5 h-5" />
+                        )}
+                        {saving ? 'Saving...' : (isEditMode ? 'Update Marks' : 'Save Marks')}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -1161,12 +1286,22 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                         max="20"
                                         value={practicalCenters[session]?.numCenters || ''}
                                         onChange={(e) => handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value) || 1)}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-20"
+                                        readOnly={hasExistingMarks && !isEditMode}
+                                        className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-20 ${
+                                          hasExistingMarks && !isEditMode 
+                                            ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                            : 'border-gray-300'
+                                        }`}
                                         placeholder="1-20"
                                       />
                                       <button
                                         onClick={() => handlePracticalCentersChange(session, 'isCustomNumber', false)}
-                                        className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
+                                        disabled={hasExistingMarks && !isEditMode}
+                                        className={`px-2 py-1 text-xs rounded ${
+                                          hasExistingMarks && !isEditMode 
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
                                       >
                                         Back
                                       </button>
@@ -1182,7 +1317,12 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                           handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value));
                                         }
                                       }}
-                                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      disabled={hasExistingMarks && !isEditMode}
+                                      className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                        hasExistingMarks && !isEditMode 
+                                          ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                          : 'border-gray-300'
+                                      }`}
                                     >
                                       {[1, 2, 3, 4, 5].map(num => (
                                         <option key={num} value={num}>{num}</option>
@@ -1201,7 +1341,12 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                         value={practicalCenters[session]?.centers?.[index]?.name || ''}
                                         onChange={(e) => handlePracticalCenterNameChange(session, index, e.target.value)}
                                         placeholder="Enter center name"
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                        readOnly={hasExistingMarks && !isEditMode}
+                                        className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                                          hasExistingMarks && !isEditMode 
+                                            ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                            : 'border-gray-300'
+                                        }`}
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
@@ -1213,7 +1358,12 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                           value={practicalCenters[session]?.centers?.[index]?.marks || ''}
                                           onChange={(e) => handlePracticalCenterMarksChange(session, index, e.target.value)}
                                           placeholder="Enter marks"
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                          readOnly={hasExistingMarks && !isEditMode}
+                                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                                            hasExistingMarks && !isEditMode 
+                                              ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                              : 'border-gray-300'
+                                          }`}
                                         />
                                       </div>
                                       <div>
@@ -1223,8 +1373,13 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                           min="1"
                                           value={practicalCenters[session]?.centers?.[index]?.maxMarks || ''}
                                           onChange={(e) => handlePracticalCenterMaxMarksChange(session, index, e.target.value)}
-                                          placeholder="Enter max marks"
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                          placeholder="Max marks"
+                                          readOnly={hasExistingMarks && !isEditMode}
+                                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                                            hasExistingMarks && !isEditMode 
+                                              ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                              : 'border-gray-300'
+                                          }`}
                                         />
                                       </div>
                                     </div>
@@ -1262,13 +1417,17 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                 value={paperMarks || ''}
                                 onChange={(e) => handleMarksChange(session, paper, e.target.value)}
                                 placeholder={`Enter marks (0-${config.maxMarks})`}
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isOverMaxMarks
-                                  ? 'border-red-300 bg-red-50'
-                                  : isFailingGrade
-                                    ? 'border-red-400 bg-red-50'
-                                    : isCleared && isBelowPassing
-                                      ? 'border-yellow-400 bg-yellow-50'
-                                      : 'border-gray-300'
+                                readOnly={hasExistingMarks && !isEditMode}
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                                  hasExistingMarks && !isEditMode 
+                                    ? 'bg-gray-100 cursor-not-allowed text-gray-600' 
+                                    : isOverMaxMarks
+                                    ? 'border-red-300 bg-red-50'
+                                    : isFailingGrade
+                                      ? 'border-red-400 bg-red-50'
+                                      : isCleared && isBelowPassing
+                                        ? 'border-yellow-400 bg-yellow-50'
+                                        : 'border-gray-300'
                                   }`}
                               />
                             )}
@@ -1401,7 +1560,12 @@ This will use only main marks for this subject in marksheet generation.`)) {
                                 max={subject.maxMarks}
                                 value={supplementaryMarks[subject.session]?.[subject.paper] || ''}
                                 onChange={(e) => handleSupplementaryMarksChange(subject.session, subject.paper, e.target.value)}
-                                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                readOnly={hasExistingMarks && !isEditMode}
+                                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                  hasExistingMarks && !isEditMode 
+                                    ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
+                                    : 'border-blue-300'
+                                }`}
                                 placeholder={`0-${subject.maxMarks}`}
                               />
                             </div>

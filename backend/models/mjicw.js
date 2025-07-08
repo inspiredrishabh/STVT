@@ -14,7 +14,7 @@ class MjiCwModel {
             ticket_no TEXT UNIQUE NOT NULL,  -- Main unique identifier
             
             -- Session 1 Papers with marks (7 papers)
-            s1p1marks REAL DEFAULT 0,  -- Session 1 Paper 1 marks
+            s1p1_marks REAL DEFAULT 0,  -- Session 1 Paper 1 marks
             s1p1_max_marks INTEGER DEFAULT 100,
             s1p2_marks REAL DEFAULT 0,  -- Session 1 Paper 2 marks
             s1p2_max_marks INTEGER DEFAULT 100,
@@ -74,9 +74,9 @@ class MjiCwModel {
     create(scoreData) {
         return new Promise((resolve, reject) => {
             const sql = `INSERT INTO ${this.tableName} (
-                ticket_no, s1p1, s1p2, s1p3, s1p4, s1p5, s1p6, s1p7,
-                s2p1, s2p2, s2p3, s2p4, s2p5, s2p6, s2p7, s2p8,
-                s3p1, s3p2, s4p1, s4p2, s4p, s4i
+                ticket_no, s1p1_marks, s1p2_marks, s1p3_marks, s1p4_marks, s1p5_marks, s1p6_marks, s1p7_marks,
+                s2p1_marks, s2p2_marks, s2p3_marks, s2p4_marks, s2p5_marks, s2p6_marks, s2p7_marks, s2p8_marks,
+                s3p1_marks, s3p2_marks, s4p1_marks, s4p2_marks, s4pr_marks, s4int_marks
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
             
             db.run(sql, [
