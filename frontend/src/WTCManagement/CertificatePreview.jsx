@@ -3,117 +3,8 @@ globalThis.Buffer = Buffer;
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import BgImage from '../assets/rail.png';
 
-// Create styles for the PDF
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
-    padding: 30,
-    position: 'relative',
-  },
-  watermark: {
-    position: 'absolute',
-    top: 30,
-    left: 30,
-    right: 30,
-    bottom: 30,
-    width: 'auto',
-    height: 'auto',
-    opacity: 0.1,
-  },
-  certificateContainer: {
-    border: '4px double #000000',
-    padding: 20,
-    flexGrow: 1,
-  },
-  textCenter: {
-    textAlign: 'center',
-  },
-  uppercase: {
-    textTransform: 'uppercase',
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  h1: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    marginBottom: 5,
-  },
-  h2: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    marginBottom: 10,
-  },
-  p: {
-    fontSize: 12,
-    marginBottom: 5,
-  },
-  signatureContainer: {
-    marginTop: 50,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  signature: {
-    borderTop: '1px solid #000000',
-    paddingTop: 5,
-    width: 150,
-    textAlign: 'center',
-  },
-});
-
-// Certificate Component for PDF
-const PDFCertificate = ({ trainee }) => (
-  <Page size="A4" orientation="landscape" style={styles.page}>
-    <Image src={BgImage} style={styles.watermark} />
-    <View style={styles.certificateContainer}>
-      <View style={styles.textCenter}>
-        <Text style={styles.h1}>Workshop Training Center</Text>
-        <Text style={styles.h2}>Northern Railway - Charbagh, Lucknow</Text>
-        <Text style={{ fontSize: 18, marginTop: 10, marginBottom: 20 }}>Certificate of Completion</Text>
-      </View>
-
-      <View style={styles.textCenter}>
-        <Text style={styles.p}>This is to certify that</Text>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', marginTop: 10 }}>{trainee.name}</Text>
-        <Text style={{ ...styles.p, marginTop: 5 }}>Ticket No: {trainee.ticketNo}</Text>
-        <Text style={{ ...styles.p, marginTop: 10 }}>has successfully completed</Text>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 5 }}>{trainee.moduleDescription}</Text>
-        <Text style={styles.p}>({trainee.moduleNo})</Text>
-        <Text style={{ ...styles.p, marginTop: 10 }}>from</Text>
-        <Text style={{ ...styles.p, fontWeight: 'semibold' }}>
-          {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} to {formatDate(trainee.dateOfSparingFromStcWtcNonRailway)}
-        </Text>
-        <Text style={{ ...styles.p, marginTop: 5 }}>Duration: {trainee.duration}</Text>
-      </View>
-
-      <View style={styles.signatureContainer}>
-        <View style={styles.signature}>
-          <Text style={{ fontWeight: 'bold' }}>Date</Text>
-          <Text>{new Date().toLocaleDateString('en-IN')}</Text>
-        </View>
-        <View style={styles.signature}>
-          <Text style={{ fontWeight: 'bold' }}>WTC Director</Text>
-          <Text>Northern Railway</Text>
-        </View>
-      </View>
-    </View>
-  </Page>
-);
-
-// Document Component for PDF
-const CertificateDocument = ({ trainees }) => (
-  <Document>
-    {trainees.map(trainee => (
-      <PDFCertificate key={trainee.id} trainee={trainee} />
-    ))}
-  </Document>
-);
 
 // Format date for display (can be used by both components)
 const formatDate = (dateString) => {
@@ -270,23 +161,6 @@ const CertificatePreview = () => {
           </div>
 
           <div className="flex space-x-3">
-            <PDFDownloadLink
-              document={<CertificateDocument trainees={trainees} />}
-              fileName={`WTC_Certificates_Bulk_${new Date().toISOString().slice(0, 10)}.pdf`}
-              className="flex items-center space-x-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {({ loading }) =>
-                loading ? (
-                  'Loading document...'
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    <span>Export All as PDF</span>
-                  </>
-                )
-              }
-            </PDFDownloadLink>
-
             <button onClick={() => window.print()} className="flex items-center space-x-2 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
               <Printer className="w-4 h-4" />
               <span>Print All</span>
