@@ -54,121 +54,395 @@ const courseStructure = {
       'Practical': { maxMarks: 50, subjects: [] },
       'Interview': { maxMarks: 100, subjects: [] }
     }
+  },
+  'MSE-W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 75, subjects: ['MRT-07', 'MRT-09'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MWT-01'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 100, subjects: ['MWT-02'] },
+      'Paper 2': { maxMarks: 50, subjects: ['MWT-04'] },
+      'Paper 3': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 4': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-12'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 100, subjects: [] }
+    }
+  },
+  'MJR-C&W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 75, subjects: ['MRT-07', 'MRT-09', 'MRT-10'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MCT-01'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 100, subjects: ['MCT-02/I'] },
+      'Paper 2': { maxMarks: 50, subjects: ['MCT-02/II'] },
+      'Paper 3': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 4': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-12'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 100, subjects: [] }
+    }
+  },
+  'MJR-D': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 75, subjects: ['MRT-07', 'MRT-09', 'MRT-10'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MDT-01'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 100, subjects: ['MDT-02/I'] },
+      'Paper 2': { maxMarks: 50, subjects: ['MDT-02/II'] },
+      'Paper 3': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 4': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-12'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 100, subjects: [] }
+    }
+  },
+  'MJR-W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MRT-02', 'MRT-03', 'MRT-04', 'MRT-05'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 75, subjects: ['MRT-07', 'MRT-09', 'MRT-10'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MWT-01'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 100, subjects: ['MWT-02'] },
+      'Paper 2': { maxMarks: 50, subjects: ['MWT-04'] },
+      'Paper 3': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 4': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-12'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 100, subjects: [] }
+    }
+  },
+  'MJI-C&W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-02'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-01'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-02'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-03'] },
+      'Paper 5': { maxMarks: 100, subjects: ['MET-04'] },
+      'Paper 6': { maxMarks: 100, subjects: ['MET-05'] },
+      'Paper 7': { maxMarks: 100, subjects: ['MET-08'] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MET-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-07'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-09'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-10'] },
+      'Paper 5': { maxMarks: 50, subjects: ['MET-11'] },
+      'Paper 6': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 7': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Paper 8': { maxMarks: 50, subjects: ['MRT-13'] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 125, subjects: ['MRT-06', 'MRT-07', 'MRT-09', 'MRT-14', 'MRT-15'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MCT-01'] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MCT-02/I'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MCT-02/II'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
+  },
+  'MJI-D': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-02'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-01'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-02'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-03'] },
+      'Paper 5': { maxMarks: 100, subjects: ['MET-04'] },
+      'Paper 6': { maxMarks: 100, subjects: ['MET-05'] },
+      'Paper 7': { maxMarks: 100, subjects: ['MET-08'] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MET-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-07'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-09'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-10'] },
+      'Paper 5': { maxMarks: 50, subjects: ['MET-11'] },
+      'Paper 6': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 7': { maxMarks: 50, subjects: ['MRT-11'] },
+      'Paper 8': { maxMarks: 50, subjects: ['MRT-13'] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 125, subjects: ['MRT-06', 'MRT-07', 'MRT-09', 'MRT-14', 'MRT-15'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MDT-01'] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MDT-03 M/E'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MDT-04 M/E'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
+  },
+  'MJI-W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 100, subjects: ['MRT-01', 'MRT-02'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-01'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-02'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-03'] },
+      'Paper 5': { maxMarks: 100, subjects: ['MET-04'] },
+      'Paper 6': { maxMarks: 100, subjects: ['MET-05'] },
+      'Paper 7': { maxMarks: 100, subjects: ['MET-08'] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MET-06'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MET-07'] },
+      'Paper 3': { maxMarks: 100, subjects: ['MET-09'] },
+      'Paper 4': { maxMarks: 100, subjects: ['MET-10'] },
+      'Paper 5': { maxMarks: 50, subjects: ['MET-11'] },
+      'Paper 6': { maxMarks: 25, subjects: ['MRT-08'] },
+      'Paper 7': { maxMarks: 50, subjects: ['MRT-10'] },
+      'Paper 8': { maxMarks: 50, subjects: ['MRT-13'] }
+    },
+    'Session 3': {
+      'Paper 1': { maxMarks: 125, subjects: ['MRT-06', 'MRT-07', 'MRT-09', 'MRT-14', 'MRT-15'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MWT-03/I'] }
+    },
+    'Session 4': {
+      'Paper 1': { maxMarks: 100, subjects: ['MWT-03/II'] },
+      'Paper 2': { maxMarks: 100, subjects: ['MWT-04'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
+  },
+  'MJP-C&W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 150, subjects: ['MRT-14', 'MRT-16', 'MRT-17', 'MRT-18', 'MRT-19'] },
+      'Paper 2': { maxMarks: 150, subjects: ['MET-12', 'MET-13', 'MET-14'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MCT-03', 'MCT-04'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
+  },
+  'MJP-D': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 150, subjects: ['MRT-14', 'MRT-16', 'MRT-17', 'MRT-18', 'MRT-19'] },
+      'Paper 2': { maxMarks: 150, subjects: ['MET-12', 'MET-13', 'MET-14'] },
+      'Practical': { maxMarks: 50, subjects: [] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MDT-05 M/E'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
+  },
+  'MJP-W': {
+    'Session 1': {
+      'Paper 1': { maxMarks: 150, subjects: ['MRT-14', 'MRT-16', 'MRT-17', 'MRT-18', 'MRT-19'] },
+      'Paper 2': { maxMarks: 150, subjects: ['MET-12', 'MET-13', 'MET-14'] }
+    },
+    'Session 2': {
+      'Paper 1': { maxMarks: 100, subjects: ['MWT-05'] },
+      'Practical': { maxMarks: 50, subjects: [] },
+      'Interview': { maxMarks: 50, subjects: [] }
+    }
   }
 };
 
-// Simplified API Service for testing
+// Real API Service for STC Marksheets
 class MarksheetService {
   constructor() {
-    this.mockCandidates = [
-      {
-        id: 1,
-        ticketNumber: 'STC2024001',
-        name: 'Priya Sharma',
-        fatherName: 'Mr. Amit Sharma',
-        courseCode: 'MSE-C&W',
-        rollNo: 'R002',
-        batch: '2023-24',
-        post: 'Motor Man',
-        stream: 'C&W',
-        status: 'active'
-      },
-      {
-        id: 2,
-        ticketNumber: 'STC2024002',
-        name: 'Rahul Kumar',
-        fatherName: 'Mr. Rajesh Kumar',
-        courseCode: 'MSE-D',
-        rollNo: 'R001',
-        batch: '2023-24',
-        post: 'Motor Man',
-        stream: 'Diesel',
-        status: 'active'
-      },
-      {
-        id: 3,
-        ticketNumber: 'STC2024003',
-        name: 'Amit Singh',
-        fatherName: 'Mr. Suresh Singh',
-        courseCode: 'MSE-C&W',
-        rollNo: 'R003',
-        batch: '2023-24',
-        post: 'Motor Man',
-        stream: 'C&W',
-        status: 'active'
-      }
-    ];
-
-    this.mockMarksData = {
-      'STC2024001': {
-        'Session 1': { 'Paper 1': 85, 'Paper 2': 78, 'Practical': 45 },
-        'Session 2': { 'Paper 1': 65, 'Paper 2': 89, 'Practical': 42 },
-        'Session 3': { 'Paper 1': 92, 'Paper 2': 38, 'Paper 3': 22, 'Paper 4': 46, 'Practical': 48 },
-        'Session 4': { 'Paper 1': 87, 'Practical': 44, 'Interview': 85 }
-      },
-      'STC2024002': {
-        'Session 1': { 'Paper 1': 92, 'Paper 2': 88, 'Practical': 48 },
-        'Session 2': { 'Paper 1': 70, 'Paper 2': 91, 'Practical': 46 },
-        'Session 3': { 'Paper 1': 89, 'Paper 2': 45, 'Paper 3': 24, 'Paper 4': 48, 'Practical': 47 },
-        'Session 4': { 'Paper 1': 93, 'Practical': 49, 'Interview': 88 }
-      },
-      'STC2024003': {
-        'Session 1': { 'Paper 1': 76, 'Paper 2': 82, 'Practical': 40 },
-        'Session 2': { 'Paper 1': 58, 'Paper 2': 85, 'Practical': 43 },
-        'Session 3': { 'Paper 1': 88, 'Paper 2': 42, 'Paper 3': 20, 'Paper 4': 44, 'Practical': 45 },
-        'Session 4': { 'Paper 1': 79, 'Practical': 41, 'Interview': 82 }
-      }
-    };
+    this.baseURL = '/api';
   }
 
-  delay(ms = 300) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  // Map course codes to API endpoints
+  getCourseApiEndpoint(courseCode) {
+    const mapping = {
+      'MSE-C&W': 'mse-c&w',
+      'MSE-D': 'mse-d',
+      'MSE-W': 'mse-w',
+      'MJR-C&W': 'mjr-c&w',
+      'MJR-D': 'mjr-d',
+      'MJR-W': 'mjr-w',
+      'MJI-C&W': 'mji-c&w',
+      'MJI-D': 'mji-d',
+      'MJI-W': 'mji-w',
+      'MJP-C&W': 'mjp-c&w',
+      'MJP-D': 'mjp-d',
+      'MJP-W': 'mjp-w'
+    };
+    return mapping[courseCode];
   }
 
   async getCandidates() {
-    await this.delay(400);
-    return {
-      success: true,
-      data: this.mockCandidates
-    };
+    try {
+      const response = await fetch(`${this.baseURL}/stc`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch candidates');
+      }
+      const result = await response.json();
+      return {
+        success: true,
+        data: result.data || []
+      };
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+      throw error;
+    }
   }
 
   async getCandidateByTicket(ticketNumber) {
-    await this.delay(200);
-    const candidate = this.mockCandidates.find(c => c.ticketNumber === ticketNumber);
-    if (!candidate) {
-      throw new Error(`Candidate with ticket number ${ticketNumber} not found`);
+    try {
+      const response = await fetch(`${this.baseURL}/stc/${ticketNumber}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Candidate with ticket number ${ticketNumber} not found`);
+        }
+        throw new Error('Failed to fetch candidate');
+      }
+      const result = await response.json();
+      return {
+        success: true,
+        data: result.data
+      };
+    } catch (error) {
+      console.error('Error fetching candidate:', error);
+      throw error;
     }
-    return {
-      success: true,
-      data: candidate
-    };
   }
 
-  async getMarksheetData(ticketNumber) {
-    await this.delay(300);
-    const data = this.mockMarksData[ticketNumber];
-    if (!data) {
-      throw new Error(`No marksheet data found for ticket number ${ticketNumber}`);
+  async getMarksheetData(ticketNumber, courseCode) {
+    try {
+      const apiEndpoint = this.getCourseApiEndpoint(courseCode);
+      if (!apiEndpoint) {
+        throw new Error(`Unsupported course code: ${courseCode}`);
+      }
+
+      const response = await fetch(`${this.baseURL}/${apiEndpoint}/${ticketNumber}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No marks found - return empty structure indicating no marks yet
+          return {
+            success: true,
+            data: null,
+            message: 'No marks added yet'
+          };
+        }
+        throw new Error('Failed to fetch marksheet data');
+      }
+      
+      const result = await response.json();
+      
+      // Transform the backend data structure to match the frontend expectations
+      const transformedData = this.transformMarksData(result.data, courseCode);
+      
+      return {
+        success: true,
+        data: transformedData
+      };
+    } catch (error) {
+      console.error('Error fetching marksheet data:', error);
+      throw error;
     }
-    return {
-      success: true,
-      data
-    };
   }
 
-  async getFailedSubjects(ticketNumber) {
-    await this.delay(250);
-    const candidate = this.mockCandidates.find(c => c.ticketNumber === ticketNumber);
-    const marksheet = this.mockMarksData[ticketNumber];
-    const structure = courseStructure[candidate.courseCode];
+  // Transform backend marks data to frontend format
+  transformMarksData(backendData, courseCode) {
+    if (!backendData) return null;
+
+    const structure = courseStructure[courseCode];
+    if (!structure) return null;
+
+    const transformedData = {};
+
+    // Initialize the structure
+    Object.keys(structure).forEach(session => {
+      transformedData[session] = {};
+      Object.keys(structure[session]).forEach(paper => {
+        transformedData[session][paper] = 0;
+      });
+    });
+
+    // Create dynamic field mapping based on course structure
+    let sessionIndex = 1;
+    let paperIndex = 1;
+    
+    Object.entries(structure).forEach(([session, papers]) => {
+      paperIndex = 1;
+      Object.entries(papers).forEach(([paper, config]) => {
+        let backendField;
+        
+        if (paper === 'Practical') {
+          backendField = `s${sessionIndex}pr_marks`;
+        } else if (paper === 'Interview') {
+          backendField = `s${sessionIndex}int_marks`;
+        } else {
+          backendField = `s${sessionIndex}p${paperIndex}_marks`;
+        }
+        
+        // Fill in the actual marks if the field exists
+        if (backendData[backendField] !== undefined) {
+          transformedData[session][paper] = backendData[backendField] || 0;
+        }
+        
+        if (paper !== 'Practical' && paper !== 'Interview') {
+          paperIndex++;
+        }
+      });
+      sessionIndex++;
+    });
+
+    return transformedData;
+  }
+
+  async getFailedSubjects(ticketNumber, courseCode, marksheetData) {
+    if (!marksheetData || !courseCode) {
+      return { success: true, data: [] };
+    }
+
+    const structure = courseStructure[courseCode];
+    if (!structure) {
+      return { success: true, data: [] };
+    }
 
     const failedSubjects = [];
     const passingPercentage = 60;
 
     Object.entries(structure).forEach(([session, papers]) => {
       Object.entries(papers).forEach(([paper, config]) => {
-        const paperMarks = marksheet[session]?.[paper];
+        const paperMarks = marksheetData[session]?.[paper];
         const passingMarks = Math.ceil(config.maxMarks * (passingPercentage / 100));
 
         if (paperMarks !== undefined && paperMarks < passingMarks) {
@@ -193,7 +467,6 @@ class MarksheetService {
   }
 
   async validateMarksheetData(ticketNumber) {
-    await this.delay(200);
     return {
       success: true,
       data: {
@@ -205,7 +478,6 @@ class MarksheetService {
   }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
-    await this.delay(500);
     const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? 'Sessional' : 'Complete'}_${new Date().toISOString().split('T')[0]}.pdf`;
     return {
       success: true,
@@ -228,6 +500,7 @@ const Marksheet = () => {
   const [selectedCandidate, setSelectedCandidate] = useState('');
   const [candidates, setCandidates] = useState([]);
   const [candidateData, setCandidateData] = useState(null);
+  const [courseCode, setCourseCode] = useState(null);
   const [marksheetData, setMarksheetData] = useState({});
   const [failedSubjects, setFailedSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -237,7 +510,71 @@ const Marksheet = () => {
   const [selectedSession, setSelectedSession] = useState('all');
   const marksheetRef = useRef();
 
-  // Optimized handlers with useCallback
+  // Helper function to determine course code from module_no or designation
+  const determineCourseCode = useCallback((moduleNo, designation) => {
+    console.log('Determining course code from:', { moduleNo, designation });
+    
+    // First check if module_no directly matches our course structure
+    if (moduleNo && courseStructure[moduleNo.toUpperCase()]) {
+      console.log('Found direct match in courseStructure:', moduleNo.toUpperCase());
+      return moduleNo.toUpperCase();
+    }
+    
+    // Check if module_no contains recognizable patterns
+    if (moduleNo) {
+      const moduleUpper = moduleNo.toUpperCase();
+      
+      // MSE patterns
+      if (moduleUpper.includes('MSE') && moduleUpper.includes('C&W')) {
+        return 'MSE-C&W';
+      }
+      if (moduleUpper.includes('MSE') && moduleUpper.includes('D')) {
+        return 'MSE-D';
+      }
+      if (moduleUpper.includes('MSE') && moduleUpper.includes('W')) {
+        return 'MSE-W';
+      }
+      
+      // MJR patterns
+      if (moduleUpper.includes('MJR') && moduleUpper.includes('C&W')) {
+        return 'MJR-C&W';
+      }
+      if (moduleUpper.includes('MJR') && moduleUpper.includes('D')) {
+        return 'MJR-D';
+      }
+      if (moduleUpper.includes('MJR') && moduleUpper.includes('W')) {
+        return 'MJR-W';
+      }
+      
+      // MJI patterns
+      if (moduleUpper.includes('MJI') && moduleUpper.includes('C&W')) {
+        return 'MJI-C&W';
+      }
+      if (moduleUpper.includes('MJI') && moduleUpper.includes('D')) {
+        return 'MJI-D';
+      }
+      if (moduleUpper.includes('MJI') && moduleUpper.includes('W')) {
+        return 'MJI-W';
+      }
+      
+      // MJP patterns
+      if (moduleUpper.includes('MJP') && moduleUpper.includes('C&W')) {
+        return 'MJP-C&W';
+      }
+      if (moduleUpper.includes('MJP') && moduleUpper.includes('D')) {
+        return 'MJP-D';
+      }
+      if (moduleUpper.includes('MJP') && moduleUpper.includes('W')) {
+        return 'MJP-W';
+      }
+    }
+    
+    // If no pattern matches, return null to indicate unsupported course
+    console.log('No course code pattern matched for:', { moduleNo, designation });
+    return null;
+  }, []);
+
+  // Load candidates for dropdown
   const loadCandidates = useCallback(async () => {
     setLoading(true);
     try {
@@ -251,43 +588,73 @@ const Marksheet = () => {
     }
   }, []);
 
+  // Load candidate data and marks
   const loadCandidateData = useCallback(async (candidate) => {
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
       // Validate candidate first
-      const validation = await marksheetService.validateMarksheetData(candidate.ticketNumber);
+      const validation = await marksheetService.validateMarksheetData(candidate.ticket_no);
       if (!validation.data.valid) {
         throw new Error(validation.data.errors.join(', '));
       }
 
-      setCandidateData(candidate);
+      // Determine course code from module_no or use a mapping
+      const detectedCourseCode = determineCourseCode(candidate.module_no, candidate.designation);
+      console.log('Detected course code:', detectedCourseCode, 'for candidate:', candidate.name);
+      
+      if (!detectedCourseCode) {
+        throw new Error(`Unsupported course module: ${candidate.module_no}. Please contact system administrator.`);
+      }
+      
+      // Set the course code state
+      setCourseCode(detectedCourseCode);
+      
+      // Create enhanced candidate object with course code
+      const enhancedCandidate = {
+        ...candidate,
+        ticketNumber: candidate.ticket_no,
+        fatherName: candidate.father_name,
+        courseCode: detectedCourseCode
+      };
 
-      // Load marksheet data
-      const marks = await marksheetService.getMarksheetData(candidate.ticketNumber);
-      setMarksheetData(marks.data);
+      setCandidateData(enhancedCandidate);
 
-      // Load failed subjects
-      const failed = await marksheetService.getFailedSubjects(candidate.ticketNumber);
-      setFailedSubjects(failed.data);
-
-      setMessage({ type: 'success', text: `Marksheet loaded for: ${candidate.name}` });
+      // Load marksheet data using course code
+      const marks = await marksheetService.getMarksheetData(candidate.ticket_no, detectedCourseCode);
+      
+      if (marks.data === null) {
+        // No marks added yet
+        setMarksheetData(null);
+        setFailedSubjects([]);
+        setMessage({ type: 'info', text: `Candidate loaded: ${candidate.name}. Course: ${detectedCourseCode}. No marks added yet.` });
+      } else {
+        setMarksheetData(marks.data);
+        
+        // Load failed subjects
+        const failed = await marksheetService.getFailedSubjects(candidate.ticket_no, detectedCourseCode, marks.data);
+        setFailedSubjects(failed.data);
+        
+        setMessage({ type: 'success', text: `Marksheet loaded for: ${candidate.name} (Course: ${detectedCourseCode})` });
+      }
     } catch (error) {
       console.error('Failed to load candidate data:', error);
       setMessage({ type: 'error', text: error.message || 'Failed to load candidate data' });
       setCandidateData(null);
+      setCourseCode(null);
       setMarksheetData({});
       setFailedSubjects([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [determineCourseCode]);
 
   const resetForm = useCallback(() => {
     setTicketNumber('');
     setSelectedCandidate('');
     setCandidateData(null);
+    setCourseCode(null);
     setMarksheetData({});
     setFailedSubjects([]);
     setMessage({ type: '', text: '' });
@@ -314,6 +681,7 @@ const Marksheet = () => {
       console.error('Failed to search candidate:', error);
       setMessage({ type: 'error', text: error.message });
       setCandidateData(null);
+      setCourseCode(null);
       setMarksheetData({});
       setFailedSubjects([]);
     }
@@ -322,6 +690,7 @@ const Marksheet = () => {
   const handleCandidateSelect = useCallback(async (candidateId) => {
     if (!candidateId) {
       setCandidateData(null);
+      setCourseCode(null);
       setMarksheetData({});
       setFailedSubjects([]);
       return;
@@ -329,7 +698,7 @@ const Marksheet = () => {
 
     const candidate = candidates.find(c => c.id === parseInt(candidateId));
     if (candidate) {
-      setTicketNumber(candidate.ticketNumber);
+      setTicketNumber(candidate.ticket_no);
       await loadCandidateData(candidate);
     }
   }, [candidates, loadCandidateData]);
@@ -368,7 +737,7 @@ const Marksheet = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber})</title>
+          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber || candidateData.ticket_no})</title>
           <style>
             @page {
               size: A4;
@@ -446,7 +815,7 @@ const Marksheet = () => {
     try {
       // Call backend API first for logging/analytics
       const result = await marksheetService.exportMarksheetPDF(
-        candidateData.ticketNumber,
+        candidateData.ticketNumber || candidateData.ticket_no,
         { sessionWise: viewMode === 'sessionWise' }
       );
 
@@ -537,7 +906,7 @@ const Marksheet = () => {
       pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight, undefined, 'FAST');
 
       // Save the PDF
-      const fileName = result.data?.fileName || `Marksheet_${candidateData.ticketNumber}_${viewMode === 'sessionWise' ? 'Sessional' : 'Complete'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = result.data?.fileName || `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${viewMode === 'sessionWise' ? 'Sessional' : 'Complete'}_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
 
       setMessage({ type: 'success', text: 'PDF exported successfully!' });
@@ -551,9 +920,14 @@ const Marksheet = () => {
 
   // Helper functions with useMemo for optimization
   const calculateTotalMarks = useMemo(() => {
-    if (!marksheetData || !candidateData) return { total: 0, maxTotal: 0 };
+    if (!marksheetData || !candidateData || !courseCode || marksheetData === null) return { total: 0, maxTotal: 0 };
 
-    const structure = courseStructure[candidateData.courseCode];
+    const structure = courseStructure[courseCode];
+    if (!structure) {
+      console.log('No course structure found for:', courseCode);
+      return { total: 0, maxTotal: 0 };
+    }
+
     let total = 0;
     let maxTotal = 0;
 
@@ -568,14 +942,14 @@ const Marksheet = () => {
     });
 
     return { total, maxTotal };
-  }, [marksheetData, candidateData, selectedSession]);
+  }, [marksheetData, candidateData, courseCode, selectedSession]);
 
   const getPassingMarks = useCallback((maxMarks) => Math.ceil(maxMarks * 0.6), []);
 
   // Computed values with useMemo
   const currentCourseStructure = useMemo(() =>
-    candidateData ? courseStructure[candidateData.courseCode] : null,
-    [candidateData]
+    courseCode ? courseStructure[courseCode] : null,
+    [courseCode]
   );
 
   const { total, maxTotal } = calculateTotalMarks;
@@ -699,7 +1073,7 @@ const Marksheet = () => {
                     <option value="">Select a candidate...</option>
                     {candidates.map(candidate => (
                       <option key={candidate.id} value={candidate.id}>
-                        {candidate.ticketNumber} - {candidate.name} ({candidate.courseCode})
+                        {candidate.ticket_no} - {candidate.name} ({determineCourseCode(candidate.module_no, candidate.designation)})
                       </option>
                     ))}
                   </select>
@@ -737,6 +1111,8 @@ const Marksheet = () => {
             {message.text && (
               <div className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === 'success'
                 ? 'bg-green-50 text-green-800 border border-green-200'
+                : message.type === 'info'
+                ? 'bg-blue-50 text-blue-800 border border-blue-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
                 }`}>
                 {message.type === 'success' ? (
@@ -745,6 +1121,16 @@ const Marksheet = () => {
                   <AlertTriangle className="w-6 h-6" />
                 )}
                 <span className="font-medium">{message.text}</span>
+              </div>
+            )}
+
+            {/* Debug Section - Show raw candidate data */}
+            {candidateData && (
+              <div className="mt-6 p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <p className="text-xs font-mono text-gray-600 mb-2">Debug Info:</p>
+                <p className="text-xs text-gray-700">Module No: "{candidateData.module_no}"</p>
+                <p className="text-xs text-gray-700">Designation: "{candidateData.designation}"</p>
+                <p className="text-xs text-gray-700">Detected Course: "{courseCode}"</p>
               </div>
             )}
           </div>
@@ -830,8 +1216,35 @@ const Marksheet = () => {
             </div>
           )}
 
+          {/* No Marks Display */}
+          {candidateData && marksheetData === null && (
+            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200 mb-8">
+              <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">No Marks Added Yet</h3>
+              <p className="text-gray-600 max-w-md mx-auto leading-relaxed mb-4">
+                The candidate <strong>{candidateData.name}</strong> (Ticket: {candidateData.ticketNumber}) has been registered but no marks have been entered yet.
+              </p>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 max-w-md mx-auto">
+                <p className="text-sm text-gray-700">
+                  <strong>Course:</strong> {courseCode || candidateData.courseCode}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Module No:</strong> {candidateData.module_no || 'Not specified'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Designation:</strong> {candidateData.designation}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Batch:</strong> {candidateData.batch}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Marksheet Display */}
-          {candidateData && (
+          {candidateData && marksheetData && (
             <div
               ref={marksheetRef}
               style={{
@@ -961,7 +1374,7 @@ const Marksheet = () => {
                         color: 'black',
                         textAlign: 'right',
                         fontSize: '14px'
-                      }}>Father's Name: {candidateData.fatherName}</td>
+                      }}>Father's Name: {candidateData.fatherName || candidateData.father_name}</td>
                     </tr>
                     <tr>
                       <td style={{
@@ -976,7 +1389,7 @@ const Marksheet = () => {
                         color: 'black',
                         textAlign: 'right',
                         fontSize: '14px'
-                      }}>Roll No: {candidateData.rollNo}</td>
+                      }}>Ticket No: {candidateData.ticketNumber || candidateData.ticket_no}</td>
                     </tr>
                     <tr>
                       <td style={{
@@ -984,7 +1397,7 @@ const Marksheet = () => {
                         fontWeight: '600',
                         color: 'black',
                         fontSize: '14px'
-                      }}>Post: {candidateData.post}</td>
+                      }}>Post: {candidateData.designation}</td>
                       <td style={{
                         padding: '4px 0',
                         fontWeight: '600',
@@ -999,7 +1412,7 @@ const Marksheet = () => {
                         fontWeight: '600',
                         color: 'black',
                         fontSize: '14px'
-                      }}>Stream: {candidateData.stream}</td>
+                      }}>Unit: {candidateData.unit}</td>
                       <td></td>
                     </tr>
                   </tbody>
