@@ -12,7 +12,7 @@ class NonRailwayController {
             const candidateData = req.body;
             
             // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation);
+            const ticketNumber = await generateTicketNumber(candidateData.designation, 'nonrailway');
             candidateData.ticket_no = ticketNumber;
 
             // Handle image upload

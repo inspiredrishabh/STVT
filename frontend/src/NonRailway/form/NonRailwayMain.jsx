@@ -28,6 +28,7 @@ const NonRailwayMain = () => {
     designation: "",
     unitCustodian: "",
     duration: "",
+    durationOption: "",
     theoryPeriod: "",
     practicalPeriod: "",
     workingUnder: "",
@@ -35,6 +36,7 @@ const NonRailwayMain = () => {
     // Educational fields
     highestQualification: "",
     fieldOfStudy: "",
+    customFieldOfStudy: "",
     institution: "",
     gradeType: "",
     gradeValue: "",
@@ -85,11 +87,11 @@ const NonRailwayMain = () => {
 
     if (validationFunctions.current[currentKey]) {
       const validation = validationFunctions.current[currentKey]();
-      if (!validation.isValid) {
-        setErrors(validation.errors);
-        return false;
-      }
-      setErrors({}); // Clear errors if validation passes
+      // if (!validation.isValid) {
+      //   setErrors(validation.errors);
+      //   return false;
+      // }
+      // setErrors({}); // Clear errors if validation passes
       return true;
     }
 
@@ -113,12 +115,60 @@ const NonRailwayMain = () => {
   const prepareFormDataForSubmission = () => {
     const submissionData = new FormData();
 
-    // Add all form fields
+    // Field mapping from frontend to backend
+    const fieldMapping = {
+      // Personal fields
+      picture: "picture",
+      name: "name",
+      sex: "sex",
+      fatherName: "father_name",
+      motherName: "mother_name",
+      dob: "dob",
+      category: "category",
+      pwd: "pwd",
+      typeOfDisability: "type_of_disability",
+      nationality: "nationality",
+      // Contact fields
+      currentAddress: "current_address",
+      permanentAddress: "permanent_address",
+      phoneNumber: "phone_number",
+      emergencyContactNumber: "emergency_contact_number",
+      email: "email",
+      // Professional fields
+      courseType: "course_type",
+      customCourseType: "course_type", // Use custom course type if provided
+      designation: "designation",
+      unitCustodian: "unit",
+      duration: "duration",
+      theoryPeriod: "theory",
+      practicalPeriod: "practical",
+      workingUnder: "working_under",
+      remark: "remarks",
+      // Educational fields
+      highestQualification: "highest_qualification",
+      fieldOfStudy: "field_of_study",
+      institution: "institution",
+      gradeType: "grade_type",
+      gradeValue: "grade_value",
+    };
+
+    // Add all form fields with proper mapping
     Object.keys(formData).forEach((key) => {
       if (key === "picture" && formData[key]) {
-        submissionData.append("picture", formData[key]);
+        submissionData.append("image", formData[key]); // Backend expects 'image' field
       } else if (formData[key] !== null && formData[key] !== "") {
-        submissionData.append(key, formData[key]);
+        const backendKey = fieldMapping[key];
+        if (backendKey) {
+          // Special handling for course type - use custom if available, otherwise use courseType
+          if (key === "courseType" && formData.customCourseType) {
+            submissionData.append(backendKey, formData.customCourseType);
+          } else if (key === "fieldOfStudy" && formData.customFieldOfStudy) {
+            // Use custom field of study if available, otherwise use selected field
+            submissionData.append(backendKey, formData.customFieldOfStudy);
+          } else if (key !== "customCourseType" && key !== "customFieldOfStudy") {
+            submissionData.append(backendKey, formData[key]);
+          }
+        }
       }
     });
 
@@ -136,7 +186,7 @@ const NonRailwayMain = () => {
     try {
       const submissionData = prepareFormDataForSubmission();
 
-      const response = await fetch(`${API_BASE}/api/candidates/nonrailway`, {
+      const response = await fetch(`http://localhost:5000/api/nonrailway`, {
         method: "POST",
         body: submissionData,
         headers: {
@@ -146,15 +196,19 @@ const NonRailwayMain = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error("Error response data:", errorData);
         throw new Error(
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
 
       const result = await response.json();
+      console.log("Submission result:", result);
+      
+      // Show success message with ticket number
+      const ticketNumber = result.data?.ticket_no || "Generated";
       alert(
-        "Registration completed successfully! Your application ID: " +
-          (result.applicationId || "Generated")
+        `Registration completed successfully! Your ticket number: ${ticketNumber}`
       );
 
       // Reset form after successful submission
@@ -179,12 +233,14 @@ const NonRailwayMain = () => {
         designation: "",
         unitCustodian: "",
         duration: "",
+        durationOption: "",
         theoryPeriod: "",
         practicalPeriod: "",
         workingUnder: "",
         remark: "",
         highestQualification: "",
         fieldOfStudy: "",
+        customFieldOfStudy: "",
         institution: "",
         gradeType: "",
         gradeValue: "",
