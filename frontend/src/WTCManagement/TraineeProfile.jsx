@@ -25,7 +25,6 @@ const TraineeProfile = () => {
             if (!response.ok) throw new Error('Failed to fetch trainees');
             const data = await response.json();
             const traineeArray = Array.isArray(data.data) ? data.data : [];
-            console.log('Fetched trainees:', traineeArray);
             setTrainees(traineeArray);
             setFilteredTrainees(traineeArray);
         } catch (err) {
@@ -139,7 +138,7 @@ const TraineeProfile = () => {
                                         <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                                             <span className="text-white font-bold text-sm">
                                                 {trainee.picture ? (
-                                                    <img src={`http://localhost:5000/${trainee.picture}`} alt={trainee.name} className="w-full h-full object-cover" />
+                                                    <img src={`http://localhost:5000/${trainee.picture}`} alt={trainee.name} className="rounded-full w-full h-full object-cover" />
                                                 ) : (
                                                     <span className="text-white font-bold text-sm">
                                                         {trainee.name.split(' ').map(n => n[0]).join('')}

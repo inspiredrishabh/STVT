@@ -3,7 +3,7 @@ globalThis.Buffer = Buffer;
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
-import BgImage from '../assets/rail.png';
+import BgImage from '../assets/fullsizelogo.png';
 
 
 // Format date for display (can be used by both components)
@@ -15,6 +15,23 @@ const formatDate = (dateString) => {
     month: 'short',
     day: 'numeric'
   });
+};
+
+const designationToHindi = (designation) => {
+  const translations = {
+    "CG Apprentice Technician III ": "सीजी अपरेंटिस तकनीशियन III कोर्स",
+    "RRB Apprentice Technician III": "आरआरबी अपरेंटिस तकनीशियन III कोर्स",
+    "RRC Assistant Workshop": "आरआरसी सहायक कार्यशाला",
+    "CG Assistant Workshop ": "सीजी सहायक कार्यशाला",
+    "GDCE Apprentice tech. III ": "जीडीसीई अपरेंटिस तकनीशियन III कोर्स",
+    "Refresher Course for Welders ": "वेल्डर्स के लिए रिफ्रेशर कोर्स",
+    "Refresher Course for Artisans ": "कल कारखाने के लिए रिफ्रेशर कोर्स",
+    "Special Course on MIG/ MAG Welding & Air Plasma Cutting ": "एमआईजी/एमएजी वेल्डिंग और एयर प्लाज्मा कटिंग पर विशेष पाठ्यक्रम",
+    "Basic Welding Training for Beginners": "आरंभकर्ता करने वालों के लिए बुनियादी वेल्डिंग ",
+    "Pre-selection Coaching for JE Selection": "जेई चयन के लिए पूर्व-चयन कोचिंग",
+  };
+  // Return the Hindi translation or the original designation if not found
+  return translations[designation] || designation;
 };
 
 const CertificatePreview = () => {
@@ -81,10 +98,10 @@ const CertificatePreview = () => {
               position: 'absolute',
               top: '50%',
               left: '50%',
-              width: '80%',
-              height: '80%',
+              width: '100%',
+              height: '100%',
               transform: 'translate(-50%, -50%)',
-              opacity: 0.08,
+              opacity: 0.2,
               zIndex: 0,
               pointerEvents: 'none',
               objectFit: 'contain',
@@ -118,7 +135,7 @@ const CertificatePreview = () => {
                 <span className="underline mr-2" contentEditable={true} > _______________________________ </span>
                 <span className="mr-2"> कार्य स्थल / यूनिट </span>
                 <span className="underline mr-2" contentEditable={true} > ________________________________ </span>
-                <span className=""> ने इस संस्थान में वेल्डर रिफ्रेशर कोर्स प्रशिक्षण कार्यक्रम में दिनांक </span>
+                <span className=""> ने इस संस्थान में {designationToHindi(trainee.designation)} प्रशिक्षण कार्यक्रम में दिनांक </span>
                 <span className="italic mr-2">
                   {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} से दिनांक  {formatDate(trainee.dateOfSparing)}
                 </span>

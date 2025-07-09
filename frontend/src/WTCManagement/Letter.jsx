@@ -341,11 +341,11 @@ const Letter = () => {
                                                 </td>
                                                 <td className="p-4 font-medium">{trainee.ticketNo}</td>
                                                 <td className="p-4">{trainee.name}</td>
-                                                <td className="p-4">{trainee.trade}</td>
+                                                <td className="p-4">{trainee.designation}</td>
                                                 <td className="p-4">{trainee.batch}</td>
                                                 <td className="p-4">{trainee.moduleNo}</td>
                                                 <td className="p-4">
-                                                    {formatDateDDMMYY(trainee.dateOfJoiningStcWtcNonRailwa)} - {formatDateDDMMYY(trainee.dateOfSparing)}
+                                                    {formatDateDDMMYY(trainee.dateOfJoiningStcWtcNonRailway)} - {formatDateDDMMYY(trainee.dateOfSparing)}
                                                 </td>
                                                 <td className="p-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs ${trainee.dateOfSparing >= today
