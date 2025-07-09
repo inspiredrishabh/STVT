@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -103,6 +102,32 @@ const HomePageWTC = () => {
         </div>
       </div>
 
+      {/* Quick Stats */}
+      <div className="bg-white rounded-2xl shadow-lg p-8 mt-6 border border-gray-200 max-w-7xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          Quick Overview
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="text-center p-4 bg-blue-50 rounded-xl">
+            <div className="text-3xl font-bold text-blue-600 mb-2">25</div>
+            <div className="text-gray-600">Active Trainees</div>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-xl">
+            <div className="text-3xl font-bold text-green-600 mb-2">8</div>
+            <div className="text-gray-600">Ongoing Courses</div>
+          </div>
+          <div className="text-center p-4 bg-purple-50 rounded-xl">
+            <div className="text-3xl font-bold text-purple-600 mb-2">12</div>
+            <div className="text-gray-600">Completed This Month</div>
+          </div>
+          <div className="text-center p-4 bg-orange-50 rounded-xl">
+            <div className="text-3xl font-bold text-orange-600 mb-2">92%</div>
+            <div className="text-gray-600">Average Attendance</div>
+          </div>
+        </div>
+      </div>
+
+
       {/* Main Content */}
       <div className="w-full px-8 py-12">
         {/* Management Cards Grid */}
@@ -143,30 +168,6 @@ const HomePageWTC = () => {
           })}
         </div>
 
-        {/* Quick Stats */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Quick Overview
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center p-4 bg-blue-50 rounded-xl">
-              <div className="text-3xl font-bold text-blue-600 mb-2">25</div>
-              <div className="text-gray-600">Active Trainees</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-xl">
-              <div className="text-3xl font-bold text-green-600 mb-2">8</div>
-              <div className="text-gray-600">Ongoing Courses</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-xl">
-              <div className="text-3xl font-bold text-purple-600 mb-2">12</div>
-              <div className="text-gray-600">Completed This Month</div>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-xl">
-              <div className="text-3xl font-bold text-orange-600 mb-2">92%</div>
-              <div className="text-gray-600">Average Attendance</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
