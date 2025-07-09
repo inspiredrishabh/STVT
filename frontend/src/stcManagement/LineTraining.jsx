@@ -33,6 +33,7 @@ const LineTraining = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTraineeInfo, setSelectedTraineeInfo] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   // Modal states
   const [viewModal, setViewModal] = useState({ isOpen: false, training: null });
@@ -102,31 +103,38 @@ const LineTraining = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // Fetch trainees
-      const traineeResponse = await fetch("/api/trainees");
-      const traineeData = traineeResponse.ok
-        ? await traineeResponse.json()
-        : mockTrainees;
-      setTrainees(traineeData);
+      // Fetch STC candidates (trainees)
+      const traineeResponse = await fetch("/api/stc");
+      if (traineeResponse.ok) {
+        const traineeData = await traineeResponse.json();
+        setTrainees(traineeData.data || traineeData);
+      } else {
+        throw new Error("Failed to fetch trainees");
+      }
 
       // Fetch line trainings
       const trainingResponse = await fetch("/api/line-trainings");
-      const trainingData = trainingResponse.ok
-        ? await trainingResponse.json()
-        : mockTrainings;
-      setTrainings(trainingData);
+      if (trainingResponse.ok) {
+        const trainingData = await trainingResponse.json();
+        setTrainings(trainingData.data || trainingData);
+      } else {
+        throw new Error("Failed to fetch line trainings");
+      }
 
       // If coming from trainee profile, preselect the trainee
       if (preselectedTraineeId && preselectedTicketNo) {
-        const selectedTrainee = traineeData.find(
-          (t) => t.id.toString() === preselectedTraineeId
+        const traineeData = await traineeResponse.json();
+        const candidates = traineeData.data || traineeData;
+        const selectedTrainee = candidates.find(
+          (t) => t.id.toString() === preselectedTraineeId || t.ticket_no === preselectedTicketNo
         );
         if (selectedTrainee) {
-          setSelectedTickets([selectedTrainee.ticketNo]);
+          setSelectedTickets([selectedTrainee.ticket_no]);
           setSelectedTraineeInfo({
             id: preselectedTraineeId,
-            ticketNo: preselectedTicketNo,
+            ticketNo: selectedTrainee.ticket_no,
             name: decodeURIComponent(preselectedName || selectedTrainee.name),
             designation: selectedTrainee.designation,
             unit: selectedTrainee.unit,
@@ -135,318 +143,12 @@ const LineTraining = () => {
         }
       }
     } catch (err) {
+      console.error("Error fetching data:", err);
       setError(err.message);
-      // Use mock data
-      setTrainees(mockTrainees);
-      setTrainings(mockTrainings);
-
-      // Handle preselection with mock data
-      if (preselectedTicketNo) {
-        const selectedTrainee = mockTrainees.find(
-          (t) => t.ticketNo === preselectedTicketNo
-        );
-        if (selectedTrainee) {
-          setSelectedTickets([selectedTrainee.ticketNo]);
-          setSelectedTraineeInfo({
-            id: preselectedTraineeId,
-            ticketNo: preselectedTicketNo,
-            name: decodeURIComponent(preselectedName || selectedTrainee.name),
-            designation: selectedTrainee.designation,
-            unit: selectedTrainee.unit,
-          });
-          setIsAddMode(true);
-        }
-      }
     } finally {
       setLoading(false);
     }
   };
-
-  // Mock data
-  const mockTrainees = [
-    {
-      id: 1,
-      ticketNo: "STC2024001",
-      name: "Rahul Sharma",
-      designation: "MSE-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 2,
-      ticketNo: "STC2024002",
-      name: "Priya Singh",
-      designation: "MSE-D",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 3,
-      ticketNo: "STC2024003",
-      name: "Amit Kumar",
-      designation: "MSE-W",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 4,
-      ticketNo: "STC2024004",
-      name: "Neha Gupta",
-      designation: "MJR-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 5,
-      ticketNo: "STC2024005",
-      name: "Vikash Yadav",
-      designation: "MJR-D",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 6,
-      ticketNo: "STC2024006",
-      name: "Sunita Devi",
-      designation: "MJR-W",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 7,
-      ticketNo: "STC2024007",
-      name: "Abhijeet Malik",
-      designation: "MJI-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 8,
-      ticketNo: "STC2024008",
-      name: "Anjali Kumari",
-      designation: "MJI-D",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 9,
-      ticketNo: "STC2024009",
-      name: "Manoj Kumar",
-      designation: "MJI-W",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 10,
-      ticketNo: "STC2024010",
-      name: "Pooja Singh",
-      designation: "MJP-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 11,
-      ticketNo: "STC2024011",
-      name: "Sandeep Kumar",
-      designation: "MJP-D",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 12,
-      ticketNo: "STC2024012",
-      name: "Kavita Sharma",
-      designation: "MJP-W",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 13,
-      ticketNo: "STC2024013",
-      name: "Ravi Patel",
-      designation: "ASE",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 14,
-      ticketNo: "STC2024014",
-      name: "Sita Ram",
-      designation: "AJE-E",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 15,
-      ticketNo: "STC2024015",
-      name: "Deepak Singh",
-      designation: "IJE-E",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 16,
-      ticketNo: "STC2024016",
-      name: "Meera Joshi",
-      designation: "RJE-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 17,
-      ticketNo: "STC2024017",
-      name: "Ramesh Verma",
-      designation: "RCW-C&W",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 18,
-      ticketNo: "STC2024018",
-      name: "Sonal Agarwal",
-      designation: "RD-D",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 19,
-      ticketNo: "STC2024019",
-      name: "Arjun Yadav",
-      designation: "TS-S&T",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 20,
-      ticketNo: "STC2024020",
-      name: "Preeti Sharma",
-      designation: "LH-I-D",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 21,
-      ticketNo: "STC2024021",
-      name: "Suresh Kumar",
-      designation: "LH-II-D",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 22,
-      ticketNo: "STC2024022",
-      name: "Anita Singh",
-      designation: "FM-E",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 23,
-      ticketNo: "STC2024023",
-      name: "Rajesh Gupta",
-      designation: "WT-C&W",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 24,
-      ticketNo: "STC2024024",
-      name: "Nisha Patel",
-      designation: "DM-D",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 25,
-      ticketNo: "STC2024025",
-      name: "Vinod Kumar",
-      designation: "WE-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 26,
-      ticketNo: "STC2024026",
-      name: "Rekha Sharma",
-      designation: "NDT-C&W",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 27,
-      ticketNo: "STC2024027",
-      name: "Ajay Singh",
-      designation: "EA-E",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 28,
-      ticketNo: "STC2024028",
-      name: "Shanti Devi",
-      designation: "3DMP-C&W",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-  ];
-
-  const mockTrainings = [
-    {
-      id: 1,
-      ticketNumbers: ["STC2024001", "STC2024013"],
-      activityCentre: "JAT Diesel Shed",
-      startDate: "2024-06-01",
-      endDate: "2024-08-31",
-      status: "In Progress",
-      description: "Practical training on diesel locomotive maintenance",
-    },
-    {
-      id: 2,
-      ticketNumbers: ["STC2024002", "STC2024014", "STC2024008"],
-      activityCentre: "FZD Electric Shed",
-      startDate: "2024-07-01",
-      endDate: "2024-09-30",
-      status: "Scheduled",
-      description: "Electric traction training program",
-    },
-    {
-      id: 3,
-      ticketNumbers: ["STC2024004", "STC2024010"],
-      activityCentre: "MB Carriage Workshop",
-      startDate: "2024-05-15",
-      endDate: "2024-08-15",
-      status: "In Progress",
-      description: "Carriage and wagon maintenance training",
-    },
-  ];
 
   const handleTicketSelection = (ticketNo) => {
     setSelectedTickets((prev) =>
@@ -458,9 +160,11 @@ const LineTraining = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
     if (selectedTickets.length === 0) {
       alert("Please select at least one trainee");
+      setSaving(false);
       return;
     }
 
@@ -469,6 +173,7 @@ const LineTraining = () => {
     if (Object.keys(dateErrors).length > 0) {
       setFormErrors(dateErrors);
       alert("Please fix the date validation errors before submitting");
+      setSaving(false);
       return;
     }
 
@@ -484,38 +189,40 @@ const LineTraining = () => {
     try {
       const response = await fetch("/api/line-trainings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(trainingData),
       });
 
       if (response.ok) {
-        const newTraining = await response.json();
+        const result = await response.json();
+        const newTraining = result.data || result;
         setTrainings((prev) => [...prev, newTraining]);
+        
+        // Reset form
+        setFormData({
+          activityCentre: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        });
+        setFormErrors({});
+        setSelectedTickets([]);
+        setSelectedTraineeInfo(null);
+        setIsAddMode(false);
+
+        alert(`Line training ${status === "In Progress" ? "started" : "scheduled"} successfully!`);
       } else {
-        // Mock success for demo
-        const newTraining = {
-          id: Date.now(),
-          ...trainingData,
-        };
-        setTrainings((prev) => [...prev, newTraining]);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create training");
       }
-
-      // Reset form
-      setFormData({
-        activityCentre: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-      });
-      setFormErrors({});
-      setSelectedTickets([]);
-      setSelectedTraineeInfo(null);
-      setIsAddMode(false);
-
-      alert(`Line training ${status === "In Progress" ? "started" : "scheduled"} successfully!`);
     } catch (error) {
       console.error("Error creating training:", error);
-      alert("Error scheduling training. Please try again.");
+      alert(`Error scheduling training: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -545,33 +252,56 @@ const LineTraining = () => {
     }
   };
 
-  const filteredTrainees = trainees.filter(
-    (trainee) =>
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.designation.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTrainees = Array.isArray(trainees) 
+    ? trainees.filter(
+        (trainee) =>
+          trainee &&
+          (trainee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           trainee.ticket_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           trainee.designation?.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : [];
 
   // Calculate stats function
   const calculateStats = () => {
+    // Defensive check: ensure trainings is an array
+    if (!Array.isArray(trainings) || trainings.length === 0) {
+      return {
+        totalPrograms: 0,
+        activePrograms: 0,
+        completedPrograms: 0,
+        scheduledPrograms: 0,
+        totalTraineesInTraining: 0,
+        uniqueTraineesCount: 0,
+        completionRate: 0,
+      };
+    }
+
     const totalPrograms = trainings.length;
     const activePrograms = trainings.filter(
-      (t) => t.status === "In Progress"
+      (t) => t && t.status === "In Progress"
     ).length;
     const completedPrograms = trainings.filter(
-      (t) => t.status === "Completed"
+      (t) => t && t.status === "Completed"
     ).length;
     const scheduledPrograms = trainings.filter(
-      (t) => t.status === "Scheduled"
+      (t) => t && t.status === "Scheduled"
     ).length;
 
     const totalTraineesInTraining = trainings.reduce((acc, training) => {
+      if (!training || !Array.isArray(training.ticketNumbers)) {
+        return acc;
+      }
       return acc + training.ticketNumbers.length;
     }, 0);
 
     const uniqueTrainees = new Set();
     trainings.forEach((training) => {
-      training.ticketNumbers.forEach((ticket) => uniqueTrainees.add(ticket));
+      if (training && Array.isArray(training.ticketNumbers)) {
+        training.ticketNumbers.forEach((ticket) => {
+          if (ticket) uniqueTrainees.add(ticket);
+        });
+      }
     });
 
     const completionRate =
@@ -615,27 +345,31 @@ const LineTraining = () => {
 
   const confirmDelete = async () => {
     const trainingToDelete = deleteModal.training;
-
+    
     try {
       const response = await fetch(
         `/api/line-trainings/${trainingToDelete.id}`,
         {
           method: "DELETE",
+          headers: {
+            "Accept": "application/json"
+          }
         }
       );
 
-      if (response.ok || !response.ok) {
-        // Remove from state (works for both API and mock)
+      if (response.ok) {
+        // Remove from state
         setTrainings((prev) =>
           prev.filter((t) => t.id !== trainingToDelete.id)
         );
         alert("Training program deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete training");
       }
     } catch (error) {
       console.error("Error deleting training:", error);
-      // Still remove from state for demo
-      setTrainings((prev) => prev.filter((t) => t.id !== trainingToDelete.id));
-      alert("Training program deleted successfully!");
+      alert(`Error deleting training: ${error.message}`);
     }
 
     setDeleteModal({ isOpen: false, training: null });
@@ -643,9 +377,11 @@ const LineTraining = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
     if (selectedTickets.length === 0) {
       alert("Please select at least one trainee");
+      setSaving(false);
       return;
     }
 
@@ -654,6 +390,7 @@ const LineTraining = () => {
     if (Object.keys(dateErrors).length > 0) {
       setFormErrors(dateErrors);
       alert("Please fix the date validation errors before submitting");
+      setSaving(false);
       return;
     }
 
@@ -661,7 +398,6 @@ const LineTraining = () => {
     const status = determineStatus(formData.startDate);
 
     const updatedTraining = {
-      ...editModal.training,
       ...formData,
       ticketNumbers: selectedTickets,
       status: status,
@@ -672,38 +408,45 @@ const LineTraining = () => {
         `/api/line-trainings/${editModal.training.id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
           body: JSON.stringify(updatedTraining),
         }
       );
 
-      if (response.ok || !response.ok) {
-        // Update in state (works for both API and mock)
+      if (response.ok) {
+        const result = await response.json();
+        const updated = result.data || result;
+        
+        // Update in state
         setTrainings((prev) =>
           prev.map((t) =>
-            t.id === editModal.training.id ? updatedTraining : t
+            t.id === editModal.training.id ? { ...editModal.training, ...updated } : t
           )
         );
         alert("Training program updated successfully!");
+        
+        setEditModal({ isOpen: false, training: null });
+        setSelectedTickets([]);
+        setFormErrors({});
+        setFormData({
+          activityCentre: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update training");
       }
     } catch (error) {
       console.error("Error updating training:", error);
-      // Still update state for demo
-      setTrainings((prev) =>
-        prev.map((t) => (t.id === editModal.training.id ? updatedTraining : t))
-      );
-      alert("Training program updated successfully!");
+      alert(`Error updating training: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
-
-    setEditModal({ isOpen: false, training: null });
-    setSelectedTickets([]);
-    setFormErrors({});
-    setFormData({
-      activityCentre: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-    });
   };
 
   if (loading) {
@@ -809,9 +552,9 @@ const LineTraining = () => {
         )}
 
         {error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">
-              Demo Mode: Using mock data. {error}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800">
+              Error: {error}. Please check your connection and try again.
             </p>
           </div>
         )}
@@ -858,7 +601,7 @@ const LineTraining = () => {
                       <div className="flex flex-wrap gap-2">
                         {selectedTickets.map((ticket) => {
                           const trainee = trainees.find(
-                            (t) => t.ticketNo === ticket
+                            (t) => t.ticket_no === ticket
                           );
                           return (
                             <span
@@ -885,8 +628,8 @@ const LineTraining = () => {
                     {filteredTrainees.map((trainee) => (
                       <div
                         key={trainee.id}
-                        onClick={() => handleTicketSelection(trainee.ticketNo)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticketNo)
+                        onClick={() => handleTicketSelection(trainee.ticket_no)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticket_no)
                           ? "border-purple-500 bg-purple-50"
                           : "border-gray-200 hover:border-purple-300"
                           }`}
@@ -897,19 +640,19 @@ const LineTraining = () => {
                               {trainee.name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {trainee.ticketNo}
+                              {trainee.ticket_no}
                             </p>
                             <p className="text-sm text-gray-500">
                               {trainee.designation} - {trainee.unit}
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticketNo)
+                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticket_no)
                               ? "bg-purple-500 border-purple-500"
                               : "border-gray-300"
                               }`}
                           >
-                            {selectedTickets.includes(trainee.ticketNo) && (
+                            {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
                             )}
                           </div>
@@ -1010,10 +753,11 @@ const LineTraining = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center"
+                  disabled={saving}
+                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Schedule Training
+                  {saving ? "Scheduling..." : "Schedule Training"}
                 </button>
               </div>
             </form>
@@ -1140,7 +884,7 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {trainings.length > 0
+                {Array.isArray(trainings) && trainings.length > 0
                   ? Math.round(stats.totalTraineesInTraining / trainings.length)
                   : 0}
               </p>
@@ -1148,7 +892,9 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(trainings.map((t) => t.activityCentre)).size}
+                {Array.isArray(trainings) 
+                  ? new Set(trainings.filter(t => t && t.activityCentre).map((t) => t.activityCentre)).size
+                  : 0}
               </p>
               <p className="text-sm text-gray-600">Active Centres</p>
             </div>
@@ -1166,7 +912,7 @@ const LineTraining = () => {
               : "Active Line Training Programs"}
           </h2>
 
-          {trainings.length === 0 ? (
+          {!Array.isArray(trainings) || trainings.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -1178,7 +924,7 @@ const LineTraining = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {trainings.map((training) => (
+              {Array.isArray(trainings) && trainings.map((training) => (
                 <div
                   key={training.id}
                   className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
@@ -1187,7 +933,7 @@ const LineTraining = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">
-                          {training.activityCentre}
+                          {training.activityCentre || 'Unknown Centre'}
                         </h3>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -1195,24 +941,22 @@ const LineTraining = () => {
                           )}`}
                         >
                           {getStatusIcon(training.status)}
-                          <span className="ml-1">{training.status}</span>
+                          <span className="ml-1">{training.status || 'Unknown'}</span>
                         </span>
                       </div>
                       <p className="text-gray-600 mb-3">
-                        {training.description}
+                        {training.description || 'No description available'}
                       </p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center text-gray-600">
                           <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(
-                            training.startDate
-                          ).toLocaleDateString()} -{" "}
-                          {new Date(training.endDate).toLocaleDateString()}
+                          {training.startDate ? new Date(training.startDate).toLocaleDateString() : 'TBD'} -{" "}
+                          {training.endDate ? new Date(training.endDate).toLocaleDateString() : 'TBD'}
                         </div>
                         <div className="flex items-center text-gray-600">
                           <Users className="w-4 h-4 mr-2" />
-                          {training.ticketNumbers.length} Trainee(s)
+                          {Array.isArray(training.ticketNumbers) ? training.ticketNumbers.length : 0} Trainee(s)
                         </div>
                       </div>
                     </div>
@@ -1244,10 +988,10 @@ const LineTraining = () => {
 
                   {/* Trainee Tags */}
                   <div className="flex flex-wrap gap-2">
-                    {training.ticketNumbers.map((ticketNo) => {
-                      const trainee = trainees.find(
-                        (t) => t.ticketNo === ticketNo
-                      );
+                    {Array.isArray(training.ticketNumbers) && training.ticketNumbers.map((ticketNo) => {
+                      const trainee = Array.isArray(trainees) 
+                        ? trainees.find((t) => t && t.ticket_no === ticketNo)
+                        : null;
                       return (
                         <span
                           key={ticketNo}
@@ -1343,13 +1087,13 @@ const LineTraining = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Assigned Trainees (
-                    {viewModal.training?.ticketNumbers.length})
+                    {viewModal.training?.ticketNumbers?.length || 0})
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {viewModal.training?.ticketNumbers.map((ticketNo) => {
-                      const trainee = trainees.find(
-                        (t) => t.ticketNo === ticketNo
-                      );
+                    {viewModal.training?.ticketNumbers?.map((ticketNo) => {
+                      const trainee = Array.isArray(trainees)
+                        ? trainees.find((t) => t && t.ticket_no === ticketNo)
+                        : null;
                       return (
                         <span
                           key={ticketNo}
@@ -1412,7 +1156,7 @@ const LineTraining = () => {
                       <div className="flex flex-wrap gap-2">
                         {selectedTickets.map((ticket) => {
                           const trainee = trainees.find(
-                            (t) => t.ticketNo === ticket
+                            (t) => t.ticket_no === ticket
                           );
                           return (
                             <span
@@ -1439,8 +1183,8 @@ const LineTraining = () => {
                     {trainees.map((trainee) => (
                       <div
                         key={trainee.id}
-                        onClick={() => handleTicketSelection(trainee.ticketNo)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticketNo)
+                        onClick={() => handleTicketSelection(trainee.ticket_no)}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticket_no)
                           ? "border-purple-500 bg-purple-50"
                           : "border-gray-200 hover:border-purple-300"
                           }`}
@@ -1451,19 +1195,19 @@ const LineTraining = () => {
                               {trainee.name}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {trainee.ticketNo}
+                              {trainee.ticket_no}
                             </p>
                             <p className="text-xs text-gray-500">
                               {trainee.designation} - {trainee.unit}
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticketNo)
+                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticket_no)
                               ? "bg-purple-500 border-purple-500"
                               : "border-gray-300"
                               }`}
                           >
-                            {selectedTickets.includes(trainee.ticketNo) && (
+                            {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
                             )}
                           </div>
@@ -1564,10 +1308,11 @@ const LineTraining = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center"
+                    disabled={saving}
+                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    Update Training
+                    {saving ? "Updating..." : "Update Training"}
                   </button>
                 </div>
               </form>

@@ -3,6 +3,8 @@ const cors = require('cors');
 const path = require('path');
 
 // TEST COMMIT to back safe commit before major changes
+// TEST COMMIT to back safe commit before major changes  --- 2
+// TEST COMMIT to back safe commit before major changes  --- 3
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -44,8 +46,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stc', stcRoutes);
 app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
-app.use('/api/line-trainings', lineTrainingRoutes);
 
+app.use('/api/line-trainings', lineTrainingRoutes);
 // Course-specific routes based on course structure
 app.use('/api/mse-c&w', mseCwRoutes);
 app.use('/api/mse-d', msedRoutes);

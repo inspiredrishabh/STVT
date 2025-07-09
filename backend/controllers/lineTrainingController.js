@@ -9,25 +9,50 @@ class LineTrainingController {
 
     async createCandidate(req, res) {
         try {
-            const candidateData = req.body;
-            console.log('Creating Line Training candidate with data:', candidateData);
+            const trainingData = req.body;
+            console.log('Creating Line Training program with data:', trainingData);
             
-            // Generate ticket number
-            // const ticketNumber = await generateTicketNumber(candidateData.designation);  //neeed to add designation and traineeType in frontend formData sending and also in line-training table 
-            const ticketNumber = candidateData.ticketNumbers;
-            candidateData.ticket_no = ticketNumber;
+            // Handle multiple ticket numbers - create a record for each trainee
+            const ticketNumbers = Array.isArray(trainingData.ticketNumbers) 
+                ? trainingData.ticketNumbers 
+                : [trainingData.ticketNumbers];
+            
+            const createdCandidates = [];
+            
+            for (const ticketNo of ticketNumbers) {
+                const candidateData = {
+                    ticket_no: ticketNo,
+                    name: '', // Will be populated from STC data if needed
+                    designation: '', // Will be populated from STC data if needed
+                    activity_centre: trainingData.activityCentre,
+                    start_date: trainingData.startDate,
+                    end_date: trainingData.endDate,
+                    remark: trainingData.description || trainingData.remark || ''
+                };
+                
+                const newCandidate = await this.lineTrainingModel.create(candidateData);
+                createdCandidates.push(newCandidate);
+            }
 
-            const newCandidate = await this.lineTrainingModel.create(candidateData);
             res.status(201).json({
                 success: true,
-                message: 'Line Training Candidate created successfully',
-                data: newCandidate
+                message: `Line Training created successfully for ${createdCandidates.length} candidate(s)`,
+                data: {
+                    id: createdCandidates[0]?.id,
+                    activityCentre: trainingData.activityCentre,
+                    startDate: trainingData.startDate,
+                    endDate: trainingData.endDate,
+                    description: trainingData.description,
+                    status: trainingData.status,
+                    ticketNumbers: ticketNumbers,
+                    candidates: createdCandidates
+                }
             });
         } catch (error) {
-            console.error('Error creating Line Training candidate:', error);
+            console.error('Error creating Line Training:', error);
             res.status(500).json({
                 success: false,
-                message: error.message || 'Failed to create Line Training candidate'
+                message: error.message || 'Failed to create Line Training'
             });
         }
     }
@@ -35,18 +60,56 @@ class LineTrainingController {
     async getCandidates(req, res) {
         try {
             const candidates = await this.lineTrainingModel.getAll();
+            
+            // Group candidates by training program (same activity center, dates)
+            const trainingPrograms = {};
+            
+            candidates.forEach(candidate => {
+                const key = `${candidate.activity_centre}_${candidate.start_date}_${candidate.end_date}`;
+                
+                if (!trainingPrograms[key]) {
+                    trainingPrograms[key] = {
+                        id: candidate.id,
+                        activityCentre: candidate.activity_centre,
+                        startDate: candidate.start_date,
+                        endDate: candidate.end_date,
+                        description: candidate.remark || '',
+                        status: this.determineStatus(candidate.start_date),
+                        ticketNumbers: [],
+                        created_at: candidate.created_at
+                    };
+                }
+                
+                trainingPrograms[key].ticketNumbers.push(candidate.ticket_no);
+            });
+            
+            const programs = Object.values(trainingPrograms);
+            
             res.status(200).json({
                 success: true,
-                message: 'Line Training Candidates retrieved successfully',
-                data: candidates,
-                count: candidates.length
+                message: 'Line Training Programs retrieved successfully',
+                data: programs,
+                count: programs.length
             });
         } catch (error) {
-            console.error('Error getting Line Training candidates:', error);
+            console.error('Error getting Line Training programs:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve Line Training candidates'
+                message: 'Failed to retrieve Line Training programs'
             });
+        }
+    }
+    
+    // Helper method to determine status based on start date
+    determineStatus(startDate) {
+        const today = new Date().toISOString().split('T')[0];
+        const start = new Date(startDate);
+        const now = new Date(today);
+        
+        if (start <= now) {
+            return "In Progress";
+        } else {
+            return "Scheduled";
         }
     }
 
@@ -203,20 +266,161 @@ class LineTrainingController {
         }
     }
 
-    // Backward compatibility methods
-    async getCandidateById(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.getCandidateByTicketNumber(req, res);
-    }
-
+    // Update training program by ID
     async updateCandidate(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.updateCandidateByTicketNumber(req, res);
+        try {
+            const { id } = req.params;
+            const trainingData = req.body;
+            
+            // First, get the existing training program to find all candidates
+            const existingCandidate = await this.lineTrainingModel.getById(id);
+            if (!existingCandidate) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Training program not found'
+                });
+            }
+            
+            // Find all candidates with same activity center and dates (same program)
+            const allCandidates = await this.lineTrainingModel.getAll();
+            const programCandidates = allCandidates.filter(c => 
+                c.activity_centre === existingCandidate.activity_centre &&
+                c.start_date === existingCandidate.start_date &&
+                c.end_date === existingCandidate.end_date
+            );
+            
+            // Delete old program candidates
+            for (const candidate of programCandidates) {
+                await this.lineTrainingModel.deleteByTicketNumber(candidate.ticket_no);
+            }
+            
+            // Create new candidates with updated data
+            const ticketNumbers = Array.isArray(trainingData.ticketNumbers) 
+                ? trainingData.ticketNumbers 
+                : [trainingData.ticketNumbers];
+            
+            const updatedCandidates = [];
+            
+            for (const ticketNo of ticketNumbers) {
+                const candidateData = {
+                    ticket_no: ticketNo,
+                    name: '',
+                    designation: '',
+                    activity_centre: trainingData.activityCentre,
+                    start_date: trainingData.startDate,
+                    end_date: trainingData.endDate,
+                    remark: trainingData.description || ''
+                };
+                
+                const newCandidate = await this.lineTrainingModel.create(candidateData);
+                updatedCandidates.push(newCandidate);
+            }
+            
+            res.status(200).json({
+                success: true,
+                message: 'Training program updated successfully',
+                data: {
+                    id: updatedCandidates[0]?.id,
+                    activityCentre: trainingData.activityCentre,
+                    startDate: trainingData.startDate,
+                    endDate: trainingData.endDate,
+                    description: trainingData.description,
+                    status: trainingData.status,
+                    ticketNumbers: ticketNumbers
+                }
+            });
+        } catch (error) {
+            console.error('Error updating training program:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to update training program'
+            });
+        }
     }
 
+    // Delete training program by ID
     async deleteCandidate(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.deleteCandidateByTicketNumber(req, res);
+        try {
+            const { id } = req.params;
+            
+            // Get the training program to find all related candidates
+            const existingCandidate = await this.lineTrainingModel.getById(id);
+            if (!existingCandidate) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Training program not found'
+                });
+            }
+            
+            // Find all candidates with same activity center and dates (same program)
+            const allCandidates = await this.lineTrainingModel.getAll();
+            const programCandidates = allCandidates.filter(c => 
+                c.activity_centre === existingCandidate.activity_centre &&
+                c.start_date === existingCandidate.start_date &&
+                c.end_date === existingCandidate.end_date
+            );
+            
+            // Delete all candidates in this program
+            for (const candidate of programCandidates) {
+                await this.lineTrainingModel.deleteByTicketNumber(candidate.ticket_no);
+            }
+            
+            res.status(200).json({
+                success: true,
+                message: 'Training program deleted successfully'
+            });
+        } catch (error) {
+            console.error('Error deleting training program:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete training program'
+            });
+        }
+    }
+
+    // Get training program by ID
+    async getCandidateById(req, res) {
+        try {
+            const { id } = req.params;
+            const candidate = await this.lineTrainingModel.getById(id);
+            
+            if (!candidate) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Training program not found'
+                });
+            }
+            
+            // Find all candidates in the same program
+            const allCandidates = await this.lineTrainingModel.getAll();
+            const programCandidates = allCandidates.filter(c => 
+                c.activity_centre === candidate.activity_centre &&
+                c.start_date === candidate.start_date &&
+                c.end_date === candidate.end_date
+            );
+            
+            const trainingProgram = {
+                id: candidate.id,
+                activityCentre: candidate.activity_centre,
+                startDate: candidate.start_date,
+                endDate: candidate.end_date,
+                description: candidate.remark || '',
+                status: this.determineStatus(candidate.start_date),
+                ticketNumbers: programCandidates.map(c => c.ticket_no)
+            };
+
+            res.status(200).json({
+                success: true,
+                message: 'Training program retrieved successfully',
+                data: trainingProgram
+            });
+        } catch (error) {
+            console.error('Error getting training program:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to retrieve training program'
+            });
+        }
     }
 }
 
