@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "Mangal";
+  src: url("./assets/MANGAL.TTF") format("truetype");
+}
+
+@theme {
+  --font-family-mangal: "Mangal", sans-serif;
+}
