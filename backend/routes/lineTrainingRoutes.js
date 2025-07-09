@@ -7,25 +7,25 @@ const LineTrainingModel = require('../models/lineTraining');
 const lineTrainingModel = new LineTrainingModel();
 const lineTrainingController = new LineTrainingController(lineTrainingModel);
 
-// Main Routes - Using Ticket Number
+// Main Routes - Training Programs
 router.post('/', (req, res) => {
     lineTrainingController.createCandidate(req, res);
 });
 
-// router.get('/', (req, res) => {
-//     lineTrainingController.getCandidates(req, res);
-// });
-
-// router.get('/:ticketNumber', (req, res) => {
-//     lineTrainingController.getCandidateByTicketNumber(req, res);
-// });
-
-router.put('/:ticketNumber', (req, res) => {
-    lineTrainingController.updateCandidateByTicketNumber(req, res);
+router.get('/', (req, res) => {
+    lineTrainingController.getCandidates(req, res);
 });
 
-router.delete('/:ticketNumber', (req, res) => {
-    lineTrainingController.deleteCandidateByTicketNumber(req, res);
+router.get('/:id', (req, res) => {
+    lineTrainingController.getCandidateById(req, res);
+});
+
+router.put('/:id', (req, res) => {
+    lineTrainingController.updateCandidate(req, res);
+});
+
+router.delete('/:id', (req, res) => {
+    lineTrainingController.deleteCandidate(req, res);
 });
 
 // Filter Routes
@@ -33,19 +33,19 @@ router.get('/filter/designation/:designation', (req, res) => {
     lineTrainingController.getCandidatesByDesignation(req, res);
 });
 
-// router.get('/filter/activityCentre/:activityCentre', (req, res) => {
-//     lineTrainingController.getCandidatesByActivityCentre(req, res);
-// });
+router.get('/filter/activityCentre/:activityCentre', (req, res) => {
+    lineTrainingController.getCandidatesByActivityCentre(req, res);
+});
 
-// // Date range filter (using query parameters)
-// router.get('/filter/dateRange', (req, res) => {
-//     lineTrainingController.getCandidatesByDateRange(req, res);
-// });
+// Date range filter (using query parameters)
+router.get('/filter/dateRange', (req, res) => {
+    lineTrainingController.getCandidatesByDateRange(req, res);
+});
 
-// // Backward Compatibility Routes (Optional)
-// router.get('/legacy/:id', (req, res) => {
-//     lineTrainingController.getCandidateById(req, res);
-// });
+// Backward Compatibility Routes (Optional)
+router.get('/legacy/:id', (req, res) => {
+    lineTrainingController.getCandidateById(req, res);
+});
 
 router.put('/legacy/:id', (req, res) => {
     lineTrainingController.updateCandidate(req, res);
