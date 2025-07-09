@@ -29,7 +29,7 @@ const msedRoutes = require('./routes/msedRoutes');
 const msewRoutes = require('./routes/msewRoutes');
 
 
-const {  initializeDatabase } = require('./config/db');
+const { initializeDatabase } = require('./config/db');
 const app = express();
 
 // Initialize the database
@@ -40,7 +40,7 @@ app.use(express.json()); // Increased limit for larger payloads
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (uploaded images)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
