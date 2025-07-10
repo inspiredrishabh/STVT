@@ -186,7 +186,7 @@ const NonRailwayMain = () => {
     try {
       const submissionData = prepareFormDataForSubmission();
 
-      const response = await fetch(`http://localhost:5000/api/nonrailway`, {
+      const response = await fetch(`/api/nonrailway`, {
         method: "POST",
         body: submissionData,
         headers: {

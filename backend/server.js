@@ -31,6 +31,7 @@ const msewRoutes = require('./routes/msewRoutes');
 
 
 const { initializeDatabase } = require('./config/db');
+const { hostname } = require('os');
 const app = express();
 
 // Initialize the database
@@ -96,12 +97,16 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📋 API Documentation:`);
-  console.log(`   STC: http://localhost:${PORT}/api/stc`);
-  console.log(`   WTC: http://localhost:${PORT}/api/wtc`);
-  console.log(`   NonRailway: http://localhost:${PORT}/api/nonrailway`);
+  console.log(`${hostname()}`);
+  console.log(`126*27 : ${126 * 27}`);
+  console.log(`   Local: http://localhost:${PORT}/api`);
+  console.log(`   Network: http://192.168.29.89:${PORT}/api`);
+  console.log(`   STC: http://192.168.29.89:${PORT}/api/stc`);
+  console.log(`   WTC: http://192.168.29.89:${PORT}/api/wtc`);
+  console.log(`   NonRailway: http://192.168.29.89:${PORT}/api/nonrailway`);
 });
 
 module.exports = app;
