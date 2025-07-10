@@ -192,7 +192,7 @@ const TraineeProfile = () => {
                                     <h4 className="font-medium text-gray-900 mb-2">Course Details</h4>
                                     <div className="space-y-1 text-sm text-gray-600">
                                         <p>Module: {trainee.moduleNo} - {trainee.moduleDescription || ""}</p>
-                                        <p>Duration: {trainee.duration}</p>
+                                        <p>Duration: {trainee.courseDuration}</p>
                                         <p>Joining: {new Date(trainee.dateOfJoiningStcWtcNonRailway).toLocaleDateString()}</p>
                                         <p>Category: {trainee.category || "Not specified"}</p>
                                     </div>
