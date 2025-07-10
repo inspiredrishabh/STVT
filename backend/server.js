@@ -6,6 +6,7 @@ const path = require('path');
 // TEST COMMIT to back safe commit before major changes  --- 2
 // TEST COMMIT to back safe commit before major changes  --- 3
 // TEST COMMIT to back safe commit before major changes  --- 4
+// TEST COMMIT to back safe commit before major changes  --- 5
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
