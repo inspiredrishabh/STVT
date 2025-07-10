@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const Candidate = require('./Candidate');
+const { all } = require('../routes/attendanceRoutes');
 
 const Attendance = sequelize.define('Attendance', {
     id: {
@@ -22,11 +23,9 @@ const Attendance = sequelize.define('Attendance', {
     },
     theoryStatus: {
         type: DataTypes.ENUM('present', 'absent'),
-        allowNull: false,
     },
     practicalStatus: {
         type: DataTypes.ENUM('present', 'absent'),
-        allowNull: false,
     },
     notes: {
         type: DataTypes.STRING,

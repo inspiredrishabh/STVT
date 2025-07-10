@@ -65,6 +65,9 @@ const attendanceAPI = {
         throw new Error(result.message || 'Failed to fetch attendance data');
       }
 
+      // Debug the response structure
+      console.log("Attendance API Response:", result.data);
+
       // Transform the data to match the format expected by the frontend
       const attendanceData = {
         theoryPercentage: result.data.statistics.theoryPercentage,
@@ -73,8 +76,8 @@ const attendanceAPI = {
         totalPracticalDays: result.data.statistics.totalRecords,
         attendanceRecords: result.data.attendanceRecords.map(record => ({
           date: record.date,
-          theory: record.theoryStatus,
-          practical: record.practicalStatus
+          theory: record.theory_status || record.theoryStatus || 'absent',
+          practical: record.practical_status || record.practicalStatus || 'absent'
         }))
       };
 
@@ -108,6 +111,8 @@ const attendanceAPI = {
         payload.practicalStatus = status;
       }
 
+      console.log('Marking attendance with payload:', payload);
+
       const response = await fetch('/api/attendance/mark', {
         method: 'POST',
         headers: {
@@ -127,8 +132,26 @@ const attendanceAPI = {
         throw new Error(result.message || 'Failed to mark attendance');
       }
 
-      // Get the updated attendance data
-      return attendanceAPI.getAttendanceData(traineeId);
+      console.log('Mark attendance response:', result);
+
+      // The API now returns updated attendance data directly
+      if (result.data && result.data.attendanceRecords) {
+        // Transform the data to match the format expected by the frontend
+        return {
+          theoryPercentage: result.data.statistics.theoryPercentage,
+          practicalPercentage: result.data.statistics.practicalPercentage,
+          totalTheoryDays: result.data.statistics.totalRecords,
+          totalPracticalDays: result.data.statistics.totalRecords,
+          attendanceRecords: result.data.attendanceRecords.map(record => ({
+            date: record.date,
+            theory: record.theoryStatus,
+            practical: record.practicalStatus
+          }))
+        };
+      } else {
+        // Fallback to fetching attendance if not included in response
+        return attendanceAPI.getAttendanceData(traineeId);
+      }
     } catch (error) {
       console.error('Error marking attendance:', error);
       throw error;
@@ -298,6 +321,7 @@ const AttendanceSystem = () => {
 
     setLoading(true);
     try {
+      // Call the API to mark attendance
       const updatedAttendance = await attendanceAPI.markAttendance(
         traineeData.id,
         selectedDate,
@@ -305,7 +329,11 @@ const AttendanceSystem = () => {
         status
       );
 
+      console.log('Updated attendance:', updatedAttendance);
+
+      // Update the local state with new attendance data
       setAttendanceData(updatedAttendance);
+
       setMessage({
         type: 'success',
         text: `${attendanceType} attendance marked as ${status} for ${selectedDate}`
@@ -851,6 +879,13 @@ const AttendanceSystem = () => {
                       )}
                       {exporting ? 'Exporting...' : 'Export Report'}
                     </button>
+                  </div>
+
+                  {/* Debug information */}
+                  <div className="p-2 bg-gray-50 rounded-md text-xs" style={{ overflowWrap: 'break-word' }}>
+                    <strong>Debug - Latest Record:</strong>
+                    {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ?
+                      JSON.stringify(attendanceData.attendanceRecords[0]) : 'No records'}
                   </div>
 
                   {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ? (
