@@ -17,269 +17,188 @@ import {
   Award
 } from 'lucide-react';
 
-// Mock API Functions with Backend Endpoints
+// Real API Functions connected to Backend Endpoints
 const attendanceAPI = {
-  // Mock trainee data - This should come from a real trainee database
-  traineesData: [
-    {
-      id: 1,
-      ticketNo: 'WTC/24/001',
-      name: 'Rahul Sharma',
-      trade: 'CG Apprentice Technician III',
-      batch: '2024-2025',
-      moduleNo: 'ASE',
-      moduleDescription: 'Advanced Service Engineering',
-      from: '2024-01-15',
-      to: '2025-01-14',
-      status: 'Active',
-      totalTheoryDays: 120,
-      totalPracticalDays: 80
-    },
-    {
-      id: 2,
-      ticketNo: 'WTC/24/002',
-      name: 'Priya Singh',
-      trade: 'RRB Apprentice Technician III',
-      batch: '2024-2025',
-      moduleNo: 'AJE',
-      moduleDescription: 'Advanced Junior Engineering',
-      from: '2024-02-01',
-      to: '2025-01-31',
-      status: 'Active',
-      totalTheoryDays: 110,
-      totalPracticalDays: 90
-    },
-    {
-      id: 3,
-      ticketNo: 'WTC/24/003',
-      name: 'Amit Kumar',
-      trade: 'CG Apprentice Technician III',
-      batch: '2024-2025',
-      moduleNo: 'ASE',
-      moduleDescription: 'Advanced Service Engineering',
-      from: '2024-01-20',
-      to: '2024-07-19',
-      status: 'Active',
-      totalTheoryDays: 100,
-      totalPracticalDays: 70
-    },
-    {
-      id: 4,
-      ticketNo: 'WTC/24/004',
-      name: 'Anjali Verma',
-      trade: 'RRB Apprentice Technician III',
-      batch: '2024-2025',
-      moduleNo: 'AJE',
-      moduleDescription: 'Advanced Junior Engineering',
-      from: '2024-03-01',
-      to: '2025-02-28',
-      status: 'Active',
-      totalTheoryDays: 105,
-      totalPracticalDays: 85
-    }
-  ],
-
-  // Mock attendance data
-  attendanceData: {
-    'WTC/24/001': {
-      theoryAttendance: 95,
-      practicalAttendance: 72,
-      totalTheoryDays: 120,
-      totalPracticalDays: 80,
-      attendanceRecords: [
-        { date: '2024-06-25', theory: 'present', practical: 'present' },
-        { date: '2024-06-26', theory: 'present', practical: 'absent' },
-        { date: '2024-06-27', theory: 'absent', practical: 'present' },
-        { date: '2024-06-28', theory: 'present', practical: 'present' },
-        { date: '2024-06-29', theory: 'present', practical: 'present' }
-      ]
-    },
-    'WTC/24/002': {
-      theoryAttendance: 88,
-      practicalAttendance: 82,
-      totalTheoryDays: 110,
-      totalPracticalDays: 90,
-      attendanceRecords: [
-        { date: '2024-06-25', theory: 'present', practical: 'present' },
-        { date: '2024-06-26', theory: 'present', practical: 'present' },
-        { date: '2024-06-27', theory: 'present', practical: 'absent' },
-        { date: '2024-06-28', theory: 'absent', practical: 'present' },
-        { date: '2024-06-29', theory: 'present', practical: 'present' }
-      ]
-    }
-  },
-
-  // Simulate API delay
-  delay: (ms = 500) => new Promise(resolve => setTimeout(resolve, ms)),
-
-  // Backend Endpoint: GET /api/attendance/trainees
+  // Get all trainees - uses the WTC API endpoint
   getAllTrainees: async () => {
-    await attendanceAPI.delay(600);
-    return attendanceAPI.traineesData;
-  },
-
-  // Backend Endpoint: GET /api/attendance/trainee/:ticketNo
-  getTraineeByTicket: async (ticketNo) => {
-    await attendanceAPI.delay(400);
-    const trainee = attendanceAPI.traineesData.find(t => t.ticketNo === ticketNo);
-    if (!trainee) {
-      throw new Error('Trainee not found');
+    try {
+      const response = await fetch('/api/wtc');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch trainees: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching trainees:', error);
+      throw error;
     }
-    return trainee;
   },
 
-  // Backend Endpoint: GET /api/attendance/:ticketNo
-  getAttendanceData: async (ticketNo) => {
-    await attendanceAPI.delay(500);
-    const attendance = attendanceAPI.attendanceData[ticketNo];
-    if (!attendance) {
-      // Return default structure for new trainees
+  // Get a trainee by ticket number
+  getTraineeByTicket: async (ticketNo) => {
+    try {
+      const response = await fetch(`/api/wtc?ticketNo=${ticketNo}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch trainee: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result.data && result.data.length > 0) {
+        return result.data[0];
+      }
+      throw new Error('Trainee not found');
+    } catch (error) {
+      console.error('Error fetching trainee:', error);
+      throw error;
+    }
+  },
+
+  // Get attendance data for a specific candidate
+  getAttendanceData: async (candidateId) => {
+    try {
+      const response = await fetch(`/api/attendance/candidate/${candidateId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch attendance data: ${response.status}`);
+      }
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to fetch attendance data');
+      }
+
+      // Transform the data to match the format expected by the frontend
+      const attendanceData = {
+        theoryPercentage: result.data.statistics.theoryPercentage,
+        practicalPercentage: result.data.statistics.practicalPercentage,
+        totalTheoryDays: result.data.statistics.totalRecords,
+        totalPracticalDays: result.data.statistics.totalRecords,
+        attendanceRecords: result.data.attendanceRecords.map(record => ({
+          date: record.date,
+          theory: record.theoryStatus,
+          practical: record.practicalStatus
+        }))
+      };
+
+      return attendanceData;
+    } catch (error) {
+      console.error('Error fetching attendance data:', error);
+      // Return empty data structure if this is the first time viewing attendance for this trainee
       return {
-        theoryAttendance: 0,
-        practicalAttendance: 0,
+        theoryPercentage: 0,
+        practicalPercentage: 0,
         totalTheoryDays: 0,
         totalPracticalDays: 0,
         attendanceRecords: []
       };
     }
-    return attendance;
   },
 
-  // Backend Endpoint: POST /api/attendance/mark
-  markAttendance: async (ticketNo, date, attendanceType, status) => {
-    await attendanceAPI.delay(300);
-    console.log('Marking attendance:', { ticketNo, date, attendanceType, status });
-
-    // Get trainee data
-    const trainee = attendanceAPI.traineesData.find(t => t.ticketNo === ticketNo);
-    if (!trainee) {
-      throw new Error('Trainee not found');
-    }
-
-    // Update mock data
-    if (!attendanceAPI.attendanceData[ticketNo]) {
-      attendanceAPI.attendanceData[ticketNo] = {
-        theoryAttendance: 0,
-        practicalAttendance: 0,
-        totalTheoryDays: 1,
-        totalPracticalDays: 1,
-        attendanceRecords: []
+  // Mark attendance for a trainee
+  markAttendance: async (traineeId, date, attendanceType, status) => {
+    try {
+      // Map the frontend's attendanceType (theory/practical) to backend's field names
+      const payload = {
+        candidateId: traineeId,
+        date: date
       };
-    }
 
-    const attendance = attendanceAPI.attendanceData[ticketNo];
-
-    // Find existing record for the date or create new one
-    let existingRecord = attendance.attendanceRecords.find(r => r.date === date);
-    if (!existingRecord) {
-      existingRecord = { date, theory: 'absent', practical: 'absent' };
-      attendance.attendanceRecords.push(existingRecord);
-    }
-
-    // Update the specific attendance type
-    existingRecord[attendanceType] = status;
-
-    // Recalculate attendance percentages
-    const theoryPresent = attendance.attendanceRecords.filter(r => r.theory === 'present').length;
-    const practicalPresent = attendance.attendanceRecords.filter(r => r.practical === 'present').length;
-    const totalRecords = attendance.attendanceRecords.length;
-
-    attendance.theoryAttendance = totalRecords > 0 ? Math.round((theoryPresent / totalRecords) * 100) : 0;
-    attendance.practicalAttendance = totalRecords > 0 ? Math.round((practicalPresent / totalRecords) * 100) : 0;
-
-    return {
-      success: true,
-      message: 'Attendance marked successfully',
-      updatedAttendance: attendance
-    };
-  },
-
-  // Backend Endpoint: GET /api/attendance/summary/:ticketNo
-  getAttendanceSummary: async (ticketNo) => {
-    await attendanceAPI.delay(300);
-    const trainee = await attendanceAPI.getTraineeByTicket(ticketNo);
-    const attendance = await attendanceAPI.getAttendanceData(ticketNo);
-
-    const summary = {
-      trainee,
-      attendance,
-      statistics: {
-        theoryPercentage: attendance.theoryAttendance,
-        practicalPercentage: attendance.practicalAttendance,
-        overallPercentage: Math.round((attendance.theoryAttendance + attendance.practicalAttendance) / 2),
-        totalDaysAttended: attendance.attendanceRecords.length,
-        theoryDaysPresent: attendance.attendanceRecords.filter(r => r.theory === 'present').length,
-        practicalDaysPresent: attendance.attendanceRecords.filter(r => r.practical === 'present').length
-      },
-      status: {
-        theoryStatus: attendance.theoryAttendance >= 75 ? 'Good' : attendance.theoryAttendance >= 60 ? 'Average' : 'Poor',
-        practicalStatus: attendance.practicalAttendance >= 75 ? 'Good' : attendance.practicalAttendance >= 60 ? 'Average' : 'Poor'
+      // Set the appropriate attendance type
+      if (attendanceType === 'theory') {
+        payload.theoryStatus = status;
+      } else if (attendanceType === 'practical') {
+        payload.practicalStatus = status;
       }
-    };
 
-    return summary;
+      const response = await fetch('/api/attendance/mark', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to mark attendance: ${errorText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to mark attendance');
+      }
+
+      // Get the updated attendance data
+      return attendanceAPI.getAttendanceData(traineeId);
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      throw error;
+    }
   },
 
-  // Backend Endpoint: GET /api/attendance/batch/:batchName
-  getBatchAttendance: async (batchName) => {
-    await attendanceAPI.delay(800);
-    const batchTrainees = attendanceAPI.traineesData.filter(t => t.batch === batchName);
+  // Get attendance summary for a batch
+  getBatchAttendance: async (batch) => {
+    try {
+      const response = await fetch(`/api/attendance/summary?batch=${batch}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch batch attendance: ${response.status}`);
+      }
 
-    const batchSummary = await Promise.all(
-      batchTrainees.map(async (trainee) => {
-        const attendance = await attendanceAPI.getAttendanceData(trainee.ticketNo);
-        return {
-          ...trainee,
-          attendance: {
-            theoryPercentage: attendance.theoryAttendance,
-            practicalPercentage: attendance.practicalAttendance,
-            overallPercentage: Math.round((attendance.theoryAttendance + attendance.practicalAttendance) / 2)
-          }
-        };
-      })
-    );
+      const result = await response.json();
 
-    return batchSummary;
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to fetch batch attendance');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching batch attendance:', error);
+      throw error;
+    }
   },
 
-  // Backend Endpoint: POST /api/attendance/bulk-mark
+  // Bulk mark attendance for multiple trainees
   bulkMarkAttendance: async (attendanceData) => {
-    await attendanceAPI.delay(1000);
-    console.log('Bulk marking attendance:', attendanceData);
+    try {
+      // Transform the data to match the backend API
+      const records = attendanceData.map(entry => {
+        const record = {
+          candidateId: entry.candidateId,
+          date: entry.date
+        };
 
-    const results = [];
-    for (const entry of attendanceData) {
-      try {
-        const result = await attendanceAPI.markAttendance(
-          entry.ticketNo,
-          entry.date,
-          entry.attendanceType,
-          entry.status
-        );
-        results.push({ ...entry, success: true });
-      } catch (error) {
-        results.push({ ...entry, success: false, error: error.message });
+        if (entry.attendanceType === 'theory') {
+          record.theoryStatus = entry.status;
+        } else if (entry.attendanceType === 'practical') {
+          record.practicalStatus = entry.status;
+        }
+
+        return record;
+      });
+
+      const response = await fetch('/api/attendance/bulk-mark', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ records })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to bulk mark attendance: ${errorText}`);
       }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to bulk mark attendance');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error bulk marking attendance:', error);
+      throw error;
     }
-
-    return {
-      success: true,
-      message: `Bulk attendance marked for ${results.filter(r => r.success).length} entries`,
-      results
-    };
-  },
-
-  // Backend Endpoint: GET /api/attendance/export/:ticketNo
-  exportAttendanceReport: async (ticketNo, format = 'pdf') => {
-    await attendanceAPI.delay(1200);
-    console.log('Exporting attendance report:', { ticketNo, format });
-
-    return {
-      success: true,
-      message: 'Attendance report generated successfully',
-      downloadUrl: `/api/attendance/download/${ticketNo}.${format}`,
-      fileName: `Attendance_Report_${ticketNo}.${format}`
-    };
   }
 };
 
@@ -325,7 +244,7 @@ const AttendanceSystem = () => {
       setTraineeData(trainee);
 
       // Load attendance data
-      const attendance = await attendanceAPI.getAttendanceData(trainee.ticketNo);
+      const attendance = await attendanceAPI.getAttendanceData(trainee.id);
       setAttendanceData(attendance);
 
       setMessage({ type: 'success', text: `Data loaded for: ${trainee.name}` });
@@ -345,12 +264,15 @@ const AttendanceSystem = () => {
     }
 
     try {
+      setLoading(true);
       const trainee = await attendanceAPI.getTraineeByTicket(ticketNumber);
       await loadTraineeData(trainee);
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
       setTraineeData(null);
       setAttendanceData(null);
+    } finally {
+      setLoading(false);
     }
   }, [ticketNumber, loadTraineeData]);
 
@@ -376,20 +298,20 @@ const AttendanceSystem = () => {
 
     setLoading(true);
     try {
-      const result = await attendanceAPI.markAttendance(
-        traineeData.ticketNo,
+      const updatedAttendance = await attendanceAPI.markAttendance(
+        traineeData.id,
         selectedDate,
         attendanceType,
         status
       );
 
-      setAttendanceData(result.updatedAttendance);
+      setAttendanceData(updatedAttendance);
       setMessage({
         type: 'success',
         text: `${attendanceType} attendance marked as ${status} for ${selectedDate}`
       });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to mark attendance' });
+      setMessage({ type: 'error', text: error.message || 'Failed to mark attendance' });
     } finally {
       setLoading(false);
     }
@@ -450,7 +372,7 @@ const AttendanceSystem = () => {
     const headers = [
       'Trainee Name',
       'Ticket Number',
-      'Trade',
+      'Designation',
       'Date',
       'Theory Attendance',
       'Practical Attendance'
@@ -459,12 +381,12 @@ const AttendanceSystem = () => {
     let csvContent = headers.join(',') + '\n';
 
     // Add trainee info and attendance records
-    if (attendanceData.attendanceRecords.length > 0) {
+    if (attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0) {
       attendanceData.attendanceRecords.forEach(record => {
         const row = [
           `"${traineeData.name}"`,
           `"${traineeData.ticketNo}"`,
-          `"${traineeData.trade}"`,
+          `"${traineeData.designation}"`,
           `"${new Date(record.date).toLocaleDateString('en-IN')}"`,
           `"${record.theory === 'present' ? 'Present' : 'Absent'}"`,
           `"${record.practical === 'present' ? 'Present' : 'Absent'}"`
@@ -476,7 +398,7 @@ const AttendanceSystem = () => {
       const row = [
         `"${traineeData.name}"`,
         `"${traineeData.ticketNo}"`,
-        `"${traineeData.trade}"`,
+        `"${traineeData.designation}"`,
         '"No records available"',
         '"N/A"',
         '"N/A"'
@@ -487,10 +409,10 @@ const AttendanceSystem = () => {
     // Add summary statistics
     csvContent += '\n';
     csvContent += 'ATTENDANCE SUMMARY\n';
-    csvContent += `Theory Attendance,${attendanceData.theoryAttendance}%\n`;
-    csvContent += `Practical Attendance,${attendanceData.practicalAttendance}%\n`;
-    csvContent += `Overall Average,${Math.round((attendanceData.theoryAttendance + attendanceData.practicalAttendance) / 2)}%\n`;
-    csvContent += `Total Records,${attendanceData.attendanceRecords.length}\n`;
+    csvContent += `Theory Attendance,${attendanceData.theoryPercentage || 0}%\n`;
+    csvContent += `Practical Attendance,${attendanceData.practicalPercentage || 0}%\n`;
+    csvContent += `Overall Average,${Math.round(((attendanceData.theoryPercentage || 0) + (attendanceData.practicalPercentage || 0)) / 2)}%\n`;
+    csvContent += `Total Records,${attendanceData.attendanceRecords ? attendanceData.attendanceRecords.length : 0}\n`;
     csvContent += `Export Date,"${new Date().toLocaleDateString('en-IN')}"\n`;
 
     return csvContent;
@@ -505,13 +427,14 @@ const AttendanceSystem = () => {
   const attendanceStats = useMemo(() => {
     if (!attendanceData) return null;
 
+    const records = attendanceData.attendanceRecords || [];
     return {
-      theoryPercentage: attendanceData.theoryAttendance,
-      practicalPercentage: attendanceData.practicalAttendance,
-      overallPercentage: Math.round((attendanceData.theoryAttendance + attendanceData.practicalAttendance) / 2),
-      totalRecords: attendanceData.attendanceRecords.length,
-      theoryPresent: attendanceData.attendanceRecords.filter(r => r.theory === 'present').length,
-      practicalPresent: attendanceData.attendanceRecords.filter(r => r.practical === 'present').length
+      theoryPercentage: attendanceData.theoryPercentage || 0,
+      practicalPercentage: attendanceData.practicalPercentage || 0,
+      overallPercentage: Math.round(((attendanceData.theoryPercentage || 0) + (attendanceData.practicalPercentage || 0)) / 2),
+      totalRecords: records.length,
+      theoryPresent: records.filter(r => r.theory === 'present').length,
+      practicalPresent: records.filter(r => r.practical === 'present').length
     };
   }, [attendanceData]);
 
@@ -930,7 +853,7 @@ const AttendanceSystem = () => {
                     </button>
                   </div>
 
-                  {attendanceData.attendanceRecords.length > 0 ? (
+                  {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse bg-white rounded-xl shadow-sm">
                         <thead>
@@ -941,7 +864,7 @@ const AttendanceSystem = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {attendanceData.attendanceRecords.slice(-10).reverse().map((record, index) => (
+                          {attendanceData.attendanceRecords?.slice(-10).reverse().map((record, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                               <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">
                                 {new Date(record.date).toLocaleDateString('en-IN')}

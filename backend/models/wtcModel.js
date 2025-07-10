@@ -233,6 +233,34 @@ class WtcModel {
         });
     }
 
+    // Get candidates by batch
+    getByBatch(batch) {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM ${this.tableName} WHERE batch = ?`;
+            db.all(sql, [batch], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows.map(row => convertToCamelCase(row)));
+                }
+            });
+        });
+    }
+
+    // Get candidates by module number
+    getByModuleNo(moduleNo) {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM ${this.tableName} WHERE module_no = ?`;
+            db.all(sql, [moduleNo], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows.map(row => convertToCamelCase(row)));
+                }
+            });
+        });
+    }
+
     // Abhi tak Id Unique The Ab Ticket Number Ho Gya Hai Isliye - Backward Compatibility
     getById(id) { return this.getByTicketNumber(id); }
     update(id, data) { return this.updateByTicketNumber(id, data); }

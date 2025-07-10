@@ -13,6 +13,7 @@ const stcRoutes = require('./routes/stcRoutes');
 const wtcRoutes = require('./routes/wtcRoutes');
 const nonRailwayRoutes = require('./routes/nonRailwayRoutes');
 const lineTrainingRoutes = require('./routes/lineTrainingRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 // ------- ---- course-specific routes ---- total 12 
 const mjiCwRoutes = require('./routes/mjicwRoutes');
@@ -47,6 +48,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stc', stcRoutes);
 app.use('/api/wtc', wtcRoutes);
 app.use('/api/nonrailway', nonRailwayRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 app.use('/api/line-trainings', lineTrainingRoutes);
 // Course-specific routes based on course structure

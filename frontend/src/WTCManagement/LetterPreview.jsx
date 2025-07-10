@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Printer } from 'lucide-react';
 import logo from '../assets/rail.png';
 
+import PracticalTrainingLetter from './PracticalTrainingLetter';
+import PracticalExamInterviewLetter from './PracticalExamInterviewLetter';
+import SessionalPerformanceLetter from './SessionalPerformanceLetter';
+
 const formatMonthYear = (dateString) => {
     if (!dateString) return 'MM/YYYY';
     const date = new Date(dateString);
@@ -22,6 +26,7 @@ const formatDateDDMMYY = (dateString) => {
 const LetterPreview = () => {
     const navigate = useNavigate();
     const [trainees, setTrainees] = useState([]);
+    const [letterType, setLetterType] = useState('practical-training');
 
     const letterData = {
         letterNo: `STC/B/B/01`,
@@ -53,6 +58,12 @@ const LetterPreview = () => {
     useEffect(() => {
         try {
             const storedTrainees = sessionStorage.getItem('selectedTrainees');
+            const storedLetterType = sessionStorage.getItem('letterType');
+
+            if (storedLetterType) {
+                setLetterType(storedLetterType);
+            }
+
             if (storedTrainees) {
                 setTrainees(JSON.parse(storedTrainees));
                 return;
@@ -93,10 +104,26 @@ const LetterPreview = () => {
 
         return () => {
             sessionStorage.removeItem('selectedTrainees');
+            sessionStorage.removeItem('letterType');
         };
     }, [navigate]);
 
     const LetterTemplate = ({ trainee }) => {
+        // Render the appropriate letter template based on the selected type
+        switch (letterType) {
+            case 'practical-training':
+                return <PracticalTrainingLetter trainee={trainee} />;
+            case 'practical-exam':
+                return <PracticalExamInterviewLetter trainee={trainee} />;
+            case 'sessional-performance':
+                return <SessionalPerformanceLetter trainee={trainee} />;
+            default:
+                return <PracticalTrainingLetter trainee={trainee} />;
+        }
+    };
+
+    // This is the original template for reference - not used anymore
+    const OldLetterTemplate = ({ trainee }) => {
         if (trainee.designation === 'CG Apprentice') {
             return (
                 <div className="letter-container mb-12 page-break-after p-8">

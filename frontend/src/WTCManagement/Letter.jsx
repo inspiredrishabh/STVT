@@ -16,6 +16,7 @@ const Letter = () => {
         moduleNo: '',
         status: '',
     });
+    const [letterType, setLetterType] = useState('practical-training');
 
     // Fetch trainees from backend
     useEffect(() => {
@@ -124,6 +125,7 @@ const Letter = () => {
 
         try {
             sessionStorage.setItem('selectedTrainees', JSON.stringify(selectedTraineeObjects));
+            sessionStorage.setItem('letterType', letterType);
 
             const traineesParam = encodeURIComponent(JSON.stringify(selectedTrainees));
             navigate(`/wtc/letter/preview?trainees=${traineesParam}`);
@@ -266,18 +268,30 @@ const Letter = () => {
                             </span>
                         </div>
 
-                        {/* Bulk Actions */}
-                        <button
-                            onClick={generateBulkLetters}
-                            disabled={selectedTrainees.length === 0}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${selectedTrainees.length > 0
-                                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                } transition-colors`}
-                        >
-                            <FileText className="w-4 h-4" />
-                            <span>Generate Letters</span>
-                        </button>
+                        {/* Letter Type Selector and Generate Button */}
+                        <div className="flex items-center space-x-3">
+                            <select
+                                value={letterType}
+                                onChange={(e) => setLetterType(e.target.value)}
+                                className="border rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="practical-training">Practical Training</option>
+                                <option value="practical-exam">Practical Exam & Interview</option>
+                                <option value="sessional-performance">Result of Sessional Performance</option>
+                            </select>
+
+                            <button
+                                onClick={generateBulkLetters}
+                                disabled={selectedTrainees.length === 0}
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${selectedTrainees.length > 0
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    } transition-colors`}
+                            >
+                                <FileText className="w-4 h-4" />
+                                <span>Generate Letters</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
