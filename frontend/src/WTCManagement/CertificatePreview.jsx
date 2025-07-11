@@ -196,6 +196,7 @@ const CertificatePreview = () => {
       {/* Add CSS for PDF printing */}
       <style jsx="true">{`
         @media print {
+          @page {size: landscape}
           body * {
             visibility: hidden;
           }
