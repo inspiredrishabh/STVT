@@ -50,22 +50,7 @@ const PracticalTrainingLetter = ({ trainee }) => {
                         <td className="border border-black p-2" contentEditable={true}>XXXXXXX</td>
                         <td className="border border-black p-2" contentEditable={true}>XXXXXXX</td>
                     </tr>
-                    <tr>
-                        <td className="border border-black p-2 text-center">2.</td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                    </tr>
-                    <tr>
-                        <td className="border border-black p-2 text-center">3.</td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                        <td className="border border-black p-2" contentEditable={true}></td>
-                    </tr>
+
                 </tbody>
             </table>
 

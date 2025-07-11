@@ -65,9 +65,6 @@ const attendanceAPI = {
         throw new Error(result.message || 'Failed to fetch attendance data');
       }
 
-      // Debug the response structure
-      console.log("Attendance API Response:", result.data);
-
       // Transform the data to match the format expected by the frontend
       const attendanceData = {
         theoryPercentage: result.data.statistics.theoryPercentage,
@@ -253,7 +250,7 @@ const AttendanceSystem = () => {
       const traineesList = await attendanceAPI.getAllTrainees();
       setTrainees(traineesList);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to load trainees' });
+      setMessage({ type: 'error', text: 'Failed to load trainees ', error: error.message });
     } finally {
       setLoading(false);
     }
@@ -881,12 +878,6 @@ const AttendanceSystem = () => {
                     </button>
                   </div>
 
-                  {/* Debug information */}
-                  <div className="p-2 bg-gray-50 rounded-md text-xs" style={{ overflowWrap: 'break-word' }}>
-                    <strong>Debug - Latest Record:</strong>
-                    {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ?
-                      JSON.stringify(attendanceData.attendanceRecords[0]) : 'No records'}
-                  </div>
 
                   {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ? (
                     <div className="overflow-x-auto">
