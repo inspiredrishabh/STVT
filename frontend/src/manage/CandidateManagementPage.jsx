@@ -12,6 +12,57 @@ import ActivityPanel from './ActivityPanel';
 class RealBackendAPI {
   constructor() {
     this.baseURL = '/api';
+    // Course structure mapping for course-specific candidates
+    this.courseStructure = {
+      'MSE-C&W': 'mse-c&w',
+      'MSE-D': 'mse-d', 
+      'MSE-W': 'mse-w',
+      'MJR-C&W': 'mjr-c&w',
+      'MJR-D': 'mjr-d',
+      'MJR-W': 'mjr-w',
+      'MJI-C&W': 'mji-c&w',
+      'MJI-D': 'mji-d',
+      'MJI-W': 'mji-w',
+      'MJP-C&W': 'mjp-c&w',
+      'MJP-D': 'mjp-d',
+      'MJP-W': 'mjp-w'
+    };
+  }
+
+  // Helper method to determine the correct API endpoint for a candidate
+  getCandidateEndpoint(candidate) {
+    const { type, workInfo, ticketNumber } = candidate;
+    
+    // Check if this is a course-specific candidate
+    if (type === 'STC' && workInfo && this.courseStructure[workInfo]) {
+      const endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}/${ticketNumber}`;
+      console.log(`Course-specific candidate detected: ${workInfo} -> ${endpoint}`);
+      return endpoint;
+    }
+    
+    // Default endpoints for basic candidates
+    const endpoints = {
+      'STC': `${this.baseURL}/stc/${ticketNumber}`,
+      'WTC': `${this.baseURL}/wtc/${ticketNumber}`,
+      'Non Railway': `${this.baseURL}/nonrailway/${ticketNumber}`
+    };
+    
+    const endpoint = endpoints[type] || endpoints['STC'];
+    console.log(`Basic candidate detected: ${type} -> ${endpoint}`);
+    return endpoint;
+  }
+
+  // Helper method to get candidate details by ticket number
+  async getCandidateByTicket(candidate) {
+    try {
+      const endpoint = this.getCandidateEndpoint(candidate);
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching candidate details:', error);
+      throw error;
+    }
   }
 
   // Fetch all STC candidates
@@ -113,15 +164,61 @@ class RealBackendAPI {
   // Fetch all candidates from all three systems
   async getAllCandidates() {
     try {
+      // Fetch basic candidates
       const [stcCandidates, wtcCandidates, nonRailwayCandidates] = await Promise.all([
         this.getStcCandidates(),
         this.getWtcCandidates(),
         this.getNonRailwayCandidates()
       ]);
 
-      return [...stcCandidates, ...wtcCandidates, ...nonRailwayCandidates];
+      // Fetch course-specific candidates
+      const courseSpecificCandidates = await this.getCourseSpecificCandidates();
+
+      return [...stcCandidates, ...wtcCandidates, ...nonRailwayCandidates, ...courseSpecificCandidates];
     } catch (error) {
       console.error('Error fetching all candidates:', error);
+      return [];
+    }
+  }
+
+  // Fetch candidates from course-specific tables
+  async getCourseSpecificCandidates() {
+    try {
+      const coursePromises = Object.entries(this.courseStructure).map(async ([courseCode, apiPath]) => {
+        try {
+          const response = await fetch(`${this.baseURL}/${apiPath}`);
+          const data = await response.json();
+          if (data.success) {
+            return data.data.map(candidate => ({
+              ...candidate,
+              id: `${apiPath}-${candidate.id}`, // Unique ID for course-specific candidates
+              originalId: candidate.id,
+              type: 'STC', // All course-specific candidates are STC type
+              category: 'Railway',
+              stream: 'Railway',
+              workInfo: courseCode, // Use the course code as workInfo
+              ticketNumber: candidate.ticket_no,
+              serialNo: candidate.id + 5000, // Different serial number range
+              batch: candidate.batch || '2024-2025',
+              status: 'Active',
+              phoneNumber: candidate.phone_number || 'N/A',
+              dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+              createdAt: candidate.created_at,
+              updatedAt: candidate.updated_at,
+              picture: candidate.picture ? `/${candidate.picture}` : null
+            }));
+          }
+          return [];
+        } catch (error) {
+          console.error(`Error fetching ${courseCode} candidates:`, error);
+          return [];
+        }
+      });
+
+      const courseResults = await Promise.all(coursePromises);
+      return courseResults.flat();
+    } catch (error) {
+      console.error('Error fetching course-specific candidates:', error);
       return [];
     }
   }
@@ -171,11 +268,8 @@ class RealBackendAPI {
         return { success: false, message: 'Candidate not found' };
       }
 
-      let endpoint = '';
-      if (candidate.type === 'STC') endpoint = `${this.baseURL}/stc/${candidate.ticketNumber}`;
-      else if (candidate.type === 'WTC') endpoint = `${this.baseURL}/wtc/${candidate.ticketNumber}`;
-      else if (candidate.type === 'Non Railway') endpoint = `${this.baseURL}/nonrailway/${candidate.ticketNumber}`;
-      else throw new Error('Invalid candidate type');
+      const endpoint = this.getCandidateEndpoint(candidate);
+      console.log('Deleting candidate from endpoint:', endpoint);
 
       const response = await fetch(endpoint, {
         method: 'DELETE',
@@ -189,15 +283,114 @@ class RealBackendAPI {
     }
   }
 
-  // Placeholder for create and update (not implemented in this step)
+  // Placeholder for create and update (now implemented)
   async createCandidate(candidateData) {
-    // TODO: Implement when needed
-    return { success: false, message: 'Create not implemented yet' };
+    try {
+      // Determine endpoint based on candidate type
+      const { type, workInfo } = candidateData;
+      let endpoint = `${this.baseURL}/stc`; // Default to STC
+      
+      if (type === 'WTC') {
+        endpoint = `${this.baseURL}/wtc`;
+      } else if (type === 'Non Railway') {
+        endpoint = `${this.baseURL}/nonrailway`;
+      } else if (type === 'STC' && workInfo && this.courseStructure[workInfo]) {
+        endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}`;
+      }
+
+      const formData = new FormData();
+      
+      // Add all candidate data to form data
+      Object.keys(candidateData).forEach(key => {
+        if (candidateData[key] !== null && candidateData[key] !== undefined) {
+          formData.append(key, candidateData[key]);
+        }
+      });
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Transform the response to match our expected format
+        return {
+          success: true,
+          data: {
+            ...data.data,
+            id: type === 'STC' ? `stc-${data.data.id}` : 
+                type === 'WTC' ? `wtc-${data.data.id}` : 
+                `nonrailway-${data.data.id}`,
+            type,
+            category: type === 'Non Railway' ? 'Non Railway' : 'Railway',
+            stream: type === 'Non Railway' ? 'Non Railway' : 'Railway',
+            workInfo: data.data.designation || 'N/A',
+            ticketNumber: data.data.ticket_no,
+            status: 'Active'
+          }
+        };
+      }
+      
+      return { success: false, message: data.message || 'Failed to create candidate' };
+    } catch (error) {
+      console.error('Error creating candidate:', error);
+      return { success: false, message: 'Failed to create candidate' };
+    }
   }
 
   async updateCandidate(candidateId, candidateData) {
-    // TODO: Implement when needed
-    return { success: false, message: 'Update not implemented yet' };
+    try {
+      // Find candidate to determine endpoint
+      const candidates = await this.getAllCandidates();
+      const candidate = candidates.find(c => c.id === candidateId);
+      
+      if (!candidate) {
+        return { success: false, message: 'Candidate not found' };
+      }
+
+      const endpoint = this.getCandidateEndpoint(candidate);
+      console.log('Updating candidate at endpoint:', endpoint);
+
+      const formData = new FormData();
+      
+      // Add all candidate data to form data
+      Object.keys(candidateData).forEach(key => {
+        if (candidateData[key] !== null && candidateData[key] !== undefined) {
+          formData.append(key, candidateData[key]);
+        }
+      });
+
+      const response = await fetch(endpoint, {
+        method: 'PUT',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Transform the response to match our expected format
+        return {
+          success: true,
+          data: {
+            ...data.data,
+            id: candidateId, // Keep the same ID format
+            type: candidate.type,
+            category: candidate.category,
+            stream: candidate.stream,
+            workInfo: data.data.designation || candidate.workInfo,
+            ticketNumber: data.data.ticket_no || candidate.ticketNumber,
+            status: candidate.status
+          }
+        };
+      }
+      
+      return { success: false, message: data.message || 'Failed to update candidate' };
+    } catch (error) {
+      console.error('Error updating candidate:', error);
+      return { success: false, message: 'Failed to update candidate' };
+    }
   }
 
   // Get statistics (mock implementation matching MockBackendAPI interface)

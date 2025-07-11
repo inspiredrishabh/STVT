@@ -172,8 +172,8 @@ const CandidateRow = ({
         </div>
       </td>
       <td className="px-6 py-4">
-        <div className="flex items-center space-x-2 text-sm text-gray-700 font-medium">
-          <Briefcase className="h-4 w-4 text-green-500" />
+        <div className={`flex items-center space-x-2 text-sm text-gray-700 font-medium  rounded-1xl pl-2 rounded-xl  ${candidate.type === 'Non Railway' ? 'bg-blue-100' : 'bg-green-100'}`}>
+          <Briefcase className={`h-4 w-4 ${candidate.type === 'Non Railway' ? 'text-blue-500' : 'text-green-500'}`} />
           <span>{candidate.stream}</span>
         </div>
         <div className="text-xs text-gray-500 mt-1">Batch: {candidate.batch}</div>
