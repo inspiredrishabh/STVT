@@ -9,6 +9,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
   if (candidates.length === 0) {
     return <EmptyState />;
   }
+  
 
   const handleEditClick = (candidate) => {
     // For comprehensive editing, open modal
@@ -144,7 +145,13 @@ const CandidateRow = ({
     <tr className="hover:bg-blue-50 transition-colors duration-200">
       <td className="px-6 py-4">
         <div className="flex items-center space-x-4">
-          <img src={candidate.picture} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
+          {candidate.picture ? (
+            <img src={candidate.picture} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center shadow-md">
+              <User className="h-6 w-6 text-gray-400" />
+            </div>
+          )}
           <div>
             <div className="text-sm font-bold text-gray-900">{candidate.name}</div>
             <div className="text-xs text-gray-500">Ticket No: {candidate.ticketNumber || candidate.employeeNumber}</div>

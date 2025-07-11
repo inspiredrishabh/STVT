@@ -8,7 +8,260 @@ import DetailModal from './DetailModal';
 import ActivityPanel from './ActivityPanel';
 // import CandidateForm from '../form/Components/StcCandidateForm';
 
-// Mock Backend API - Simulates REST endpoints with local storage persistence
+// Real Backend API - Connects to actual REST endpoints
+class RealBackendAPI {
+  constructor() {
+    this.baseURL = '/api';
+  }
+
+  // Fetch all STC candidates
+  async getStcCandidates() {
+    try {
+      const response = await fetch(`${this.baseURL}/stc`);
+      const data = await response.json();
+      if (data.success) {
+        return data.data.map(candidate => ({
+          ...candidate,
+          type: 'STC',
+          category: 'Railway',
+          stream: 'Railway',
+          workInfo: candidate.designation || 'N/A',
+          ticketNumber: candidate.ticket_no,
+          serialNo: candidate.id + 1000,
+          batch: candidate.batch || '2024-2025',
+          status: 'Active',
+          phoneNumber: candidate.phone_number || 'N/A',
+          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+          createdAt: candidate.created_at,
+          updatedAt: candidate.updated_at,
+          picture: candidate.picture ? `/${candidate.picture}` : null
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching STC candidates:', error);
+      return [];
+    }
+  }
+
+  // Fetch all WTC candidates
+  async getWtcCandidates() {
+    try {
+      const response = await fetch(`${this.baseURL}/wtc`);
+      const data = await response.json();
+      if (data.success) {
+        return data.data.map(candidate => ({
+          ...candidate,
+          type: 'WTC',
+          category: 'Railway',
+          stream: 'Railway',
+          workInfo: candidate.designation || 'N/A',
+          ticketNumber: candidate.ticket_no,
+          serialNo: candidate.id + 2000,
+          batch: candidate.batch || '2024-2025',
+          status: 'Active',
+          phoneNumber: candidate.phone_number || 'N/A',
+          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+          createdAt: candidate.created_at,
+          updatedAt: candidate.updated_at,
+          picture: candidate.picture ? `/${candidate.picture}` : null
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching WTC candidates:', error);
+      return [];
+    }
+  }
+
+  // Fetch all Non-Railway candidates
+  async getNonRailwayCandidates() {
+    try {
+      const response = await fetch(`${this.baseURL}/nonrailway`);
+      const data = await response.json();
+      if (data.success) {
+        return data.data.map(candidate => ({
+          ...candidate,
+          type: 'Non Railway',
+          category: 'Non Railway',
+          stream: 'Non Railway',
+          workInfo: candidate.designation || 'N/A',
+          ticketNumber: candidate.ticket_no,
+          serialNo: candidate.id + 3000,
+          batch: candidate.batch || '2024-2025',
+          status: 'Active',
+          phoneNumber: candidate.phone_number || 'N/A',
+          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+          createdAt: candidate.created_at,
+          updatedAt: candidate.updated_at,
+          picture: candidate.picture ? `/${candidate.picture}` : null
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching Non-Railway candidates:', error);
+      return [];
+    }
+  }
+
+  // Fetch all candidates from all three systems
+  async getAllCandidates() {
+    try {
+      const [stcCandidates, wtcCandidates, nonRailwayCandidates] = await Promise.all([
+        this.getStcCandidates(),
+        this.getWtcCandidates(),
+        this.getNonRailwayCandidates()
+      ]);
+
+      return [...stcCandidates, ...wtcCandidates, ...nonRailwayCandidates];
+    } catch (error) {
+      console.error('Error fetching all candidates:', error);
+      return [];
+    }
+  }
+
+  // Map to match MockBackendAPI interface
+  async fetchCandidates() {
+    const candidates = await this.getAllCandidates();
+    return { success: true, data: candidates };
+  }
+
+  // Get dropdown data for filters
+  async getDropdownData() {
+    try {
+      const candidates = await this.getAllCandidates();
+      
+      const streams = [...new Set(candidates.map(c => c.stream))];
+      const types = [...new Set(candidates.map(c => c.type))];
+      const workInfos = [...new Set(candidates.map(c => c.workInfo))];
+      const batches = [...new Set(candidates.map(c => c.batch))];
+      const units = [...new Set(candidates.map(c => c.unit).filter(Boolean))];
+      
+      return {
+        success: true,
+        data: {
+          streams,
+          types,
+          workInfo: workInfos,
+          batches,
+          units,
+          statuses: ['Active', 'Inactive', 'Pending']
+        }
+      };
+    } catch (error) {
+      console.error('Error getting dropdown data:', error);
+      return { success: false, data: null };
+    }
+  }
+
+  // Delete candidate from appropriate endpoint
+  async deleteCandidate(candidateId) {
+    try {
+      // Find candidate to determine type and ticket number
+      const candidates = await this.getAllCandidates();
+      const candidate = candidates.find(c => c.id === candidateId);
+      
+      if (!candidate) {
+        return { success: false, message: 'Candidate not found' };
+      }
+
+      let endpoint = '';
+      if (candidate.type === 'STC') endpoint = `${this.baseURL}/stc/${candidate.ticketNumber}`;
+      else if (candidate.type === 'WTC') endpoint = `${this.baseURL}/wtc/${candidate.ticketNumber}`;
+      else if (candidate.type === 'Non Railway') endpoint = `${this.baseURL}/nonrailway/${candidate.ticketNumber}`;
+      else throw new Error('Invalid candidate type');
+
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      return { success: data.success, message: data.message };
+    } catch (error) {
+      console.error('Error deleting candidate:', error);
+      return { success: false, message: 'Failed to delete candidate' };
+    }
+  }
+
+  // Placeholder for create and update (not implemented in this step)
+  async createCandidate(candidateData) {
+    // TODO: Implement when needed
+    return { success: false, message: 'Create not implemented yet' };
+  }
+
+  async updateCandidate(candidateId, candidateData) {
+    // TODO: Implement when needed
+    return { success: false, message: 'Update not implemented yet' };
+  }
+
+  // Get statistics (mock implementation matching MockBackendAPI interface)
+  async getStats(filters = {}) {
+    try {
+      const candidates = await this.getAllCandidates();
+      
+      // Apply filters if any
+      let filteredCandidates = candidates;
+      if (filters.stream && filters.stream !== 'All') {
+        filteredCandidates = candidates.filter(c => c.stream === filters.stream);
+      }
+      if (filters.type && filters.type !== 'All') {
+        filteredCandidates = candidates.filter(c => c.type === filters.type);
+      }
+      if (filters.status && filters.status !== 'All') {
+        filteredCandidates = candidates.filter(c => c.status === filters.status);
+      }
+
+      const stats = {
+        totalCandidates: filteredCandidates.length,
+        activeCandidates: filteredCandidates.filter(c => c.status === 'Active').length,
+        inactiveCandidates: filteredCandidates.filter(c => c.status === 'Inactive').length,
+        pendingCandidates: filteredCandidates.filter(c => c.status === 'Pending').length,
+        stcCandidates: filteredCandidates.filter(c => c.type === 'STC').length,
+        wtcCandidates: filteredCandidates.filter(c => c.type === 'WTC').length,
+        nonRailwayCandidates: filteredCandidates.filter(c => c.type === 'Non Railway').length,
+        railwayCandidates: filteredCandidates.filter(c => c.category === 'Railway').length,
+        distinctBatches: [...new Set(filteredCandidates.map(c => c.batch))].length,
+        workInfoDistribution: this.getWorkInfoDistribution(filteredCandidates),
+        batchDistribution: this.getBatchDistribution(filteredCandidates),
+        streamDistribution: this.getStreamDistribution(filteredCandidates)
+      };
+
+      return { success: true, data: stats };
+    } catch (error) {
+      console.error('Error getting stats:', error);
+      return { success: false, data: null };
+    }
+  }
+
+  getWorkInfoDistribution(candidates) {
+    const distribution = {};
+    candidates.forEach(candidate => {
+      const workInfo = candidate.workInfo;
+      distribution[workInfo] = (distribution[workInfo] || 0) + 1;
+    });
+    return distribution;
+  }
+
+  getBatchDistribution(candidates) {
+    const distribution = {};
+    candidates.forEach(candidate => {
+      const batch = candidate.batch;
+      distribution[batch] = (distribution[batch] || 0) + 1;
+    });
+    return distribution;
+  }
+
+  getStreamDistribution(candidates) {
+    const distribution = {};
+    candidates.forEach(candidate => {
+      const stream = candidate.stream;
+      distribution[stream] = (distribution[stream] || 0) + 1;
+    });
+    return distribution;
+  }
+}
+
+// Mock Backend API - Simulates REST endpoints with local storage persistence (DEPRECATED - Use RealBackendAPI)
 class MockBackendAPI {
   constructor() {
     this.storageKey = 'stc_candidates_data';
@@ -502,8 +755,8 @@ class MockBackendAPI {
   }
 }
 
-// Initialize the mock backend
-const mockAPI = new MockBackendAPI();
+// Initialize the real backend API
+const api = new RealBackendAPI();
 
 const CandidateManagementPage = () => {
   const [candidates, setCandidates] = useState([]);
@@ -521,11 +774,11 @@ const CandidateManagementPage = () => {
   const [view, setView] = useState('list');
   const [candidateToEdit, setCandidateToEdit] = useState(null);
 
-  // API functions using the mock backend
+  // API functions using the real backend
   const fetchCandidates = async () => {
     try {
       setLoading(true);
-      const response = await mockAPI.fetchCandidates();
+      const response = await api.fetchCandidates();
       if (response.success) {
         setCandidates(response.data);
         setError(null);
@@ -542,7 +795,7 @@ const CandidateManagementPage = () => {
 
   const fetchDropdownData = async () => {
     try {
-      const response = await mockAPI.getDropdownData();
+      const response = await api.getDropdownData();
       if (response.success) {
         setDropdownData(response.data);
       }
@@ -553,7 +806,7 @@ const CandidateManagementPage = () => {
 
   const createCandidate = async (candidateData) => {
     try {
-      const response = await mockAPI.createCandidate(candidateData);
+      const response = await api.createCandidate(candidateData);
       if (response.success) {
         setCandidates(prev => [response.data, ...prev]);
         return response.data;
@@ -569,7 +822,7 @@ const CandidateManagementPage = () => {
 
   const updateCandidate = async (candidateId, candidateData) => {
     try {
-      const response = await mockAPI.updateCandidate(candidateId, candidateData);
+      const response = await api.updateCandidate(candidateId, candidateData);
       if (response.success) {
         setCandidates(prev => prev.map(c =>
           c.id === candidateId ? response.data : c
@@ -586,7 +839,7 @@ const CandidateManagementPage = () => {
 
   const deleteCandidate = async (candidateId) => {
     try {
-      const response = await mockAPI.deleteCandidate(candidateId);
+      const response = await api.deleteCandidate(candidateId);
       if (response.success) {
         setCandidates(prev => prev.filter(c => c.id !== candidateId));
       } else {
@@ -789,7 +1042,7 @@ const CandidateManagementPage = () => {
                   filterType={selectedFilters.length === 1 ? selectedFilters[0] : "All"}
                   filterCategory={selectedFilters.includes("Non Railway") && !selectedFilters.includes("STC") && !selectedFilters.includes("WTC") ? "Non Railway" :
                     (!selectedFilters.includes("Non Railway") && (selectedFilters.includes("STC") || selectedFilters.includes("WTC"))) ? "Railway" : "All"}
-                  mockAPI={mockAPI}
+                  mockAPI={api}
                 />
                 <SearchFilters
                   searchTerm={searchTerm}
@@ -798,7 +1051,7 @@ const CandidateManagementPage = () => {
                   setFilterBatch={setFilterBatch}
                   dropdownData={dropdownData}
                   onClearFilters={clearFilters}
-                  mockAPI={mockAPI}
+                  mockAPI={api}
                 />
                 <CandidateTable
                   candidates={filteredCandidates}
@@ -811,7 +1064,7 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-1">
                 <ActivityPanel
                   candidates={activeCandidates}
-                  mockAPI={mockAPI}
+                  mockAPI={api}
                 />
               </div>
             </div>

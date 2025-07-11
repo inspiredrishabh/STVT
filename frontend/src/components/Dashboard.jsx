@@ -309,13 +309,16 @@ class DashboardAPI {
             const now = new Date();
             let date;
             
+            // Convert to string if it's not already
+            const dateStr = typeof dateString === 'string' ? dateString : String(dateString);
+            
             // SQLite stores datetime as 'YYYY-MM-DD HH:MM:SS' in UTC
             // We need to explicitly parse it as UTC
-            if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
                 // Add 'Z' to indicate UTC timezone
-                date = new Date(dateString.replace(' ', 'T') + 'Z');
+                date = new Date(dateStr.replace(' ', 'T') + 'Z');
             } else {
-                date = new Date(dateString);
+                date = new Date(dateStr);
             }
             
             // If still invalid, return a fallback

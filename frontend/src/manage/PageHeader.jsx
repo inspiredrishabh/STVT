@@ -24,15 +24,9 @@ const PageHeader = ({
       selectedFilters.includes('Non Railway');
   };
 
-  // Function to toggle all filters
-  const toggleAllFilters = () => {
-    if (areAllSelected()) {
-      // If all are selected, clear all
-      setSelectedFilters([]);
-    } else {
-      // Select all
-      setSelectedFilters(['STC', 'WTC', 'Non Railway']);
-    }
+  // Function to select all filters
+  const selectAllFilters = () => {
+    setSelectedFilters(['STC', 'WTC', 'Non Railway']);
   };
 
   return (
@@ -50,7 +44,7 @@ const PageHeader = ({
             <div className="flex items-center bg-gray-100 rounded-xl p-1 shadow-inner flex-wrap gap-1">
               <ToggleButton
                 isActive={areAllSelected()}
-                onClick={toggleAllFilters}
+                onClick={selectAllFilters}
                 text="All"
                 className="bg-blue-600 hover:bg-blue-700"
               />
