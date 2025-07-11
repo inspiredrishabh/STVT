@@ -29,6 +29,11 @@ router.delete('/:ticketNumber', (req, res) => {
     stcController.deleteCandidateByTicketNumber(req, res);
 });
 
+// Resign candidate route
+router.put('/:ticketNumber/resign', (req, res) => {
+    stcController.resignCandidate(req, res);
+});
+
 // Filter Routes
 router.get('/filter/designation/:designation', (req, res) => {
     stcController.getCandidatesByDesignation(req, res);

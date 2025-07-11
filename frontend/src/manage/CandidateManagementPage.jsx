@@ -104,7 +104,7 @@ class RealBackendAPI {
             ticket_no: candidate.ticket_no || candidate.ticketNumber || `STC${candidate.id}`, // Ensure ticket_no is also set
             serialNo: candidate.id + 1000,
             batch: candidate.batch || '2024-2025',
-            status: 'Active',
+            status: candidate.resignation_status === 'yes' ? 'Resigned' : 'Active',
             phoneNumber: candidate.phone_number || 'N/A',
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,

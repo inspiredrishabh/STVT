@@ -66,17 +66,19 @@ const TraineeProfile = () => {
   };
 
   // API Functions
-  const resignTrainee = async (traineeId, resignationDate, reason) => {
-    return await apiCall('/trainees/resign', {
-      method: 'POST',
-      body: JSON.stringify({
-        traineeId,
-        resignationDate,
-        reason,
-        processedBy: 'Admin', // This would come from auth context in real app
-        processedAt: new Date().toISOString()
-      })
+  const resignTrainee = async (traineeTicketNo) => {
+    const response = await fetch(`${API_BASE}/${traineeTicketNo}/resign`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   };
 
   const getTraineeResignationHistory = async (traineeId) => {
@@ -104,7 +106,15 @@ const TraineeProfile = () => {
       if (!response.ok) throw new Error('Failed to fetch trainees');
       const data = await response.json();
 
-      const TraineeArray = Array.isArray(data.data) ? data.data : [];
+      const TraineeArray = Array.isArray(data.data) ? data.data.map(trainee => ({
+        ...trainee,
+        // Map resignation_status to status for UI consistency
+        status: trainee.resignation_status === 'yes' ? 'Resigned' : 'Active',
+        // Keep original data for ticket number consistency
+        ticketNo: trainee.ticket_no,
+        ticketNumber: trainee.ticket_no
+      })) : [];
+      
       console.log('Fetched trainees:', TraineeArray);
 
       setTrainees(TraineeArray);
@@ -172,12 +182,8 @@ const TraineeProfile = () => {
     setSubmittingResignation(true);
 
     try {
-      // Call resignation API
-      await resignTrainee(
-        selectedTraineeForResignation.id,
-        resignationData.date,
-        resignationData.reason.trim()
-      );
+      // Call resignation API with ticket number
+      await resignTrainee(selectedTraineeForResignation.ticket_no || selectedTraineeForResignation.ticketNo);
 
       // Update local state
       const updatedTrainees = trainees.map(trainee =>
@@ -185,8 +191,7 @@ const TraineeProfile = () => {
           ? {
             ...trainee,
             status: 'Resigned',
-            resignationDate: resignationData.date,
-            resignationReason: resignationData.reason.trim()
+            resignation_status: 'yes'
           }
           : trainee
       );
@@ -214,8 +219,7 @@ const TraineeProfile = () => {
           ? {
             ...trainee,
             status: 'Resigned',
-            resignationDate: resignationData.date,
-            resignationReason: resignationData.reason.trim()
+            resignation_status: 'yes'
           }
           : trainee
       );
