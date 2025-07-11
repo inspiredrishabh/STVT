@@ -1,34 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import { Users, BarChart2, Briefcase, Zap } from 'lucide-react';
 
-const StatsCards = ({ candidates, selectedFilters }) => {
-  // Calculate stats directly from the filtered candidates
-  const stats = {
-    totalCandidates: candidates.length,
-    activeCandidates: candidates.filter(c => c.status === 'Active').length,
-    stcCandidates: candidates.filter(c => c.type === 'STC').length,
-    wtcCandidates: candidates.filter(c => c.type === 'WTC').length,
-    nonRailwayCandidates: candidates.filter(c => c.type === 'Non Railway').length,
-    distinctBatches: [...new Set(candidates.map(c => c.batch))].length,
-    distinctStreams: [...new Set(candidates.map(c => c.stream))].length,
-    workInfoDistribution: getWorkInfoDistribution(candidates)
-  };
+const StatsCards = ({ candidates, filterType, filterCategory, mockAPI }) => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!mockAPI) return;
+
+      setLoading(true);
+      try {
+        // Pass the filter parameters to get appropriate statistics
+        const response = await mockAPI.getStats({
+          category: filterCategory,
+          type: filterType
+        });
+
+        if (response.success) {
+          setStats(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [filterCategory, filterType, mockAPI, candidates]);
 
   // Dynamic title prefix based on the selected filter
-  const getFilterTitle = () => {
-    if (selectedFilters.length === 1) {
-      return selectedFilters[0];
-    } else if (selectedFilters.length === 2) {
-      return selectedFilters.join(' + ');
-    } else if (selectedFilters.length === 3) {
-      return 'All';
-    }
-    return 'All';
-  };
+  const titlePrefix = filterType === 'All' ? '' : `${filterType} `;
 
-  const titlePrefix = getFilterTitle() === 'All' ? '' : `${getFilterTitle()} `;
+  // Fallback to local calculation if API stats are not available
+  const localStats = [
+    {
+      title: `${titlePrefix}Total Candidates`,
+      value: candidates.length,
+      icon: Users,
+      iconBgColor: "bg-blue-100",
+      iconTextColor: "text-blue-600",
+    },
+    {
+      title: "Distinct Batches",
+      value: [...new Set(candidates.map(c => c.batch))].length,
+      icon: BarChart2,
+      iconBgColor: "bg-green-100",
+      iconTextColor: "text-green-600",
+    },
+    {
+      title: "Top Work Info",
+      value: getTopWorkInfo(candidates) || 'N/A',
+      icon: Briefcase,
+      iconBgColor: "bg-orange-100",
+      iconTextColor: "text-orange-600",
+    },
+    {
+      title: "Available Streams",
+      value: [...new Set(candidates.map(c => c.stream))].length,
+      icon: Zap,
+      iconBgColor: "bg-purple-100",
+      iconTextColor: "text-purple-600",
+    },
+  ];
 
-  const displayStats = [
+  // Use API stats if available, otherwise fallback to local calculation
+  const displayStats = stats ? [
     {
       title: `${titlePrefix}Total Candidates`,
       value: stats.totalCandidates,
@@ -57,7 +95,25 @@ const StatsCards = ({ candidates, selectedFilters }) => {
       iconBgColor: "bg-purple-100",
       iconTextColor: "text-purple-600",
     },
-  ];
+  ] : localStats;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-3xl p-6 shadow-md border border-gray-200 animate-pulse">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gray-200 rounded-2xl"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -79,18 +135,6 @@ const StatCard = ({ title, value, icon: Icon, iconBgColor, iconTextColor }) => (
     </div>
   </div>
 );
-
-// Helper function for work info distribution
-function getWorkInfoDistribution(candidates) {
-  if (!candidates || candidates.length === 0) return {};
-
-  const distribution = {};
-  candidates.forEach(candidate => {
-    const workInfo = candidate.workInfo;
-    distribution[workInfo] = (distribution[workInfo] || 0) + 1;
-  });
-  return distribution;
-}
 
 // Helper function for local calculation
 function getTopWorkInfo(candidates) {

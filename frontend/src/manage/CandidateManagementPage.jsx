@@ -31,20 +31,39 @@ class RealBackendAPI {
 
   // Helper method to determine the correct API endpoint for a candidate
   getCandidateEndpoint(candidate) {
-    const { type, workInfo, ticketNumber } = candidate;
+    const { type, workInfo } = candidate;
+    // Get ticket number from multiple possible field names
+    const ticketNo = candidate.ticketNumber || candidate.ticket_no || candidate.ticketNo;
+    
+    // Debug logging
+    console.log('getCandidateEndpoint called with:', {
+      type,
+      workInfo,
+      ticketNo,
+      ticketNumber: candidate.ticketNumber,
+      ticket_no: candidate.ticket_no,
+      ticketNoField: candidate.ticketNo,
+      candidateKeys: Object.keys(candidate)
+    });
+    
+    // Check if ticket number is available
+    if (!ticketNo) {
+      console.error('Ticket number is undefined for candidate:', candidate);
+      throw new Error(`Ticket number is undefined for candidate ${candidate.name || candidate.id}`);
+    }
     
     // Check if this is a course-specific candidate
     if (type === 'STC' && workInfo && this.courseStructure[workInfo]) {
-      const endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}/${ticketNumber}`;
+      const endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}/${ticketNo}`;
       console.log(`Course-specific candidate detected: ${workInfo} -> ${endpoint}`);
       return endpoint;
     }
     
     // Default endpoints for basic candidates
     const endpoints = {
-      'STC': `${this.baseURL}/stc/${ticketNumber}`,
-      'WTC': `${this.baseURL}/wtc/${ticketNumber}`,
-      'Non Railway': `${this.baseURL}/nonrailway/${ticketNumber}`
+      'STC': `${this.baseURL}/stc/${ticketNo}`,
+      'WTC': `${this.baseURL}/wtc/${ticketNo}`,
+      'Non Railway': `${this.baseURL}/nonrailway/${ticketNo}`
     };
     
     const endpoint = endpoints[type] || endpoints['STC'];
@@ -71,24 +90,28 @@ class RealBackendAPI {
       const response = await fetch(`${this.baseURL}/stc`);
       const data = await response.json();
       if (data.success) {
-        return data.data.map(candidate => ({
-          ...candidate,
-          id: `stc-${candidate.id}`, // Make ID unique across types
-          originalId: candidate.id,
-          type: 'STC',
-          category: 'Railway',
-          stream: 'Railway',
-          workInfo: candidate.designation || 'N/A',
-          ticketNumber: candidate.ticket_no,
-          serialNo: candidate.id + 1000,
-          batch: candidate.batch || '2024-2025',
-          status: 'Active',
-          phoneNumber: candidate.phone_number || 'N/A',
-          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
-          createdAt: candidate.created_at,
-          updatedAt: candidate.updated_at,
-          picture: candidate.picture ? `/${candidate.picture}` : null
-        }));
+        return data.data.map(candidate => {
+          console.log('STC Candidate raw data:', candidate); // Debug logging
+          return {
+            ...candidate,
+            id: `stc-${candidate.id}`, // Make ID unique across types
+            originalId: candidate.id,
+            type: 'STC',
+            category: 'Railway',
+            stream: 'Railway',
+            workInfo: candidate.designation || 'N/A',
+            ticketNumber: candidate.ticket_no || candidate.ticketNumber || `STC${candidate.id}`, // Multiple fallbacks
+            ticket_no: candidate.ticket_no || candidate.ticketNumber || `STC${candidate.id}`, // Ensure ticket_no is also set
+            serialNo: candidate.id + 1000,
+            batch: candidate.batch || '2024-2025',
+            status: 'Active',
+            phoneNumber: candidate.phone_number || 'N/A',
+            dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+            createdAt: candidate.created_at,
+            updatedAt: candidate.updated_at,
+            picture: candidate.picture ? `/${candidate.picture}` : null
+          };
+        });
       }
       return [];
     } catch (error) {
@@ -103,24 +126,33 @@ class RealBackendAPI {
       const response = await fetch(`${this.baseURL}/wtc`);
       const data = await response.json();
       if (data.success) {
-        return data.data.map(candidate => ({
-          ...candidate,
-          id: `wtc-${candidate.id}`, // Make ID unique across types
-          originalId: candidate.id,
-          type: 'WTC',
-          category: 'Railway',
-          stream: 'Railway',
-          workInfo: candidate.designation || 'N/A',
-          ticketNumber: candidate.ticket_no,
-          serialNo: candidate.id + 2000,
-          batch: candidate.batch || '2024-2025',
-          status: 'Active',
-          phoneNumber: candidate.phone_number || 'N/A',
-          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
-          createdAt: candidate.created_at,
-          updatedAt: candidate.updated_at,
-          picture: candidate.picture ? `/${candidate.picture}` : null
-        }));
+        return data.data.map(candidate => {
+          console.log('WTC Candidate raw data:', candidate); // Debug logging
+          
+          // Get ticket number from any available field
+          const ticketNumber = candidate.ticket_no || candidate.ticketNo || candidate.ticketNumber || `WTC${candidate.id}`;
+          
+          return {
+            ...candidate,
+            id: `wtc-${candidate.id}`, // Make ID unique across types
+            originalId: candidate.id,
+            type: 'WTC',
+            category: 'Railway',
+            stream: 'Railway',
+            workInfo: candidate.designation || 'N/A',
+            ticketNumber: ticketNumber, // Ensure ticketNumber is set
+            ticket_no: ticketNumber, // Ensure ticket_no is also set
+            ticketNo: ticketNumber, // Ensure ticketNo is also set for consistency
+            serialNo: candidate.id + 2000,
+            batch: candidate.batch || '2024-2025',
+            status: 'Active',
+            phoneNumber: candidate.phone_number || 'N/A',
+            dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+            createdAt: candidate.created_at,
+            updatedAt: candidate.updated_at,
+            picture: candidate.picture ? `/${candidate.picture}` : null
+          };
+        });
       }
       return [];
     } catch (error) {
@@ -135,24 +167,28 @@ class RealBackendAPI {
       const response = await fetch(`${this.baseURL}/nonrailway`);
       const data = await response.json();
       if (data.success) {
-        return data.data.map(candidate => ({
-          ...candidate,
-          id: `nonrailway-${candidate.id}`, // Make ID unique across types
-          originalId: candidate.id,
-          type: 'Non Railway',
-          category: 'Non Railway',
-          stream: 'Non Railway',
-          workInfo: candidate.designation || 'N/A',
-          ticketNumber: candidate.ticket_no,
-          serialNo: candidate.id + 3000,
-          batch: candidate.batch || '2024-2025',
-          status: 'Active',
-          phoneNumber: candidate.phone_number || 'N/A',
-          dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
-          createdAt: candidate.created_at,
-          updatedAt: candidate.updated_at,
-          picture: candidate.picture ? `/${candidate.picture}` : null
-        }));
+        return data.data.map(candidate => {
+          console.log('Non-Railway Candidate raw data:', candidate); // Debug logging
+          return {
+            ...candidate,
+            id: `nonrailway-${candidate.id}`, // Make ID unique across types
+            originalId: candidate.id,
+            type: 'Non Railway',
+            category: 'Non Railway',
+            stream: 'Non Railway',
+            workInfo: candidate.designation || 'N/A',
+            ticketNumber: candidate.ticket_no || candidate.ticketNumber || `NR${candidate.id}`, // Multiple fallbacks
+            ticket_no: candidate.ticket_no || candidate.ticketNumber || `NR${candidate.id}`, // Ensure ticket_no is also set
+            serialNo: candidate.id + 3000,
+            batch: candidate.batch || '2024-2025',
+            status: 'Active',
+            phoneNumber: candidate.phone_number || 'N/A',
+            dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+            createdAt: candidate.created_at,
+            updatedAt: candidate.updated_at,
+            picture: candidate.picture ? `/${candidate.picture}` : null
+          };
+        });
       }
       return [];
     } catch (error) {
@@ -197,7 +233,7 @@ class RealBackendAPI {
               category: 'Railway',
               stream: 'Railway',
               workInfo: courseCode, // Use the course code as workInfo
-              ticketNumber: candidate.ticket_no,
+              ticketNumber: candidate.ticket_no || candidate.ticketNo, // Handle both field names
               serialNo: candidate.id + 5000, // Different serial number range
               batch: candidate.batch || '2024-2025',
               status: 'Active',

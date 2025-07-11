@@ -86,6 +86,29 @@ class WtcController {
             const { ticketNumber } = req.params;
             const updatedData = req.body;
 
+            // Filter out non-database fields
+            const {
+                originalId,
+                id,
+                type,
+                category,
+                stream,
+                workInfo,
+                serialNo,
+                ticketNumber: frontendTicketNumber,
+                ticketNo: frontendTicketNo,
+                status,
+                dateOfJoiningStcWtcNonRailway,
+                createdAt,
+                updatedAt,
+                ...filteredData
+            } = updatedData;
+
+            // Debug logging
+            console.log('WTC Update - Original data keys:', Object.keys(updatedData));
+            console.log('WTC Update - Filtered data keys:', Object.keys(filteredData));
+            console.log('WTC Update - Filtered data values:', filteredData);
+
             // Check if candidate exists
             const existingCandidate = await this.wtcModel.getByTicketNumber(ticketNumber);
             if (!existingCandidate) {
@@ -106,10 +129,10 @@ class WtcController {
                 }
 
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'wtc');
-                updatedData.picture = imagePath;
+                filteredData.picture = imagePath;
             }
 
-            const updatedCandidate = await this.wtcModel.updateByTicketNumber(ticketNumber, updatedData);
+            const updatedCandidate = await this.wtcModel.updateByTicketNumber(ticketNumber, filteredData);
 
             res.status(200).json({
                 success: true,

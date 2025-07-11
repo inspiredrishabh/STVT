@@ -6,9 +6,6 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
   const [editFormData, setEditFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Debug: Log what candidates are being received (only once per render)
-  console.log('CandidateTable received:', candidates.length, 'candidates');
-
   if (candidates.length === 0) {
     return <EmptyState />;
   }
@@ -70,7 +67,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['S.No.', 'Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
+                {['Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
                   <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     {header}
                   </th>
@@ -78,11 +75,10 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {candidates.map((candidate, index) => (
+              {candidates.map((candidate) => (
                 <CandidateRow
                   key={candidate.id}
                   candidate={candidate}
-                  serialNumber={index + 1}
                   onViewDetail={onViewDetail}
                   onDelete={onDelete}
                   onEdit={handleEditClick}
@@ -125,7 +121,6 @@ const TableHeader = () => (
 
 const CandidateRow = ({
   candidate,
-  serialNumber,
   onViewDetail,
   onDelete,
   onEdit,
@@ -139,7 +134,6 @@ const CandidateRow = ({
   if (isEditing) {
     return <EditableCandidateRow
       candidate={candidate}
-      serialNumber={serialNumber}
       editFormData={editFormData}
       onInputChange={onInputChange}
       onSaveEdit={onSaveEdit}
@@ -150,21 +144,8 @@ const CandidateRow = ({
   return (
     <tr className="hover:bg-blue-50 transition-colors duration-200">
       <td className="px-6 py-4">
-        <div className="flex items-center justify-center">
-          <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-            {serialNumber}
-          </span>
-        </div>
-      </td>
-      <td className="px-6 py-4">
         <div className="flex items-center space-x-4">
-          {candidate.picture ? (
-            <img src={candidate.picture} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
-          ) : (
-            <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center shadow-md">
-              <User className="h-6 w-6 text-gray-400" />
-            </div>
-          )}
+          <img src={candidate.picture} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
           <div>
             <div className="text-sm font-bold text-gray-900">{candidate.name}</div>
             <div className="text-xs text-gray-500">Ticket No: {candidate.ticketNumber || candidate.employeeNumber}</div>
@@ -172,8 +153,8 @@ const CandidateRow = ({
         </div>
       </td>
       <td className="px-6 py-4">
-        <div className={`flex items-center space-x-2 text-sm text-gray-700 font-medium  rounded-1xl pl-2 rounded-xl  ${candidate.type === 'Non Railway' ? 'bg-blue-100' : 'bg-green-100'}`}>
-          <Briefcase className={`h-4 w-4 ${candidate.type === 'Non Railway' ? 'text-blue-500' : 'text-green-500'}`} />
+        <div className="flex items-center space-x-2 text-sm text-gray-700 font-medium">
+          <Briefcase className="h-4 w-4 text-green-500" />
           <span>{candidate.stream}</span>
         </div>
         <div className="text-xs text-gray-500 mt-1">Batch: {candidate.batch}</div>
@@ -204,20 +185,12 @@ const CandidateRow = ({
 
 const EditableCandidateRow = ({
   candidate,
-  serialNumber,
   editFormData,
   onInputChange,
   onSaveEdit,
   onCancelEdit
 }) => (
   <tr className="bg-blue-50 border-2 border-blue-200">
-    <td className="px-6 py-4">
-      <div className="flex items-center justify-center">
-        <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
-          {serialNumber}
-        </span>
-      </div>
-    </td>
     <td className="px-6 py-4">
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
