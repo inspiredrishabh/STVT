@@ -70,7 +70,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
+                {['S.No.', 'Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
                   <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     {header}
                   </th>
@@ -78,10 +78,11 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {candidates.map((candidate) => (
+              {candidates.map((candidate, index) => (
                 <CandidateRow
                   key={candidate.id}
                   candidate={candidate}
+                  serialNumber={index + 1}
                   onViewDetail={onViewDetail}
                   onDelete={onDelete}
                   onEdit={handleEditClick}
@@ -124,6 +125,7 @@ const TableHeader = () => (
 
 const CandidateRow = ({
   candidate,
+  serialNumber,
   onViewDetail,
   onDelete,
   onEdit,
@@ -137,6 +139,7 @@ const CandidateRow = ({
   if (isEditing) {
     return <EditableCandidateRow
       candidate={candidate}
+      serialNumber={serialNumber}
       editFormData={editFormData}
       onInputChange={onInputChange}
       onSaveEdit={onSaveEdit}
@@ -146,6 +149,13 @@ const CandidateRow = ({
 
   return (
     <tr className="hover:bg-blue-50 transition-colors duration-200">
+      <td className="px-6 py-4">
+        <div className="flex items-center justify-center">
+          <span className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+            {serialNumber}
+          </span>
+        </div>
+      </td>
       <td className="px-6 py-4">
         <div className="flex items-center space-x-4">
           {candidate.picture ? (
@@ -194,12 +204,20 @@ const CandidateRow = ({
 
 const EditableCandidateRow = ({
   candidate,
+  serialNumber,
   editFormData,
   onInputChange,
   onSaveEdit,
   onCancelEdit
 }) => (
   <tr className="bg-blue-50 border-2 border-blue-200">
+    <td className="px-6 py-4">
+      <div className="flex items-center justify-center">
+        <span className="text-sm font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+          {serialNumber}
+        </span>
+      </div>
+    </td>
     <td className="px-6 py-4">
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
