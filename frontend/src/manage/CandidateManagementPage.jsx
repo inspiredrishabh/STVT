@@ -22,6 +22,8 @@ class RealBackendAPI {
       if (data.success) {
         return data.data.map(candidate => ({
           ...candidate,
+          id: `stc-${candidate.id}`, // Make ID unique across types
+          originalId: candidate.id,
           type: 'STC',
           category: 'Railway',
           stream: 'Railway',
@@ -52,6 +54,8 @@ class RealBackendAPI {
       if (data.success) {
         return data.data.map(candidate => ({
           ...candidate,
+          id: `wtc-${candidate.id}`, // Make ID unique across types
+          originalId: candidate.id,
           type: 'WTC',
           category: 'Railway',
           stream: 'Railway',
@@ -82,6 +86,8 @@ class RealBackendAPI {
       if (data.success) {
         return data.data.map(candidate => ({
           ...candidate,
+          id: `nonrailway-${candidate.id}`, // Make ID unique across types
+          originalId: candidate.id,
           type: 'Non Railway',
           category: 'Non Railway',
           stream: 'Non Railway',
@@ -780,6 +786,8 @@ const CandidateManagementPage = () => {
       setLoading(true);
       const response = await api.fetchCandidates();
       if (response.success) {
+        console.log('Raw API Response:', response.data.length, 'candidates loaded');
+        console.log('Sample candidates:', response.data.slice(0, 3).map(c => ({ name: c.name, type: c.type })));
         setCandidates(response.data);
         setError(null);
       } else {
@@ -901,34 +909,52 @@ const CandidateManagementPage = () => {
   const activeCandidates = useMemo(() => {
     // If no filters are selected, return nothing
     if (selectedFilters.length === 0) {
+      console.log('No filters selected, returning empty array');
       return [];
     }
 
     // Filter candidates based on selected filter types
-    return candidates.filter(candidate => {
-      if (selectedFilters.includes('STC') && candidate.type === 'STC') {
-        return true;
-      }
-      if (selectedFilters.includes('WTC') && candidate.type === 'WTC') {
-        return true;
-      }
-      if (selectedFilters.includes('Non Railway') && candidate.type === 'Non Railway') {
-        return true;
-      }
-      return false;
+    const filtered = candidates.filter(candidate => {
+      const isStcMatch = selectedFilters.includes('STC') && candidate.type === 'STC';
+      const isWtcMatch = selectedFilters.includes('WTC') && candidate.type === 'WTC';
+      const isNonRailwayMatch = selectedFilters.includes('Non Railway') && candidate.type === 'Non Railway';
+      
+      return isStcMatch || isWtcMatch || isNonRailwayMatch;
     });
+
+    console.log('Filter Debug:', {
+      selectedFilters,
+      totalCandidates: candidates.length,
+      stcCount: candidates.filter(c => c.type === 'STC').length,
+      wtcCount: candidates.filter(c => c.type === 'WTC').length,
+      nonRailwayCount: candidates.filter(c => c.type === 'Non Railway').length,
+      filteredCount: filtered.length,
+      filteredCandidateNames: filtered.map(c => `${c.name} (${c.type})`)
+    });
+
+    return filtered;
   }, [candidates, selectedFilters]);
 
-  const filteredCandidates = useMemo(() => activeCandidates.filter(candidate => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = candidate.name?.toLowerCase().includes(searchLower) ||
-      (candidate.email && candidate.email.toLowerCase().includes(searchLower)) ||
-      candidate.ticketNumber?.toLowerCase().includes(searchLower) ||
-      candidate.serialNo?.toString().includes(searchTerm);
-    const matchesBatch = !filterBatch || candidate.batch === filterBatch;
+  const filteredCandidates = useMemo(() => {
+    const searchFiltered = activeCandidates.filter(candidate => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = candidate.name?.toLowerCase().includes(searchLower) ||
+        (candidate.email && candidate.email.toLowerCase().includes(searchLower)) ||
+        candidate.ticketNumber?.toLowerCase().includes(searchLower) ||
+        candidate.serialNo?.toString().includes(searchTerm);
+      const matchesBatch = !filterBatch || candidate.batch === filterBatch;
 
-    return matchesSearch && matchesBatch;
-  }), [activeCandidates, searchTerm, filterBatch]);
+      return matchesSearch && matchesBatch;
+    });
+
+    console.log('Final Filtered Candidates:', {
+      activeCandidatesCount: activeCandidates.length,
+      finalFilteredCount: searchFiltered.length,
+      candidateNames: searchFiltered.map(c => `${c.name} (${c.type})`)
+    });
+
+    return searchFiltered;
+  }, [activeCandidates, searchTerm, filterBatch]);
 
   // Handle inline editing update
   const handleInlineUpdate = async (candidateId, updatedData) => {
@@ -1039,10 +1065,7 @@ const CandidateManagementPage = () => {
               <div className="lg:col-span-3 space-y-6">
                 <StatsCards
                   candidates={activeCandidates}
-                  filterType={selectedFilters.length === 1 ? selectedFilters[0] : "All"}
-                  filterCategory={selectedFilters.includes("Non Railway") && !selectedFilters.includes("STC") && !selectedFilters.includes("WTC") ? "Non Railway" :
-                    (!selectedFilters.includes("Non Railway") && (selectedFilters.includes("STC") || selectedFilters.includes("WTC"))) ? "Railway" : "All"}
-                  mockAPI={api}
+                  selectedFilters={selectedFilters}
                 />
                 <SearchFilters
                   searchTerm={searchTerm}

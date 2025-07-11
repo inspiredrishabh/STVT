@@ -6,6 +6,9 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
   const [editFormData, setEditFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
 
+  // Debug: Log what candidates are being received (only once per render)
+  console.log('CandidateTable received:', candidates.length, 'candidates');
+
   if (candidates.length === 0) {
     return <EmptyState />;
   }
