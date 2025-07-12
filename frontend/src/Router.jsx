@@ -26,7 +26,6 @@ const Letter = lazy(() => import("./WTCManagement/Letter"));
 const LetterPreview = lazy(() => import("./WTCManagement/LetterPreview"));
 const Certificate = lazy(() => import("./WTCManagement/Cerificate"));
 const CertificatePreview = lazy(() => import("./WTCManagement/CertificatePreview"));
-const WtcMain = lazy(() => import("./WTC/form/WtcMain"));
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
@@ -174,7 +173,7 @@ const Router = () => {
         <Route path="/wtc/letter/preview" element={<ProtectedLayout><LetterPreview /></ProtectedLayout>} />
         <Route path="/wtc/certificate" element={<ProtectedLayout><Certificate /></ProtectedLayout>} />
         <Route path="/wtc/certificate/preview" element={<ProtectedLayout><CertificatePreview /></ProtectedLayout>} />
-        <Route path="/wtc/form" element={<ProtectedLayout><WtcMain /></ProtectedLayout>} />
+        <Route path="/wtc/form" element={<ProtectedLayout><WTCMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
         <Route

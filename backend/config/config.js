@@ -8,9 +8,58 @@ const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 // Role permissions
 const rolePermissions = {
-    admin: ["add-candidate", "manage-candidates", "feed-marks", "marksheets", "id-cards", "letters"],
-    master: ["add-candidate", "manage-candidates", "feed-marks"],
-    operator: ["add-candidate", "manage-candidates"]
+    admin: [
+        // Candidate Management
+        "add-candidate",
+        "manage-candidates",
+
+        // STC Features
+        "stc-feed-marks",
+        "stc-trainee-profile",
+        "stc-line-training",
+        "stc-marksheet",
+
+        // WTC Features
+        "wtc-trainee-profile",
+        "wtc-attendance",
+        "wtc-letter",
+        "wtc-certificate",
+
+        // Non-Railway Features
+        "non-railway-management",
+
+        // Generic permissions - mapped to UI elements
+        "feed-marks",     // Generic menu item
+        "marksheets",     // Generic menu item
+        "letters"         // Generic menu item
+    ],
+    master: [
+        // Candidate Management
+        "add-candidate",
+        "manage-candidates",
+
+        // STC Features
+        "stc-feed-marks",
+        "stc-trainee-profile",
+        "stc-line-training",
+
+        // WTC Features
+        "wtc-trainee-profile",
+        "wtc-attendance",
+
+        // Generic permissions - mapped to UI elements
+        "feed-marks"      // Generic menu item
+    ],
+    operator: [
+        // Limited Candidate Management
+        "add-candidate",
+
+        // View-only permissions
+        "view-candidates",
+        "view-marks",
+        "view-attendance",
+        "view-profiles"
+    ]
 };
 
 

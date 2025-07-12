@@ -10,7 +10,7 @@ class NonRailwayController {
     async createCandidate(req, res) {
         try {
             const candidateData = req.body;
-            
+
             // Generate ticket number
             const ticketNumber = await generateTicketNumber(candidateData.designation, 'nonrailway');
             candidateData.ticket_no = ticketNumber;
@@ -58,7 +58,7 @@ class NonRailwayController {
         try {
             const { ticketNumber } = req.params;
             const candidate = await this.nonRailwayModel.getByTicketNumber(ticketNumber);
-            
+
             if (!candidate) {
                 return res.status(404).json({
                     success: false,
@@ -98,18 +98,18 @@ class NonRailwayController {
             if (req.file) {
                 // Delete old image if exists
                 if (existingCandidate.picture) {
-                    const oldImagePath = path.join(__dirname, '../../', existingCandidate.picture);
+                    const oldImagePath = path.join(__dirname, '../', existingCandidate.picture);
                     if (fs.existsSync(oldImagePath)) {
                         fs.unlinkSync(oldImagePath);
                     }
                 }
-                
+
                 const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'nonrailway');
                 updatedData.picture = imagePath;
             }
 
             const updatedCandidate = await this.nonRailwayModel.updateByTicketNumber(ticketNumber, updatedData);
-            
+
             res.status(200).json({
                 success: true,
                 message: 'NonRailway Candidate updated successfully',
@@ -127,7 +127,7 @@ class NonRailwayController {
     async deleteCandidateByTicketNumber(req, res) {
         try {
             const { ticketNumber } = req.params;
-            
+
             // Get candidate to check image
             const candidate = await this.nonRailwayModel.getByTicketNumber(ticketNumber);
             if (!candidate) {
@@ -139,15 +139,15 @@ class NonRailwayController {
 
             // Delete candidate
             const deleted = await this.nonRailwayModel.deleteByTicketNumber(ticketNumber);
-            
+
             // Delete image file if exists
             if (candidate.picture) {
-                const imagePath = path.join(__dirname, '../../', candidate.picture);
+                const imagePath = path.join(__dirname, '../', candidate.picture);
                 if (fs.existsSync(imagePath)) {
                     fs.unlinkSync(imagePath);
                 }
             }
-            
+
             res.status(200).json({
                 success: true,
                 message: 'NonRailway Candidate deleted successfully'
@@ -165,7 +165,7 @@ class NonRailwayController {
         try {
             const { designation } = req.params;
             const candidates = await this.nonRailwayModel.getByDesignation(designation);
-            
+
             res.status(200).json({
                 success: true,
                 message: `NonRailway Candidates with designation ${designation} retrieved successfully`,
@@ -186,7 +186,7 @@ class NonRailwayController {
         try {
             const { courseType } = req.params;
             const candidates = await this.nonRailwayModel.getByCourseType(courseType);
-            
+
             res.status(200).json({
                 success: true,
                 message: `NonRailway Candidates with course type ${courseType} retrieved successfully`,
@@ -206,7 +206,7 @@ class NonRailwayController {
     //     try {
     //         const { duration } = req.params;
     //         const candidates = await this.nonRailwayModel.getByDuration(duration);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `NonRailway Candidates with duration ${duration} retrieved successfully`,
@@ -226,7 +226,7 @@ class NonRailwayController {
     //     try {
     //         const { theory } = req.params;
     //         const candidates = await this.nonRailwayModel.getByTheory(theory);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `NonRailway Candidates with theory ${theory} retrieved successfully`,
@@ -246,7 +246,7 @@ class NonRailwayController {
     //     try {
     //         const { practical } = req.params;
     //         const candidates = await this.nonRailwayModel.getByPractical(practical);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `NonRailway Candidates with practical ${practical} retrieved successfully`,
@@ -266,7 +266,7 @@ class NonRailwayController {
         try {
             const { unit } = req.params;
             const candidates = await this.nonRailwayModel.getByUnit(unit);
-            
+
             res.status(200).json({
                 success: true,
                 message: `NonRailway Candidates with unit ${unit} retrieved successfully`,
@@ -286,7 +286,7 @@ class NonRailwayController {
     //     try {
     //         const { keyword } = req.params;
     //         const candidates = await this.nonRailwayModel.searchByRemarks(keyword);
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: `NonRailway Candidates with remarks containing "${keyword}" retrieved successfully`,
@@ -305,7 +305,7 @@ class NonRailwayController {
     // async getTrainingDetails(req, res) {
     //     try {
     //         const trainingDetails = await this.nonRailwayModel.getTrainingDetails();
-            
+
     //         res.status(200).json({
     //             success: true,
     //             message: 'NonRailway Training details retrieved successfully',
@@ -322,14 +322,14 @@ class NonRailwayController {
     // }
 
     // Image upload handler
-    
+
     async handleImageUpload(file, ticketNumber, traineeType) {
         try {
             const oldPath = file.path;
             const fileExtension = path.extname(file.originalname);
             const newFileName = `${ticketNumber}${fileExtension}`;
-            
-            const uploadDir = path.join(__dirname, '../../uploads', traineeType);
+
+            const uploadDir = path.join(__dirname, '../uploads', traineeType);
             const newFullPath = path.join(uploadDir, newFileName);
             const relativePath = `uploads/${traineeType}/${newFileName}`;
 
@@ -340,7 +340,7 @@ class NonRailwayController {
 
             // Move file with new name
             fs.renameSync(oldPath, newFullPath);
-            
+
             return relativePath;
         } catch (error) {
             throw new Error('Error handling image upload: ' + error.message);

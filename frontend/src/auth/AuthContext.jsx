@@ -112,16 +112,27 @@ export const AuthProvider = ({ children }) => {
 
     const allMenuItems = [
       { title: "Add Candidate", icon: "👤", route: "add-candidate" },
-      { title: "Manage Candidate", icon: "👥", route: "manage-candidates" },
-      { title: "Feed Marks", icon: "📊", route: "feed-marks" },
-      { title: "Marksheet/Certificate", icon: "📝", route: "marksheets" },
-      { title: "ID Card", icon: "🪪", route: "id-cards" },
-      { title: "Custom Letter", icon: "📄", route: "letters" }
+      { title: "Manage Candidate", icon: "👥", route: user.permissions?.includes("manage-candidates") ? "manage-candidates" : "view-candidates" },
+      { title: "Feed Marks", icon: "📊", route: "feed-marks", subRoutes: ["stc-feed-marks", "wtc-feed-marks"] },
+      { title: "Marksheet/Certificate", icon: "📝", route: "marksheets", subRoutes: ["stc-marksheet", "wtc-certificate"] },
+      { title: "Custom Letter", icon: "📄", route: "letters", subRoutes: ["wtc-letter"] },
+      { title: "Attendance", icon: "📅", route: user.permissions?.includes("wtc-attendance") ? "wtc-attendance" : "view-attendance" },
+      { title: "Line Training", icon: "🚂", route: "stc-line-training" },
+      { title: "Trainee Profiles", icon: "👥", route: user.permissions?.includes("stc-trainee-profile") || user.permissions?.includes("wtc-trainee-profile") ? "trainee-profile" : "view-profiles" }
     ];
 
-    return allMenuItems.filter((item) =>
-      user.permissions?.includes(item.route)
-    );
+    return allMenuItems.filter((item) => {
+      // Check if user has direct permission for this route
+      const hasDirectPermission = user.permissions?.includes(item.route);
+
+      // Check if user has permission for any of the sub-routes
+      const hasSubRoutePermission = item.subRoutes?.some(subRoute =>
+        user.permissions?.includes(subRoute)
+      );
+
+      // User has access if they have direct permission or any sub-route permission
+      return hasDirectPermission || hasSubRoutePermission;
+    });
   };
 
   return (

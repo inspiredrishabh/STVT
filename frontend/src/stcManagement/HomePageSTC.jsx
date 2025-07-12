@@ -142,7 +142,7 @@ const HomePageSTC = () => {
           })}
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Quick Overview
@@ -161,7 +161,7 @@ const HomePageSTC = () => {
               <div className="text-gray-600">Completed This Month</div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

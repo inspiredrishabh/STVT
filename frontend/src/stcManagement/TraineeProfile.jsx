@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Search,
@@ -16,23 +16,23 @@ import {
   Plus,
   Settings,
   Hash,
-  CheckCircle
-} from 'lucide-react';
+  CheckCircle,
+} from "lucide-react";
 // import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [trainees, setTrainees] = useState([]);
   const [filteredTrainees, setFilteredTrainees] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showResignationModal, setShowResignationModal] = useState(false);
-  const [selectedTraineeForResignation, setSelectedTraineeForResignation] = useState(null);
+  const [selectedTraineeForResignation, setSelectedTraineeForResignation] =
+    useState(null);
   const [resignationData, setResignationData] = useState({
-    date: '',
-    reason: ''
+    date: "",
+    reason: "",
   });
   const [submittingResignation, setSubmittingResignation] = useState(false);
 
@@ -42,36 +42,36 @@ const TraineeProfile = () => {
   }, []);
 
   // Backend API endpoints
-  const API_BASE = '/api/stc';
+  const API_BASE = "/api/stc";
 
-  const apiCall = async (endpoint, options = {}) => {
-    try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        },
-        ...options
-      });
+  // const apiCall = async (endpoint, options = {}) => {
+  //   try {
+  //     const response = await fetch(`${API_BASE}${endpoint}`, {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         ...options.headers,
+  //       },
+  //       ...options,
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
 
-      return await response.json();
-    } catch (error) {
-      console.error(`API call failed for ${endpoint}:`, error);
-      throw error;
-    }
-  };
+  //     return await response.json();
+  //   } catch (error) {
+  //     console.error(`API call failed for ${endpoint}:`, error);
+  //     throw error;
+  //   }
+  // };
 
   // API Functions
   const resignTrainee = async (traineeTicketNo) => {
     const response = await fetch(`${API_BASE}/${traineeTicketNo}/resign`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -81,47 +81,50 @@ const TraineeProfile = () => {
     return await response.json();
   };
 
-  const getTraineeResignationHistory = async (traineeId) => {
-    return await apiCall(`/trainees/${traineeId}/resignation-history`);
-  };
+  // const getTraineeResignationHistory = async (traineeId) => {
+  //   return await apiCall(`/trainees/${traineeId}/resignation-history`);
+  // };
 
-  const updateTraineeStatus = async (traineeId, status, metadata = {}) => {
-    return await apiCall('/trainees/status', {
-      method: 'PUT',
-      body: JSON.stringify({
-        traineeId,
-        status,
-        metadata,
-        updatedBy: 'Admin',
-        updatedAt: new Date().toISOString()
-      })
-    });
-  };
+  // const updateTraineeStatus = async (traineeId, status, metadata = {}) => {
+  //   return await apiCall('/trainees/status', {
+  //     method: 'PUT',
+  //     body: JSON.stringify({
+  //       traineeId,
+  //       status,
+  //       metadata,
+  //       updatedBy: 'Admin',
+  //       updatedAt: new Date().toISOString()
+  //     })
+  //   });
+  // };
 
   const fetchTrainees = async () => {
     try {
       setLoading(true);
       // Try to fetch from backend API endpoint
-      const response = await fetch('/api/stc');
-      if (!response.ok) throw new Error('Failed to fetch trainees');
+      const response = await fetch("/api/stc");
+      if (!response.ok) throw new Error("Failed to fetch trainees");
       const data = await response.json();
 
-      const TraineeArray = Array.isArray(data.data) ? data.data.map(trainee => ({
-        ...trainee,
-        // Map resignation_status to status for UI consistency
-        status: trainee.resignation_status === 'yes' ? 'Resigned' : 'Active',
-        // Keep original data for ticket number consistency
-        ticketNo: trainee.ticket_no,
-        ticketNumber: trainee.ticket_no
-      })) : [];
-      
-      console.log('Fetched trainees:', TraineeArray);
+      const TraineeArray = Array.isArray(data.data)
+        ? data.data.map((trainee) => ({
+          ...trainee,
+          // Map resignation_status to status for UI consistency
+          status:
+            trainee.resignation_status === "yes" ? "Resigned" : "Active",
+          // Keep original data for ticket number consistency
+          ticketNo: trainee.ticket_no,
+          ticketNumber: trainee.ticket_no,
+        }))
+        : [];
+
+      console.log("Fetched trainees:", TraineeArray);
 
       setTrainees(TraineeArray);
       setFilteredTrainees(TraineeArray);
     } catch (err) {
       setError(err.message);
-      console.log('API not available:', err.message);
+      console.log("API not available:", err.message);
     } finally {
       setLoading(false);
     }
@@ -129,11 +132,12 @@ const TraineeProfile = () => {
 
   // Search functionality
   useEffect(() => {
-    const filtered = trainees.filter(trainee =>
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = trainees.filter(
+      (trainee) =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredTrainees(filtered);
   }, [searchTerm, trainees]);
@@ -142,17 +146,19 @@ const TraineeProfile = () => {
   const handleEditTrainee = (trainee) => {
     try {
       // Store trainee information in localStorage for manage candidate page
-      localStorage.setItem('editTraineeId', trainee.id);
-      localStorage.setItem('editTraineeName', trainee.name);
-      localStorage.setItem('editTraineeTicket', trainee.ticketNo);
-      localStorage.setItem('editTraineeDesignation', trainee.designation);
+      localStorage.setItem("editTraineeId", trainee.id);
+      localStorage.setItem("editTraineeName", trainee.name);
+      localStorage.setItem("editTraineeTicket", trainee.ticketNo);
+      localStorage.setItem("editTraineeDesignation", trainee.designation);
 
-      console.log(`Navigating to manage candidate for: ${trainee.name} (${trainee.ticketNo})`);
+      console.log(
+        `Navigating to manage candidate for: ${trainee.name} (${trainee.ticketNo})`
+      );
 
       // Navigate to manage candidate page
-      navigate('/manage-candidate');
+      navigate("/manage-candidate");
     } catch (error) {
-      console.error('Error navigating to manage candidate:', error);
+      console.error("Error navigating to manage candidate:", error);
     }
   };
 
@@ -160,22 +166,25 @@ const TraineeProfile = () => {
   const handleLineTraining = (trainee) => {
     try {
       // Navigate to line training page with trainee data
-      navigate(`/stc/line-training?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`);
+      navigate(
+        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
+        }&name=${encodeURIComponent(trainee.name)}`
+      );
     } catch (error) {
-      console.error('Error navigating to line training:', error);
+      console.error("Error navigating to line training:", error);
     }
   };
 
   // Handle resignation
   const handleResignation = (trainee) => {
     setSelectedTraineeForResignation(trainee);
-    setResignationData({ date: '', reason: '' });
+    setResignationData({ date: "", reason: "" });
     setShowResignationModal(true);
   };
 
   const handleResignationSubmit = async () => {
     if (!resignationData.date || !resignationData.reason.trim()) {
-      alert('Please provide both resignation date and reason');
+      alert("Please provide both resignation date and reason");
       return;
     }
 
@@ -183,58 +192,75 @@ const TraineeProfile = () => {
 
     try {
       // Call resignation API with ticket number
-      await resignTrainee(selectedTraineeForResignation.ticket_no || selectedTraineeForResignation.ticketNo);
+      await resignTrainee(
+        selectedTraineeForResignation.ticket_no ||
+        selectedTraineeForResignation.ticketNo
+      );
 
       // Update local state
-      const updatedTrainees = trainees.map(trainee =>
+      const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
             ...trainee,
-            status: 'Resigned',
-            resignation_status: 'yes'
+            status: "Resigned",
+            resignation_status: "yes",
           }
           : trainee
       );
 
       setTrainees(updatedTrainees);
-      setFilteredTrainees(updatedTrainees.filter(trainee =>
-        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
-      ));
+      setFilteredTrainees(
+        updatedTrainees.filter(
+          (trainee) =>
+            trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
 
       setShowResignationModal(false);
       setSelectedTraineeForResignation(null);
-      setResignationData({ date: '', reason: '' });
+      setResignationData({ date: "", reason: "" });
 
-      alert(`${selectedTraineeForResignation.name} has been marked as resigned successfully.`);
+      alert(
+        `${selectedTraineeForResignation.name} has been marked as resigned successfully.`
+      );
     } catch (error) {
-      console.error('Error processing resignation:', error);
-      alert('Failed to process resignation. This is a demo - in production, this would save to the database.');
+      console.error("Error processing resignation:", error);
+      alert(
+        "Failed to process resignation. This is a demo - in production, this would save to the database."
+      );
 
       // For demo purposes, still update the UI
-      const updatedTrainees = trainees.map(trainee =>
+      const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
             ...trainee,
-            status: 'Resigned',
-            resignation_status: 'yes'
+            status: "Resigned",
+            resignation_status: "yes",
           }
           : trainee
       );
 
       setTrainees(updatedTrainees);
-      setFilteredTrainees(updatedTrainees.filter(trainee =>
-        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
-      ));
+      setFilteredTrainees(
+        updatedTrainees.filter(
+          (trainee) =>
+            trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
 
       setShowResignationModal(false);
       setSelectedTraineeForResignation(null);
-      setResignationData({ date: '', reason: '' });
+      setResignationData({ date: "", reason: "" });
     } finally {
       setSubmittingResignation(false);
     }
@@ -243,7 +269,7 @@ const TraineeProfile = () => {
   const closeResignationModal = () => {
     setShowResignationModal(false);
     setSelectedTraineeForResignation(null);
-    setResignationData({ date: '', reason: '' });
+    setResignationData({ date: "", reason: "" });
   };
 
   if (loading) {
@@ -281,7 +307,9 @@ const TraineeProfile = () => {
                   {filteredTrainees.length} Trainees
                 </span>
               </div>
-              <span className="text-sm text-gray-600">Total: {filteredTrainees.length}</span>
+              <span className="text-sm text-gray-600">
+                Total: {filteredTrainees.length}
+              </span>
             </div>
           </div>
         </div>
@@ -289,13 +317,18 @@ const TraineeProfile = () => {
         {/* Trainees Grid */}
         {error && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">Demo Mode: Using mock data. {error}</p>
+            <p className="text-yellow-800">
+              Demo Mode: Using mock data. {error}
+            </p>
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTrainees.map((trainee) => (
-            <div key={trainee.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200">
+            <div
+              key={trainee.id}
+              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
+            >
               {/* Card Header */}
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
@@ -308,40 +341,57 @@ const TraineeProfile = () => {
                           className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
                           onError={(e) => {
                             // Hide the image and show fallback
-                            e.target.style.display = 'none';
-                            const fallback = e.target.parentNode.querySelector('.fallback-avatar');
-                            if (fallback) fallback.style.display = 'flex';
+                            e.target.style.display = "none";
+                            const fallback =
+                              e.target.parentNode.querySelector(
+                                ".fallback-avatar"
+                              );
+                            if (fallback) fallback.style.display = "flex";
                           }}
                         />
-                        <div className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0" style={{ display: 'none' }}>
+                        <div
+                          className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0"
+                          style={{ display: "none" }}
+                        >
                           <span className="text-white font-bold text-sm">
-                            {trainee.name.split(' ').map(n => n[0]).join('')}
+                            {trainee.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </span>
                         </div>
                       </div>
                     ) : (
                       <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-white font-bold text-sm">
-                          {trainee.name.split(' ').map(n => n[0]).join('')}
+                          {trainee.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </span>
                       </div>
                     )}
                     <div>
-                      <h3 className="font-semibold text-gray-900">{trainee.name}</h3>
-                      <p className="text-sm text-gray-500">{trainee.ticketNo}</p>
+                      <h3 className="font-semibold text-gray-900">
+                        {trainee.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {trainee.ticketNo}
+                      </p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === 'Active'
-                    ? 'bg-green-100 text-green-800'
-                    : trainee.status === 'Resigned'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
-                    }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === "Active"
+                      ? "bg-green-100 text-green-800"
+                      : trainee.status === "Resigned"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+                      }`}
+                  >
                     {trainee.status}
                   </span>
                 </div>
-
-                {/* Basic Info */}
+                {/* Trainee Details */}
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
                     <Hash className="w-4 h-4 mr-2" />
@@ -349,7 +399,7 @@ const TraineeProfile = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Award className="w-4 h-4 mr-2" />
-                    {trainee.courseCode} - {trainee.unit}
+                    {trainee.designation} - {trainee.unit}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <GraduationCap className="w-4 h-4 mr-2" />
@@ -357,7 +407,7 @@ const TraineeProfile = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="w-4 h-4 mr-2" />
-                    {trainee.phone}
+                    {trainee.phone_number}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Mail className="w-4 h-4 mr-2" />
@@ -368,13 +418,27 @@ const TraineeProfile = () => {
 
               {/* Course Info */}
               <div className="p-4 bg-gray-50">
-                <h4 className="font-medium text-gray-900 mb-2">Course Details</h4>
+                <h4 className="font-medium text-gray-900 mb-2">
+                  Course Details
+                </h4>
                 <div className="space-y-1 text-sm text-gray-600">
-                  <p>Module: {trainee.moduleNo}</p>
-                  <p>Duration: {trainee.duration}</p>
-                  <p>Joining: {new Date(trainee.joiningDate).toLocaleDateString()}</p>
-                  <p>Sparing: {new Date(trainee.sparingDate).toLocaleDateString()}</p>
-                  <p>Coordinator: {trainee.coordinator}</p>
+                  <p>Module: {trainee.module_no}</p>
+                  <p>Duration: {trainee.course_duration}</p>
+                  <p>
+                    Joining:{" "}
+                    {trainee.date_of_joining_stc_wtc_non_railway
+                      ? new Date(
+                        trainee.date_of_joining_stc_wtc_non_railway
+                      ).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  <p>
+                    Sparing:{" "}
+                    {trainee.date_of_sparing
+                      ? new Date(trainee.date_of_sparing).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                  <p>Working Under: {trainee.working_under || "N/A"}</p>
                 </div>
               </div>
 
@@ -426,14 +490,16 @@ const TraineeProfile = () => {
                     Manage
                   </button>
                   <Link
-                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}&courseCode=${trainee.courseCode}&autoSelect=true`}
+                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
+                      }&name=${encodeURIComponent(trainee.name)}&courseCode=${trainee.courseCode
+                      }&autoSelect=true`}
                     className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${trainee.id
-                      ? 'bg-green-500 hover:bg-green-600'
-                      : 'bg-orange-500 hover:bg-orange-600'
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-orange-500 hover:bg-orange-600"
                       }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
-                    {trainee.id ? 'View Marks' : 'Add Marks'}
+                    {trainee.id ? "View Marks" : "Add Marks"}
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -446,14 +512,14 @@ const TraineeProfile = () => {
                   </button>
                   <button
                     onClick={() => handleResignation(trainee)}
-                    disabled={trainee.status === 'Resigned'}
-                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === 'Resigned'
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-red-500 text-white hover:bg-red-600'
+                    disabled={trainee.status === "Resigned"}
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === "Resigned"
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-red-500 text-white hover:bg-red-600"
                       }`}
                   >
                     <Users className="w-4 h-4 mr-1" />
-                    {trainee.status === 'Resigned' ? 'Resigned' : 'Resign'}
+                    {trainee.status === "Resigned" ? "Resigned" : "Resign"}
                   </button>
                 </div>
               </div>
@@ -465,7 +531,9 @@ const TraineeProfile = () => {
         {filteredTrainees.length === 0 && (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No trainees found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No trainees found
+            </h3>
             <p className="text-gray-500">Try adjusting your search criteria</p>
           </div>
         )}
@@ -476,13 +544,25 @@ const TraineeProfile = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Process Resignation</h3>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Process Resignation
+              </h3>
               <button
                 onClick={closeResignationModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -499,13 +579,20 @@ const TraineeProfile = () => {
                   ) : (
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-sm">
-                        {selectedTraineeForResignation.name.split(' ').map(n => n[0]).join('')}
+                        {selectedTraineeForResignation.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </span>
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">{selectedTraineeForResignation.name}</p>
-                    <p className="text-sm text-gray-500">{selectedTraineeForResignation.ticketNo}</p>
+                    <p className="font-medium text-gray-900">
+                      {selectedTraineeForResignation.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {selectedTraineeForResignation.ticketNo}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -519,9 +606,14 @@ const TraineeProfile = () => {
                 <input
                   type="date"
                   value={resignationData.date}
-                  onChange={(e) => setResignationData(prev => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) =>
+                    setResignationData((prev) => ({
+                      ...prev,
+                      date: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  max={new Date().toISOString().split('T')[0]}
+                  max={new Date().toISOString().split("T")[0]}
                 />
               </div>
 
@@ -531,7 +623,12 @@ const TraineeProfile = () => {
                 </label>
                 <textarea
                   value={resignationData.reason}
-                  onChange={(e) => setResignationData(prev => ({ ...prev, reason: e.target.value }))}
+                  onChange={(e) =>
+                    setResignationData((prev) => ({
+                      ...prev,
+                      reason: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows="4"
                   placeholder="Enter the reason for resignation..."
@@ -548,10 +645,16 @@ const TraineeProfile = () => {
               </button>
               <button
                 onClick={handleResignationSubmit}
-                disabled={submittingResignation || !resignationData.date || !resignationData.reason.trim()}
+                disabled={
+                  submittingResignation ||
+                  !resignationData.date ||
+                  !resignationData.reason.trim()
+                }
                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {submittingResignation ? 'Processing...' : 'Confirm Resignation'}
+                {submittingResignation
+                  ? "Processing..."
+                  : "Confirm Resignation"}
               </button>
             </div>
           </div>
