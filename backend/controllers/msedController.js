@@ -25,12 +25,12 @@ class MseDController {
                 }
                 
                 // Validate designation
-                if (stcCandidate.designation !== 'MSE-D') {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Candidate designation is ${stcCandidate.designation}, not MSE-D`
-                    });
-                }
+                // if (stcCandidate.designation !== 'MSE-D') {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: `Candidate designation is ${stcCandidate.designation}, not MSE-D`
+                //     });
+                // }
             }
 
             const newScore = await this.mseDModel.create(scoreData);
