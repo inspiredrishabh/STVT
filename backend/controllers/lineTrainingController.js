@@ -43,6 +43,26 @@ class LineTrainingController {
     }
   }
 
+  // Helper to parse status from remark
+  parseStatusFromRemark(remark) {
+    if (!remark) return null;
+    if (remark.startsWith("STATUS:")) {
+      const parts = remark.split("|");
+      return parts[0].replace("STATUS:", "").trim();
+    }
+    return null;
+  }
+
+  // Helper to get description without status
+  getDescriptionFromRemark(remark) {
+    if (!remark) return "";
+    if (remark.startsWith("STATUS:")) {
+      const parts = remark.split("|");
+      return parts.length > 1 ? parts.slice(1).join("|") : "";
+    }
+    return remark;
+  }
+
   // List grouped by centre + dates
   async getCandidates(req, res) {
     try {
@@ -52,12 +72,17 @@ class LineTrainingController {
       all.forEach((c) => {
         const key = `${c.activity_centre}_${c.start_date}_${c.end_date}`;
         if (!programs[key]) {
+          // Parse status from remark or use auto-calculated status
+          const manualStatus = this.parseStatusFromRemark(c.remark);
+          const autoStatus = this.determineStatus(c.start_date, c.end_date);
+
           programs[key] = {
             id: c.id,
             activityCentre: c.activity_centre,
             startDate: c.start_date,
             endDate: c.end_date,
-            description: c.remark || "",
+            description: this.getDescriptionFromRemark(c.remark),
+            status: manualStatus || autoStatus, // Use manual status if available, otherwise auto
             ticketNumbers: [],
           };
         }
@@ -107,6 +132,10 @@ class LineTrainingController {
           x.end_date === c.end_date
       );
 
+      // Parse status from remark or use auto-calculated status
+      const manualStatus = this.parseStatusFromRemark(c.remark);
+      const autoStatus = this.determineStatus(c.start_date, c.end_date);
+
       return res.json({
         success: true,
         message: "Training program retrieved successfully",
@@ -115,8 +144,8 @@ class LineTrainingController {
           activityCentre: c.activity_centre,
           startDate: c.start_date,
           endDate: c.end_date,
-          description: c.remark || "",
-          status: this.determineStatus(c.start_date, c.end_date),
+          description: this.getDescriptionFromRemark(c.remark),
+          status: manualStatus || autoStatus, // Use manual status if available, otherwise auto
           ticketNumbers: group.map((x) => x.ticket_no),
         },
       });
@@ -227,6 +256,9 @@ class LineTrainingController {
       const { id } = req.params;
       const { status } = req.body;
 
+      console.log(`=== STATUS UPDATE START ===`);
+      console.log(`ID: ${id}, Status: ${status}`);
+
       const valid = [
         "Scheduled",
         "In Progress",
@@ -249,7 +281,9 @@ class LineTrainingController {
           .json({ success: false, message: "Training not found" });
       }
 
-      // update entire group - FIX: Only update remark field to avoid constraint violation
+      console.log(`Found training:`, c);
+
+      // update entire group - only update remark field
       const all = await this.lineTrainingModel.getAll();
       const group = all.filter(
         (x) =>
@@ -258,7 +292,11 @@ class LineTrainingController {
           x.end_date === c.end_date
       );
 
+      console.log(`Found ${group.length} members in group`);
+
       for (const m of group) {
+        console.log(`Processing member: ${m.ticket_no}`);
+
         // Parse existing remark to preserve description
         let existingDesc = "";
         if (m.remark) {
@@ -277,11 +315,17 @@ class LineTrainingController {
           ? `STATUS:${status}|${existingDesc}`
           : `STATUS:${status}`;
 
-        // Only update the remark field - pass minimal data to avoid constraint issues
+        console.log(`Updating ${m.ticket_no} with remark: ${newRemark}`);
+
+        // Only update the remark field
         await this.lineTrainingModel.updateByTicketNumber(m.ticket_no, {
           remark: newRemark,
         });
+
+        console.log(`Successfully updated ${m.ticket_no}`);
       }
+
+      console.log(`=== STATUS UPDATE COMPLETE ===`);
 
       return res.json({
         success: true,
@@ -289,7 +333,7 @@ class LineTrainingController {
         data: { id, status },
       });
     } catch (err) {
-      console.error("Error updating training status:", err);
+      console.error("=== STATUS UPDATE ERROR ===", err);
       return res
         .status(500)
         .json({ success: false, message: "Failed to update status" });

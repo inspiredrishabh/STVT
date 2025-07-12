@@ -336,6 +336,12 @@ const LineTraining = () => {
     const scheduledPrograms = trainings.filter(
       (t) => t && t.status === "Scheduled"
     ).length;
+    const cancelledPrograms = trainings.filter(
+      (t) => t && t.status === "Cancelled"
+    ).length;
+    const onHoldPrograms = trainings.filter(
+      (t) => t && t.status === "On Hold"
+    ).length;
 
     const totalTraineesInTraining = trainings.reduce((acc, training) => {
       if (!training || !Array.isArray(training.ticketNumbers)) {
@@ -363,6 +369,8 @@ const LineTraining = () => {
       activePrograms,
       completedPrograms,
       scheduledPrograms,
+      cancelledPrograms,
+      onHoldPrograms,
       totalTraineesInTraining,
       uniqueTraineesCount: uniqueTrainees.size,
       completionRate,
@@ -1012,7 +1020,7 @@ const LineTraining = () => {
                                 updateTrainingStatus(training, e.target.value)
                               }
                               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border-0 focus:ring-2 focus:ring-purple-500 ${getStatusColor(
-                                training.status
+                                training.status || "Scheduled"
                               )}`}
                             >
                               <option value="Scheduled">📅 Scheduled</option>
