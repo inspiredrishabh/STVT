@@ -631,7 +631,7 @@ class RealBackendAPI {
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
-            picture: candidate.picture ? `/${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null
           };
         });
       }
@@ -872,13 +872,11 @@ class RealBackendAPI {
       }
 
       const endpoint = this.getCandidateEndpoint(candidate);
-      console.log('Updating candidate at endpoint:', endpoint);
-      console.log('Original candidate data for update:', candidateData);
+
 
       // Transform frontend camelCase fields to backend snake_case fields
       const transformedData = this.transformFieldsForBackend(candidateData);
-      console.log('Transformed data for backend:', transformedData);
-      console.log('Number of fields being sent:', Object.keys(transformedData).length);
+  
 
       const formData = new FormData();
       
