@@ -394,7 +394,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
               { label: "Designation", field: "designation", type: "text", value: candidate.designation },
               { label: "Unit", field: "unit", type: "text", value: candidate.unit },
               { label: "Working Under", field: "workingUnder", type: "text", value: candidate.workingUnder },
-              { label: "Station Code", field: "stationCode", type: "text", value: candidate.stationCode },
+              // { label: "Station Code", field: "stationCode", type: "text", value: candidate.stationCode },
               { label: "Appointment Date", field: "dateOfAppointmentInRailway", type: "date", value: candidate.dateOfAppointmentInRailway },
               { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", value: candidate.modeOfAppointment }
             ]}
@@ -415,7 +415,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
               },
               { label: "Batch", field: "batch", type: "text", value: candidate.batch },
               { label: "Module No.", field: "moduleNo", type: "text", value: candidate.moduleNo },
-              { label: "Module Name", field: "moduleName", type: "text", value: candidate.moduleName },
+              // { label: "Module Name", field: "moduleName", type: "text", value: candidate.moduleName },
               { label: "Course Duration", field: "courseDuration", type: "text", value: candidate.courseDuration },
               { label: "Joining Date", field: "dateOfJoiningStcWtcNonRailway", type: "date", value: candidate.dateOfJoiningStcWtcNonRailway },
               { label: "Sparing Date", field: "dateOfSparing", type: "date", value: candidate.dateOfSparing }
@@ -432,7 +432,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
               { label: "Highest Qualification", field: "highestQualification", type: "text", value: candidate.highestQualification },
               { label: "Field of Study", field: "fieldOfStudy", type: "text", value: candidate.fieldOfStudy },
               { label: "Institution", field: "institution", type: "text", value: candidate.institution },
-              { label: "Year of Graduation", field: "yearOfGraduation", type: "number", value: candidate.yearOfGraduation },
+              // { label: "Year of Graduation", field: "yearOfGraduation", type: "number", value: candidate.yearOfGraduation },
               { label: "Grade/Score", field: "gradeValue", type: "text", value: candidate.gradeValue }
             ]}
             candidate={candidate}
