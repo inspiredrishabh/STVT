@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const MjrDController = require('../controllers/mjrDController');
+const MjrDController = require('../controllers/mjrdController');
 const MjrDModel = require('../models/mjrd');
 const StcModel = require('../models/stcModel');
 

@@ -55,7 +55,7 @@ const LineTraining = () => {
   // Date validation function
   const validateDates = (startDate, endDate) => {
     const errors = {};
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
     if (startDate && endDate) {
       if (new Date(startDate) >= new Date(endDate)) {
@@ -68,7 +68,7 @@ const LineTraining = () => {
 
   // Function to determine status based on start date
   const determineStatus = (startDate) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     return new Date(startDate) <= new Date(today) ? "In Progress" : "Scheduled";
   };
 
@@ -78,7 +78,7 @@ const LineTraining = () => {
     setFormData(newFormData);
 
     // Clear previous errors for this field
-    setFormErrors(prev => ({ ...prev, [field]: "" }));
+    setFormErrors((prev) => ({ ...prev, [field]: "" }));
 
     // Validate dates if start or end date changed
     if (field === "startDate" || field === "endDate") {
@@ -86,7 +86,7 @@ const LineTraining = () => {
         field === "startDate" ? value : formData.startDate,
         field === "endDate" ? value : formData.endDate
       );
-      setFormErrors(prev => ({ ...prev, ...dateErrors }));
+      setFormErrors((prev) => ({ ...prev, ...dateErrors }));
     }
   };
 
@@ -110,6 +110,27 @@ const LineTraining = () => {
       if (traineeResponse.ok) {
         const traineeData = await traineeResponse.json();
         setTrainees(traineeData.data || traineeData);
+
+        // If coming from trainee profile, preselect the trainee
+        if (preselectedTraineeId && preselectedTicketNo) {
+          const candidates = traineeData.data || traineeData; // Use the already parsed data
+          const selectedTrainee = candidates.find(
+            (t) =>
+              t.id.toString() === preselectedTraineeId ||
+              t.ticket_no === preselectedTicketNo
+          );
+          if (selectedTrainee) {
+            setSelectedTickets([selectedTrainee.ticket_no]);
+            setSelectedTraineeInfo({
+              id: preselectedTraineeId,
+              ticketNo: selectedTrainee.ticket_no,
+              name: decodeURIComponent(preselectedName || selectedTrainee.name),
+              designation: selectedTrainee.designation,
+              unit: selectedTrainee.unit,
+            });
+            setIsAddMode(true);
+          }
+        }
       } else {
         throw new Error("Failed to fetch trainees");
       }
@@ -121,26 +142,6 @@ const LineTraining = () => {
         setTrainings(trainingData.data || trainingData);
       } else {
         throw new Error("Failed to fetch line trainings");
-      }
-
-      // If coming from trainee profile, preselect the trainee
-      if (preselectedTraineeId && preselectedTicketNo) {
-        const traineeData = await traineeResponse.json();
-        const candidates = traineeData.data || traineeData;
-        const selectedTrainee = candidates.find(
-          (t) => t.id.toString() === preselectedTraineeId || t.ticket_no === preselectedTicketNo
-        );
-        if (selectedTrainee) {
-          setSelectedTickets([selectedTrainee.ticket_no]);
-          setSelectedTraineeInfo({
-            id: preselectedTraineeId,
-            ticketNo: selectedTrainee.ticket_no,
-            name: decodeURIComponent(preselectedName || selectedTrainee.name),
-            designation: selectedTrainee.designation,
-            unit: selectedTrainee.unit,
-          });
-          setIsAddMode(true);
-        }
       }
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -189,9 +190,9 @@ const LineTraining = () => {
     try {
       const response = await fetch("/api/line-trainings", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify(trainingData),
       });
@@ -200,7 +201,7 @@ const LineTraining = () => {
         const result = await response.json();
         const newTraining = result.data || result;
         setTrainings((prev) => [...prev, newTraining]);
-        
+
         // Reset form
         setFormData({
           activityCentre: "",
@@ -213,7 +214,11 @@ const LineTraining = () => {
         setSelectedTraineeInfo(null);
         setIsAddMode(false);
 
-        alert(`Line training ${status === "In Progress" ? "started" : "scheduled"} successfully!`);
+        alert(
+          `Line training ${
+            status === "In Progress" ? "started" : "scheduled"
+          } successfully!`
+        );
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to create training");
@@ -252,13 +257,17 @@ const LineTraining = () => {
     }
   };
 
-  const filteredTrainees = Array.isArray(trainees) 
+  const filteredTrainees = Array.isArray(trainees)
     ? trainees.filter(
         (trainee) =>
           trainee &&
           (trainee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           trainee.ticket_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           trainee.designation?.toLowerCase().includes(searchTerm.toLowerCase()))
+            trainee.ticket_no
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()))
       )
     : [];
 
@@ -345,15 +354,15 @@ const LineTraining = () => {
 
   const confirmDelete = async () => {
     const trainingToDelete = deleteModal.training;
-    
+
     try {
       const response = await fetch(
         `/api/line-trainings/${trainingToDelete.id}`,
         {
           method: "DELETE",
           headers: {
-            "Accept": "application/json"
-          }
+            Accept: "application/json",
+          },
         }
       );
 
@@ -408,9 +417,9 @@ const LineTraining = () => {
         `/api/line-trainings/${editModal.training.id}`,
         {
           method: "PUT",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json",
           },
           body: JSON.stringify(updatedTraining),
         }
@@ -419,15 +428,17 @@ const LineTraining = () => {
       if (response.ok) {
         const result = await response.json();
         const updated = result.data || result;
-        
+
         // Update in state
         setTrainings((prev) =>
           prev.map((t) =>
-            t.id === editModal.training.id ? { ...editModal.training, ...updated } : t
+            t.id === editModal.training.id
+              ? { ...editModal.training, ...updated }
+              : t
           )
         );
         alert("Training program updated successfully!");
-        
+
         setEditModal({ isOpen: false, training: null });
         setSelectedTickets([]);
         setFormErrors({});
@@ -629,10 +640,11 @@ const LineTraining = () => {
                       <div
                         key={trainee.id}
                         onClick={() => handleTicketSelection(trainee.ticket_no)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticket_no)
-                          ? "border-purple-500 bg-purple-50"
-                          : "border-gray-200 hover:border-purple-300"
-                          }`}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedTickets.includes(trainee.ticket_no)
+                            ? "border-purple-500 bg-purple-50"
+                            : "border-gray-200 hover:border-purple-300"
+                        }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -647,10 +659,11 @@ const LineTraining = () => {
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticket_no)
-                              ? "bg-purple-500 border-purple-500"
-                              : "border-gray-300"
-                              }`}
+                            className={`w-4 h-4 rounded border-2 ${
+                              selectedTickets.includes(trainee.ticket_no)
+                                ? "bg-purple-500 border-purple-500"
+                                : "border-gray-300"
+                            }`}
                           >
                             {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
@@ -692,12 +705,19 @@ const LineTraining = () => {
                     type="date"
                     required
                     value={formData.startDate}
-                    onChange={(e) => handleFormDataChange("startDate", e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.startDate ? "border-red-500" : "border-gray-300"
-                      }`}
+                    onChange={(e) =>
+                      handleFormDataChange("startDate", e.target.value)
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      formErrors.startDate
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   />
                   {formErrors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.startDate}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.startDate}
+                    </p>
                   )}
                 </div>
 
@@ -709,12 +729,17 @@ const LineTraining = () => {
                     type="date"
                     required
                     value={formData.endDate}
-                    onChange={(e) => handleFormDataChange("endDate", e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.endDate ? "border-red-500" : "border-gray-300"
-                      }`}
+                    onChange={(e) =>
+                      handleFormDataChange("endDate", e.target.value)
+                    }
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      formErrors.endDate ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
                   {formErrors.endDate && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.endDate}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.endDate}
+                    </p>
                   )}
                 </div>
 
@@ -892,8 +917,12 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {Array.isArray(trainings) 
-                  ? new Set(trainings.filter(t => t && t.activityCentre).map((t) => t.activityCentre)).size
+                {Array.isArray(trainings)
+                  ? new Set(
+                      trainings
+                        .filter((t) => t && t.activityCentre)
+                        .map((t) => t.activityCentre)
+                    ).size
                   : 0}
               </p>
               <p className="text-sm text-gray-600">Active Centres</p>
@@ -924,86 +953,102 @@ const LineTraining = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {Array.isArray(trainings) && trainings.map((training) => (
-                <div
-                  key={training.id}
-                  className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {training.activityCentre || 'Unknown Centre'}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                            training.status
-                          )}`}
-                        >
-                          {getStatusIcon(training.status)}
-                          <span className="ml-1">{training.status || 'Unknown'}</span>
-                        </span>
-                      </div>
-                      <p className="text-gray-600 mb-3">
-                        {training.description || 'No description available'}
-                      </p>
+              {Array.isArray(trainings) &&
+                trainings.map((training) => (
+                  <div
+                    key={training.id}
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {training.activityCentre || "Unknown Centre"}
+                          </h3>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                              training.status
+                            )}`}
+                          >
+                            {getStatusIcon(training.status)}
+                            <span className="ml-1">
+                              {training.status || "Unknown"}
+                            </span>
+                          </span>
+                        </div>
+                        <p className="text-gray-600 mb-3">
+                          {training.description || "No description available"}
+                        </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {training.startDate ? new Date(training.startDate).toLocaleDateString() : 'TBD'} -{" "}
-                          {training.endDate ? new Date(training.endDate).toLocaleDateString() : 'TBD'}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center text-gray-600">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {training.startDate
+                              ? new Date(
+                                  training.startDate
+                                ).toLocaleDateString()
+                              : "TBD"}{" "}
+                            -{" "}
+                            {training.endDate
+                              ? new Date(training.endDate).toLocaleDateString()
+                              : "TBD"}
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Users className="w-4 h-4 mr-2" />
+                            {Array.isArray(training.ticketNumbers)
+                              ? training.ticketNumbers.length
+                              : 0}{" "}
+                            Trainee(s)
+                          </div>
                         </div>
-                        <div className="flex items-center text-gray-600">
-                          <Users className="w-4 h-4 mr-2" />
-                          {Array.isArray(training.ticketNumbers) ? training.ticketNumbers.length : 0} Trainee(s)
-                        </div>
+                      </div>
+
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => handleView(training)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(training)}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Edit Training"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(training)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Training"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="flex space-x-2 ml-4">
-                      <button
-                        onClick={() => handleView(training)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(training)}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Edit Training"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(training)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Training"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    {/* Trainee Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(training.ticketNumbers) &&
+                        training.ticketNumbers.map((ticketNo) => {
+                          const trainee = Array.isArray(trainees)
+                            ? trainees.find(
+                                (t) => t && t.ticket_no === ticketNo
+                              )
+                            : null;
+                          return (
+                            <span
+                              key={ticketNo}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                            >
+                              {ticketNo} {trainee && `- ${trainee.name}`}
+                            </span>
+                          );
+                        })}
                     </div>
                   </div>
-
-                  {/* Trainee Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(training.ticketNumbers) && training.ticketNumbers.map((ticketNo) => {
-                      const trainee = Array.isArray(trainees) 
-                        ? trainees.find((t) => t && t.ticket_no === ticketNo)
-                        : null;
-                      return (
-                        <span
-                          key={ticketNo}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {ticketNo} {trainee && `- ${trainee.name}`}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -1184,10 +1229,11 @@ const LineTraining = () => {
                       <div
                         key={trainee.id}
                         onClick={() => handleTicketSelection(trainee.ticket_no)}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedTickets.includes(trainee.ticket_no)
-                          ? "border-purple-500 bg-purple-50"
-                          : "border-gray-200 hover:border-purple-300"
-                          }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedTickets.includes(trainee.ticket_no)
+                            ? "border-purple-500 bg-purple-50"
+                            : "border-gray-200 hover:border-purple-300"
+                        }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -1202,10 +1248,11 @@ const LineTraining = () => {
                             </p>
                           </div>
                           <div
-                            className={`w-4 h-4 rounded border-2 ${selectedTickets.includes(trainee.ticket_no)
-                              ? "bg-purple-500 border-purple-500"
-                              : "border-gray-300"
-                              }`}
+                            className={`w-4 h-4 rounded border-2 ${
+                              selectedTickets.includes(trainee.ticket_no)
+                                ? "bg-purple-500 border-purple-500"
+                                : "border-gray-300"
+                            }`}
                           >
                             {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
@@ -1245,12 +1292,19 @@ const LineTraining = () => {
                       type="date"
                       required
                       value={formData.startDate}
-                      onChange={(e) => handleFormDataChange("startDate", e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.startDate ? "border-red-500" : "border-gray-300"
-                        }`}
+                      onChange={(e) =>
+                        handleFormDataChange("startDate", e.target.value)
+                      }
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        formErrors.startDate
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                     />
                     {formErrors.startDate && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.startDate}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.startDate}
+                      </p>
                     )}
                   </div>
 
@@ -1262,12 +1316,19 @@ const LineTraining = () => {
                       type="date"
                       required
                       value={formData.endDate}
-                      onChange={(e) => handleFormDataChange("endDate", e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${formErrors.endDate ? "border-red-500" : "border-gray-300"
-                        }`}
+                      onChange={(e) =>
+                        handleFormDataChange("endDate", e.target.value)
+                      }
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        formErrors.endDate
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                     />
                     {formErrors.endDate && (
-                      <p className="text-red-500 text-sm mt-1">{formErrors.endDate}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.endDate}
+                      </p>
                     )}
                   </div>
 
