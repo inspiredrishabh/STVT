@@ -18,20 +18,29 @@ const rolePermissions = {
         "stc-trainee-profile",
         "stc-line-training",
         "stc-marksheet",
+        "stc-management",
 
         // WTC Features
+        "wtc-feed-marks",
         "wtc-trainee-profile",
         "wtc-attendance",
         "wtc-letter",
         "wtc-certificate",
+        "wtc-management",
 
         // Non-Railway Features
         "non-railway-management",
 
+        // Forms
+        "stc-form",
+        "wtc-form",
+        "non-railway-form",
+
         // Generic permissions - mapped to UI elements
         "feed-marks",     // Generic menu item
         "marksheets",     // Generic menu item
-        "letters"         // Generic menu item
+        "letters",        // Generic menu item
+        "trainee-profile" // Generic menu item
     ],
     master: [
         // Candidate Management
@@ -42,17 +51,29 @@ const rolePermissions = {
         "stc-feed-marks",
         "stc-trainee-profile",
         "stc-line-training",
+        "stc-management",
 
         // WTC Features
         "wtc-trainee-profile",
         "wtc-attendance",
+        "wtc-management",
 
-        // Generic permissions - mapped to UI elements
-        "feed-marks"      // Generic menu item
+        // Forms
+        "stc-form",
+        "wtc-form",
+
+        // Generic permissions
+        "feed-marks",
+        "trainee-profile"
     ],
     operator: [
         // Limited Candidate Management
         "add-candidate",
+        "manage-candidates",
+
+        // Forms - basic data entry
+        "stc-form",
+        "wtc-form",
 
         // View-only permissions
         "view-candidates",

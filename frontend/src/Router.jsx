@@ -84,7 +84,7 @@ const Router = () => {
         <Route
           path="/stc-form"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-form"}>
               <STCMain />
             </ProtectedLayout>
           }
@@ -93,7 +93,7 @@ const Router = () => {
         <Route
           path="/wtc-form"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"wtc-form"}>
               <WTCMain />
             </ProtectedLayout>
           }
@@ -102,7 +102,7 @@ const Router = () => {
         <Route
           path="/non-railway-form"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"non-railway-form"}>
               <NonRailwayMain />
             </ProtectedLayout>
           }
@@ -112,7 +112,7 @@ const Router = () => {
         <Route
           path="/manage-candidate"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"manage-candidates"}>
               <ManageCandidate />
             </ProtectedLayout>
           }
@@ -122,7 +122,7 @@ const Router = () => {
         <Route
           path="/stc-management"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-management"}>
               <HomePageSTC />
             </ProtectedLayout>
           }
@@ -131,7 +131,7 @@ const Router = () => {
         {/* STC Management Components - Only 4 components as per image */}        <Route
           path="/stc/feed-marks"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-feed-marks"}>
               <FeedMark />
             </ProtectedLayout>
           }
@@ -140,7 +140,7 @@ const Router = () => {
         <Route
           path="/stc/trainee-profile"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-trainee-profile"}>
               <TraineeProfile />
             </ProtectedLayout>
           }
@@ -149,7 +149,7 @@ const Router = () => {
         <Route
           path="/stc/line-training"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-line-training"}>
               <LineTraining />
             </ProtectedLayout>
           }
@@ -159,21 +159,21 @@ const Router = () => {
         <Route
           path="/stc/marksheet"
           element={
-            <ProtectedLayout>
+            <ProtectedLayout requiredPermission={"stc-marksheet"}>
               <Marksheet />
             </ProtectedLayout>
           }
         />
 
         {/* WTC Management Homepage */}
-        <Route path="/wtc" element={<ProtectedLayout><HomePageWTC /></ProtectedLayout>} />
-        <Route path="/wtc/trainee-profile" element={<ProtectedLayout><WTCTranieeProfile /></ProtectedLayout>} />
-        <Route path="/wtc/attendance" element={<ProtectedLayout><AttendanceSystem /></ProtectedLayout>} />
-        <Route path="/wtc/letter" element={<ProtectedLayout><Letter /></ProtectedLayout>} />
-        <Route path="/wtc/letter/preview" element={<ProtectedLayout><LetterPreview /></ProtectedLayout>} />
-        <Route path="/wtc/certificate" element={<ProtectedLayout><Certificate /></ProtectedLayout>} />
-        <Route path="/wtc/certificate/preview" element={<ProtectedLayout><CertificatePreview /></ProtectedLayout>} />
-        <Route path="/wtc/form" element={<ProtectedLayout><WTCMain /></ProtectedLayout>} />
+        <Route path="/wtc" element={<ProtectedLayout requiredPermission={"wtc-management"} ><HomePageWTC /></ProtectedLayout>} />
+        <Route path="/wtc/trainee-profile" element={<ProtectedLayout requiredPermission={"trainee-profile"} ><WTCTranieeProfile /></ProtectedLayout>} />
+        <Route path="/wtc/attendance" element={<ProtectedLayout requiredPermission={"wtc-attendance"} ><AttendanceSystem /></ProtectedLayout>} />
+        <Route path="/wtc/letter" element={<ProtectedLayout requiredPermission={"letters"} ><Letter /></ProtectedLayout>} />
+        <Route path="/wtc/letter/preview" element={<ProtectedLayout requiredPermission={"letters"} ><LetterPreview /></ProtectedLayout>} />
+        <Route path="/wtc/certificate" element={<ProtectedLayout requiredPermission={"wtc-certificate"}><Certificate /></ProtectedLayout>} />
+        <Route path="/wtc/certificate/preview" element={<ProtectedLayout requiredPermission={"wtc-certificate"} ><CertificatePreview /></ProtectedLayout>} />
+        <Route path="/wtc/form" element={<ProtectedLayout requiredPermission={"wtc-form"}><WTCMain /></ProtectedLayout>} />
 
         {/* Default Routes */}
         <Route
