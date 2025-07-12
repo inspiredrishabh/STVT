@@ -1,5 +1,4 @@
 import React from 'react';
-import TradeTestForm from './TradeTestForm';
 
 const PracticalExamInterviewLetter = ({ trainee }) => {
     return (
