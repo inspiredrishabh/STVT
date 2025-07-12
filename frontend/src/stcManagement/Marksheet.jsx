@@ -535,9 +535,8 @@ class MarksheetService {
   }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
-    const fileName = `Marksheet_${ticketNumber}_${
-      options.sessionWise ? "Sessional" : "Complete"
-    }_${new Date().toISOString().split("T")[0]}.pdf`;
+    const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? "Sessional" : "Complete"
+      }_${new Date().toISOString().split("T")[0]}.pdf`;
     return {
       success: true,
       message: "PDF export initiated successfully",
@@ -842,9 +841,8 @@ const Marksheet = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Marksheet - ${candidateData.name} (${
-      candidateData.ticketNumber || candidateData.ticket_no
-    })</title>
+          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber || candidateData.ticket_no
+      })</title>
           <style>
             @page {
               size: A4;
@@ -1030,8 +1028,7 @@ const Marksheet = () => {
       // Save the PDF
       const fileName =
         result.data?.fileName ||
-        `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${
-          viewMode === "sessionWise" ? "Sessional" : "Complete"
+        `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${viewMode === "sessionWise" ? "Sessional" : "Complete"
         }_${new Date().toISOString().split("T")[0]}.pdf`;
       pdf.save(fileName);
 
@@ -1166,21 +1163,19 @@ const Marksheet = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "ticket"
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
+                  ? "bg-orange-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "dropdown"
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "dropdown"
+                  ? "bg-orange-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
               >
                 Select from Dropdown
               </button>
@@ -1265,13 +1260,12 @@ const Marksheet = () => {
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
-                  message.type === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : message.type === "info"
+                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : message.type === "info"
                     ? "bg-blue-50 text-blue-800 border border-blue-200"
                     : "bg-red-50 text-red-800 border border-red-200"
-                }`}
+                  }`}
               >
                 {message.type === "success" ? (
                   <CheckCircle className="w-6 h-6" />
@@ -1971,43 +1965,36 @@ const Marksheet = () => {
                   </div>
                 </div>
 
-                {/* Failed Subjects Disclaimer - Exact format from image */}
-                {failedSubjects.length > 0 && (
-                  <div
-                    style={{
-                      borderTop: "2px solid #d1d5db",
-                      padding: "16px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <p
-                      style={{
-                        color: "#dc2626",
-                        fontWeight: "bold",
-                        fontSize: "13px",
-                        margin: "0 0 4px 0",
-                      }}
-                    >
-                      Disclaimer: Candidate has failed in subject(s):{" "}
-                      {failedSubjects
-                        .map((subject) =>
-                          subject.subjects.length > 0
-                            ? subject.subjects.join(", ")
-                            : `${subject.session} - ${subject.paper}`
-                        )
-                        .join(", ")}
-                    </p>
-                    <p
-                      style={{
-                        color: "#dc2626",
-                        fontSize: "11px",
-                        margin: "0",
-                      }}
-                    >
-                      Passing criteria: 60% or above required in each subject.
-                    </p>
-                  </div>
-                )}
+
+                {/* Failed Subjects Disclaimer - Only show when relevant */}
+                {failedSubjects
+                  .filter(subject =>
+                    viewMode === "sessionWise" && selectedSession !== "all"
+                      ? subject.session === selectedSession
+                      : true
+                  )
+                  .length > 0 && (
+                    <div style={{ borderTop: "2px solid #d1d5db", padding: "16px", textAlign: "center", }}>
+                      <p style={{ color: "#dc2626", fontWeight: "bold", fontSize: "13px", margin: "0 0 4px 0", }}>
+                        Disclaimer: Candidate has failed in subject(s):{" "}
+                        {failedSubjects
+                          .filter(subject =>
+                            viewMode === "sessionWise" && selectedSession !== "all"
+                              ? subject.session === selectedSession
+                              : true
+                          )
+                          .map((subject) =>
+                            subject.subjects.length > 0
+                              ? subject.subjects.join(", ")
+                              : `${subject.session} - ${subject.paper}`
+                          )
+                          .join(", ")}
+                      </p>
+                      <p style={{ color: "#dc2626", fontSize: "11px", margin: "0", }}>
+                        Passing criteria: 60% or above required in each subject.
+                      </p>
+                    </div>
+                  )}
               </div>
 
               {/* Footer - Exact format from image */}
