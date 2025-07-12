@@ -11,7 +11,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
       "MJR-W": 52,
       "MJI-C": 52,
       "MJI-D": 52,
-      "MJ1-W": 52,
+      "MJI-W": 52,
       "MJP-C": 13,
       "MJP-D": 13,
       "MJP-W": 13,
