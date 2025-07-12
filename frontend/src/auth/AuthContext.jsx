@@ -106,22 +106,75 @@ export const AuthProvider = ({ children }) => {
     return user.permissions?.includes(route) || false;
   };
 
-  // Get accessible menu items
+  // Updated menu items function
   const getAccessibleMenuItems = () => {
     if (!user || !user.role) return [];
 
     const allMenuItems = [
-      { title: "Add Candidate", icon: "👤", route: "add-candidate" },
-      { title: "Manage Candidate", icon: "👥", route: "manage-candidates" },
-      { title: "Feed Marks", icon: "📊", route: "feed-marks" },
-      { title: "Marksheet/Certificate", icon: "📝", route: "marksheets" },
-      { title: "ID Card", icon: "🪪", route: "id-cards" },
-      { title: "Custom Letter", icon: "📄", route: "letters" }
+      {
+        title: "Add Candidate",
+        icon: "👤",
+        route: "add-candidate"
+      },
+      {
+        title: "Manage Candidate",
+        icon: "👥",
+        route: user.permissions?.includes("manage-candidates") ? "manage-candidates" : "view-candidates"
+      },
+      {
+        title: "Feed Marks",
+        icon: "📊",
+        route: "feed-marks",
+        subRoutes: ["stc-feed-marks", "wtc-feed-marks", "stc-form", "wtc-form"]
+      },
+      {
+        title: "Marksheet/Certificate",
+        icon: "📝",
+        route: "marksheets",
+        subRoutes: ["stc-marksheet", "wtc-certificate"]
+      },
+      {
+        title: "Custom Letter",
+        icon: "📄",
+        route: "letters",
+        subRoutes: ["wtc-letter"]
+      },
+      {
+        title: "Attendance",
+        icon: "📅",
+        route: user.permissions?.includes("wtc-attendance") ? "wtc-attendance" : "view-attendance"
+      },
+      {
+        title: "Line Training",
+        icon: "🚂",
+        route: "stc-line-training"
+      },
+      {
+        title: "Trainee Profiles",
+        icon: "👥",
+        route: "trainee-profile",
+        subRoutes: ["stc-trainee-profile", "wtc-trainee-profile", "view-profiles"]
+      },
+      {
+        title: "Non-Railway Management",
+        icon: "🏢",
+        route: "non-railway-management",
+        subRoutes: ["non-railway-form"]
+      }
     ];
 
-    return allMenuItems.filter((item) =>
-      user.permissions?.includes(item.route)
-    );
+    return allMenuItems.filter((item) => {
+      // Check if user has direct permission for this route
+      const hasDirectPermission = user.permissions?.includes(item.route);
+
+      // Check if user has permission for any of the sub-routes
+      const hasSubRoutePermission = item.subRoutes?.some(subRoute =>
+        user.permissions?.includes(subRoute)
+      );
+
+      // User has access if they have direct permission or any sub-route permission
+      return hasDirectPermission || hasSubRoutePermission;
+    });
   };
 
   return (
