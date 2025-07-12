@@ -6,6 +6,123 @@ const DetailModal = ({ candidate, onClose }) => {
 
   const designation = candidate.designation === 'Other' ? candidate.designationOther : candidate.designation;
 
+  // Helper function to get basic information data based on candidate type
+  const getBasicInfoData = () => {
+    const basicData = [
+      { label: "S.No", value: candidate.serialNo },
+      { label: "Gender", value: candidate.sex },
+      { label: "Father's Name", value: candidate.fatherName },
+      { label: "Mother's Name", value: candidate.motherName },
+      { label: "DOB", value: candidate.dob },
+      { label: "Employee No.", value: candidate.ticketNumber || candidate.employeeNumber },
+      { label: "Category", value: candidate.category },
+      { label: "Nationality", value: candidate.nationality },
+      { label: "PWD", value: candidate.pwd },
+      { label: "Joining Date", value: candidate.dateOfJoiningStcWtcNonRailway },
+      { label: "Sparing Date", value: candidate.dateOfSparing },
+    ];
+
+    // Add type of disability if PWD is Yes
+    if (candidate.pwd === 'Yes' && candidate.typeOfDisability) {
+      basicData.push({ label: "Type of Disability", value: candidate.typeOfDisability });
+    }
+
+    return basicData;
+  };
+
+  // Helper function to get course information data based on candidate type
+  const getCourseInfoData = () => {
+    const courseData = [
+      { label: "Ticket No.", value: candidate.ticketNumber || candidate.ticketNo || candidate.employeeNumber },
+      { label: "Batch", value: candidate.batch },
+      { label: "Stream", value: candidate.stream },
+      { label: "Type", value: candidate.type },
+    ];
+
+    // Add type-specific course information
+    if (candidate.type === 'STC') {
+      courseData.push(
+        { label: "Module No.", value: candidate.moduleNo },
+        { label: "Module Name", value: candidate.moduleName },
+        { label: "Course Duration", value: candidate.courseDuration },
+        { label: "Station Code", value: candidate.stationCode }
+      );
+    } else if (candidate.type === 'WTC') {
+      courseData.push(
+        { label: "Course Type", value: candidate.courseType },
+        { label: "Training Period", value: candidate.trainingPeriod },
+        { label: "Custom Training Period", value: candidate.customTrainingPeriod },
+        { label: "Theory Duration", value: candidate.theoryDuration },
+        { label: "Custom Theory Duration", value: candidate.customTheoryDuration },
+        { label: "Practical Duration", value: candidate.practicalDuration },
+        { label: "Custom Practical Duration", value: candidate.customPracticalDuration },
+        { label: "Course Coordinator", value: candidate.courseCoordinator }
+      );
+    } else if (candidate.type === 'Non Railway') {
+      courseData.push(
+        { label: "Course Type", value: candidate.courseType },
+        { label: "Duration", value: candidate.duration },
+        { label: "Theory", value: candidate.theory },
+        { label: "Practical", value: candidate.practical },
+        { label: "Module No.", value: candidate.moduleNo },
+        { label: "Course Coordinator", value: candidate.courseCoordinator },
+        { label: "Remarks", value: candidate.remarks }
+      );
+    }
+
+    return courseData;
+  };
+
+  // Helper function to get work information data based on candidate type
+  const getWorkInfoData = () => {
+    const workData = [
+      { label: "Designation", value: designation },
+      { label: "Unit", value: candidate.unit },
+      { label: "Working Under", value: candidate.workingUnder },
+    ];
+
+    // Add designation other for WTC if exists
+    if (candidate.type === 'WTC' && candidate.designationOther) {
+      workData.push({ label: "Designation Other", value: candidate.designationOther });
+    }
+
+    // Add professional information for Railway candidates
+    if (candidate.type === 'STC' || candidate.type === 'WTC') {
+      workData.push(
+        { label: "HRMS ID", value: candidate.hrmsId },
+        { label: "PF No/NPS/UPS", value: candidate.pfNoNpsUps },
+        { label: "Employee Number", value: candidate.employeeNumber },
+        { label: "Appt. Mode", value: candidate.modeOfAppointment },
+        { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway }
+      );
+    }
+
+    // Add station code for STC
+    if (candidate.type === 'STC') {
+      workData.push({ label: "Station Code", value: candidate.stationCode });
+    }
+
+    return workData;
+  };
+
+  // Helper function to get education information data based on candidate type
+  const getEducationInfoData = () => {
+    const educationData = [
+      { label: "Qualification", value: candidate.highestQualification },
+      { label: "Field of Study", value: candidate.fieldOfStudy },
+      { label: "Institution", value: candidate.institution },
+      { label: "Grade Type", value: candidate.gradeType },
+      { label: "Grade/Score", value: candidate.gradeValue },
+    ];
+
+    // Add custom field of study for WTC if exists
+    if (candidate.type === 'WTC' && candidate.customFieldOfStudy) {
+      educationData.push({ label: "Custom Field of Study", value: candidate.customFieldOfStudy });
+    }
+
+    return educationData;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -16,6 +133,7 @@ const DetailModal = ({ candidate, onClose }) => {
             <div>
               <h3 className="text-xl font-bold text-gray-900">{candidate.name}</h3>
               <p className="text-gray-600">{designation}</p>
+              <p className="text-sm text-blue-600 font-medium">{candidate.type} Candidate</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
@@ -26,40 +144,12 @@ const DetailModal = ({ candidate, onClose }) => {
         {/* Content */}
         <div className="p-8 space-y-6 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <InfoSection icon={User} title="Basic Information" data={[
-              { label: "S.No", value: candidate.serialNo },
-              { label: "Gender", value: candidate.sex },
-              { label: "Father's Name", value: candidate.fatherName },
-              { label: "DOB", value: candidate.dob },
-              { label: "Employee No.", value: candidate.ticketNumber || candidate.employeeNumber },
-              { label: "Category", value: candidate.category },
-              { label: "Joining Date", value: candidate.dateOfJoiningStcWtcNonRailway },
-              { label: "Sparing Date", value: candidate.date_of_sparing },
-            ]} />
-            <InfoSection icon={BookOpen} title="Course Information" data={[
-              { label: "Ticket No.", value: candidate.ticketNumber || candidate.ticketNo || candidate.employeeNumber },
-              { label: "Batch", value: candidate.batch },
-              { label: "Stream", value: candidate.stream },
-              { label: "Module No.", value: candidate.moduleNo },
-              // { label: "Module Name", value: candidate.moduleNo },
-              { label: "Duration", value: candidate.courseDuration },
-            ]} />
-            <InfoSection icon={Briefcase} title="Work Information" data={[
-              { label: "Unit", value: candidate.unit },
-              { label: "Working Under", value: candidate.workingUnder },
-              // { label: "Station Code", value: candidate.stationCode },
-              { label: "Appt. Mode", value: candidate.modeOfAppointment },
-              { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway },
-            ]} />
+            <InfoSection icon={User} title="Basic Information" data={getBasicInfoData()} />
+            <InfoSection icon={BookOpen} title="Course Information" data={getCourseInfoData()} />
+            <InfoSection icon={Briefcase} title="Work Information" data={getWorkInfoData()} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InfoSection icon={GraduationCap} title="Education" data={[
-              { label: "Qualification", value: candidate.highestQualification },
-              { label: "Field of Study", value: candidate.fieldOfStudy },
-              { label: "Institution", value: candidate.institution },
-              { label: "Graduation Year", value: candidate.batch },
-              { label: "Grade/Score", value: candidate.gradeValue },
-            ]} />
+            <InfoSection icon={GraduationCap} title="Education" data={getEducationInfoData()} />
             <InfoSection icon={Phone} title="Contact Information" data={[
               { label: "Phone", value: candidate.phoneNumber },
               { label: "Email", value: candidate.email },

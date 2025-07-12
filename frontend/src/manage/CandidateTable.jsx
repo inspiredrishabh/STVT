@@ -329,6 +329,109 @@ const EmptyState = () => (
   </div>
 );
 
+// Helper function to get course-specific fields based on candidate type
+const getCourseFields = (candidate) => {
+  const commonCourseFields = [
+    { label: "Stream", field: "stream", type: "select", value: candidate.stream, options: ["Railway", "Non Railway"] },
+    { label: "Type", field: "type", type: "select", value: candidate.type, options: ["STC", "WTC", "Non Railway"] },
+    {
+      label: "Work Info", field: "workInfo", type: "select", value: candidate.workInfo,
+      options: ["ASE", "AJE", "IJE", "RJE", "RCW", "RD", "TS", "LHI", "LHII", "FM", "WT", "DM", "WE", "NDT", "EA", "3DMP"]
+    },
+    { label: "Batch", field: "batch", type: "text", value: candidate.batch },
+    { label: "Joining Date", field: "dateOfJoiningStcWtcNonRailway", type: "date", value: candidate.dateOfJoiningStcWtcNonRailway },
+    { label: "Sparing Date", field: "dateOfSparing", type: "date", value: candidate.dateOfSparing }
+  ];
+
+  // Add type-specific fields
+  if (candidate.type === 'STC') {
+    return [
+      ...commonCourseFields,
+      { label: "Module No.", field: "moduleNo", type: "text", value: candidate.moduleNo },
+      { label: "Course Duration", field: "courseDuration", type: "text", value: candidate.courseDuration }
+    ];
+  } else if (candidate.type === 'WTC') {
+    return [
+      ...commonCourseFields,
+      { label: "Course Type", field: "courseType", type: "text", value: candidate.courseType },
+      { label: "Training Period", field: "trainingPeriod", type: "text", value: candidate.trainingPeriod },
+      { label: "Custom Training Period", field: "customTrainingPeriod", type: "text", value: candidate.customTrainingPeriod },
+      { label: "Theory Duration", field: "theoryDuration", type: "text", value: candidate.theoryDuration },
+      { label: "Practical Duration", field: "practicalDuration", type: "text", value: candidate.practicalDuration },
+      { label: "Course Coordinator", field: "courseCoordinator", type: "text", value: candidate.courseCoordinator }
+    ];
+  } else if (candidate.type === 'Non Railway') {
+    return [
+      ...commonCourseFields,
+      { label: "Course Type", field: "courseType", type: "text", value: candidate.courseType },
+      { label: "Duration", field: "duration", type: "text", value: candidate.duration },
+      { label: "Theory", field: "theory", type: "text", value: candidate.theory },
+      { label: "Practical", field: "practical", type: "text", value: candidate.practical },
+      { label: "Module No.", field: "moduleNo", type: "text", value: candidate.moduleNo },
+      { label: "Remarks", field: "remarks", type: "textarea", value: candidate.remarks },
+      { label: "Course Coordinator", field: "courseCoordinator", type: "text", value: candidate.courseCoordinator }
+    ];
+  }
+
+  return commonCourseFields;
+};
+
+// Helper function to get professional fields based on candidate type
+const getProfessionalFields = (candidate) => {
+  const commonProfessionalFields = [
+    { label: "Employee Number", field: "employeeNumber", type: "text", value: candidate.employeeNumber },
+    { label: "Ticket Number", field: "ticketNumber", type: "text", value: candidate.ticketNumber },
+    { label: "Designation", field: "designation", type: "text", value: candidate.designation },
+    { label: "Unit", field: "unit", type: "text", value: candidate.unit },
+    { label: "Working Under", field: "workingUnder", type: "text", value: candidate.workingUnder }
+  ];
+
+  // Add type-specific professional fields
+  if (candidate.type === 'STC' || candidate.type === 'WTC') {
+    const railwayFields = [
+      ...commonProfessionalFields,
+      { label: "HRMS ID", field: "hrmsId", type: "text", value: candidate.hrmsId },
+      { label: "PF No/NPS/UPS", field: "pfNoNpsUps", type: "text", value: candidate.pfNoNpsUps },
+      { label: "Appointment Date", field: "dateOfAppointmentInRailway", type: "date", value: candidate.dateOfAppointmentInRailway },
+      { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", value: candidate.modeOfAppointment }
+    ];
+    
+    // Add station code specifically for STC candidates
+    if (candidate.type === 'STC') {
+      railwayFields.push({ label: "Station Code", field: "stationCode", type: "text", value: candidate.stationCode });
+    }
+    
+    return railwayFields;
+  } else if (candidate.type === 'Non Railway') {
+    return [
+      ...commonProfessionalFields,
+      { label: "Remarks", field: "remarks", type: "textarea", value: candidate.remarks }
+    ];
+  }
+
+  return commonProfessionalFields;
+};
+
+// Helper function to get educational fields based on candidate type
+const getEducationalFields = (candidate) => {
+  const commonEducationalFields = [
+    { label: "Highest Qualification", field: "highestQualification", type: "text", value: candidate.highestQualification },
+    { label: "Field of Study", field: "fieldOfStudy", type: "text", value: candidate.fieldOfStudy },
+    { label: "Institution", field: "institution", type: "text", value: candidate.institution },
+    { label: "Grade/Score", field: "gradeValue", type: "text", value: candidate.gradeValue }
+  ];
+
+  // Add WTC-specific educational fields
+  if (candidate.type === 'WTC') {
+    return [
+      ...commonEducationalFields,
+      { label: "Custom Field of Study", field: "customFieldOfStudy", type: "text", value: candidate.customFieldOfStudy }
+    ];
+  }
+
+  return commonEducationalFields;
+};
+
 // Comprehensive Edit Modal Component
 const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -360,10 +463,13 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
             fields={[
               { label: "Full Name", field: "name", type: "text", value: candidate.name },
               { label: "Father's Name", field: "fatherName", type: "text", value: candidate.fatherName },
+              { label: "Mother's Name", field: "motherName", type: "text", value: candidate.motherName },
               { label: "Gender", field: "sex", type: "select", value: candidate.sex, options: ["Male", "Female", "Other"] },
               { label: "Date of Birth", field: "dob", type: "date", value: candidate.dob },
               { label: "Category", field: "category", type: "select", value: candidate.category, options: ["General", "OBC", "SC", "ST", "EWS"] },
-              { label: "Marital Status", field: "maritalStatus", type: "select", value: candidate.maritalStatus, options: ["Single", "Married", "Divorced", "Widowed"] }
+              { label: "Nationality", field: "nationality", type: "text", value: candidate.nationality },
+              { label: "PWD", field: "pwd", type: "select", value: candidate.pwd, options: ["Yes", "No"] },
+              { label: "Type of Disability", field: "typeOfDisability", type: "text", value: candidate.typeOfDisability }
             ]}
             candidate={candidate}
             onInputChange={onInputChange}
@@ -388,16 +494,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
           <EditSection
             title="Professional Information"
             icon={Briefcase}
-            fields={[
-              { label: "Employee Number", field: "employeeNumber", type: "text", value: candidate.employeeNumber },
-              { label: "Ticket Number", field: "ticketNumber", type: "text", value: candidate.ticketNumber },
-              { label: "Designation", field: "designation", type: "text", value: candidate.designation },
-              { label: "Unit", field: "unit", type: "text", value: candidate.unit },
-              { label: "Working Under", field: "workingUnder", type: "text", value: candidate.workingUnder },
-              // { label: "Station Code", field: "stationCode", type: "text", value: candidate.stationCode },
-              { label: "Appointment Date", field: "dateOfAppointmentInRailway", type: "date", value: candidate.dateOfAppointmentInRailway },
-              { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", value: candidate.modeOfAppointment }
-            ]}
+            fields={getProfessionalFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
           />
@@ -406,20 +503,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
           <EditSection
             title="Course Information"
             icon={Building}
-            fields={[
-              { label: "Stream", field: "stream", type: "select", value: candidate.stream, options: ["Railway", "Non Railway"] },
-              { label: "Type", field: "type", type: "select", value: candidate.type, options: ["STC", "WTC", "Non Railway"] },
-              {
-                label: "Work Info", field: "workInfo", type: "select", value: candidate.workInfo,
-                options: ["ASE", "AJE", "IJE", "RJE", "RCW", "RD", "TS", "LHI", "LHII", "FM", "WT", "DM", "WE", "NDT", "EA", "3DMP"]
-              },
-              { label: "Batch", field: "batch", type: "text", value: candidate.batch },
-              { label: "Module No.", field: "moduleNo", type: "text", value: candidate.moduleNo },
-              // { label: "Module Name", field: "moduleName", type: "text", value: candidate.moduleName },
-              { label: "Course Duration", field: "courseDuration", type: "text", value: candidate.courseDuration },
-              { label: "Joining Date", field: "dateOfJoiningStcWtcNonRailway", type: "date", value: candidate.dateOfJoiningStcWtcNonRailway },
-              { label: "Sparing Date", field: "dateOfSparing", type: "date", value: candidate.dateOfSparing }
-            ]}
+            fields={getCourseFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
           />
@@ -428,13 +512,7 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
           <EditSection
             title="Educational Information"
             icon={Calendar}
-            fields={[
-              { label: "Highest Qualification", field: "highestQualification", type: "text", value: candidate.highestQualification },
-              { label: "Field of Study", field: "fieldOfStudy", type: "text", value: candidate.fieldOfStudy },
-              { label: "Institution", field: "institution", type: "text", value: candidate.institution },
-              // { label: "Year of Graduation", field: "yearOfGraduation", type: "number", value: candidate.yearOfGraduation },
-              { label: "Grade/Score", field: "gradeValue", type: "text", value: candidate.gradeValue }
-            ]}
+            fields={getEducationalFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
           />
