@@ -674,7 +674,7 @@ class RealBackendAPI {
               candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
-            picture: candidate.picture ? `${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null,
           };
         });
       }
@@ -762,7 +762,7 @@ class RealBackendAPI {
               candidate.dateOfJoiningStcWtcNonRailway || candidate.createdAt,
             createdAt: candidate.createdAt,
             updatedAt: candidate.updatedAt,
-            picture: candidate.picture ? `/${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null,
           };
         });
       }
@@ -858,22 +858,28 @@ class RealBackendAPI {
       const response = await fetch(`${this.baseURL}/nonrailway`);
       const data = await response.json();
       if (data.success) {
-        return data.data.map(candidate => {
-          console.log('Non-Railway Candidate raw data:', candidate); // Debug logging
+        return data.data.map((candidate) => {
+          console.log("Non-Railway Candidate raw data:", candidate); // Debug logging
           return {
             ...candidate,
             id: `nonrailway-${candidate.id}`, // Make ID unique across types
             originalId: candidate.id,
-            type: 'Non Railway',
-            category: 'Non Railway',
-            stream: 'Non Railway',
-            workInfo: candidate.designation || 'N/A',
-            ticketNumber: candidate.ticket_no || candidate.ticketNumber || `NR${candidate.id}`, // Multiple fallbacks
-            ticket_no: candidate.ticket_no || candidate.ticketNumber || `NR${candidate.id}`, // Ensure ticket_no is also set
+            type: "Non Railway",
+            category: "Non Railway",
+            stream: "Non Railway",
+            workInfo: candidate.designation || "N/A",
+            ticketNumber:
+              candidate.ticket_no ||
+              candidate.ticketNumber ||
+              `NR${candidate.id}`, // Multiple fallbacks
+            ticket_no:
+              candidate.ticket_no ||
+              candidate.ticketNumber ||
+              `NR${candidate.id}`, // Ensure ticket_no is also set
             serialNo: candidate.id + 3000,
-            batch: candidate.batch || '2024-2025',
-            status: 'Active',
-            phoneNumber: candidate.phone_number || 'N/A',
+            batch: candidate.batch || "2024-2025",
+            status: "Active",
+            phoneNumber: candidate.phone_number || "N/A",
             // Personal Information
             fatherName: candidate.father_name,
             motherName: candidate.mother_name,
@@ -908,10 +914,12 @@ class RealBackendAPI {
             category: candidate.category,
             pwd: candidate.pwd,
             typeOfDisability: candidate.type_of_disability,
-            dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
+            dateOfJoiningStcWtcNonRailway:
+              candidate.date_of_joining_stc_wtc_non_railway ||
+              candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
-            picture: candidate.picture ? `/${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null,
           };
         });
       }
@@ -1012,7 +1020,7 @@ class RealBackendAPI {
                   candidate.created_at,
                 createdAt: candidate.created_at,
                 updatedAt: candidate.updated_at,
-                picture: candidate.picture ? `/${candidate.picture}` : null,
+                picture: candidate.picture ? `${candidate.picture}` : null,
               }));
             }
             return [];
@@ -1172,13 +1180,16 @@ class RealBackendAPI {
       }
 
       const endpoint = this.getCandidateEndpoint(candidate);
-      console.log('Updating candidate at endpoint:', endpoint);
-      console.log('Original candidate data for update:', candidateData);
+      console.log("Updating candidate at endpoint:", endpoint);
+      console.log("Original candidate data for update:", candidateData);
 
       // Transform frontend camelCase fields to backend snake_case fields
       const transformedData = this.transformFieldsForBackend(candidateData);
-      console.log('Transformed data for backend:', transformedData);
-      console.log('Number of fields being sent:', Object.keys(transformedData).length);
+      console.log("Transformed data for backend:", transformedData);
+      console.log(
+        "Number of fields being sent:",
+        Object.keys(transformedData).length
+      );
 
       const formData = new FormData();
 
