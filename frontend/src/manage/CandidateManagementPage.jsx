@@ -71,6 +71,63 @@ class RealBackendAPI {
     return endpoint;
   }
 
+  // Helper method to transform frontend camelCase fields to backend snake_case fields
+  transformFieldsForBackend(candidateData) {
+    const fieldMapping = {
+      // Personal Information
+      fatherName: 'father_name',
+      motherName: 'mother_name',
+      phoneNumber: 'phone_number',
+      emergencyContactNumber: 'emergency_contact_number',
+      permanentAddress: 'permanent_address',
+      currentAddress: 'current_address',
+      
+      // Professional Information
+      employeeNumber: 'employee_number',
+      ticketNumber: 'ticket_no',
+      workingUnder: 'working_under',
+      hrmsId: 'hrms_id',
+      pfNoNpsUps: 'pf_no_nps_ups',
+      stationCode: 'station_code',
+      dateOfAppointmentInRailway: 'date_of_appointment_in_railway',
+      modeOfAppointment: 'mode_of_appointment',
+      
+      // Educational Information
+      highestQualification: 'highest_qualification',
+      fieldOfStudy: 'field_of_study',
+      gradeType: 'grade_type',
+      gradeValue: 'grade_value',
+      
+      // Course Information
+      moduleNo: 'module_no',
+      moduleName: 'module_name',
+      courseDuration: 'course_duration',
+      dateOfSparing: 'date_of_sparing',
+      dateOfJoiningStcWtcNonRailway: 'date_of_joining_stc_wtc_non_railway',
+      
+      // Additional fields
+      typeOfDisability: 'type_of_disability',
+      resignationStatus: 'resignation_status',
+      
+      // Fields that might not be in the backend but are common
+      serialNo: 'serial_no', // This might not be in backend
+      maritalStatus: 'marital_status' // This might not be in backend
+    };
+
+    const transformedData = {};
+    
+    // Transform fields that have mappings
+    Object.keys(candidateData).forEach(key => {
+      const backendKey = fieldMapping[key] || key;
+      // Only include fields that are not undefined or null
+      if (candidateData[key] !== undefined && candidateData[key] !== null) {
+        transformedData[backendKey] = candidateData[key];
+      }
+    });
+    
+    return transformedData;
+  }
+
   // Helper method to get candidate details by ticket number
   async getCandidateByTicket(candidate) {
     try {
@@ -478,12 +535,16 @@ class RealBackendAPI {
         endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}`;
       }
 
+      // Transform frontend camelCase fields to backend snake_case fields
+      const transformedData = this.transformFieldsForBackend(candidateData);
+      console.log('Transformed data for backend (create):', transformedData);
+
       const formData = new FormData();
       
-      // Add all candidate data to form data
-      Object.keys(candidateData).forEach(key => {
-        if (candidateData[key] !== null && candidateData[key] !== undefined) {
-          formData.append(key, candidateData[key]);
+      // Add all transformed candidate data to form data
+      Object.keys(transformedData).forEach(key => {
+        if (transformedData[key] !== null && transformedData[key] !== undefined) {
+          formData.append(key, transformedData[key]);
         }
       });
 
@@ -533,12 +594,16 @@ class RealBackendAPI {
       const endpoint = this.getCandidateEndpoint(candidate);
       console.log('Updating candidate at endpoint:', endpoint);
 
+      // Transform frontend camelCase fields to backend snake_case fields
+      const transformedData = this.transformFieldsForBackend(candidateData);
+      console.log('Transformed data for backend:', transformedData);
+
       const formData = new FormData();
       
-      // Add all candidate data to form data
-      Object.keys(candidateData).forEach(key => {
-        if (candidateData[key] !== null && candidateData[key] !== undefined) {
-          formData.append(key, candidateData[key]);
+      // Add all transformed candidate data to form data
+      Object.keys(transformedData).forEach(key => {
+        if (transformedData[key] !== null && transformedData[key] !== undefined) {
+          formData.append(key, transformedData[key]);
         }
       });
 
