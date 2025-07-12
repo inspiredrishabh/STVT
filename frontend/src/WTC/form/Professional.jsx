@@ -393,6 +393,13 @@ const Professional = ({ formData, onChange }) => {
       if (error) newErrors[field] = error;
     });
 
+    if (formData.gradeType && formData.gradeValue) {
+      const gradeValueError = validateField("gradeValue", formData.gradeValue);
+      if (gradeValueError) {
+        newErrors.gradeValue = gradeValueError;
+      }
+    }
+
     // Validate conditional fields for "Other" selections
     if (
       formData.modeOfAppointment === "Other" &&
