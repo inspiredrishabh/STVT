@@ -22,13 +22,12 @@ class StcController {
             }
 
             const newCandidate = await this.stcModel.create(candidateData);
+            
             res.status(201).json({
                 success: true,
                 message: 'STC Candidate created successfully',
                 ticketNumber: ticketNumber
             });
-
-            // console.log('4 done');
 
         } catch (error) {
             console.error('Error creating STC candidate:', error);
@@ -255,7 +254,7 @@ class StcController {
             const fileExtension = path.extname(file.originalname);
             const newFileName = `${ticketNumber}${fileExtension}`;
 
-            const uploadDir = path.join(__dirname, '../../uploads', traineeType);
+            const uploadDir = path.join(__dirname, '../uploads', traineeType);
             const newFullPath = path.join(uploadDir, newFileName);
             const relativePath = `uploads/${traineeType}/${newFileName}`;
 

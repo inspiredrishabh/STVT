@@ -356,7 +356,7 @@ const TraineeProfile = () => {
                   {trainee.picture ? (
                     <div className="relative">
                       <img
-                        src={trainee.picture}
+                        src={`http://localhost:5000/${trainee.picture}`}
                         alt={trainee.name}
                         className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
                         onError={(e) => {
@@ -560,7 +560,7 @@ const TraineeProfile = () => {
               <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 {selectedTraineeForResignation.picture ? (
                   <img
-                    src={selectedTraineeForResignation.picture}
+                    src={`http://localhost:5000/${selectedTraineeForResignation.picture}`}
                     alt={selectedTraineeForResignation.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />

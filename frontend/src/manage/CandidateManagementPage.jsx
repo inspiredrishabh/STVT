@@ -478,7 +478,7 @@ class RealBackendAPI {
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
-            picture: candidate.picture ? `/${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null
           };
         });
       }
@@ -561,7 +561,7 @@ class RealBackendAPI {
             dateOfJoiningStcWtcNonRailway: candidate.dateOfJoiningStcWtcNonRailway || candidate.createdAt,
             createdAt: candidate.createdAt,
             updatedAt: candidate.updatedAt,
-            picture: candidate.picture ? `/${candidate.picture}` : null
+            picture: candidate.picture ? `${candidate.picture}` : null
           };
         });
       }
