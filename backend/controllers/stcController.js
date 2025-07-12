@@ -25,7 +25,7 @@ class StcController {
             res.status(201).json({
                 success: true,
                 message: 'STC Candidate created successfully',
-                data: newCandidate
+                ticketNumber: ticketNumber
             });
 
             // console.log('4 done');

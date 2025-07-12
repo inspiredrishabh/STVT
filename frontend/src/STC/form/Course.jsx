@@ -62,17 +62,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   //   return `${designation}${counter}`;
   // };
 
-  useEffect(() => {
-    const designation = formData.designation;
-    if (designation && ticketCounter[designation] && !formData.ticketNo) {
-      const ticketNumber = generateTicketNumber(designation);
-      onChange("ticketNo", ticketNumber);
-      setTicketCounter((prev) => ({
-        ...prev,
-        [designation]: prev[designation] + 1,
-      }));
-    }
-  }, [formData.designation]);
+  // useEffect(() => {
+  //   const designation = formData.designation;
+  //   if (designation && ticketCounter[designation] && !formData.ticketNo) {
+  //     const ticketNumber = generateTicketNumber(designation);
+  //     onChange("ticketNo", ticketNumber);
+  //     setTicketCounter((prev) => ({
+  //       ...prev,
+  //       [designation]: prev[designation] + 1,
+  //     }));
+  //   }
+  // }, [formData.designation]);
 
   useEffect(() => {
     if (formData.moduleNo === "Other") {
@@ -144,7 +144,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      "ticketNo",
+      // "ticketNo",
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
