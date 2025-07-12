@@ -52,6 +52,38 @@ const LineTraining = () => {
 
   const [formErrors, setFormErrors] = useState({});
 
+  // Status update function
+  const updateTrainingStatus = async (training, newStatus) => {
+    try {
+      const response = await fetch(
+        `/api/line-trainings/${training.id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        // Update local state
+        setTrainings((prev) =>
+          prev.map((t) =>
+            t.id === training.id ? { ...t, status: newStatus } : t
+          )
+        );
+        alert(`Training status updated to ${newStatus}`);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert(`Error updating status: ${error.message}`);
+    }
+  };
+
   // Date validation function
   const validateDates = (startDate, endDate) => {
     const errors = {};
@@ -239,6 +271,10 @@ const LineTraining = () => {
         return "bg-blue-100 text-blue-800";
       case "Scheduled":
         return "bg-yellow-100 text-yellow-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
+      case "On Hold":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -252,6 +288,10 @@ const LineTraining = () => {
         return <Clock className="w-4 h-4" />;
       case "Scheduled":
         return <Calendar className="w-4 h-4" />;
+      case "Cancelled":
+        return <X className="w-4 h-4" />;
+      case "On Hold":
+        return <AlertCircle className="w-4 h-4" />;
       default:
         return <AlertCircle className="w-4 h-4" />;
     }
@@ -930,8 +970,6 @@ const LineTraining = () => {
           </div>
         </div>
 
-        {/* ...existing code... */}
-
         {/* Training List */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
@@ -965,16 +1003,27 @@ const LineTraining = () => {
                           <h3 className="text-lg font-semibold text-gray-900">
                             {training.activityCentre || "Unknown Centre"}
                           </h3>
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                              training.status
-                            )}`}
-                          >
-                            {getStatusIcon(training.status)}
-                            <span className="ml-1">
-                              {training.status || "Unknown"}
-                            </span>
-                          </span>
+
+                          {/* Status Dropdown */}
+                          <div className="relative">
+                            <select
+                              value={training.status || "Scheduled"}
+                              onChange={(e) =>
+                                updateTrainingStatus(training, e.target.value)
+                              }
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border-0 focus:ring-2 focus:ring-purple-500 ${getStatusColor(
+                                training.status
+                              )}`}
+                            >
+                              <option value="Scheduled">📅 Scheduled</option>
+                              <option value="In Progress">
+                                🔄 In Progress
+                              </option>
+                              <option value="Completed">✅ Completed</option>
+                              <option value="Cancelled">❌ Cancelled</option>
+                              <option value="On Hold">⏸️ On Hold</option>
+                            </select>
+                          </div>
                         </div>
                         <p className="text-gray-600 mb-3">
                           {training.description || "No description available"}
