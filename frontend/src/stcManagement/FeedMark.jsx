@@ -429,27 +429,24 @@ const realAPI = {
 };
 
 const FeedMark = () => {
-
   const [searchParams] = useSearchParams();
   const [ticketNo, setTicketNo] = useState("");
-  const [searchMethod, setSearchMethod] = useState('ticket'); // 'ticket' or 'dropdown'
-  // const [ticketNo, setticketNo] = useState('');
+  const [searchMethod, setSearchMethod] = useState('ticket');
   const [selectedCandidate, setSelectedCandidate] = useState('');
   const [candidates, setCandidates] = useState([]);
   const [candidateData, setCandidateData] = useState(null);
   const [courseCode, setCourseCode] = useState('');
   const [marks, setMarks] = useState({});
-  const [supplementaryMarks, setSupplementaryMarks] = useState({}); // Track supplementary exam marks
-  const [clearedSupplementary, setClearedSupplementary] = useState({}); // Track cleared supplementary subjects
-  const [practicalCenters, setPracticalCenters] = useState({}); // Track practical centers data
+  const [supplementaryMarks, setSupplementaryMarks] = useState({});
+  const [clearedSupplementary, setClearedSupplementary] = useState({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [candidatesLoading, setCandidatesLoading] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false); // Track if we're editing existing marks
-  const [hasExistingMarks, setHasExistingMarks] = useState(false); // Track if candidate has existing marks
-  const [showMarksPanel, setShowMarksPanel] = useState(false); // Track if marks panel should be visible
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [hasExistingMarks, setHasExistingMarks] = useState(false);
+  const [showMarksPanel, setShowMarksPanel] = useState(false);
 
   // Auto-search function for URL parameters
   const handleAutoSearch = async (ticketNo) => {
@@ -478,10 +475,9 @@ const FeedMark = () => {
       const marksData = await realAPI.getExistingMarks(ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
-      setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
-      setIsEditMode(false); // Start in view mode
-      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
+      setIsEditMode(false);
+      setShowMarksPanel(marksData.hasExistingMarks);
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `✓ Auto-loaded: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
@@ -570,7 +566,6 @@ const FeedMark = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      // const candidate = await mockAPI.getCandidateByTicket(ticketNo);
       const response = await fetch(`/api/stc/${ticketNo}`);
       const result = await response.json();
       const candidate = result.data;
@@ -582,10 +577,9 @@ const FeedMark = () => {
       const marksData = await realAPI.getExistingMarks(ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
-      setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
-      setIsEditMode(false); // Start in view mode
-      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
+      setIsEditMode(false);
+      setShowMarksPanel(marksData.hasExistingMarks);
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `Candidate found: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
@@ -634,10 +628,9 @@ const FeedMark = () => {
       const marksData = await realAPI.getExistingMarks(candidate.ticket_no || candidate.ticketNo, candidate.module_no);
       setMarks(marksData.mainMarks);
       setSupplementaryMarks(marksData.supplementaryMarks);
-      setPracticalCenters(marksData.practicalCenters || {});
       setHasExistingMarks(marksData.hasExistingMarks);
-      setIsEditMode(false); // Start in view mode
-      setShowMarksPanel(marksData.hasExistingMarks); // Show panel only if marks exist
+      setIsEditMode(false);
+      setShowMarksPanel(marksData.hasExistingMarks);
 
       if (marksData.hasExistingMarks) {
         setMessage({ type: 'success', text: `Candidate selected: ${candidate.name} - Existing marks found. Click "Edit Marks" to modify.` });
@@ -677,19 +670,17 @@ const FeedMark = () => {
         marks, 
         courseCode, 
         supplementaryMarks, 
-        practicalCenters,
+        {}, // Remove practicalCenters parameter
         isEditMode
       );
       
       setMessage({ type: 'success', text: result.message });
       
-      // If we were in edit mode, update the state
       if (isEditMode) {
         setIsEditMode(false);
         setHasExistingMarks(true);
         setShowMarksPanel(true);
       } else {
-        // First time saving marks
         setHasExistingMarks(true);
         setShowMarksPanel(true);
       }
@@ -711,11 +702,10 @@ const FeedMark = () => {
   const handleCancelAddMarks = () => {
     setShowMarksPanel(false);
     setIsEditMode(false);
-    // Reset marks to empty if no existing marks
     if (!hasExistingMarks) {
       setMarks({});
       setSupplementaryMarks({});
-      setPracticalCenters({});
+      // Remove practicalCenters line
     }
     setMessage({ type: '', text: '' });
   };
@@ -866,12 +856,12 @@ This will use only main marks for this subject in marksheet generation.`)) {
     setCandidateData(null);
     setCourseCode('');
     setMarks({});
-    setSupplementaryMarks({}); // Reset supplementary marks
-    setClearedSupplementary({}); // Reset cleared supplementary status
-    setPracticalCenters({}); // Reset practical centers data
-    setHasExistingMarks(false); // Reset existing marks status
-    setIsEditMode(false); // Reset edit mode
-    setShowMarksPanel(false); // Reset marks panel visibility
+    setSupplementaryMarks({});
+    setClearedSupplementary({});
+    // Remove practicalCenters line
+    setHasExistingMarks(false);
+    setIsEditMode(false);
+    setShowMarksPanel(false);
     setMessage({ type: '', text: '' });
   };
 
@@ -1287,15 +1277,9 @@ This will use only main marks for this subject in marksheet generation.`)) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {Object.entries(papers).map(([paper, config]) => {
                         const paperMarks = marks[session]?.[paper];
-
-                        // For practical marks, use combined max marks if available
-                        const effectiveMaxMarks = paper === 'Practical' && getCombinedPracticalMaxMarks(session) > 0
-                          ? getCombinedPracticalMaxMarks(session)
-                          : config.maxMarks;
-
-                        const passingMarks = getPassingMarks(effectiveMaxMarks);
-                        const isFailingGrade = shouldShowAsFailed(session, paper, paperMarks, effectiveMaxMarks);
-                        const isOverMaxMarks = paperMarks > effectiveMaxMarks;
+                        const passingMarks = getPassingMarks(config.maxMarks);
+                        const isFailingGrade = shouldShowAsFailed(session, paper, paperMarks, config.maxMarks);
+                        const isOverMaxMarks = paperMarks > config.maxMarks;
                         const isCleared = isSupplementaryCleared(session, paper);
                         const isBelowPassing = paperMarks && paperMarks < passingMarks;
 
@@ -1315,9 +1299,7 @@ This will use only main marks for this subject in marksheet generation.`)) {
                               </label>
                               <div className="text-right">
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                  Max: {paper === 'Practical' && getCombinedPracticalMaxMarks(session) > 0
-                                    ? `${getCombinedPracticalMaxMarks(session)} (Combined)`
-                                    : config.maxMarks}
+                                  Max: {config.maxMarks}
                                 </span>
                                 <span className="text-xs text-gray-500 block mt-1">
                                   Pass: {passingMarks} (60%)
@@ -1332,166 +1314,27 @@ This will use only main marks for this subject in marksheet generation.`)) {
                               </div>
                             )}
 
-                            {paper === 'Practical' ? (
-                              // Multi-center practical marks section
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                  <label className="text-sm font-medium text-gray-700">
-                                    Number of Centers:
-                                  </label>
-                                  {practicalCenters[session]?.isCustomNumber ? (
-                                    <div className="flex items-center gap-2">
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        max="20"
-                                        value={practicalCenters[session]?.numCenters || ''}
-                                        onChange={(e) => handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value) || 1)}
-                                        readOnly={hasExistingMarks && !isEditMode}
-                                        className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-20 ${
-                                          hasExistingMarks && !isEditMode 
-                                            ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
-                                            : 'border-gray-300'
-                                        }`}
-                                        placeholder="1-20"
-                                      />
-                                      <button
-                                        onClick={() => handlePracticalCentersChange(session, 'isCustomNumber', false)}
-                                        disabled={hasExistingMarks && !isEditMode}
-                                        className={`px-2 py-1 text-xs rounded ${
-                                          hasExistingMarks && !isEditMode 
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                        }`}
-                                      >
-                                        Back
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <select
-                                      value={practicalCenters[session]?.numCenters === 'custom' ? 'custom' : (practicalCenters[session]?.numCenters || 1)}
-                                      onChange={(e) => {
-                                        if (e.target.value === 'custom') {
-                                          handlePracticalCentersChange(session, 'isCustomNumber', true);
-                                          handlePracticalCentersChange(session, 'numCenters', 1);
-                                        } else {
-                                          handlePracticalCentersChange(session, 'numCenters', parseInt(e.target.value));
-                                        }
-                                      }}
-                                      disabled={hasExistingMarks && !isEditMode}
-                                      className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        hasExistingMarks && !isEditMode 
-                                          ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
-                                          : 'border-gray-300'
-                                      }`}
-                                    >
-                                      {[1, 2, 3, 4, 5].map(num => (
-                                        <option key={num} value={num}>{num}</option>
-                                      ))}
-                                      <option value="custom">Other (Custom)</option>
-                                    </select>
-                                  )}
-                                </div>
-
-                                {Array.from({ length: practicalCenters[session]?.numCenters || 1 }, (_, index) => (
-                                  <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className="text-sm font-medium text-gray-700">Center {index + 1}:</span>
-                                      <input
-                                        type="text"
-                                        value={practicalCenters[session]?.centers?.[index]?.name || ''}
-                                        onChange={(e) => handlePracticalCenterNameChange(session, index, e.target.value)}
-                                        placeholder="Enter center name"
-                                        readOnly={hasExistingMarks && !isEditMode}
-                                        className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                                          hasExistingMarks && !isEditMode 
-                                            ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
-                                            : 'border-gray-300'
-                                        }`}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <div>
-                                        <label className="block text-xs text-gray-600 mb-1">Marks Obtained:</label>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          value={practicalCenters[session]?.centers?.[index]?.marks || ''}
-                                          onChange={(e) => handlePracticalCenterMarksChange(session, index, e.target.value)}
-                                          placeholder="Enter marks"
-                                          readOnly={hasExistingMarks && !isEditMode}
-                                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                                            hasExistingMarks && !isEditMode 
-                                              ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
-                                              : 'border-gray-300'
-                                          }`}
-                                        />
-                                      </div>
-                                      <div>
-                                        <label className="block text-xs text-gray-600 mb-1">Max Marks:</label>
-                                        <input
-                                          type="number"
-                                          min="1"
-                                          value={practicalCenters[session]?.centers?.[index]?.maxMarks || ''}
-                                          onChange={(e) => handlePracticalCenterMaxMarksChange(session, index, e.target.value)}
-                                          placeholder="Max marks"
-                                          readOnly={hasExistingMarks && !isEditMode}
-                                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                                            hasExistingMarks && !isEditMode 
-                                              ? 'bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300' 
-                                              : 'border-gray-300'
-                                          }`}
-                                        />
-                                      </div>
-                                    </div>
-                                    {practicalCenters[session]?.centers?.[index]?.marks && practicalCenters[session]?.centers?.[index]?.maxMarks && (
-                                      <div className="mt-2 text-xs text-gray-600">
-                                        Percentage: {((practicalCenters[session].centers[index].marks / practicalCenters[session].centers[index].maxMarks) * 100).toFixed(1)}%
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-
-                                {practicalCenters[session]?.centers?.length > 0 && (
-                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-sm font-medium text-blue-800">Combined Result:</span>
-                                      <span className="text-sm font-bold text-blue-900">
-                                        {getCombinedPracticalMarks(session)} / {getCombinedPracticalMaxMarks(session)}
-                                      </span>
-                                    </div>
-                                    <div className="text-xs text-blue-700">
-                                      Overall Percentage: {getCombinedPracticalMaxMarks(session) > 0 ? ((getCombinedPracticalMarks(session) / getCombinedPracticalMaxMarks(session)) * 100).toFixed(1) : 0}%
-                                    </div>
-                                    <div className="text-xs text-blue-700 mt-1">
-                                      Status: {getCombinedPracticalMaxMarks(session) > 0 && getCombinedPracticalMarks(session) >= (getCombinedPracticalMaxMarks(session) * 0.6) ? 'PASS' : 'FAIL'}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              // Regular paper marks input
-                              <input
-                                type="number"
-                                min="0"
-                                max={config.maxMarks}
-                                value={paperMarks || ''}
-                                onChange={(e) => handleMarksChange(session, paper, e.target.value)}
-                                placeholder={`Enter marks (0-${config.maxMarks})`}
-                                readOnly={hasExistingMarks && !isEditMode}
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                                  hasExistingMarks && !isEditMode 
-                                    ? 'bg-gray-100 cursor-not-allowed text-gray-600' 
-                                    : isOverMaxMarks
-                                    ? 'border-red-300 bg-red-50'
-                                    : isFailingGrade
-                                      ? 'border-red-400 bg-red-50'
-                                      : isCleared && isBelowPassing
-                                        ? 'border-yellow-400 bg-yellow-50'
-                                        : 'border-gray-300'
-                                  }`}
-                              />
-                            )}
+                            {/* Simplified marks input for all papers including practical */}
+                            <input
+                              type="number"
+                              min="0"
+                              max={config.maxMarks}
+                              value={paperMarks || ''}
+                              onChange={(e) => handleMarksChange(session, paper, e.target.value)}
+                              placeholder={`Enter marks (0-${config.maxMarks})`}
+                              readOnly={hasExistingMarks && !isEditMode}
+                              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                                hasExistingMarks && !isEditMode 
+                                  ? 'bg-gray-100 cursor-not-allowed text-gray-600' 
+                                  : isOverMaxMarks
+                                  ? 'border-red-300 bg-red-50'
+                                  : isFailingGrade
+                                    ? 'border-red-400 bg-red-50'
+                                    : isCleared && isBelowPassing
+                                      ? 'border-yellow-400 bg-yellow-50'
+                                      : 'border-gray-300'
+                                }`}
+                            />
 
                             {isOverMaxMarks && (
                               <p className="text-xs text-red-600 font-medium">
@@ -1665,3 +1508,4 @@ This will use only main marks for this subject in marksheet generation.`)) {
 };
 
 export default FeedMark;
+                             
