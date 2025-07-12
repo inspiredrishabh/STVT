@@ -195,6 +195,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <option value="">Select mode</option>
             <option value="RRB">RRB</option>
             <option value="CG">CG</option>
+            <option value="RRC">RRC</option>
             <option value="Promotion Through LDCE">
               Promotion Through LDCE
             </option>
@@ -238,7 +239,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <option value="AJE">AJE</option>
             <option value="IJE">IJE</option>
             <option value="RJE">RJE</option>
-            <option value="SSC">SSC</option>
+            <option value="SSE">SSE</option>
             <option value="JE">JE</option>
             <option value="Other">Other</option>
           </select>
@@ -255,24 +256,22 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           >
             <option value="">Select unit</option>
-            <option value="AMVW">AMVW</option>
             <option value="ASRW">ASRW</option>
-            <option value="CVW">CVW</option>
-            <option value="DLI">DLI</option>
-            <option value="DLIW">DLIW</option>
-            <option value="FZR">FZR</option>
-            <option value="FZRW">FZRW</option>
-            <option value="JAT">JAT</option>
-            <option value="JATW">JATW</option>
-            <option value="JUDW">JUDW</option>
+            <option value="RCNK">RCNK</option>
             <option value="KLKW">KLKW</option>
-            <option value="LKO">LKO</option>
-            <option value="LKOW">LKOW</option>
+            <option value="JUDW">JUDW</option>
+            <option value="CBW">CBW</option>
+            <option value="AMW">AMVW</option>
+            <option value="JAT">JAT</option>
+            <option value="FZR">FZR</option>
+            <option value="DLI">DLI</option>
+            <option value="UMB">UMB</option>
             <option value="MB">MB</option>
-            <option value="MBW">MBW</option>
-            <option value="RCNKW">RCNKW</option>
-            <option value="UMBW">UMBW</option>
+            <option value="LKO">LKO</option>
+            <option value="HQ">HQ</option>
+            <option value="Rly_Board">Rly. Board</option>
             <option value="Other">Other</option>
+
           </select>
           {errors.unit && (
             <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
@@ -446,7 +445,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <OptionalLabel>Grade Value</OptionalLabel>
           <input
             type="number"
-            step="0.01"
+            // step="0.01"
             value={formData.gradeValue || ""}
             onChange={(e) => handleChange("gradeValue", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
