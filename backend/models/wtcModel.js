@@ -70,6 +70,7 @@ class WtcModel {
             theory_duration TEXT,
             custom_theory_duration TEXT,
             practical_duration TEXT,
+            custom_practical_duration TEXT,
             working_under TEXT,
             hrms_id TEXT,
             pf_no_nps_ups TEXT,
@@ -87,10 +88,7 @@ class WtcModel {
             ticket_no TEXT UNIQUE NOT NULL,
             batch TEXT,
             date_of_joining_stc_wtc_non_railway TEXT,
-            module_no TEXT,
-            custom_module_no TEXT,
             date_of_sparing TEXT,
-            course_duration TEXT,
             course_coordinator TEXT,
 
             -- System fields

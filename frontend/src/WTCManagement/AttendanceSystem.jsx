@@ -67,14 +67,14 @@ const attendanceAPI = {
 
       // Transform the data to match the format expected by the frontend
       const attendanceData = {
-        theoryPercentage: result.data.statistics.theoryPercentage,
-        practicalPercentage: result.data.statistics.practicalPercentage,
-        totalTheoryDays: result.data.statistics.totalRecords,
-        totalPracticalDays: result.data.statistics.totalRecords,
+        statistics: {
+          totalClasses: result.data.statistics?.totalClasses || 0,
+          classesAttended: result.data.statistics?.classesAttended || 0,
+          attendancePercentage: result.data.statistics?.attendancePercentage || 0
+        },
         attendanceRecords: result.data.attendanceRecords.map(record => ({
-          date: record.date,
-          theory: record.theory_status || record.theoryStatus || 'absent',
-          practical: record.practical_status || record.practicalStatus || 'absent'
+          totalClasses: record.totalClasses || 0,
+          classesAttended: record.classesAttended || 0
         }))
       };
 
@@ -83,32 +83,26 @@ const attendanceAPI = {
       console.error('Error fetching attendance data:', error);
       // Return empty data structure if this is the first time viewing attendance for this trainee
       return {
-        theoryPercentage: 0,
-        practicalPercentage: 0,
-        totalTheoryDays: 0,
-        totalPracticalDays: 0,
+        statistics: {
+          totalClasses: 0,
+          classesAttended: 0,
+          attendancePercentage: 0
+        },
         attendanceRecords: []
       };
     }
   },
 
   // Mark attendance for a trainee
-  markAttendance: async (traineeId, date, attendanceType, status) => {
+  markAttendance: async (traineeId, totalClasses, classesAttended) => {
     try {
-      // Map the frontend's attendanceType (theory/practical) to backend's field names
+      // Set up the payload for classes attended
       const payload = {
         candidateId: traineeId,
-        date: date
+        totalClasses: totalClasses,
+        classesAttended: classesAttended
       };
 
-      // Set the appropriate attendance type
-      if (attendanceType === 'theory') {
-        payload.theoryStatus = status;
-      } else if (attendanceType === 'practical') {
-        payload.practicalStatus = status;
-      }
-
-      console.log('Marking attendance with payload:', payload);
 
       const response = await fetch('/api/attendance/mark', {
         method: 'POST',
@@ -129,20 +123,18 @@ const attendanceAPI = {
         throw new Error(result.message || 'Failed to mark attendance');
       }
 
-      console.log('Mark attendance response:', result);
-
       // The API now returns updated attendance data directly
       if (result.data && result.data.attendanceRecords) {
         // Transform the data to match the format expected by the frontend
         return {
-          theoryPercentage: result.data.statistics.theoryPercentage,
-          practicalPercentage: result.data.statistics.practicalPercentage,
-          totalTheoryDays: result.data.statistics.totalRecords,
-          totalPracticalDays: result.data.statistics.totalRecords,
+          statistics: {
+            totalClasses: result.data.statistics?.totalClasses || 0,
+            classesAttended: result.data.statistics?.classesAttended || 0,
+            attendancePercentage: result.data.statistics?.attendancePercentage || 0
+          },
           attendanceRecords: result.data.attendanceRecords.map(record => ({
-            date: record.date,
-            theory: record.theoryStatus,
-            practical: record.practicalStatus
+            totalClasses: record.totalClasses || 0,
+            classesAttended: record.classesAttended || 0
           }))
         };
       } else {
@@ -190,6 +182,9 @@ const attendanceAPI = {
           record.theoryStatus = entry.status;
         } else if (entry.attendanceType === 'practical') {
           record.practicalStatus = entry.status;
+        } else if (entry.attendanceType === 'classes') {
+          record.totalClasses = entry.totalClasses;
+          record.classesAttended = entry.classesAttended;
         }
 
         return record;
@@ -232,18 +227,11 @@ const AttendanceSystem = () => {
   const [attendanceData, setAttendanceData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceView, setAttendanceView] = useState('mark'); // 'mark', 'summary', 'records'
-  const [filterBatch, setFilterBatch] = useState('');
+  // Removed batch filter state
   const [exporting, setExporting] = useState(false);
 
   // Load trainees for dropdown
-  useEffect(() => {
-    if (searchMethod === 'dropdown') {
-      loadTrainees();
-    }
-  }, [searchMethod]);
-
   const loadTrainees = useCallback(async () => {
     setLoading(true);
     try {
@@ -255,6 +243,13 @@ const AttendanceSystem = () => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (searchMethod === 'dropdown') {
+      loadTrainees();
+    }
+  }, [searchMethod, loadTrainees]);
+
 
   const loadTraineeData = useCallback(async (trainee) => {
     setLoading(true);
@@ -310,7 +305,7 @@ const AttendanceSystem = () => {
     }
   }, [trainees, loadTraineeData]);
 
-  const markAttendance = useCallback(async (attendanceType, status) => {
+  const markAttendance = useCallback(async (totalClasses, classesAttended) => {
     if (!traineeData) {
       setMessage({ type: 'error', text: 'No trainee selected' });
       return;
@@ -321,9 +316,8 @@ const AttendanceSystem = () => {
       // Call the API to mark attendance
       const updatedAttendance = await attendanceAPI.markAttendance(
         traineeData.id,
-        selectedDate,
-        attendanceType,
-        status
+        totalClasses,
+        classesAttended
       );
 
       console.log('Updated attendance:', updatedAttendance);
@@ -333,14 +327,14 @@ const AttendanceSystem = () => {
 
       setMessage({
         type: 'success',
-        text: `${attendanceType} attendance marked as ${status} for ${selectedDate}`
+        text: `Class attendance updated successfully`
       });
     } catch (error) {
       setMessage({ type: 'error', text: error.message || 'Failed to mark attendance' });
     } finally {
       setLoading(false);
     }
-  }, [traineeData, selectedDate]);
+  }, [traineeData]);
 
   const resetForm = useCallback(() => {
     setTicketNumber('');
@@ -348,9 +342,63 @@ const AttendanceSystem = () => {
     setTraineeData(null);
     setAttendanceData(null);
     setMessage({ type: '', text: '' });
-    setSelectedDate(new Date().toISOString().split('T')[0]);
   }, []);
 
+  const generateCSVContent = useCallback(() => {
+    if (!traineeData || !attendanceData) return '';
+
+    const headers = [
+      'Trainee Name',
+      'Ticket Number',
+      'Designation',
+      'Total Classes',
+      'Classes Attended',
+      'Attendance Percentage'
+    ];
+
+    let csvContent = headers.join(',') + '\n';
+
+    // Add trainee info and attendance records
+    if (attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0) {
+      const record = attendanceData.attendanceRecords[0];
+      const percentage = record.totalClasses > 0 ? Math.round((record.classesAttended / record.totalClasses) * 100) : 0;
+
+      const row = [
+        `"${traineeData.name}"`,
+        `"${traineeData.ticketNo}"`,
+        `"${traineeData.designation}"`,
+        `"${record.totalClasses || 0}"`,
+        `"${record.classesAttended || 0}"`,
+        `"${percentage}%"`
+      ];
+      csvContent += row.join(',') + '\n';
+    } else {
+      // If no records, add a row with trainee info and no attendance data
+      const row = [
+        `"${traineeData.name}"`,
+        `"${traineeData.ticketNo}"`,
+        `"${traineeData.designation}"`,
+        '"0"',
+        '"0"',
+        '"0%"'
+      ];
+      csvContent += row.join(',') + '\n';
+    }
+
+
+
+
+
+    // Add summary statistics
+    csvContent += '\n';
+    csvContent += 'ATTENDANCE SUMMARY\n';
+    csvContent += `Attendance Percentage,${attendanceData.statistics?.attendancePercentage || 0}%\n`;
+    csvContent += `Total Classes,${attendanceData.statistics?.totalClasses || 0}\n`;
+    csvContent += `Classes Attended,${attendanceData.statistics?.classesAttended || 0}\n`;
+    csvContent += `Export Date,"${new Date().toLocaleDateString('en-IN')}"\n`;
+
+    return csvContent;
+  }, [traineeData, attendanceData]);
   const handleExportReport = useCallback(async () => {
     if (!traineeData) {
       setMessage({ type: 'error', text: 'No trainee selected for export' });
@@ -389,77 +437,22 @@ const AttendanceSystem = () => {
     } finally {
       setExporting(false);
     }
-  }, [traineeData, attendanceData]);
+  }, [traineeData, generateCSVContent]);
 
-  const generateCSVContent = useCallback(() => {
-    if (!traineeData || !attendanceData) return '';
-
-    const headers = [
-      'Trainee Name',
-      'Ticket Number',
-      'Designation',
-      'Date',
-      'Theory Attendance',
-      'Practical Attendance'
-    ];
-
-    let csvContent = headers.join(',') + '\n';
-
-    // Add trainee info and attendance records
-    if (attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0) {
-      attendanceData.attendanceRecords.forEach(record => {
-        const row = [
-          `"${traineeData.name}"`,
-          `"${traineeData.ticketNo}"`,
-          `"${traineeData.designation}"`,
-          `"${new Date(record.date).toLocaleDateString('en-IN')}"`,
-          `"${record.theory === 'present' ? 'Present' : 'Absent'}"`,
-          `"${record.practical === 'present' ? 'Present' : 'Absent'}"`
-        ];
-        csvContent += row.join(',') + '\n';
-      });
-    } else {
-      // If no records, add a row with trainee info and no attendance data
-      const row = [
-        `"${traineeData.name}"`,
-        `"${traineeData.ticketNo}"`,
-        `"${traineeData.designation}"`,
-        '"No records available"',
-        '"N/A"',
-        '"N/A"'
-      ];
-      csvContent += row.join(',') + '\n';
-    }
-
-    // Add summary statistics
-    csvContent += '\n';
-    csvContent += 'ATTENDANCE SUMMARY\n';
-    csvContent += `Theory Attendance,${attendanceData.theoryPercentage || 0}%\n`;
-    csvContent += `Practical Attendance,${attendanceData.practicalPercentage || 0}%\n`;
-    csvContent += `Overall Average,${Math.round(((attendanceData.theoryPercentage || 0) + (attendanceData.practicalPercentage || 0)) / 2)}%\n`;
-    csvContent += `Total Records,${attendanceData.attendanceRecords ? attendanceData.attendanceRecords.length : 0}\n`;
-    csvContent += `Export Date,"${new Date().toLocaleDateString('en-IN')}"\n`;
-
-    return csvContent;
-  }, [traineeData, attendanceData]);
 
   // Computed values
-  const filteredTrainees = useMemo(() => {
-    if (!filterBatch) return trainees;
-    return trainees.filter(t => t.batch === filterBatch);
-  }, [trainees, filterBatch]);
+  // Show all trainees in the list (no batch filter)
+  const filteredTrainees = useMemo(() => trainees, [trainees]);
 
   const attendanceStats = useMemo(() => {
     if (!attendanceData) return null;
 
     const records = attendanceData.attendanceRecords || [];
     return {
-      theoryPercentage: attendanceData.theoryPercentage || 0,
-      practicalPercentage: attendanceData.practicalPercentage || 0,
-      overallPercentage: Math.round(((attendanceData.theoryPercentage || 0) + (attendanceData.practicalPercentage || 0)) / 2),
-      totalRecords: records.length,
-      theoryPresent: records.filter(r => r.theory === 'present').length,
-      practicalPresent: records.filter(r => r.practical === 'present').length
+      totalClasses: attendanceData.statistics?.totalClasses || 0,
+      classesAttended: attendanceData.statistics?.classesAttended || 0,
+      attendancePercentage: attendanceData.statistics?.attendancePercentage || 0,
+      totalRecords: records.length
     };
   }, [attendanceData]);
 
@@ -566,6 +559,8 @@ const AttendanceSystem = () => {
                 </div>
               ) : (
                 <div className="md:col-span-2">
+                  {/* Removed batch filter dropdown */}
+
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     Select Trainee
                   </label>
@@ -585,11 +580,7 @@ const AttendanceSystem = () => {
                       </option>
                     ))}
                   </select>
-                  {filterBatch && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      Filtered by batch: {filterBatch}
-                    </p>
-                  )}
+                  {/* No batch filter message */}
                 </div>
               )}
 
@@ -700,74 +691,72 @@ const AttendanceSystem = () => {
               {/* Mark Attendance View */}
               {attendanceView === 'mark' && (
                 <div className="space-y-6">
-                  {/* Date Selection */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Select Date
-                    </label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      max={new Date().toISOString().split('T')[0]}
-                      className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    />
-                  </div>
-
-                  {/* Attendance Marking */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Theory Attendance */}
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-                      <div className="flex items-center gap-3 mb-4">
-                        <BookOpen className="w-6 h-6 text-blue-600" />
-                        <h3 className="text-lg font-semibold text-blue-900">Theory Attendance</h3>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => markAttendance('theory', 'present')}
-                          disabled={loading}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                          Present
-                        </button>
-                        <button
-                          onClick={() => markAttendance('theory', 'absent')}
-                          disabled={loading}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                          <XCircle className="w-5 h-5" />
-                          Absent
-                        </button>
-                      </div>
+                  {/* Total Classes & Attendance */}
+                  <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Award className="w-6 h-6 text-purple-600" />
+                      <h3 className="text-lg font-semibold text-purple-900">Total Classes & Attendance</h3>
                     </div>
-
-                    {/* Practical Attendance */}
-                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-200">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Wrench className="w-6 h-6 text-orange-600" />
-                        <h3 className="text-lg font-semibold text-orange-900">Practical Attendance</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Total No. of Classes</label>
+                        <input
+                          type="number"
+                          min="0"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          id="totalClasses"
+                          placeholder="Enter total number of classes"
+                        />
                       </div>
-                      <div className="flex gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Classes Attended</label>
+                        <input
+                          type="number"
+                          min="0"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          id="classesAttended"
+                          placeholder="Enter number of classes attended"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
                         <button
-                          onClick={() => markAttendance('practical', 'present')}
+                          onClick={() => {
+                            const totalClasses = parseInt(document.getElementById('totalClasses').value) || 0;
+                            const classesAttended = parseInt(document.getElementById('classesAttended').value) || 0;
+                            markAttendance(totalClasses, classesAttended);
+                          }}
                           disabled={loading}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all duration-200"
+                          className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all duration-200"
                         >
-                          <CheckCircle className="w-5 h-5" />
-                          Present
-                        </button>
-                        <button
-                          onClick={() => markAttendance('practical', 'absent')}
-                          disabled={loading}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                          <XCircle className="w-5 h-5" />
-                          Absent
+                          <Award className="w-5 h-5" />
+                          Save Class Attendance
                         </button>
                       </div>
                     </div>
                   </div>
+
+                  {/* Display saved attendance records below */}
+                  {attendanceData && attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 && (
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 mt-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Attendance Data</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Total Classes</p>
+                          <p className="font-semibold text-gray-900">{attendanceData.attendanceRecords[0].totalClasses || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Classes Attended</p>
+                          <p className="font-semibold text-gray-900">{attendanceData.attendanceRecords[0].classesAttended || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Attendance Percentage</p>
+                          <p className="font-semibold text-gray-900">
+                            {attendanceData.statistics?.attendancePercentage || 0}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -776,82 +765,35 @@ const AttendanceSystem = () => {
                 <div className="space-y-6">
                   {/* Attendance Statistics */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                    <div className="bg-green-50 rounded-xl p-6 border border-green-200 md:col-span-3">
                       <div className="flex items-center gap-3 mb-3">
-                        <BookOpen className="w-6 h-6 text-blue-600" />
-                        <h3 className="text-lg font-semibold text-blue-900">Theory</h3>
+                        <Award className="w-6 h-6 text-green-600" />
+                        <h3 className="text-lg font-semibold text-green-900">Class Attendance</h3>
                       </div>
-                      <div className="text-3xl font-bold text-blue-600 mb-2">
-                        {attendanceStats.theoryPercentage}%
+                      <div className="text-3xl font-bold text-green-600 mb-2">
+                        {attendanceStats.attendancePercentage || 0}%
                       </div>
-                      <div className="text-sm text-blue-700">
-                        {attendanceStats.theoryPresent} / {attendanceStats.totalRecords} days
+                      <div className="text-sm text-green-700">
+                        {attendanceStats.classesAttended || 0} / {attendanceStats.totalClasses || 0} classes
                       </div>
-                      <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(attendanceStats.theoryPercentage)}`}>
-                        {attendanceStats.theoryPercentage >= 75 ? 'Excellent' :
-                          attendanceStats.theoryPercentage >= 60 ? 'Average' : 'Poor'}
-                      </div>
-                    </div>
-
-                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-200">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Wrench className="w-6 h-6 text-orange-600" />
-                        <h3 className="text-lg font-semibold text-orange-900">Practical</h3>
-                      </div>
-                      <div className="text-3xl font-bold text-orange-600 mb-2">
-                        {attendanceStats.practicalPercentage}%
-                      </div>
-                      <div className="text-sm text-orange-700">
-                        {attendanceStats.practicalPresent} / {attendanceStats.totalRecords} days
-                      </div>
-                      <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(attendanceStats.practicalPercentage)}`}>
-                        {attendanceStats.practicalPercentage >= 75 ? 'Excellent' :
-                          attendanceStats.practicalPercentage >= 60 ? 'Average' : 'Poor'}
-                      </div>
-                    </div>
-
-                    <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
-                      <div className="flex items-center gap-3 mb-3">
-                        <BarChart3 className="w-6 h-6 text-purple-600" />
-                        <h3 className="text-lg font-semibold text-purple-900">Overall</h3>
-                      </div>
-                      <div className="text-3xl font-bold text-purple-600 mb-2">
-                        {attendanceStats.overallPercentage}%
-                      </div>
-                      <div className="text-sm text-purple-700">
-                        Combined Average
-                      </div>
-                      <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(attendanceStats.overallPercentage)}`}>
-                        {attendanceStats.overallPercentage >= 75 ? 'Excellent' :
-                          attendanceStats.overallPercentage >= 60 ? 'Average' : 'Poor'}
+                      <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(attendanceStats.attendancePercentage || 0)}`}>
+                        {(attendanceStats.attendancePercentage || 0) >= 75 ? 'Excellent' :
+                          (attendanceStats.attendancePercentage || 0) >= 60 ? 'Average' : 'Poor'}
                       </div>
                     </div>
                   </div>
 
-                  {/* Progress Bars */}
+                  {/* Progress Bar */}
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700">Theory Attendance</span>
-                        <span className="text-sm text-gray-600">{attendanceStats.theoryPercentage}%</span>
+                        <span className="text-sm font-medium text-gray-700">Class Attendance</span>
+                        <span className="text-sm text-gray-600">{attendanceStats.attendancePercentage || 0}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div
-                          className="bg-blue-600 h-3 rounded-full transition-all duration-300"
-                          style={{ width: `${attendanceStats.theoryPercentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700">Practical Attendance</span>
-                        <span className="text-sm text-gray-600">{attendanceStats.practicalPercentage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div
-                          className="bg-orange-600 h-3 rounded-full transition-all duration-300"
-                          style={{ width: `${attendanceStats.practicalPercentage}%` }}
+                          className="bg-green-600 h-3 rounded-full transition-all duration-300"
+                          style={{ width: `${attendanceStats.attendancePercentage || 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -884,35 +826,30 @@ const AttendanceSystem = () => {
                       <table className="w-full border-collapse bg-white rounded-xl shadow-sm">
                         <thead>
                           <tr className="bg-gray-50">
-                            <th className="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Date</th>
-                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Theory</th>
-                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Practical</th>
+                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Total Classes</th>
+                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Classes Attended</th>
+                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Attendance Percentage</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {attendanceData.attendanceRecords?.slice(-10).reverse().map((record, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                              <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">
-                                {new Date(record.date).toLocaleDateString('en-IN')}
-                              </td>
-                              <td className="border border-gray-200 px-4 py-3 text-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${record.theory === 'present'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                                  }`}>
-                                  {record.theory === 'present' ? 'Present' : 'Absent'}
-                                </span>
-                              </td>
-                              <td className="border border-gray-200 px-4 py-3 text-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${record.practical === 'present'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                                  }`}>
-                                  {record.practical === 'present' ? 'Present' : 'Absent'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
+                          {attendanceData.attendanceRecords?.map((record, index) => {
+                            const percentage = record.totalClasses > 0 ? Math.round((record.classesAttended / record.totalClasses) * 100) : 0;
+                            return (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="border border-gray-200 px-4 py-3 text-center font-medium text-gray-900">
+                                  {record.totalClasses || 0}
+                                </td>
+                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                  {record.classesAttended || 0}
+                                </td>
+                                <td className="border border-gray-200 px-4 py-3 text-center">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(percentage)}`}>
+                                    {percentage}%
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
