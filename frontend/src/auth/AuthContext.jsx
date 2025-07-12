@@ -106,19 +106,61 @@ export const AuthProvider = ({ children }) => {
     return user.permissions?.includes(route) || false;
   };
 
-  // Get accessible menu items
+  // Updated menu items function
   const getAccessibleMenuItems = () => {
     if (!user || !user.role) return [];
 
     const allMenuItems = [
-      { title: "Add Candidate", icon: "👤", route: "add-candidate" },
-      { title: "Manage Candidate", icon: "👥", route: user.permissions?.includes("manage-candidates") ? "manage-candidates" : "view-candidates" },
-      { title: "Feed Marks", icon: "📊", route: "feed-marks", subRoutes: ["stc-feed-marks", "wtc-feed-marks"] },
-      { title: "Marksheet/Certificate", icon: "📝", route: "marksheets", subRoutes: ["stc-marksheet", "wtc-certificate"] },
-      { title: "Custom Letter", icon: "📄", route: "letters", subRoutes: ["wtc-letter"] },
-      { title: "Attendance", icon: "📅", route: user.permissions?.includes("wtc-attendance") ? "wtc-attendance" : "view-attendance" },
-      { title: "Line Training", icon: "🚂", route: "stc-line-training" },
-      { title: "Trainee Profiles", icon: "👥", route: user.permissions?.includes("stc-trainee-profile") || user.permissions?.includes("wtc-trainee-profile") ? "trainee-profile" : "view-profiles" }
+      {
+        title: "Add Candidate",
+        icon: "👤",
+        route: "add-candidate"
+      },
+      {
+        title: "Manage Candidate",
+        icon: "👥",
+        route: user.permissions?.includes("manage-candidates") ? "manage-candidates" : "view-candidates"
+      },
+      {
+        title: "Feed Marks",
+        icon: "📊",
+        route: "feed-marks",
+        subRoutes: ["stc-feed-marks", "wtc-feed-marks", "stc-form", "wtc-form"]
+      },
+      {
+        title: "Marksheet/Certificate",
+        icon: "📝",
+        route: "marksheets",
+        subRoutes: ["stc-marksheet", "wtc-certificate"]
+      },
+      {
+        title: "Custom Letter",
+        icon: "📄",
+        route: "letters",
+        subRoutes: ["wtc-letter"]
+      },
+      {
+        title: "Attendance",
+        icon: "📅",
+        route: user.permissions?.includes("wtc-attendance") ? "wtc-attendance" : "view-attendance"
+      },
+      {
+        title: "Line Training",
+        icon: "🚂",
+        route: "stc-line-training"
+      },
+      {
+        title: "Trainee Profiles",
+        icon: "👥",
+        route: "trainee-profile",
+        subRoutes: ["stc-trainee-profile", "wtc-trainee-profile", "view-profiles"]
+      },
+      {
+        title: "Non-Railway Management",
+        icon: "🏢",
+        route: "non-railway-management",
+        subRoutes: ["non-railway-form"]
+      }
     ];
 
     return allMenuItems.filter((item) => {
