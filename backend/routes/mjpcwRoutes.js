@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const MjpCwController = require('../controllers/mjpCwController');
+const MjpCwController = require('../controllers/mjpcwController');
 const MjpCwModel = require('../models/mjpcw');
 const StcModel = require('../models/stcModel');
 
