@@ -95,7 +95,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📋 API Documentation:`);
-  console.log(`${hostname()}`);
   console.log(`126*27 : ${126 * 27}`);
   console.log(`   Local: http://localhost:${PORT}/api`);
   console.log(`   Network: http://192.168.29.89:${PORT}/api`);

@@ -249,7 +249,7 @@ class LineTrainingController {
           .json({ success: false, message: "Training not found" });
       }
 
-      // update entire group
+      // update entire group - FIX: Only update remark field to avoid constraint violation
       const all = await this.lineTrainingModel.getAll();
       const group = all.filter(
         (x) =>
@@ -259,14 +259,27 @@ class LineTrainingController {
       );
 
       for (const m of group) {
-        const parts = (m.remark || "").split("|");
-        const desc =
-          parts.length > 1 ? parts.slice(1).join("|") : parts[0] || "";
-        const remark = desc ? `STATUS:${status}|${desc}` : `STATUS:${status}`;
+        // Parse existing remark to preserve description
+        let existingDesc = "";
+        if (m.remark) {
+          if (m.remark.startsWith("STATUS:")) {
+            const parts = m.remark.split("|");
+            if (parts.length > 1) {
+              existingDesc = parts.slice(1).join("|");
+            }
+          } else {
+            existingDesc = m.remark;
+          }
+        }
 
+        // Build new remark with status
+        const newRemark = existingDesc
+          ? `STATUS:${status}|${existingDesc}`
+          : `STATUS:${status}`;
+
+        // Only update the remark field - pass minimal data to avoid constraint issues
         await this.lineTrainingModel.updateByTicketNumber(m.ticket_no, {
-          ...m,
-          remark,
+          remark: newRemark,
         });
       }
 
