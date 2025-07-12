@@ -41,13 +41,13 @@ const DetailModal = ({ candidate, onClose }) => {
               { label: "Batch", value: candidate.batch },
               { label: "Stream", value: candidate.stream },
               { label: "Module No.", value: candidate.moduleNo },
-              { label: "Module Name", value: candidate.moduleNo },
+              // { label: "Module Name", value: candidate.moduleNo },
               { label: "Duration", value: candidate.courseDuration },
             ]} />
             <InfoSection icon={Briefcase} title="Work Information" data={[
               { label: "Unit", value: candidate.unit },
               { label: "Working Under", value: candidate.workingUnder },
-              { label: "Station Code", value: candidate.stationCode },
+              // { label: "Station Code", value: candidate.stationCode },
               { label: "Appt. Mode", value: candidate.modeOfAppointment },
               { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway },
             ]} />

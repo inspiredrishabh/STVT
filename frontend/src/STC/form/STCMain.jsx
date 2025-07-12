@@ -128,17 +128,17 @@ const STCMain = () => {
   };
 
   // --- NEW: Function to map camelCase to snake_case ---
-  const mapToSnakeCase = (data) => {
-    const mappedData = {};
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        // Convert camelCase to snake_case
-        const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-        mappedData[snakeCaseKey] = data[key];
-      }
-    }
-    return mappedData;
-  };
+  // const mapToSnakeCase = (data) => {
+  //   const mappedData = {};
+  //   for (const key in data) {
+  //     if (Object.prototype.hasOwnProperty.call(data, key)) {
+  //       // Convert camelCase to snake_case
+  //       const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+  //       mappedData[snakeCaseKey] = data[key];
+  //     }
+  //   }
+  //   return mappedData;
+  // };
 
   // --- IMPORTANT: Manually correct specific mappings if auto-conversion isn't perfect ---
   // For example, 'pfNoNpsUps' would become 'pf_no_nps_ups' which is correct,
@@ -146,71 +146,71 @@ const STCMain = () => {
   // The backend also specifically looks for `picture || imagePath` and `ticket_no || ticketNumber`
   // so let's ensure those are handled explicitly if needed, or stick to a single source.
   const transformFormDataForBackend = (formData) => {
-      const transformed = {
-          // Personal
-          picture: formData.picture, // Assuming `picture` is the correct name for file upload
-          name: formData.name,
-          sex: formData.sex,
-          father_name: formData.fatherName, // Mapped
-          mother_name: formData.motherName, // Mapped
-          dob: formData.dob,
-          category: formData.category,
-          pwd: formData.pwd,
-          type_of_disability: formData.typeOfDisability, // Mapped
-          nationality: formData.nationality,
+    const transformed = {
+      // Personal
+      picture: formData.picture, // Assuming `picture` is the correct name for file upload
+      name: formData.name,
+      sex: formData.sex,
+      father_name: formData.fatherName, // Mapped
+      mother_name: formData.motherName, // Mapped
+      dob: formData.dob,
+      category: formData.category,
+      pwd: formData.pwd,
+      type_of_disability: formData.typeOfDisability, // Mapped
+      nationality: formData.nationality,
 
-          // Contact
-          permanent_address: formData.permanentAddress, // Mapped
-          current_address: formData.currentAddress, // Mapped
-          phone_number: formData.phoneNumber, // Mapped
-          emergency_contact_number: formData.emergencyContactNumber, // Mapped
-          email: formData.email,
+      // Contact
+      permanent_address: formData.permanentAddress, // Mapped
+      current_address: formData.currentAddress, // Mapped
+      phone_number: formData.phoneNumber, // Mapped
+      emergency_contact_number: formData.emergencyContactNumber, // Mapped
+      email: formData.email,
 
-          // Professional
-          date_of_appointment_in_railway: formData.dateOfAppointmentInRailway, // Mapped
-          mode_of_appointment: formData.modeOfAppointment, // Mapped
-          designation: formData.designation,
-          unit: formData.unit,
-          working_under: formData.workingUnder, // Mapped
-          hrms_id: formData.hrmsId, // Mapped
-          pf_no_nps_ups: formData.pfNoNpsUps, // Mapped
-          employee_number: formData.employeeNumber, // Mapped
+      // Professional
+      date_of_appointment_in_railway: formData.dateOfAppointmentInRailway, // Mapped
+      mode_of_appointment: formData.modeOfAppointment, // Mapped
+      designation: formData.designation,
+      unit: formData.unit,
+      working_under: formData.workingUnder, // Mapped
+      hrms_id: formData.hrmsId, // Mapped
+      pf_no_nps_ups: formData.pfNoNpsUps, // Mapped
+      employee_number: formData.employeeNumber, // Mapped
 
-          // Education - Only include fields that match your SQL table
-          highest_qualification: formData.highestQualification, // Mapped
-          field_of_study: formData.fieldOfStudy, // Mapped
-          institution: formData.institution,
-          grade_type: formData.gradeType, // Mapped
-          grade_value: formData.gradeValue, // Mapped
-          // If otherQualification or additional qualifications need to be stored,
-          // you might need a new column in your SQL table or combine them into an existing TEXT field.
-          // For now, these are excluded as they don't have direct matches in your current SQL schema.
+      // Education - Only include fields that match your SQL table
+      highest_qualification: formData.highestQualification, // Mapped
+      field_of_study: formData.fieldOfStudy, // Mapped
+      institution: formData.institution,
+      grade_type: formData.gradeType, // Mapped
+      grade_value: formData.gradeValue, // Mapped
+      // If otherQualification or additional qualifications need to be stored,
+      // you might need a new column in your SQL table or combine them into an existing TEXT field.
+      // For now, these are excluded as they don't have direct matches in your current SQL schema.
 
-          // Course
-          // ticket_no: formData.ticketNo, // Mapped
-          batch: formData.batch,
-          date_of_joining_stc_wtc_non_railway: formData.dateOfJoiningStcWtcNonRailway, // Mapped
-          module_no: formData.moduleNo, // Mapped
-          date_of_sparing: formData.dateOfSparing, // Mapped
-          course_duration: formData.courseDuration, // Mapped
-      };
+      // Course
+      // ticket_no: formData.ticketNo, // Mapped
+      batch: formData.batch,
+      date_of_joining_stc_wtc_non_railway: formData.dateOfJoiningStcWtcNonRailway, // Mapped
+      module_no: formData.moduleNo, // Mapped
+      date_of_sparing: formData.dateOfSparing, // Mapped
+      course_duration: formData.courseDuration, // Mapped
+    };
 
-      // Handle the 'picture' field specifically if it's a File object or similar
-      // The backend expects `candidateData.picture || candidateData.imagePath`
-      // If formData.picture is a File, you might need to handle file uploads separately
-      // or convert it to a Base64 string for embedding if that's your strategy.
-      // For now, assuming it's a URL or path, or handled by a separate file upload.
-      if (formData.picture instanceof File) {
-          // You will likely need to upload the image separately or convert it to a Base64 string.
-          // For simplicity here, if it's a File object, we'll stringify it or leave it as null
-          // If you handle file uploads, the backend should receive a path/URL.
-          transformed.picture = null; // Or handle Base64 conversion here
-          console.warn("File object detected for 'picture'. Ensure your backend handles file uploads or converts to Base64.");
-      } else {
-          transformed.picture = formData.picture;
-      }
+    // Handle the 'picture' field specifically if it's a File object or similar
+    // The backend expects `candidateData.picture || candidateData.imagePath`
+    // If formData.picture is a File, you might need to handle file uploads separately
+    // or convert it to a Base64 string for embedding if that's your strategy.
+    // For now, assuming it's a URL or path, or handled by a separate file upload.
+    if (formData.picture instanceof File) {
+      // You will likely need to upload the image separately or convert it to a Base64 string.
+      // For simplicity here, if it's a File object, we'll stringify it or leave it as null
+      // If you handle file uploads, the backend should receive a path/URL.
+      transformed.picture = null; // Or handle Base64 conversion here
+      console.warn("File object detected for 'picture'. Ensure your backend handles file uploads or converts to Base64.");
+    } else {
+      transformed.picture = formData.picture;
+    }
 
-      return transformed;
+    return transformed;
   };
 
 
@@ -321,7 +321,7 @@ const STCMain = () => {
         alert(`Submission failed: ${result.error}`);
       }
     } catch (error) {
-      alert("An unexpected error occurred. Please try again.");
+      alert("An unexpected error occurred. Please try again.", error);
     } finally {
       setIsSubmitting(false);
     }

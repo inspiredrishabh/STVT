@@ -25,12 +25,12 @@ class MjrWController {
                 }
                 
                 // Validate designation
-                if (stcCandidate.designation !== 'MJR-W') {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Candidate designation is ${stcCandidate.designation}, not MJR-W`
-                    });
-                }
+                // if (stcCandidate.designation !== 'MJR-W') {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: `Candidate designation is ${stcCandidate.designation}, not MJR-W`
+                //     });
+                // }
             }
 
             const newScore = await this.mjrWModel.create(scoreData);

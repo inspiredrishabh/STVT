@@ -26,12 +26,12 @@ class MjpCwController {
                 }
                 
                 // Validate designation
-                if (stcCandidate.designation !== 'MJP-C&W') {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Candidate designation is ${stcCandidate.designation}, not MJP-C&W`
-                    });
-                }
+                // if (stcCandidate.designation !== 'MJP-C&W') {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: `Candidate designation is ${stcCandidate.designation}, not MJP-C&W`
+                //     });
+                // }
             }
 
             const newScore = await this.mjpCwModel.create(scoreData);

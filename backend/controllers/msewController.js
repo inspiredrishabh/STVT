@@ -25,12 +25,12 @@ class MseWController {
                 }
                 
                 // Validate designation
-                if (stcCandidate.designation !== 'MSE-W') {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Candidate designation is ${stcCandidate.designation}, not MSE-W`
-                    });
-                }
+                // if (stcCandidate.designation !== 'MSE-W') {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: `Candidate designation is ${stcCandidate.designation}, not MSE-W`
+                //     });
+                // }
             }
 
             const newScore = await this.mseWModel.create(scoreData);
