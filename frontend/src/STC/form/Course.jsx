@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from "react";
 
 const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
-  const [ticketCounter, setTicketCounter] = useState({
-    ASE: 1,
-    AJE: 1,
-    IJE: 1,
-    RJE: 1,
-    RCW: 1,
-    RD: 1,
-    TS: 1,
-    LHI: 1,
-    LHII: 1,
-    FM: 1,
-    WT: 1,
-    DM: 1,
-    WE: 1,
-    NDT: 1,
-    EA: 1,
-    "3DMP": 1,
-  });
+  // const [ticketCounter, setTicketCounter] = useState({
+  //   ASE: 1,
+  //   AJE: 1,
+  //   IJE: 1,
+  //   RJE: 1,
+  //   RCW: 1,
+  //   RD: 1,
+  //   TS: 1,
+  //   LHI: 1,
+  //   LHII: 1,
+  //   FM: 1,
+  //   WT: 1,
+  //   DM: 1,
+  //   WE: 1,
+  //   NDT: 1,
+  //   EA: 1,
+  //   "3DMP": 1,
+  // });
 
   const courseModules = {
     "MSE-C&W": 52,
@@ -56,23 +56,23 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   const batchOptions = ["2024-2025", "Other"];
   const moduleOptions = [...Object.keys(courseModules), "Other"];
 
-  const generateTicketNumber = (designation) => {
-    if (!designation || !ticketCounter[designation]) return "";
-    const counter = ticketCounter[designation].toString().padStart(5, "0");
-    return `${designation}${counter}`;
-  };
+  // const generateTicketNumber = (designation) => {
+  //   if (!designation || !ticketCounter[designation]) return "";
+  //   const counter = ticketCounter[designation].toString().padStart(5, "0");
+  //   return `${designation}${counter}`;
+  // };
 
-  useEffect(() => {
-    const designation = formData.designation;
-    if (designation && ticketCounter[designation] && !formData.ticketNo) {
-      const ticketNumber = generateTicketNumber(designation);
-      onChange("ticketNo", ticketNumber);
-      setTicketCounter((prev) => ({
-        ...prev,
-        [designation]: prev[designation] + 1,
-      }));
-    }
-  }, [formData.designation]);
+  // useEffect(() => {
+  //   const designation = formData.designation;
+  //   if (designation && ticketCounter[designation] && !formData.ticketNo) {
+  //     const ticketNumber = generateTicketNumber(designation);
+  //     onChange("ticketNo", ticketNumber);
+  //     setTicketCounter((prev) => ({
+  //       ...prev,
+  //       [designation]: prev[designation] + 1,
+  //     }));
+  //   }
+  // }, [formData.designation]);
 
   useEffect(() => {
     if (formData.moduleNo === "Other") {
@@ -121,19 +121,19 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     }
   }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo]);
 
-  const handleTicketChange = (value) => onChange("ticketNo", value);
+  // const handleTicketChange = (value) => onChange("ticketNo", value);
 
-  const generateNewTicket = () => {
-    const designation = formData.designation;
-    if (designation && ticketCounter[designation]) {
-      const ticketNumber = generateTicketNumber(designation);
-      onChange("ticketNo", ticketNumber);
-      setTicketCounter((prev) => ({
-        ...prev,
-        [designation]: prev[designation] + 1,
-      }));
-    }
-  };
+  // const generateNewTicket = () => {
+  //   const designation = formData.designation;
+  //   if (designation && ticketCounter[designation]) {
+  //     const ticketNumber = generateTicketNumber(designation);
+  //     onChange("ticketNo", ticketNumber);
+  //     setTicketCounter((prev) => ({
+  //       ...prev,
+  //       [designation]: prev[designation] + 1,
+  //     }));
+  //   }
+  // };
 
   const validateField = (field, value) => {
     if (!value || (typeof value === "string" && value.trim() === "")) {
@@ -144,7 +144,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      "ticketNo",
+      // "ticketNo",
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
@@ -184,7 +184,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        <div>
+        {/* <div>
           <RequiredLabel>Ticket Number</RequiredLabel>
           <div className="flex gap-2">
             <input
@@ -210,7 +210,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           {errors.ticketNo && (
             <p className="text-sm text-red-500 mt-1">{errors.ticketNo}</p>
           )}
-        </div>
+        </div> */}
 
         <div>
           <RequiredLabel>Batch</RequiredLabel>
