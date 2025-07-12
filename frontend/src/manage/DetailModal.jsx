@@ -34,14 +34,14 @@ const DetailModal = ({ candidate, onClose }) => {
               { label: "Employee No.", value: candidate.ticketNumber || candidate.employeeNumber },
               { label: "Category", value: candidate.category },
               { label: "Joining Date", value: candidate.dateOfJoiningStcWtcNonRailway },
-              { label: "Sparing Date", value: candidate.dateOfSparing },
+              { label: "Sparing Date", value: candidate.date_of_sparing },
             ]} />
             <InfoSection icon={BookOpen} title="Course Information" data={[
               { label: "Ticket No.", value: candidate.ticketNumber || candidate.ticketNo || candidate.employeeNumber },
               { label: "Batch", value: candidate.batch },
               { label: "Stream", value: candidate.stream },
               { label: "Module No.", value: candidate.moduleNo },
-              { label: "Module Name", value: candidate.moduleName },
+              { label: "Module Name", value: candidate.moduleNo },
               { label: "Duration", value: candidate.courseDuration },
             ]} />
             <InfoSection icon={Briefcase} title="Work Information" data={[
@@ -57,7 +57,7 @@ const DetailModal = ({ candidate, onClose }) => {
               { label: "Qualification", value: candidate.highestQualification },
               { label: "Field of Study", value: candidate.fieldOfStudy },
               { label: "Institution", value: candidate.institution },
-              { label: "Graduation Year", value: candidate.yearOfGraduation },
+              { label: "Graduation Year", value: candidate.batch },
               { label: "Grade/Score", value: candidate.gradeValue },
             ]} />
             <InfoSection icon={Phone} title="Contact Information" data={[

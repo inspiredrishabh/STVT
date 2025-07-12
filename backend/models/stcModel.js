@@ -49,6 +49,7 @@ class StcModel {
             module_no TEXT,
             date_of_sparing TEXT,
             course_duration TEXT,
+            resignation_status TEXT DEFAULT 'no',
             
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -64,8 +65,8 @@ class StcModel {
                 mode_of_appointment, designation, unit, working_under, hrms_id, pf_no_nps_ups, 
                 employee_number, highest_qualification, field_of_study, institution, grade_type, 
                 grade_value, ticket_no, batch, date_of_joining_stc_wtc_non_railway, module_no, 
-                date_of_sparing, course_duration
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                date_of_sparing, course_duration, resignation_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
             db.run(sql, [
                 candidateData.picture || candidateData.imagePath,
@@ -101,7 +102,8 @@ class StcModel {
                 candidateData.date_of_joining_stc_wtc_non_railway,
                 candidateData.module_no,
                 candidateData.date_of_sparing,
-                candidateData.course_duration
+                candidateData.course_duration,
+                candidateData.resignation_status || 'no'
             ], function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
@@ -146,7 +148,7 @@ class StcModel {
                 hrms_id = ?, pf_no_nps_ups = ?, employee_number = ?, highest_qualification = ?, 
                 field_of_study = ?, institution = ?, grade_type = ?, grade_value = ?, 
                 batch = ?, date_of_joining_stc_wtc_non_railway = ?, module_no = ?, 
-                date_of_sparing = ?, course_duration = ?, updated_at = CURRENT_TIMESTAMP 
+                date_of_sparing = ?, course_duration = ?, resignation_status = ?, updated_at = CURRENT_TIMESTAMP 
                 WHERE ticket_no = ?`;
 
             db.run(sql, [
@@ -183,6 +185,7 @@ class StcModel {
                 candidateData.module_no,
                 candidateData.date_of_sparing,
                 candidateData.course_duration,
+                candidateData.resignation_status || 'no',
                 ticketNumber
             ], function (err) {
                 if (err) {

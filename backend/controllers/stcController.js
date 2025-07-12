@@ -25,7 +25,7 @@ class StcController {
             res.status(201).json({
                 success: true,
                 message: 'STC Candidate created successfully',
-                data: newCandidate
+                ticketNumber: ticketNumber
             });
 
             // console.log('4 done');
@@ -160,6 +160,50 @@ class StcController {
             res.status(500).json({
                 success: false,
                 message: 'Failed to delete STC candidate'
+            });
+        }
+    }
+
+    // Resign candidate method
+    async resignCandidate(req, res) {
+        try {
+            const { ticketNumber } = req.params;
+
+            // Check if candidate exists
+            const existingCandidate = await this.stcModel.getByTicketNumber(ticketNumber);
+            if (!existingCandidate) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'STC Candidate not found'
+                });
+            }
+
+            // Check if already resigned
+            if (existingCandidate.resignation_status === 'yes') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Candidate is already resigned'
+                });
+            }
+
+            // Update resignation status
+            const updatedData = {
+                ...existingCandidate,
+                resignation_status: 'yes'
+            };
+
+            const updatedCandidate = await this.stcModel.updateByTicketNumber(ticketNumber, updatedData);
+
+            res.status(200).json({
+                success: true,
+                message: 'STC Candidate resigned successfully',
+                data: updatedCandidate
+            });
+        } catch (error) {
+            console.error('Error resigning STC candidate:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to resign STC candidate'
             });
         }
     }

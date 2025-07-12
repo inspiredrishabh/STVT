@@ -25,7 +25,7 @@ const createAcronym = (phrase) => {
 const generateTicketNumber = async (designation, traineeType) => {
     return new Promise((resolve, reject) => {
         console.log(`Queuing ticket generation for designation: ${designation} in ${traineeType}`);
-        
+
         if (!traineeType) {
             reject(new Error("Trainee type is required to generate a ticket number."));
             return;
@@ -71,7 +71,9 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
     return new Promise((resolve, reject) => {
         console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
         
-        const prefix = createAcronym(designation);
+        // For STC candidates, use designation directly as prefix
+        // For other trainee types, create acronym from designation
+        const prefix = traineeType === 'stc' ? designation.toUpperCase() : createAcronym(designation);
         const tableName = `${traineeType}_candidates`;
         const prefixKey = `${traineeType}_${prefix.toLowerCase()}`;
 

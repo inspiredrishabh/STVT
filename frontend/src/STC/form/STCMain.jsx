@@ -56,7 +56,7 @@ const STCMain = () => {
     thesisTitle: "", // Not in SQL
 
     // Course
-    ticketNo: "",
+    // ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
     dateOfSparing: "",
@@ -187,7 +187,7 @@ const STCMain = () => {
       // For now, these are excluded as they don't have direct matches in your current SQL schema.
 
       // Course
-      ticket_no: formData.ticketNo, // Mapped
+      // ticket_no: formData.ticketNo, // Mapped
       batch: formData.batch,
       date_of_joining_stc_wtc_non_railway: formData.dateOfJoiningStcWtcNonRailway, // Mapped
       module_no: formData.moduleNo, // Mapped
@@ -309,7 +309,7 @@ const STCMain = () => {
           thesisTitle: "",
 
           // Course
-          ticketNo: "",
+          // ticketNo: "",
           batch: "",
           dateOfJoiningStcWtcNonRailway: "",
           dateOfSparing: "",
