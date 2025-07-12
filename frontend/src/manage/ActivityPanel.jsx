@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { Clock, Activity } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
+import { Clock, Activity } from "lucide-react";
 
 /**
  * ActivityPanel Component
- * 
+ *
  * Displays recent candidate activity
  * Integrates with mock API for activity data and provides real-time updates.
- * 
+ *
  * @param {Object} props - Component props
  * @param {Array} props.candidates - Array of candidate objects
  * @param {Function} props.onAddNew - Callback function for adding new candidates
@@ -31,14 +31,15 @@ const ActivityPanel = ({ candidates = [], mockAPI }) => {
         })
         .slice(0, 5);
     } catch (err) {
-      console.error('Error processing candidates:', err);
+      console.error("Error processing candidates:", err);
       return [];
     }
   }, [candidates]);
 
   // Memoized active candidate count for performance
-  const activeCount = useMemo(() =>
-    candidates.filter(candidate => candidate.status === 'Active').length,
+  const activeCount = useMemo(
+    () =>
+      candidates.filter((candidate) => candidate.status === "Active").length,
     [candidates]
   );
 
@@ -51,21 +52,21 @@ const ActivityPanel = ({ candidates = [], mockAPI }) => {
 
     try {
       // Simulate API delay for realistic behavior
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Transform candidate data into activity format
-      const activity = recentCandidates.map(candidate => ({
+      const activity = recentCandidates.map((candidate) => ({
         id: candidate.id,
-        type: 'join',
+        type: "join",
         candidate,
         timestamp: candidate.dateOfJoiningStcWtcNonRailway,
-        description: `${candidate.name} joined as ${candidate.workInfo}`
+        description: `${candidate.name} joined as ${candidate.workInfo}`,
       }));
 
       setRecentActivity(activity);
     } catch (error) {
-      console.error('Error fetching recent activity:', error);
-      setError('Failed to load recent activity');
+      console.error("Error fetching recent activity:", error);
+      setError("Failed to load recent activity");
       setRecentActivity([]);
     } finally {
       setLoading(false);
@@ -79,7 +80,6 @@ const ActivityPanel = ({ candidates = [], mockAPI }) => {
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-200 h-full flex flex-col">
-
       {/* Recent Activity Header */}
       <ActivityHeader />
 
@@ -114,7 +114,10 @@ const ActivityPanel = ({ candidates = [], mockAPI }) => {
 const LoadingSkeleton = () => (
   <div className="space-y-4" role="status" aria-label="Loading recent activity">
     {Array.from({ length: 5 }, (_, index) => (
-      <div key={index} className="flex items-center space-x-4 p-3 animate-pulse">
+      <div
+        key={index}
+        className="flex items-center space-x-4 p-3 animate-pulse"
+      >
         {/* Avatar skeleton */}
         <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
 
@@ -147,7 +150,7 @@ const ErrorState = ({ error, onRetry }) => (
         Unable to Load Activity
       </h4>
       <p className="text-xs text-gray-500 mb-4 leading-relaxed">
-        {error || 'Something went wrong while loading recent activity.'}
+        {error || "Something went wrong while loading recent activity."}
       </p>
       {onRetry && (
         <button
@@ -175,7 +178,8 @@ const EmptyState = () => (
         No Recent Activity
       </h4>
       <p className="text-xs text-gray-500 leading-relaxed">
-        When candidates join or update their information, their activity will appear here.
+        When candidates join or update their information, their activity will
+        appear here.
       </p>
     </div>
   </div>
@@ -184,7 +188,7 @@ const EmptyState = () => (
 /**
  * Activity List Component
  * Renders the list of recent activities with proper accessibility
- * 
+ *
  * @param {Array} activities - Array of activity objects to display
  */
 const ActivityList = ({ activities }) => {
@@ -224,7 +228,7 @@ const ActivityHeader = () => (
 
 /**
  * Activity Item Component
- * 
+ *
  * @param {Object} activity - Activity object containing candidate data
  */
 const ActivityItem = ({ activity }) => {
@@ -238,25 +242,25 @@ const ActivityItem = ({ activity }) => {
   // Get stream-specific styling
   const getStreamBadgeClass = (stream) => {
     switch (stream?.toLowerCase()) {
-      case 'railway':
-        return 'bg-blue-100 text-blue-800';
-      case 'non-railway':
-        return 'bg-green-100 text-green-800';
+      case "railway":
+        return "bg-blue-100 text-blue-800";
+      case "non-railway":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Format date with fallback
   const formatDate = (date) => {
     try {
-      return new Date(date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
+      return new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       });
     } catch {
-      return 'Date unavailable';
+      return "Date unavailable";
     }
   };
 
@@ -276,36 +280,44 @@ const ActivityItem = ({ activity }) => {
             className="w-10 h-10 rounded-full object-cover border border-gray-200"
             loading="lazy"
             onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "flex";
             }}
           />
         ) : null}
         <div
           className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold"
-          style={{ display: candidate.picture ? 'none' : 'flex' }}
+          style={{ display: candidate.picture ? "none" : "flex" }}
         >
-          {candidate.name?.charAt(0)?.toUpperCase() || '?'}
+          {candidate.name?.charAt(0)?.toUpperCase() || "?"}
         </div>
       </div>
 
       {/* Candidate Details */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-800 text-sm truncate" title={candidate.name}>
-          {candidate.name || 'Unknown Candidate'}
+        <p
+          className="font-semibold text-gray-800 text-sm truncate"
+          title={candidate.name}
+        >
+          {candidate.name || "Unknown Candidate"}
         </p>
-        <p className="text-xs text-gray-500 truncate" title={candidate.workInfo}>
-          {candidate.workInfo ? `Joined as ${candidate.workInfo}` : 'Work info unavailable'}
+        <p
+          className="text-xs text-gray-500 truncate"
+          title={candidate.workInfo || candidate.designation}
+        >
+          {candidate.workInfo || candidate.designation
+            ? `Joined as ${candidate.workInfo || candidate.designation}`
+            : "Work info unavailable"}
         </p>
-        <p className="text-xs text-gray-400">
-          {formatDate(timestamp)}
-        </p>
+        <p className="text-xs text-gray-400">{formatDate(timestamp)}</p>
       </div>
 
       {/* Stream Badge */}
       <div className="flex-shrink-0">
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${streamBadgeClass}`}>
-          {candidate.stream || 'N/A'}
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${streamBadgeClass}`}
+        >
+          {candidate.stream || "N/A"}
         </span>
       </div>
     </li>
@@ -315,7 +327,7 @@ const ActivityItem = ({ activity }) => {
 /**
  * Activity Summary Component
  * Displays summary statistics for candidates
- * 
+ *
  * @param {number} total - Total number of candidates
  * @param {number} active - Number of active candidates
  */
@@ -327,19 +339,28 @@ const ActivitySummary = ({ total, active }) => {
     <div className="mt-6 pt-4 border-t border-gray-200">
       <div className="grid grid-cols-3 gap-4 text-center">
         <div className="p-2">
-          <p className="text-xl font-bold text-gray-900" title={`${total} total candidates`}>
+          <p
+            className="text-xl font-bold text-gray-900"
+            title={`${total} total candidates`}
+          >
             {total.toLocaleString()}
           </p>
           <p className="text-xs text-gray-500 font-medium">Total</p>
         </div>
         <div className="p-2">
-          <p className="text-xl font-bold text-green-600" title={`${active} active candidates`}>
+          <p
+            className="text-xl font-bold text-green-600"
+            title={`${active} active candidates`}
+          >
             {active.toLocaleString()}
           </p>
           <p className="text-xs text-gray-500 font-medium">Active</p>
         </div>
         <div className="p-2">
-          <p className="text-xl font-bold text-gray-500" title={`${activePercentage}% active rate`}>
+          <p
+            className="text-xl font-bold text-gray-500"
+            title={`${activePercentage}% active rate`}
+          >
             {activePercentage}%
           </p>
           <p className="text-xs text-gray-500 font-medium">Rate</p>
