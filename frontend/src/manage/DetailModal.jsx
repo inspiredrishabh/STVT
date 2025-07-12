@@ -75,27 +75,33 @@ const DetailModal = ({ candidate, onClose }) => {
 
   // Helper function to get work information data based on candidate type
   const getWorkInfoData = () => {
-    const workData = [
-      { label: "Designation", value: designation },
-      { label: "Unit", value: candidate.unit },
-      { label: "Working Under", value: candidate.workingUnder },
-    ];
+   const workData = [
+    { label: "Designation", value: candidate.workInfo || candidate.designation },
+    { label: "Unit", value: candidate.unit },
+    { label: "Working Under", value: candidate.workingUnder },
+  ];
 
     // Add designation other for WTC if exists
     if (candidate.type === 'WTC' && candidate.designationOther) {
       workData.push({ label: "Designation Other", value: candidate.designationOther });
     }
 
-    // Add professional information for Railway candidates
-    if (candidate.type === 'STC' || candidate.type === 'WTC') {
-      workData.push(
-        { label: "HRMS ID", value: candidate.hrmsId },
-        { label: "PF No/NPS/UPS", value: candidate.pfNoNpsUps },
-        { label: "Employee Number", value: candidate.employeeNumber },
-        { label: "Appt. Mode", value: candidate.modeOfAppointment },
-        { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway }
-      );
-    }
+   if (candidate.type === 'Non Railway') {
+    workData.push(
+      { label: "Course Type", value: candidate.courseType },
+      { label: "Duration", value: candidate.duration },
+      { label: "Theory", value: candidate.theory },
+      { label: "Practical", value: candidate.practical }
+    );
+  } else if (candidate.type === 'STC' || candidate.type === 'WTC') {
+    workData.push(
+      { label: "HRMS ID", value: candidate.hrmsId },
+      { label: "PF No/NPS/UPS", value: candidate.pfNoNpsUps },
+      { label: "Employee Number", value: candidate.employeeNumber },
+      { label: "Appt. Mode", value: candidate.modeOfAppointment },
+      { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway }
+    );
+  }
 
     // Add station code for STC
     if (candidate.type === 'STC') {
