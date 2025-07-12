@@ -25,12 +25,12 @@ class MjiDController {
                 }
                 
                 // Validate designation
-                if (stcCandidate.designation !== 'MJI-D') {
-                    return res.status(400).json({
-                        success: false,
-                        message: `Candidate designation is ${stcCandidate.designation}, not MJI-D`
-                    });
-                }
+                // if (stcCandidate.designation !== 'MJI-D') {
+                //     return res.status(400).json({
+                //         success: false,
+                //         message: `Candidate designation is ${stcCandidate.designation}, not MJI-D`
+                //     });
+                // }
             }
 
             const newScore = await this.mjiDModel.create(scoreData);
