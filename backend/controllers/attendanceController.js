@@ -2,31 +2,31 @@ const AttendanceModel = require('../models/AttendanceModel');
 const WtcModel = require('../models/wtcModel');
 
 // Mark attendance for a trainee
+// ...existing code...
+// Mark attendance for a trainee
 exports.markAttendance = async (req, res) => {
     try {
-        const { candidateId, date, theoryStatus, practicalStatus, notes } = req.body;
+        const { candidateId, totalClasses, classesAttended } = req.body;
 
-        if (!candidateId || !date) {
+        if (!candidateId) {
             return res.status(400).json({
                 success: false,
-                message: 'Candidate ID and date are required'
+                message: 'Candidate ID is required'
             });
         }
 
-        // At least one of theory or practical status is required
-        if (!theoryStatus && !practicalStatus) {
+        // At least one of total classes or classes attended must be provided
+        if (totalClasses === undefined || classesAttended === undefined) {
             return res.status(400).json({
                 success: false,
-                message: 'At least one of theory or practical status must be provided'
+                message: 'Total classes and classes attended must be provided'
             });
         }
 
         const markResult = await AttendanceModel.markAttendance(
             candidateId,
-            date,
-            theoryStatus,
-            practicalStatus,
-            notes
+            totalClasses,
+            classesAttended
         );
 
         // After marking attendance, fetch the updated attendance data
@@ -45,6 +45,7 @@ exports.markAttendance = async (req, res) => {
         });
     }
 };
+
 
 // Get attendance for a specific candidate
 exports.getAttendance = async (req, res) => {

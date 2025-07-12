@@ -106,6 +106,42 @@ class RealBackendAPI {
             batch: candidate.batch || '2024-2025',
             status: candidate.resignation_status === 'yes' ? 'Resigned' : 'Active',
             phoneNumber: candidate.phone_number || 'N/A',
+            // Personal Information
+            fatherName: candidate.father_name,
+            motherName: candidate.mother_name,
+            sex: candidate.sex,
+            dob: candidate.dob,
+            // Contact Information
+            email: candidate.email,
+            emergencyContactNumber: candidate.emergency_contact_number,
+            permanentAddress: candidate.permanent_address,
+            currentAddress: candidate.current_address,
+            // Professional Information
+            designation: candidate.designation,
+            unit: candidate.unit,
+            workingUnder: candidate.working_under,
+            hrmsId: candidate.hrms_id,
+            pfNoNpsUps: candidate.pf_no_nps_ups,
+            employeeNumber: candidate.employee_number,
+            stationCode: candidate.station_code,
+            dateOfAppointmentInRailway: candidate.date_of_appointment_in_railway,
+            modeOfAppointment: candidate.mode_of_appointment,
+            // Educational Information
+            highestQualification: candidate.highest_qualification,
+            fieldOfStudy: candidate.field_of_study,
+            institution: candidate.institution,
+            gradeType: candidate.grade_type,
+            gradeValue: candidate.grade_value,
+            // Course Information
+            moduleNo: candidate.module_no,
+            moduleName: candidate.module_name,
+            courseDuration: candidate.course_duration,
+            dateOfSparing: candidate.date_of_sparing,
+            // Additional fields
+            nationality: candidate.nationality,
+            category: candidate.category,
+            pwd: candidate.pwd,
+            typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
@@ -147,6 +183,42 @@ class RealBackendAPI {
             batch: candidate.batch || '2024-2025',
             status: 'Active',
             phoneNumber: candidate.phone_number || 'N/A',
+            // Personal Information
+            fatherName: candidate.father_name,
+            motherName: candidate.mother_name,
+            sex: candidate.sex,
+            dob: candidate.dob,
+            // Contact Information
+            email: candidate.email,
+            emergencyContactNumber: candidate.emergency_contact_number,
+            permanentAddress: candidate.permanent_address,
+            currentAddress: candidate.current_address,
+            // Professional Information
+            designation: candidate.designation,
+            unit: candidate.unit,
+            workingUnder: candidate.working_under,
+            hrmsId: candidate.hrms_id,
+            pfNoNpsUps: candidate.pf_no_nps_ups,
+            employeeNumber: candidate.employee_number,
+            stationCode: candidate.station_code,
+            dateOfAppointmentInRailway: candidate.date_of_appointment_in_railway,
+            modeOfAppointment: candidate.mode_of_appointment,
+            // Educational Information
+            highestQualification: candidate.highest_qualification,
+            fieldOfStudy: candidate.field_of_study,
+            institution: candidate.institution,
+            gradeType: candidate.grade_type,
+            gradeValue: candidate.grade_value,
+            // Course Information
+            moduleNo: candidate.module_no,
+            moduleName: candidate.module_name,
+            courseDuration: candidate.course_duration,
+            dateOfSparing: candidate.date_of_sparing,
+            // Additional fields
+            nationality: candidate.nationality,
+            category: candidate.category,
+            pwd: candidate.pwd,
+            typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
@@ -183,6 +255,42 @@ class RealBackendAPI {
             batch: candidate.batch || '2024-2025',
             status: 'Active',
             phoneNumber: candidate.phone_number || 'N/A',
+            // Personal Information
+            fatherName: candidate.father_name,
+            motherName: candidate.mother_name,
+            sex: candidate.sex,
+            dob: candidate.dob,
+            // Contact Information
+            email: candidate.email,
+            emergencyContactNumber: candidate.emergency_contact_number,
+            permanentAddress: candidate.permanent_address,
+            currentAddress: candidate.current_address,
+            // Professional Information
+            designation: candidate.designation,
+            unit: candidate.unit,
+            workingUnder: candidate.working_under,
+            hrmsId: candidate.hrms_id,
+            pfNoNpsUps: candidate.pf_no_nps_ups,
+            employeeNumber: candidate.employee_number,
+            stationCode: candidate.station_code,
+            dateOfAppointmentInRailway: candidate.date_of_appointment_in_railway,
+            modeOfAppointment: candidate.mode_of_appointment,
+            // Educational Information
+            highestQualification: candidate.highest_qualification,
+            fieldOfStudy: candidate.field_of_study,
+            institution: candidate.institution,
+            gradeType: candidate.grade_type,
+            gradeValue: candidate.grade_value,
+            // Course Information
+            moduleNo: candidate.module_no,
+            moduleName: candidate.module_name,
+            courseDuration: candidate.course_duration,
+            dateOfSparing: candidate.date_of_sparing,
+            // Additional fields
+            nationality: candidate.nationality,
+            category: candidate.category,
+            pwd: candidate.pwd,
+            typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
             createdAt: candidate.created_at,
             updatedAt: candidate.updated_at,
@@ -238,6 +346,42 @@ class RealBackendAPI {
               batch: candidate.batch || '2024-2025',
               status: 'Active',
               phoneNumber: candidate.phone_number || 'N/A',
+              // Personal Information
+              fatherName: candidate.father_name,
+              motherName: candidate.mother_name,
+              sex: candidate.sex,
+              dob: candidate.dob,
+              // Contact Information
+              email: candidate.email,
+              emergencyContactNumber: candidate.emergency_contact_number,
+              permanentAddress: candidate.permanent_address,
+              currentAddress: candidate.current_address,
+              // Professional Information
+              designation: candidate.designation,
+              unit: candidate.unit,
+              workingUnder: candidate.working_under,
+              hrmsId: candidate.hrms_id,
+              pfNoNpsUps: candidate.pf_no_nps_ups,
+              employeeNumber: candidate.employee_number,
+              stationCode: candidate.station_code,
+              dateOfAppointmentInRailway: candidate.date_of_appointment_in_railway,
+              modeOfAppointment: candidate.mode_of_appointment,
+              // Educational Information
+              highestQualification: candidate.highest_qualification,
+              fieldOfStudy: candidate.field_of_study,
+              institution: candidate.institution,
+              gradeType: candidate.grade_type,
+              gradeValue: candidate.grade_value,
+              // Course Information
+              moduleNo: candidate.module_no,
+              moduleName: candidate.module_name,
+              courseDuration: candidate.course_duration,
+              dateOfSparing: candidate.date_of_sparing,
+              // Additional fields
+              nationality: candidate.nationality,
+              category: candidate.category,
+              pwd: candidate.pwd,
+              typeOfDisability: candidate.type_of_disability,
               dateOfJoiningStcWtcNonRailway: candidate.date_of_joining_stc_wtc_non_railway || candidate.created_at,
               createdAt: candidate.created_at,
               updatedAt: candidate.updated_at,
@@ -434,17 +578,37 @@ class RealBackendAPI {
     try {
       const candidates = await this.getAllCandidates();
       
+      console.log('RealBackendAPI getStats called with filters:', filters);
+      
       // Apply filters if any
       let filteredCandidates = candidates;
       if (filters.stream && filters.stream !== 'All') {
         filteredCandidates = candidates.filter(c => c.stream === filters.stream);
       }
+      
+      // Handle complex filter types
       if (filters.type && filters.type !== 'All') {
-        filteredCandidates = candidates.filter(c => c.type === filters.type);
+        if (filters.type === 'Railway') {
+          // Filter for both STC and WTC (Railway candidates)
+          filteredCandidates = filteredCandidates.filter(c => c.type === 'STC' || c.type === 'WTC');
+        } else if (filters.type === 'STC') {
+          filteredCandidates = filteredCandidates.filter(c => c.type === 'STC');
+        } else if (filters.type === 'WTC') {
+          filteredCandidates = filteredCandidates.filter(c => c.type === 'WTC');
+        } else if (filters.type === 'Non Railway') {
+          filteredCandidates = filteredCandidates.filter(c => c.type === 'Non Railway');
+        } else if (filters.type.includes(' + ')) {
+          // Handle combined types like "STC + WTC"
+          const types = filters.type.split(' + ');
+          filteredCandidates = filteredCandidates.filter(c => types.includes(c.type));
+        }
       }
+      
       if (filters.status && filters.status !== 'All') {
-        filteredCandidates = candidates.filter(c => c.status === filters.status);
+        filteredCandidates = filteredCandidates.filter(c => c.status === filters.status);
       }
+
+      console.log('getStats: Filtered candidates count:', filteredCandidates.length, 'from total:', candidates.length);
 
       const stats = {
         totalCandidates: filteredCandidates.length,
@@ -461,6 +625,7 @@ class RealBackendAPI {
         streamDistribution: this.getStreamDistribution(filteredCandidates)
       };
 
+      console.log('getStats: Computed stats:', stats);
       return { success: true, data: stats };
     } catch (error) {
       console.error('Error getting stats:', error);
@@ -993,6 +1158,79 @@ class MockBackendAPI {
 // Initialize the real backend API
 const api = new RealBackendAPI();
 
+// Toast Notification Component
+const ToastNotification = ({ message, type = 'success', onClose }) => {
+  const getNotificationStyles = () => {
+    switch (type) {
+      case 'success':
+        return {
+          bgColor: 'bg-green-50',
+          borderColor: 'border-green-200',
+          textColor: 'text-green-800',
+          iconColor: 'text-green-400',
+          icon: (
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          )
+        };
+      case 'error':
+        return {
+          bgColor: 'bg-red-50',
+          borderColor: 'border-red-200',
+          textColor: 'text-red-800',
+          iconColor: 'text-red-400',
+          icon: (
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          )
+        };
+      case 'warning':
+        return {
+          bgColor: 'bg-yellow-50',
+          borderColor: 'border-yellow-200',
+          textColor: 'text-yellow-800',
+          iconColor: 'text-yellow-400',
+          icon: (
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          )
+        };
+      default:
+        return {
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-200',
+          textColor: 'text-blue-800',
+          iconColor: 'text-blue-400',
+          icon: (
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          )
+        };
+    }
+  };
+
+  const styles = getNotificationStyles();
+
+  return (
+    <div className={`fixed top-4 right-4 z-50 ${styles.bgColor} border ${styles.borderColor} ${styles.textColor} px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 transform transition-all duration-300 ease-in-out max-w-md`}>
+      <div className="flex-shrink-0">
+        <svg className={`h-5 w-5 ${styles.iconColor}`} viewBox="0 0 20 20" fill="currentColor">
+          {styles.icon}
+        </svg>
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium">{message}</p>
+      </div>
+      <div className="flex-shrink-0">
+        <button
+          onClick={onClose}
+          className={`inline-flex ${styles.iconColor} hover:opacity-75 focus:outline-none transition-opacity duration-200`}
+        >
+          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const CandidateManagementPage = () => {
   const [candidates, setCandidates] = useState([]);
   const [dropdownData, setDropdownData] = useState(null);
@@ -1004,6 +1242,9 @@ const CandidateManagementPage = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, candidateId: null, candidateName: "" });
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [autoFilterNotification, setAutoFilterNotification] = useState(null);
+  const [successNotification, setSuccessNotification] = useState(null);
+  const [notification, setNotification] = useState(null); // For different types of notifications
+  const [notificationTimeout, setNotificationTimeout] = useState(null);
 
   // State to control view ('list' or 'form') and the candidate being edited
   const [view, setView] = useState('list');
@@ -1046,12 +1287,17 @@ const CandidateManagementPage = () => {
       const response = await api.createCandidate(candidateData);
       if (response.success) {
         setCandidates(prev => [response.data, ...prev]);
+        // Show success notification
+        const candidateName = response.data.name || candidateData.name || 'New candidate';
+        showSuccessNotification(`${candidateName} created successfully!`);
         return response.data;
       } else {
-        throw new Error('Failed to create candidate');
+        throw new Error(response.message || 'Failed to create candidate');
       }
     } catch (err) {
-      setError('Failed to create candidate');
+      const errorMessage = `Failed to create candidate: ${err.message}`;
+      setError(errorMessage);
+      showNotification(errorMessage, 'error');
       console.error('Error creating candidate:', err);
       throw err;
     }
@@ -1064,11 +1310,16 @@ const CandidateManagementPage = () => {
         setCandidates(prev => prev.map(c =>
           c.id === candidateId ? response.data : c
         ));
+        // Show success notification
+        const candidateName = response.data.name || candidateData.name || 'Candidate';
+        showSuccessNotification(`${candidateName} updated successfully!`);
       } else {
-        throw new Error('Failed to update candidate');
+        throw new Error(response.message || 'Failed to update candidate');
       }
     } catch (err) {
-      setError('Failed to update candidate');
+      const errorMessage = `Failed to update candidate: ${err.message}`;
+      setError(errorMessage);
+      showNotification(errorMessage, 'error');
       console.error('Error updating candidate:', err);
       throw err;
     }
@@ -1076,14 +1327,22 @@ const CandidateManagementPage = () => {
 
   const deleteCandidate = async (candidateId) => {
     try {
+      // Get candidate name before deletion for the success message
+      const candidateToDelete = candidates.find(c => c.id === candidateId);
+      const candidateName = candidateToDelete?.name || 'Candidate';
+      
       const response = await api.deleteCandidate(candidateId);
       if (response.success) {
         setCandidates(prev => prev.filter(c => c.id !== candidateId));
+        // Show success notification
+        showSuccessNotification(`${candidateName} deleted successfully!`);
       } else {
-        throw new Error('Failed to delete candidate');
+        throw new Error(response.message || 'Failed to delete candidate');
       }
     } catch (err) {
-      setError('Failed to delete candidate');
+      const errorMessage = `Failed to delete candidate: ${err.message}`;
+      setError(errorMessage);
+      showNotification(errorMessage, 'error');
       console.error('Error deleting candidate:', err);
       throw err;
     }
@@ -1092,6 +1351,13 @@ const CandidateManagementPage = () => {
   // Load initial data
   useEffect(() => {
     Promise.all([fetchCandidates(), fetchDropdownData()]);
+    
+    // Cleanup function
+    return () => {
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
+    };
   }, []);
 
   // Check for trainee data from TraineeProfile and auto-filter
@@ -1189,6 +1455,7 @@ const CandidateManagementPage = () => {
   const handleInlineUpdate = async (candidateId, updatedData) => {
     try {
       await updateCandidate(candidateId, updatedData);
+      // Success message is already handled in updateCandidate function
     } catch (error) {
       console.error('Error updating candidate:', error);
     }
@@ -1238,6 +1505,64 @@ const CandidateManagementPage = () => {
     setFilterBatch("");
     setSelectedFilters(["STC", "WTC", "Non Railway"]); // Reset to all filters selected
   };
+
+  // Derive filter type for StatsCards from selectedFilters
+  const getFilterTypeForStats = () => {
+    if (selectedFilters.length === 3) return "All"; // All types selected
+    if (selectedFilters.length === 1) return selectedFilters[0]; // Single type
+    if (selectedFilters.length === 2) {
+      // Handle specific combinations
+      if (selectedFilters.includes("STC") && selectedFilters.includes("WTC")) return "Railway";
+      return selectedFilters.join(" + "); // Show combined types
+    }
+    return "Filtered"; // Fallback for other combinations
+  };
+
+  // Debug logging for filter type
+  const currentFilterType = getFilterTypeForStats();
+  console.log('CandidateManagementPage: Filter Debug', {
+    selectedFilters,
+    derivedFilterType: currentFilterType,
+    activeCandidatesCount: activeCandidates.length
+  });
+
+  // Helper function to show success notifications
+  const showSuccessNotification = (message) => {
+    // Clear any existing timeout
+    if (notificationTimeout) {
+      clearTimeout(notificationTimeout);
+    }
+    
+    setSuccessNotification(message);
+    setError(null); // Clear any existing error when showing success
+    
+    // Auto-dismiss after 3 seconds
+    const timeout = setTimeout(() => {
+      setSuccessNotification(null);
+      setNotificationTimeout(null);
+    }, 3000);
+    
+    setNotificationTimeout(timeout);
+  };
+
+  // Enhanced notification system for different types
+  const showNotification = (message, type = 'success', duration = 3000) => {
+    // Clear any existing timeout
+    if (notificationTimeout) {
+      clearTimeout(notificationTimeout);
+    }
+    
+    setNotification({ message, type });
+    setError(null); // Clear any existing error
+    
+    // Auto-dismiss
+    const timeout = setTimeout(() => {
+      setNotification(null);
+      setNotificationTimeout(null);
+    }, duration);
+    
+    setNotificationTimeout(timeout);
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-8xl mx-auto space-y-8">
@@ -1245,6 +1570,31 @@ const CandidateManagementPage = () => {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
+        )}
+
+        {/* Toast Notifications */}
+        {successNotification && (
+          <ToastNotification 
+            message={successNotification} 
+            type="success" 
+            onClose={() => {
+              if (notificationTimeout) clearTimeout(notificationTimeout);
+              setSuccessNotification(null);
+              setNotificationTimeout(null);
+            }}
+          />
+        )}
+
+        {notification && (
+          <ToastNotification 
+            message={notification.message} 
+            type={notification.type} 
+            onClose={() => {
+              if (notificationTimeout) clearTimeout(notificationTimeout);
+              setNotification(null);
+              setNotificationTimeout(null);
+            }}
+          />
         )}
 
         {/* Auto-filter notification */}
@@ -1295,6 +1645,9 @@ const CandidateManagementPage = () => {
                 <StatsCards
                   candidates={activeCandidates}
                   selectedFilters={selectedFilters}
+                  filterType={getFilterTypeForStats()}
+                  filterCategory="All"
+                  mockAPI={api}
                 />
                 <SearchFilters
                   searchTerm={searchTerm}

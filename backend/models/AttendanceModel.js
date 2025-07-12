@@ -15,20 +15,18 @@ class AttendanceModel {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 candidate_id INTEGER NOT NULL,
                 ticket_no TEXT NOT NULL,
-                date TEXT NOT NULL,
-                theory_status TEXT CHECK(theory_status IN ('present', 'absent')),
-                practical_status TEXT CHECK(practical_status IN ('present', 'absent')),
-                notes TEXT,
+                total_classes INTEGER DEFAULT 0,
+                classes_attended INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (candidate_id) REFERENCES wtc_candidates(id) ON DELETE CASCADE,
-                UNIQUE(candidate_id, date)
+                UNIQUE(candidate_id)
             )
         `);
     }
 
     // Mark attendance for a trainee
-    async markAttendance(candidateId, date, theoryStatus, practicalStatus, notes = '') {
+    async markAttendance(candidateId, totalClasses = 0, classesAttended = 0) {
         const tableName = this.tableName; // Store table name in local variable
         console.log(`Marking attendance in table: ${tableName}`);
 
@@ -41,10 +39,10 @@ class AttendanceModel {
                     if (err) return reject(err);
                     if (!candidate) return reject(new Error('Candidate not found'));
 
-                    // Check if an attendance record already exists for this candidate and date
+                    // Check if an attendance record already exists for this candidate
                     db.get(
-                        `SELECT id FROM ${tableName} WHERE candidate_id = ? AND date = ?`,
-                        [candidateId, date],
+                        `SELECT id FROM ${tableName} WHERE candidate_id = ?`,
+                        [candidateId],
                         (err, existing) => {
                             if (err) return reject(err);
 
@@ -53,18 +51,16 @@ class AttendanceModel {
                                 const updateFields = [];
                                 const updateValues = [];
 
-                                if (theoryStatus) {
-                                    updateFields.push('theory_status = ?');
-                                    updateValues.push(theoryStatus);
+                                // Update total classes and classes attended if provided
+                                if (totalClasses !== undefined && totalClasses >= 0) {
+                                    updateFields.push('total_classes = ?');
+                                    updateValues.push(totalClasses);
                                 }
 
-                                if (practicalStatus) {
-                                    updateFields.push('practical_status = ?');
-                                    updateValues.push(practicalStatus);
+                                if (classesAttended !== undefined && classesAttended >= 0) {
+                                    updateFields.push('classes_attended = ?');
+                                    updateValues.push(classesAttended);
                                 }
-
-                                updateFields.push('notes = ?');
-                                updateValues.push(notes);
 
                                 updateFields.push('updated_at = CURRENT_TIMESTAMP');
                                 updateValues.push(existing.id);
@@ -77,7 +73,7 @@ class AttendanceModel {
 
                                         // Fetch the updated record to return it
                                         db.get(
-                                            `SELECT id, candidate_id, ticket_no, date, theory_status, practical_status, notes 
+                                            `SELECT id, candidate_id, ticket_no, total_classes, classes_attended 
                                             FROM ${tableName} WHERE id = ?`,
                                             [existing.id],
                                             (err, record) => {
@@ -89,10 +85,8 @@ class AttendanceModel {
                                                         id: record.id,
                                                         candidateId: record.candidate_id,
                                                         ticketNo: record.ticket_no,
-                                                        date: record.date,
-                                                        theoryStatus: record.theory_status,
-                                                        practicalStatus: record.practical_status,
-                                                        notes: record.notes
+                                                        totalClasses: record.total_classes,
+                                                        classesAttended: record.classes_attended
                                                     }
                                                 });
                                             }
@@ -103,15 +97,15 @@ class AttendanceModel {
                                 // Insert new record
                                 db.run(
                                     `INSERT INTO ${tableName} 
-                                    (candidate_id, ticket_no, date, theory_status, practical_status, notes) 
-                                    VALUES (?, ?, ?, ?, ?, ?)`,
-                                    [candidateId, candidate.ticket_no, date, theoryStatus, practicalStatus, notes],
+                                    (candidate_id, ticket_no, total_classes, classes_attended) 
+                                    VALUES (?, ?, ?, ?)`,
+                                    [candidateId, candidate.ticket_no, totalClasses, classesAttended],
                                     function (err) {
                                         if (err) return reject(err);
 
                                         // Fetch the inserted record to return it
                                         db.get(
-                                            `SELECT id, candidate_id, ticket_no, date, theory_status, practical_status, notes 
+                                            `SELECT id, candidate_id, ticket_no, total_classes, classes_attended 
                                             FROM ${tableName} WHERE id = ?`,
                                             [this.lastID],
                                             (err, record) => {
@@ -123,10 +117,8 @@ class AttendanceModel {
                                                         id: record.id,
                                                         candidateId: record.candidate_id,
                                                         ticketNo: record.ticket_no,
-                                                        date: record.date,
-                                                        theoryStatus: record.theory_status,
-                                                        practicalStatus: record.practical_status,
-                                                        notes: record.notes
+                                                        totalClasses: record.total_classes,
+                                                        classesAttended: record.classes_attended
                                                     }
                                                 });
                                             }
@@ -155,39 +147,37 @@ class AttendanceModel {
 
                     // Get all attendance records for this candidate
                     db.all(
-                        `SELECT id, date, theory_status, practical_status, notes 
+                        `SELECT id, total_classes, classes_attended
                          FROM ${tableName} 
-                         WHERE candidate_id = ? 
-                         ORDER BY date DESC`,
+                         WHERE candidate_id = ?`,
                         [candidateId],
                         (err, records) => {
                             if (err) return reject(err);
 
                             // Calculate statistics
                             const totalRecords = records.length;
-                            const theoryPresent = records.filter(r => r.theory_status === 'present').length;
-                            const practicalPresent = records.filter(r => r.practical_status === 'present').length;
 
-                            const theoryPercentage = totalRecords > 0 ? Math.round((theoryPresent / totalRecords) * 100) : 0;
-                            const practicalPercentage = totalRecords > 0 ? Math.round((practicalPresent / totalRecords) * 100) : 0;
+                            // Get the most recent record (there should only be one per candidate now)
+                            const totalClasses = records.length > 0 ? records[0].total_classes || 0 : 0;
+                            const classesAttended = records.length > 0 ? records[0].classes_attended || 0 : 0;
+
+                            // Calculate attendance percentage
+                            const attendancePercentage = totalClasses > 0 ? Math.round((classesAttended / totalClasses) * 100) : 0;
 
                             // Convert snake_case fields to camelCase for consistency
                             const formattedRecords = records.map(record => ({
                                 id: record.id,
-                                date: record.date,
-                                theoryStatus: record.theory_status,
-                                practicalStatus: record.practical_status,
-                                notes: record.notes
+                                totalClasses: record.total_classes || 0,
+                                classesAttended: record.classes_attended || 0,
                             }));
 
                             resolve({
                                 attendanceRecords: formattedRecords,
                                 statistics: {
                                     totalRecords,
-                                    theoryPresent,
-                                    practicalPresent,
-                                    theoryPercentage,
-                                    practicalPercentage
+                                    totalClasses,
+                                    classesAttended,
+                                    attendancePercentage
                                 }
                             });
                         }
@@ -222,36 +212,29 @@ class AttendanceModel {
                     c.designation, 
                     c.batch,
                     c.module_no as moduleNo,
-                    COUNT(a.id) as totalDays,
-                    SUM(CASE WHEN a.theory_status = 'present' THEN 1 ELSE 0 END) as theoryPresent,
-                    SUM(CASE WHEN a.practical_status = 'present' THEN 1 ELSE 0 END) as practicalPresent,
-                    ROUND((SUM(CASE WHEN a.theory_status = 'present' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(a.id), 0)), 0) as theoryPercentage,
-                    ROUND((SUM(CASE WHEN a.practical_status = 'present' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(a.id), 0)), 0) as practicalPercentage
+                    a.total_classes as totalClasses,
+                    a.classes_attended as classesAttended,
+                    ROUND((a.classes_attended * 100.0 / NULLIF(a.total_classes, 0)), 0) as attendancePercentage
                 FROM 
                     wtc_candidates c
                 LEFT JOIN 
                     ${tableName} a ON c.id = a.candidate_id
                 ${whereClause}
-                GROUP BY 
-                    c.id, c.ticket_no, c.name, c.designation, c.batch, c.module_no
             `;
 
             db.all(query, params, (err, results) => {
                 if (err) return reject(err);
 
                 // Calculate overall statistics
-                let totalTheoryPresent = 0;
-                let totalPracticalPresent = 0;
-                let totalDays = 0;
+                let totalClasses = 0;
+                let totalClassesAttended = 0;
 
                 results.forEach(result => {
-                    totalTheoryPresent += result.theoryPresent || 0;
-                    totalPracticalPresent += result.practicalPresent || 0;
-                    totalDays += result.totalDays || 0;
+                    totalClasses += result.totalClasses || 0;
+                    totalClassesAttended += result.classesAttended || 0;
                 });
 
-                const averageTheoryPercentage = totalDays > 0 ? Math.round((totalTheoryPresent / totalDays) * 100) : 0;
-                const averagePracticalPercentage = totalDays > 0 ? Math.round((totalPracticalPresent / totalDays) * 100) : 0;
+                const averageAttendancePercentage = totalClasses > 0 ? Math.round((totalClassesAttended / totalClasses) * 100) : 0;
 
                 resolve({
                     candidates: results.map(r => ({
@@ -261,17 +244,15 @@ class AttendanceModel {
                         designation: r.designation,
                         batch: r.batch,
                         moduleNo: r.moduleNo,
-                        totalDays: r.totalDays || 0,
-                        theoryPresent: r.theoryPresent || 0,
-                        practicalPresent: r.practicalPresent || 0,
-                        theoryPercentage: r.theoryPercentage || 0,
-                        practicalPercentage: r.practicalPercentage || 0
+                        totalClasses: r.totalClasses || 0,
+                        classesAttended: r.classesAttended || 0,
+                        attendancePercentage: r.attendancePercentage || 0
                     })),
                     summary: {
                         totalCandidates: results.length,
-                        totalDays,
-                        averageTheoryPercentage,
-                        averagePracticalPercentage
+                        totalClasses,
+                        totalClassesAttended,
+                        averageAttendancePercentage
                     }
                 });
             });
@@ -294,13 +275,12 @@ class AttendanceModel {
                 db.run('BEGIN TRANSACTION');
 
                 records.forEach(record => {
-                    const { candidateId, date, theoryStatus, practicalStatus, notes } = record;
+                    const { candidateId, totalClasses, classesAttended } = record;
 
                     // Skip if required fields are missing
-                    if (!candidateId || !date || (!theoryStatus && !practicalStatus)) {
+                    if (!candidateId || (totalClasses === undefined && classesAttended === undefined)) {
                         results.push({
                             candidateId,
-                            date,
                             success: false,
                             message: 'Missing required fields'
                         });
@@ -326,7 +306,6 @@ class AttendanceModel {
                             if (err || !candidate) {
                                 results.push({
                                     candidateId,
-                                    date,
                                     success: false,
                                     message: err ? err.message : 'Candidate not found'
                                 });
@@ -334,13 +313,12 @@ class AttendanceModel {
                             } else {
                                 // Check if attendance record exists
                                 db.get(
-                                    `SELECT id FROM ${tableName} WHERE candidate_id = ? AND date = ?`,
-                                    [candidateId, date],
+                                    `SELECT id FROM ${tableName} WHERE candidate_id = ?`,
+                                    [candidateId],
                                     (err, existing) => {
                                         if (err) {
                                             results.push({
                                                 candidateId,
-                                                date,
                                                 success: false,
                                                 message: err.message
                                             });
@@ -350,19 +328,14 @@ class AttendanceModel {
                                             const updateFields = [];
                                             const updateValues = [];
 
-                                            if (theoryStatus) {
-                                                updateFields.push('theory_status = ?');
-                                                updateValues.push(theoryStatus);
+                                            if (totalClasses !== undefined && totalClasses >= 0) {
+                                                updateFields.push('total_classes = ?');
+                                                updateValues.push(totalClasses);
                                             }
 
-                                            if (practicalStatus) {
-                                                updateFields.push('practical_status = ?');
-                                                updateValues.push(practicalStatus);
-                                            }
-
-                                            if (notes) {
-                                                updateFields.push('notes = ?');
-                                                updateValues.push(notes);
+                                            if (classesAttended !== undefined && classesAttended >= 0) {
+                                                updateFields.push('classes_attended = ?');
+                                                updateValues.push(classesAttended);
                                             }
 
                                             updateFields.push('updated_at = CURRENT_TIMESTAMP');
@@ -374,7 +347,6 @@ class AttendanceModel {
                                                 function (err) {
                                                     results.push({
                                                         candidateId,
-                                                        date,
                                                         success: !err,
                                                         message: err ? err.message : 'Attendance updated successfully'
                                                     });
@@ -395,20 +367,17 @@ class AttendanceModel {
                                             // Insert new record
                                             db.run(
                                                 `INSERT INTO ${tableName} 
-                                                (candidate_id, ticket_no, date, theory_status, practical_status, notes) 
-                                                VALUES (?, ?, ?, ?, ?, ?)`,
+                                                (candidate_id, ticket_no, total_classes, classes_attended) 
+                                                VALUES (?, ?, ?, ?)`,
                                                 [
                                                     candidateId,
                                                     candidate.ticket_no,
-                                                    date,
-                                                    theoryStatus || null,
-                                                    practicalStatus || null,
-                                                    notes || ''
+                                                    totalClasses || 0,
+                                                    classesAttended || 0
                                                 ],
                                                 function (err) {
                                                     results.push({
                                                         candidateId,
-                                                        date,
                                                         success: !err,
                                                         message: err ? err.message : 'Attendance marked successfully'
                                                     });
@@ -436,20 +405,20 @@ class AttendanceModel {
         });
     }
 
-    // Get attendance by date with optional batch/module filter
-    async getAttendanceByDate(date, batch = null, moduleNo = null) {
+    // Get attendance with optional batch/module filter
+    async getAllAttendance(batch = null, moduleNo = null) {
         const tableName = this.tableName; // Store table name in local variable
         return new Promise((resolve, reject) => {
-            let whereClause = 'WHERE a.date = ?';
-            const params = [date];
+            let whereClause = '';
+            const params = [];
 
             if (batch) {
-                whereClause += ' AND c.batch = ?';
+                whereClause += 'WHERE c.batch = ?';
                 params.push(batch);
             }
 
             if (moduleNo) {
-                whereClause += ' AND c.module_no = ?';
+                whereClause += batch ? ' AND c.module_no = ?' : 'WHERE c.module_no = ?';
                 params.push(moduleNo);
             }
 
@@ -462,9 +431,8 @@ class AttendanceModel {
                     c.designation, 
                     c.batch, 
                     c.module_no as moduleNo, 
-                    a.theory_status as theoryStatus, 
-                    a.practical_status as practicalStatus, 
-                    a.notes
+                    a.total_classes as totalClasses,
+                    a.classes_attended as classesAttended
                 FROM 
                     ${tableName} a
                 JOIN 

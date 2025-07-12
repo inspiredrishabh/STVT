@@ -1,13 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Users, BarChart2, Briefcase, Zap } from 'lucide-react';
 
-const StatsCards = ({ candidates, filterType, filterCategory, mockAPI }) => {
+const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All', mockAPI }) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Debug logging
+  console.log('StatsCards Debug:', {
+    candidatesLength: candidates.length,
+    filterType,
+    filterCategory,
+    hasMockAPI: !!mockAPI,
+    candidatesSample: candidates.slice(0, 2).map(c => ({ name: c.name, type: c.type }))
+  });
+
   useEffect(() => {
     const fetchStats = async () => {
-      if (!mockAPI) return;
+      if (!mockAPI) {
+        console.log('StatsCards: No mockAPI provided, using local stats');
+        return;
+      }
 
       setLoading(true);
       try {
@@ -17,11 +29,16 @@ const StatsCards = ({ candidates, filterType, filterCategory, mockAPI }) => {
           type: filterType
         });
 
+        console.log('StatsCards API Response:', response);
+
         if (response.success) {
           setStats(response.data);
+          console.log('StatsCards: API stats loaded successfully');
+        } else {
+          console.log('StatsCards: API call succeeded but response.success is false');
         }
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('StatsCards: Error fetching stats:', error);
       } finally {
         setLoading(false);
       }
@@ -30,8 +47,14 @@ const StatsCards = ({ candidates, filterType, filterCategory, mockAPI }) => {
     fetchStats();
   }, [filterCategory, filterType, mockAPI, candidates]);
 
-  // Dynamic title prefix based on the selected filter
-  const titlePrefix = filterType === 'All' ? '' : `${filterType} `;
+  // Dynamic title prefix based on the selected filter - with fallback handling
+  const titlePrefix = (filterType && filterType !== 'All') ? `${filterType} ` : '';
+
+  console.log('StatsCards titlePrefix Debug:', {
+    filterType,
+    titlePrefix,
+    candidatesCount: candidates.length
+  });
 
   // Fallback to local calculation if API stats are not available
   const localStats = [

@@ -54,10 +54,7 @@ const initialFormData = {
   batch: "",
   customBatch: "",
   dateOfJoiningStcWtcNonRailway: "",
-  moduleNo: "",
   dateOfSparing: "",
-  customModuleNo: "",
-  courseDuration: "",
 }
 
 const WtcMain = () => {
@@ -115,15 +112,15 @@ const WtcMain = () => {
     const currentKey = stepKeys[step];
     const validationFn = validationFunctions.current[currentKey];
 
-    // if (validationFn) {
-    //   const validation = validationFn();
-    //   if (!validation.isValid) {
-    //     setErrors(validation.errors);
-    //     return false;
-    //   }
-    //   setErrors({});
-    //   return true;
-    // }
+    if (validationFn) {
+      const validation = validationFn();
+      if (!validation.isValid) {
+        setErrors(validation.errors);
+        return false;
+      }
+      setErrors({});
+      return true;
+    }
     return true;
   }, [step]);
 
