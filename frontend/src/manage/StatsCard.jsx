@@ -5,15 +5,6 @@ const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Debug logging
-  console.log('StatsCards Debug:', {
-    candidatesLength: candidates.length,
-    filterType,
-    filterCategory,
-    hasMockAPI: !!mockAPI,
-    candidatesSample: candidates.slice(0, 2).map(c => ({ name: c.name, type: c.type }))
-  });
-
   useEffect(() => {
     const fetchStats = async () => {
       if (!mockAPI) {
@@ -29,11 +20,8 @@ const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All
           type: filterType
         });
 
-        console.log('StatsCards API Response:', response);
-
         if (response.success) {
           setStats(response.data);
-          console.log('StatsCards: API stats loaded successfully');
         } else {
           console.log('StatsCards: API call succeeded but response.success is false');
         }
@@ -49,12 +37,6 @@ const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All
 
   // Dynamic title prefix based on the selected filter - with fallback handling
   const titlePrefix = (filterType && filterType !== 'All') ? `${filterType} ` : '';
-
-  console.log('StatsCards titlePrefix Debug:', {
-    filterType,
-    titlePrefix,
-    candidatesCount: candidates.length
-  });
 
   // Fallback to local calculation if API stats are not available
   const localStats = [

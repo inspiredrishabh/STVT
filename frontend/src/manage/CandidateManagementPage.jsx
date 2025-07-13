@@ -45,23 +45,11 @@ class RealBackendAPI {
         candidate.ticket_no || candidate.ticketNumber || candidate.ticketNo;
     }
 
-    // Debug logging
-    console.log("getCandidateEndpoint called with:", {
-      type,
-      workInfo,
-      ticketNo,
-      ticketNumber: candidate.ticketNumber,
-      ticket_no: candidate.ticket_no,
-      ticketNoField: candidate.ticketNo,
-      candidateKeys: Object.keys(candidate),
-    });
-
     // Check if ticket number is available
     if (!ticketNo) {
       console.error("Ticket number is undefined for candidate:", candidate);
       throw new Error(
-        `Ticket number is undefined for candidate ${
-          candidate.name || candidate.id
+        `Ticket number is undefined for candidate ${candidate.name || candidate.id
         }`
       );
     }
@@ -69,9 +57,6 @@ class RealBackendAPI {
     // Check if this is a course-specific candidate
     if (type === "STC" && workInfo && this.courseStructure[workInfo]) {
       const endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}/${ticketNo}`;
-      console.log(
-        `Course-specific candidate detected: ${workInfo} -> ${endpoint}`
-      );
       return endpoint;
     }
 
@@ -83,7 +68,6 @@ class RealBackendAPI {
     };
 
     const endpoint = endpoints[type] || endpoints["STC"];
-    console.log(`Basic candidate detected: ${type} -> ${endpoint}`);
     return endpoint;
   }
 
@@ -610,7 +594,6 @@ class RealBackendAPI {
       const data = await response.json();
       if (data.success) {
         return data.data.map((candidate) => {
-          console.log("STC Candidate raw data:", candidate); // Debug logging
           return {
             ...candidate,
             id: `stc-${candidate.id}`, // Make ID unique across types
@@ -666,7 +649,7 @@ class RealBackendAPI {
             dateOfSparing: candidate.date_of_sparing,
             // Additional fields
             nationality: candidate.nationality,
-            category: candidate.category,
+            // category: candidate.category,
             pwd: candidate.pwd,
             typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway:
@@ -692,7 +675,6 @@ class RealBackendAPI {
       const data = await response.json();
       if (data.success) {
         return data.data.map((candidate) => {
-          console.log("WTC Candidate raw data:", candidate); // Debug logging
 
           // Get ticket number from any available field
           const ticketNumber =
@@ -755,7 +737,7 @@ class RealBackendAPI {
             courseCoordinator: candidate.courseCoordinator,
             // Additional fields
             nationality: candidate.nationality,
-            category: candidate.category,
+            // category: candidate.category,
             pwd: candidate.pwd,
             typeOfDisability: candidate.typeOfDisability,
             dateOfJoiningStcWtcNonRailway:
@@ -859,7 +841,6 @@ class RealBackendAPI {
       const data = await response.json();
       if (data.success) {
         return data.data.map((candidate) => {
-          console.log("Non-Railway Candidate raw data:", candidate); // Debug logging
           return {
             ...candidate,
             id: `nonrailway-${candidate.id}`, // Make ID unique across types
@@ -911,7 +892,7 @@ class RealBackendAPI {
             courseCoordinator: candidate.course_coordinator,
             // Additional fields
             nationality: candidate.nationality,
-            category: candidate.category,
+            // category: candidate.category,
             pwd: candidate.pwd,
             typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway:
@@ -1012,7 +993,7 @@ class RealBackendAPI {
                 dateOfSparing: candidate.date_of_sparing,
                 // Additional fields
                 nationality: candidate.nationality,
-                category: candidate.category,
+                // category: candidate.category,
                 pwd: candidate.pwd,
                 typeOfDisability: candidate.type_of_disability,
                 dateOfJoiningStcWtcNonRailway:
@@ -1085,7 +1066,6 @@ class RealBackendAPI {
       }
 
       const endpoint = this.getCandidateEndpoint(candidate);
-      console.log("Deleting candidate from endpoint:", endpoint);
 
       const response = await fetch(endpoint, {
         method: "DELETE",
@@ -1116,7 +1096,6 @@ class RealBackendAPI {
 
       // Transform frontend camelCase fields to backend snake_case fields
       const transformedData = this.transformFieldsForBackend(candidateData);
-      console.log("Transformed data for backend (create):", transformedData);
 
       const formData = new FormData();
 
@@ -1147,8 +1126,8 @@ class RealBackendAPI {
               type === "STC"
                 ? `stc-${data.data.id}`
                 : type === "WTC"
-                ? `wtc-${data.data.id}`
-                : `nonrailway-${data.data.id}`,
+                  ? `wtc-${data.data.id}`
+                  : `nonrailway-${data.data.id}`,
             type,
             category: type === "Non Railway" ? "Non Railway" : "Railway",
             stream: type === "Non Railway" ? "Non Railway" : "Railway",
@@ -1180,16 +1159,9 @@ class RealBackendAPI {
       }
 
       const endpoint = this.getCandidateEndpoint(candidate);
-      console.log("Updating candidate at endpoint:", endpoint);
-      console.log("Original candidate data for update:", candidateData);
 
       // Transform frontend camelCase fields to backend snake_case fields
       const transformedData = this.transformFieldsForBackend(candidateData);
-      console.log("Transformed data for backend:", transformedData);
-      console.log(
-        "Number of fields being sent:",
-        Object.keys(transformedData).length
-      );
 
       const formData = new FormData();
 
@@ -1200,31 +1172,23 @@ class RealBackendAPI {
           transformedData[key] !== undefined
         ) {
           formData.append(key, transformedData[key]);
-          console.log(
-            `Added field to FormData: ${key} = ${transformedData[key]}`
-          );
         }
       });
 
-      console.log("Sending PUT request to:", endpoint);
       const response = await fetch(endpoint, {
         method: "PUT",
         body: formData,
       });
 
       const data = await response.json();
-      console.log("Backend response:", data);
 
       if (data.success) {
-        console.log("Original candidate data before update:", candidate);
-        console.log("Backend response data:", data.data);
 
         // Transform the backend response to match our expected format
         const transformedBackendData = this.transformBackendResponseToFrontend(
           data.data,
           candidate.type
         );
-        console.log("Transformed backend data:", transformedBackendData);
 
         const updatedCandidate = {
           // Keep all existing candidate data
@@ -1241,11 +1205,11 @@ class RealBackendAPI {
           ticketNumber:
             candidate.type === "WTC"
               ? data.data.ticketNumber ||
-                data.data.ticket_no ||
-                candidate.ticketNumber
+              data.data.ticket_no ||
+              candidate.ticketNumber
               : data.data.ticket_no ||
-                data.data.ticketNumber ||
-                candidate.ticketNumber,
+              data.data.ticketNumber ||
+              candidate.ticketNumber,
           status: candidate.status,
           // Update timestamps
           updatedAt:
@@ -1253,8 +1217,6 @@ class RealBackendAPI {
             data.data.updatedAt ||
             new Date().toISOString(),
         };
-
-        console.log("Final updated candidate data:", updatedCandidate);
 
         return {
           success: true,
@@ -1276,8 +1238,6 @@ class RealBackendAPI {
   async getStats(filters = {}) {
     try {
       const candidates = await this.getAllCandidates();
-
-      console.log("RealBackendAPI getStats called with filters:", filters);
 
       // Apply filters if any
       let filteredCandidates = candidates;
@@ -1321,13 +1281,6 @@ class RealBackendAPI {
         );
       }
 
-      console.log(
-        "getStats: Filtered candidates count:",
-        filteredCandidates.length,
-        "from total:",
-        candidates.length
-      );
-
       const stats = {
         totalCandidates: filteredCandidates.length,
         activeCandidates: filteredCandidates.filter(
@@ -1355,8 +1308,6 @@ class RealBackendAPI {
         batchDistribution: this.getBatchDistribution(filteredCandidates),
         streamDistribution: this.getStreamDistribution(filteredCandidates),
       };
-
-      console.log("getStats: Computed stats:", stats);
       return { success: true, data: stats };
     } catch (error) {
       console.error("Error getting stats:", error);
@@ -1770,7 +1721,7 @@ class MockBackendAPI {
         candidateData.picture instanceof File
           ? URL.createObjectURL(candidateData.picture)
           : candidateData.picture ||
-            "https://randomuser.me/api/portraits/lego/1.jpg",
+          "https://randomuser.me/api/portraits/lego/1.jpg",
       status: candidateData.status || "Active",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -2056,15 +2007,6 @@ const CandidateManagementPage = () => {
       setLoading(true);
       const response = await api.fetchCandidates();
       if (response.success) {
-        console.log(
-          "Raw API Response:",
-          response.data.length,
-          "candidates loaded"
-        );
-        console.log(
-          "Sample candidates:",
-          response.data.slice(0, 3).map((c) => ({ name: c.name, type: c.type }))
-        );
         setCandidates(response.data);
         setError(null);
       } else {
@@ -2167,16 +2109,14 @@ const CandidateManagementPage = () => {
         clearTimeout(notificationTimeout);
       }
     };
-  }, []);
+  }, [notificationTimeout]);
 
   // Check for trainee data from TraineeProfile and auto-filter
   useEffect(() => {
     const editTraineeId = localStorage.getItem("editTraineeId");
     const editTraineeName = localStorage.getItem("editTraineeName");
     const editTraineeTicket = localStorage.getItem("editTraineeTicket");
-    const editTraineeDesignation = localStorage.getItem(
-      "editTraineeDesignation"
-    );
+    // const editTraineeDesignation = localStorage.getItem("editTraineeDesignation");
 
     if (editTraineeId && editTraineeName && candidates.length > 0) {
       // Try to find the candidate by different criteria
@@ -2202,12 +2142,6 @@ const CandidateManagementPage = () => {
         ticketNo: editTraineeTicket,
       });
 
-      console.log(
-        `Auto-filtering for trainee: ${editTraineeName} (${
-          editTraineeTicket || "No ticket"
-        }) - Using search: ${searchCriteria}`
-      );
-
       // Clear the localStorage data after using it
       localStorage.removeItem("editTraineeId");
       localStorage.removeItem("editTraineeName");
@@ -2219,7 +2153,6 @@ const CandidateManagementPage = () => {
   const activeCandidates = useMemo(() => {
     // If no filters are selected, return nothing
     if (selectedFilters.length === 0) {
-      console.log("No filters selected, returning empty array");
       return [];
     }
 
@@ -2234,17 +2167,6 @@ const CandidateManagementPage = () => {
         candidate.type === "Non Railway";
 
       return isStcMatch || isWtcMatch || isNonRailwayMatch;
-    });
-
-    console.log("Filter Debug:", {
-      selectedFilters,
-      totalCandidates: candidates.length,
-      stcCount: candidates.filter((c) => c.type === "STC").length,
-      wtcCount: candidates.filter((c) => c.type === "WTC").length,
-      nonRailwayCount: candidates.filter((c) => c.type === "Non Railway")
-        .length,
-      filteredCount: filtered.length,
-      filteredCandidateNames: filtered.map((c) => `${c.name} (${c.type})`),
     });
 
     return filtered;
@@ -2262,12 +2184,6 @@ const CandidateManagementPage = () => {
       const matchesBatch = !filterBatch || candidate.batch === filterBatch;
 
       return matchesSearch && matchesBatch;
-    });
-
-    console.log("Final Filtered Candidates:", {
-      activeCandidatesCount: activeCandidates.length,
-      finalFilteredCount: searchFiltered.length,
-      candidateNames: searchFiltered.map((c) => `${c.name} (${c.type})`),
     });
 
     return searchFiltered;
@@ -2341,13 +2257,6 @@ const CandidateManagementPage = () => {
     return "Filtered"; // Fallback for other combinations
   };
 
-  // Debug logging for filter type
-  const currentFilterType = getFilterTypeForStats();
-  console.log("CandidateManagementPage: Filter Debug", {
-    selectedFilters,
-    derivedFilterType: currentFilterType,
-    activeCandidatesCount: activeCandidates.length,
-  });
 
   // Helper function to show success notifications
   const showSuccessNotification = (message) => {
