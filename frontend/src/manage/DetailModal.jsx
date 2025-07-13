@@ -18,12 +18,26 @@ const DetailModal = ({ candidate, onClose }) => {
 
   // Helper function to get basic information data based on candidate type
   const getBasicInfoData = () => {
+    // Date se time hataane wala function
+    const formatDate = (dateStr) => {
+      if (!dateStr) return "";
+      // Agar "T" hai (ISO format) toh split karo
+      if (dateStr.includes("T")) {
+        return dateStr.split("T")[0];
+      }
+      // Agar space hai (normal format) toh split karo
+      if (dateStr.includes(" ")) {
+        return dateStr.split(" ")[0];
+      }
+      // Nahi toh as is return karo
+      return dateStr;
+    };
     const basicData = [
       { label: "S.No", value: candidate.serialNo },
       { label: "Gender", value: candidate.sex },
       { label: "Father's Name", value: candidate.fatherName },
       { label: "Mother's Name", value: candidate.motherName },
-      { label: "DOB", value: candidate.dob },
+      { label: "DOB", value: formatDate(candidate.dob) },
       {
         label: "Employee No.",
         value: candidate.ticketNumber || candidate.employeeNumber,
@@ -31,8 +45,11 @@ const DetailModal = ({ candidate, onClose }) => {
       { label: "Category", value: candidate.category },
       { label: "Nationality", value: candidate.nationality },
       { label: "PWD", value: candidate.pwd },
-      { label: "Joining Date", value: candidate.dateOfJoiningStcWtcNonRailway },
-      { label: "Sparing Date", value: candidate.dateOfSparing },
+      {
+        label: "Joining Date",
+        value: formatDate(candidate.dateOfJoiningStcWtcNonRailway),
+      },
+      { label: "Sparing Date", value: formatDate(candidate.dateOfSparing) },
     ];
 
     // Add type of disability if PWD is Yes
@@ -45,6 +62,7 @@ const DetailModal = ({ candidate, onClose }) => {
 
     return basicData;
   };
+
 
   // Helper function to get course information data based on candidate type
   const getCourseInfoData = () => {
@@ -90,15 +108,16 @@ const DetailModal = ({ candidate, onClose }) => {
         { label: "Course Coordinator", value: candidate.courseCoordinator }
       );
     } else if (candidate.type === "Non Railway") {
-      courseData.push(
-        { label: "Course Type", value: candidate.courseType },
-        { label: "Duration", value: candidate.duration },
-        { label: "Theory", value: candidate.theory },
-        { label: "Practical", value: candidate.practical },
-        { label: "Module No.", value: candidate.moduleNo },
-        { label: "Course Coordinator", value: candidate.courseCoordinator },
-        { label: "Remarks", value: candidate.remarks }
-      );
+      courseData
+        .push
+        // { label: "Course Type", value: candidate.courseType },
+        // { label: "Duration", value: candidate.duration },
+        // { label: "Theory", value: candidate.theory },
+        // { label: "Practical", value: candidate.practical },
+        // { label: "Module No.", value: candidate.moduleNo },
+        // { label: "Course Coordinator", value: candidate.courseCoordinator },
+        // { label: "Remarks", value: candidate.remarks }
+        ();
     }
 
     return courseData;
@@ -125,10 +144,10 @@ const DetailModal = ({ candidate, onClose }) => {
 
     if (candidate.type === "Non Railway") {
       workData.push(
-        { label: "Course Type", value: candidate.courseType },
-        { label: "Duration", value: candidate.duration },
-        { label: "Theory", value: candidate.theory },
-        { label: "Practical", value: candidate.practical }
+        { label: "Course Type", value: candidate.courseType }
+        // { label: "Duration", value: candidate.duration },
+        // { label: "Theory", value: candidate.theory },
+        // { label: "Practical", value: candidate.practical }
       );
     } else if (candidate.type === "STC" || candidate.type === "WTC") {
       workData.push(
