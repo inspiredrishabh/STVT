@@ -187,17 +187,13 @@ class DashboardAPI {
       const totalCandidates = stcCount + wtcCount + nonRailwayCount;
       const railwayCandidates = stcCount + wtcCount;
 
-      // Active courses: Only count courses with enrolled candidates > 0
-      const activeCourses =
-        totalCandidates > 0 ? Math.ceil(totalCandidates / 25) : 0;
-
       const data = {
         totalCandidates: totalCandidates,
         railwayCandidates: railwayCandidates,
         nonRailwayCandidates: nonRailwayCount,
         stcCandidates: stcCount,
         wtcCandidates: wtcCount,
-        activeCourses: activeCourses,
+        activeCourses: Math.ceil(totalCandidates / 25), // Assuming 25 candidates per course
         completedCourses: Math.floor(totalCandidates / 30), // Assuming some courses are completed
         pendingApplications: Math.floor(totalCandidates * 0.1), // 10% pending
         trainingCapacity: trainingCapacity,
@@ -259,7 +255,7 @@ class DashboardAPI {
             }`,
             time: this.getTimeAgo(candidate.created_at || new Date()),
             type: "registration",
-            icon: "�",
+            icon: " ",
             category: "STC",
           });
         });
@@ -925,6 +921,21 @@ function Dashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Government Style Footer - Similar to Indian Railways Portal */}
+      <div className="bg-blue-900 text-white py-8 mt-8 w-full">
+        <div className="container mx-auto px-0">
+          <div className="text-center space-y-4">
+            <p className="text-base font-semibold">
+              © 2025 All Rights Reserved.
+            </p>
+            <p className="text-sm text-blue-100 leading-relaxed px-8">
+              This portal is built to manage trainee details in Supervisor Training Center of Northern Railways, developed with an objective to enable efficient management and tracking of training programs.
+              The content in this Portal is maintained by the Training Department, Northern Railways, Ministry of Railways, Government of India.
+            </p>
           </div>
         </div>
       </div>
