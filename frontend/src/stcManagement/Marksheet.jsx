@@ -332,6 +332,17 @@ const courseStructure = {
   },
 };
 
+// Add this utility function before the MarksheetService class
+const getRawMarks = (paperMarks) => {
+  if (typeof paperMarks === "string" && paperMarks.endsWith("C")) {
+    return parseInt(paperMarks.slice(0, -1));
+  }
+  return paperMarks;
+};
+
+// Helper to compute 60% passing marks
+const getPassingMarks = (maxMarks) => Math.ceil(maxMarks * 0.6);
+
 // Real API Service for STC Marksheets
 class MarksheetService {
   constructor() {
@@ -498,20 +509,24 @@ class MarksheetService {
     Object.entries(structure).forEach(([session, papers]) => {
       Object.entries(papers).forEach(([paper, config]) => {
         const paperMarks = marksheetData[session]?.[paper];
+        const rawMarks = getRawMarks(paperMarks); // Use the standalone function
         const passingMarks = Math.ceil(
           config.maxMarks * (passingPercentage / 100)
         );
+        const isCleared =
+          typeof paperMarks === "string" && paperMarks.endsWith("C");
 
-        if (paperMarks !== undefined && paperMarks < passingMarks) {
+        // Only include in failed subjects if raw marks are below passing AND not cleared
+        if (rawMarks !== undefined && rawMarks < passingMarks && !isCleared) {
           failedSubjects.push({
             session,
             paper,
             subjects: config.subjects,
-            obtainedMarks: paperMarks,
+            obtainedMarks: rawMarks,
             maxMarks: config.maxMarks,
             passingMarks,
-            percentage: ((paperMarks / config.maxMarks) * 100).toFixed(1),
-            shortfall: passingMarks - paperMarks,
+            percentage: ((rawMarks / config.maxMarks) * 100).toFixed(1),
+            shortfall: passingMarks - rawMarks,
           });
         }
       });
@@ -535,8 +550,9 @@ class MarksheetService {
   }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
-    const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? "Sessional" : "Complete"
-      }_${new Date().toISOString().split("T")[0]}.pdf`;
+    const fileName = `Marksheet_${ticketNumber}_${
+      options.sessionWise ? "Sessional" : "Complete"
+    }_${new Date().toISOString().split("T")[0]}.pdf`;
     return {
       success: true,
       message: "PDF export initiated successfully",
@@ -841,8 +857,9 @@ const Marksheet = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber || candidateData.ticket_no
-      })</title>
+          <title>Marksheet - ${candidateData.name} (${
+      candidateData.ticketNumber || candidateData.ticket_no
+    })</title>
           <style>
             @page {
               size: A4;
@@ -1028,7 +1045,8 @@ const Marksheet = () => {
       // Save the PDF
       const fileName =
         result.data?.fileName ||
-        `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${viewMode === "sessionWise" ? "Sessional" : "Complete"
+        `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${
+          viewMode === "sessionWise" ? "Sessional" : "Complete"
         }_${new Date().toISOString().split("T")[0]}.pdf`;
       pdf.save(fileName);
 
@@ -1066,8 +1084,9 @@ const Marksheet = () => {
     Object.entries(structure).forEach(([session, papers]) => {
       if (selectedSession === "all" || selectedSession === session) {
         Object.entries(papers).forEach(([paper, config]) => {
-          const marks = marksheetData[session]?.[paper] || 0;
-          total += marks;
+          const paperMarks = marksheetData[session]?.[paper];
+          const rawMarks = getRawMarks(paperMarks) || 0; // Use the standalone function
+          total += rawMarks;
           maxTotal += config.maxMarks;
         });
       }
@@ -1075,11 +1094,6 @@ const Marksheet = () => {
 
     return { total, maxTotal };
   }, [marksheetData, candidateData, courseCode, selectedSession]);
-
-  const getPassingMarks = useCallback(
-    (maxMarks) => Math.ceil(maxMarks * 0.6),
-    []
-  );
 
   // Computed values with useMemo
   const currentCourseStructure = useMemo(
@@ -1091,6 +1105,133 @@ const Marksheet = () => {
   const percentage = useMemo(
     () => (maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(2) : 0),
     [total, maxTotal]
+  );
+
+  // Helper function to check if supplementary is cleared
+  const isSupplementaryCleared = useCallback((paperMarks) => {
+    return typeof paperMarks === "string" && paperMarks.endsWith("C");
+  }, []);
+
+  // Helper function to check if paper should be treated as passed
+  const isPaperPassed = useCallback(
+    (paperMarks, maxMarks) => {
+      const rawMarks = getRawMarks(paperMarks) || 0; // Use the standalone function
+      const passingMarks = Math.ceil(maxMarks * 0.6);
+
+      // Paper is passed if either:
+      // 1. Raw marks are above passing threshold, OR
+      // 2. Supplementary is cleared (ends with "C")
+      return rawMarks >= passingMarks || isSupplementaryCleared(paperMarks);
+    },
+    [isSupplementaryCleared]
+  );
+
+  // Render each session/paper row
+  const renderRows = useCallback(
+    (session, papers) => {
+      return Object.entries(papers).map(([paper, config], idx) => {
+        const paperMarks = marksheetData[session]?.[paper] ?? "";
+        const str = paperMarks.toString();
+        const isCleared = str.endsWith("C");
+        const rawMarks = getRawMarks(paperMarks) || 0;
+        const percentage = ((rawMarks / config.maxMarks) * 100).toFixed(1);
+        const passingMarks = getPassingMarks(config.maxMarks);
+        const isPassed = isCleared || rawMarks >= passingMarks;
+
+        return (
+          <tr
+            key={`${session}-${paper}`}
+            style={{ backgroundColor: isPassed ? "white" : "#fef2f2" }}
+          >
+            {idx === 0 && (
+              <td
+                rowSpan={Object.keys(papers).length}
+                style={{
+                  border: "1px solid black",
+                  padding: "8px 12px",
+                  fontWeight: "600",
+                  color: "black",
+                  textAlign: "center",
+                  verticalAlign: "top",
+                  fontSize: "13px",
+                }}
+              >
+                {session}
+              </td>
+            )}
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "13px",
+                color: "black",
+              }}
+            >
+              {paper}
+            </td>
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "11px",
+                color: "black",
+                textAlign: "center",
+              }}
+            >
+              {config.subjects.length > 0 ? config.subjects.join(", ") : "-"}
+            </td>
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "black",
+                textAlign: "center",
+              }}
+            >
+              {config.maxMarks}
+            </td>
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "13px",
+                fontWeight: "bold",
+                textAlign: "center",
+                color: !isPassed ? "#dc2626" : "black",
+              }}
+            >
+              {isCleared ? rawMarks : str}
+            </td>
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "13px",
+                textAlign: "center",
+                color: !isPassed ? "#dc2626" : "black",
+              }}
+            >
+              {percentage}%
+            </td>
+            <td
+              style={{
+                border: "1px solid black",
+                padding: "8px 12px",
+                fontSize: "13px",
+                fontWeight: "600",
+                textAlign: "center",
+                color: !isPassed ? "#dc2626" : "#16a34a",
+              }}
+            >
+              {isCleared ? "CLEARED" : isPassed ? "PASS" : "FAIL"}
+            </td>
+          </tr>
+        );
+      });
+    },
+    [marksheetData]
   );
 
   return (
@@ -1163,19 +1304,21 @@ const Marksheet = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
-                  ? "bg-orange-600 text-white shadow-lg"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  searchMethod === "ticket"
+                    ? "bg-orange-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "dropdown"
-                  ? "bg-orange-600 text-white shadow-lg"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  searchMethod === "dropdown"
+                    ? "bg-orange-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
                 Select from Dropdown
               </button>
@@ -1260,12 +1403,13 @@ const Marksheet = () => {
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : message.type === "info"
+                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
+                  message.type === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : message.type === "info"
                     ? "bg-blue-50 text-blue-800 border border-blue-200"
                     : "bg-red-50 text-red-800 border border-red-200"
-                  }`}
+                }`}
               >
                 {message.type === "success" ? (
                   <CheckCircle className="w-6 h-6" />
@@ -1764,130 +1908,18 @@ const Marksheet = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.entries(currentCourseStructure).map(
-                        ([session, papers]) => {
-                          if (
-                            viewMode === "sessionWise" &&
-                            selectedSession !== "all" &&
-                            selectedSession !== session
-                          ) {
-                            return null;
+                      {currentCourseStructure &&
+                        Object.entries(currentCourseStructure).flatMap(
+                          ([session, papers]) => {
+                            if (
+                              viewMode === "sessionWise" &&
+                              selectedSession !== "all" &&
+                              selectedSession !== session
+                            )
+                              return [];
+                            return renderRows(session, papers);
                           }
-
-                          return Object.entries(papers).map(
-                            ([paper, config], paperIndex) => {
-                              const marks =
-                                marksheetData[session]?.[paper] || 0;
-                              const percentage = (
-                                (marks / config.maxMarks) *
-                                100
-                              ).toFixed(1);
-                              const passingMarks = getPassingMarks(
-                                config.maxMarks
-                              );
-                              const isPassed = marks >= passingMarks;
-
-                              return (
-                                <tr
-                                  key={`${session}-${paper}`}
-                                  style={{
-                                    backgroundColor: !isPassed
-                                      ? "#fef2f2"
-                                      : "white",
-                                  }}
-                                >
-                                  {paperIndex === 0 && (
-                                    <td
-                                      style={{
-                                        border: "1px solid black",
-                                        padding: "8px 12px",
-                                        fontWeight: "600",
-                                        color: "black",
-                                        textAlign: "center",
-                                        verticalAlign: "top",
-                                        fontSize: "13px",
-                                      }}
-                                      rowSpan={Object.keys(papers).length}
-                                    >
-                                      {session}
-                                    </td>
-                                  )}
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "13px",
-                                      color: "black",
-                                    }}
-                                  >
-                                    {paper}
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "11px",
-                                      color: "black",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    {config.subjects.length > 0
-                                      ? config.subjects.join(", ")
-                                      : "-"}
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "13px",
-                                      fontWeight: "600",
-                                      color: "black",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    {config.maxMarks}
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "13px",
-                                      fontWeight: "bold",
-                                      textAlign: "center",
-                                      color: !isPassed ? "#dc2626" : "black",
-                                    }}
-                                  >
-                                    {marks}
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "13px",
-                                      textAlign: "center",
-                                      color: !isPassed ? "#dc2626" : "black",
-                                    }}
-                                  >
-                                    {percentage}%
-                                  </td>
-                                  <td
-                                    style={{
-                                      border: "1px solid black",
-                                      padding: "8px 12px",
-                                      fontSize: "13px",
-                                      fontWeight: "600",
-                                      textAlign: "center",
-                                      color: !isPassed ? "#dc2626" : "#16a34a",
-                                    }}
-                                  >
-                                    {isPassed ? "PASS" : "FAIL"}
-                                  </td>
-                                </tr>
-                              );
-                            }
-                          );
-                        }
-                      )}
+                        )}
                     </tbody>
                   </table>
                 </div>
@@ -1965,36 +1997,71 @@ const Marksheet = () => {
                   </div>
                 </div>
 
-
                 {/* Failed Subjects Disclaimer - Only show when relevant */}
-                {failedSubjects
-                  .filter(subject =>
+                {(() => {
+                  // Filter failed subjects for current view
+                  const relevantFailed = failedSubjects.filter((subject) =>
                     viewMode === "sessionWise" && selectedSession !== "all"
                       ? subject.session === selectedSession
                       : true
-                  )
-                  .length > 0 && (
-                    <div style={{ borderTop: "2px solid #d1d5db", padding: "16px", textAlign: "center", }}>
-                      <p style={{ color: "#dc2626", fontWeight: "bold", fontSize: "13px", margin: "0 0 4px 0", }}>
-                        Disclaimer: Candidate has failed in subject(s):{" "}
-                        {failedSubjects
-                          .filter(subject =>
-                            viewMode === "sessionWise" && selectedSession !== "all"
-                              ? subject.session === selectedSession
-                              : true
-                          )
-                          .map((subject) =>
-                            subject.subjects.length > 0
-                              ? subject.subjects.join(", ")
-                              : `${subject.session} - ${subject.paper}`
-                          )
-                          .join(", ")}
-                      </p>
-                      <p style={{ color: "#dc2626", fontSize: "11px", margin: "0", }}>
-                        Passing criteria: 60% or above required in each subject.
-                      </p>
-                    </div>
-                  )}
+                  );
+                  // If there are failed subjects, check if any are not cleared
+                  const hasUncleared = relevantFailed.some((subject) => {
+                    const marks =
+                      marksheetData?.[subject.session]?.[subject.paper];
+                    return !(typeof marks === "string" && marks.endsWith("C"));
+                  });
+                  if (relevantFailed.length > 0 && hasUncleared) {
+                    return (
+                      <div
+                        style={{
+                          borderTop: "2px solid #d1d5db",
+                          padding: "16px",
+                          textAlign: "center",
+                        }}
+                      >
+                        <p
+                          style={{
+                            color: "#dc2626",
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                            margin: "0 0 4px 0",
+                          }}
+                        >
+                          Disclaimer: Candidate has failed in subject(s):{" "}
+                          {relevantFailed
+                            .filter((subject) => {
+                              const marks =
+                                marksheetData?.[subject.session]?.[
+                                  subject.paper
+                                ];
+                              return !(
+                                typeof marks === "string" && marks.endsWith("C")
+                              );
+                            })
+                            .map((subject) =>
+                              subject.subjects.length > 0
+                                ? subject.subjects.join(", ")
+                                : `${subject.session} - ${subject.paper}`
+                            )
+                            .join(", ")}
+                        </p>
+                        <p
+                          style={{
+                            color: "#dc2626",
+                            fontSize: "11px",
+                            margin: "0",
+                          }}
+                        >
+                          Passing criteria: 60% or above required in each
+                          subject.
+                        </p>
+                      </div>
+                    );
+                  }
+                  // If all failed subjects are cleared, show nothing
+                  return null;
+                })()}
               </div>
 
               {/* Footer - Exact format from image */}
