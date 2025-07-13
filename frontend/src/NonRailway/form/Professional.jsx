@@ -1,6 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-const Professional = ({ formData, onChange, errors = {} }) => {
+const Professional = ({ formData, onChange }) => {
+  const [localErrors, setLocalErrors] = useState({});
+
   const validateField = (field, value) => {
     const trimmedValue = value?.toString().trim() || "";
 
@@ -30,6 +32,12 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         return "CGPA must be between 0-10";
       }
       if (
+        formData.gradeType === "CGPA (out of 4)" &&
+        (isNaN(grade) || grade < 0 || grade > 4)
+      ) {
+        return "CGPA must be between 0-4";
+      }
+      if (
         formData.gradeType === "Percentage" &&
         (isNaN(grade) || grade < 0 || grade > 100)
       ) {
@@ -40,31 +48,34 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     return "";
   };
 
-  const validateAllFields = () => {
+  const validateAllFields = (data = formData) => {
     const requiredFields = [
       "courseType",
       "designation",
       "unitCustodian",
-      "duration",
+      // "duration",
       "workingUnder",
       "highestQualification",
       "fieldOfStudy",
       "institution",
+      // "gradeType",
     ];
 
-    // Add durationOption as required field for Summer Vacation training
-    if (formData.designation === "Summer Vacation training") {
+    if (data.designation === "Summer Vacation training") {
       requiredFields.push("durationOption");
     }
-
-    // Add customFieldOfStudy to required fields if "Other" is selected
-    if (formData.fieldOfStudy === "Other") {
+    if (data.fieldOfStudy === "Other") {
       requiredFields.push("customFieldOfStudy");
+    }
+
+    // Grade value should be validated if gradeType is selected
+    if (data.gradeType) {
+      requiredFields.push("gradeValue");
     }
 
     const validationErrors = {};
     requiredFields.forEach((field) => {
-      const error = validateField(field, formData[field]);
+      const error = validateField(field, data[field]);
       if (error) validationErrors[field] = error;
     });
 
@@ -72,6 +83,14 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
     };
+  };
+
+  // Validate and update errors on every change
+  const handleChange = (field, value) => {
+    const newFormData = { ...formData, [field]: value };
+    onChange(field, value);
+    const { errors } = validateAllFields(newFormData);
+    setLocalErrors(errors);
   };
 
   const getFieldOfStudyOptions = () => {
@@ -87,7 +106,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Computer Engineering",
           "Automobile Engineering",
           "Railway Engineering",
-          "Other"
+          "Other",
         ];
       case "Bachelor's Degree":
         return [
@@ -105,7 +124,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "B.Sc - Mathematics",
           "B.Sc - Chemistry",
           "B.Com - Commerce",
-          "Other"
+          "Other",
         ];
       case "Master's Degree":
         return [
@@ -124,7 +143,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "M.Sc - Chemistry",
           "MBA - Business Administration",
           "M.Com - Commerce",
-          "Other"
+          "Other",
         ];
       case "Ph.D":
         return [
@@ -138,7 +157,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Ph.D - Mathematics",
           "Ph.D - Chemistry",
           "Ph.D - Management",
-          "Other"
+          "Other",
         ];
       default:
         return ["Other"];
@@ -150,8 +169,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       onChange.setValidationFunction(validateAllFields);
     }
   }, [formData]);
-
-  const handleChange = (field, value) => onChange(field, value);
 
   // Course type and mapping data
   const courseTypeOptions = ["Non Railway", "Custom"];
@@ -212,8 +229,17 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       return { theory: "", practical: "", total: "" };
     }
 
-    if (formData.designation === "Summer Vacation training" && formData.durationOption) {
-      return durationMapping[formData.designation][formData.durationOption] || { theory: "", practical: "", total: "" };
+    if (
+      formData.designation === "Summer Vacation training" &&
+      formData.durationOption
+    ) {
+      return (
+        durationMapping[formData.designation][formData.durationOption] || {
+          theory: "",
+          practical: "",
+          total: "",
+        }
+      );
     }
 
     return (
@@ -232,9 +258,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
   );
 
   const OptionalLabel = ({ children }) => (
-    <label className="block text-gray-700 font-medium mb-1">
-      {children}
-    </label>
+    <label className="block text-gray-700 font-medium mb-1">{children}</label>
   );
 
   return (
@@ -268,8 +292,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               </option>
             ))}
           </select>
-          {errors.courseType && (
-            <p className="text-sm text-red-500 mt-1">{errors.courseType}</p>
+          {localErrors.courseType && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.courseType}
+            </p>
           )}
         </div>
 
@@ -283,9 +309,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Enter custom course type"
             />
-            {errors.customCourseType && (
+            {localErrors.customCourseType && (
               <p className="text-sm text-red-500 mt-1">
-                {errors.customCourseType}
+                {localErrors.customCourseType}
               </p>
             )}
           </div>
@@ -319,8 +345,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               disabled={!formData.courseType}
             />
           )}
-          {errors.designation && (
-            <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
+          {localErrors.designation && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.designation}
+            </p>
           )}
         </div>
 
@@ -349,8 +377,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               disabled={!formData.courseType}
             />
           )}
-          {errors.unitCustodian && (
-            <p className="text-sm text-red-500 mt-1">{errors.unitCustodian}</p>
+          {localErrors.unitCustodian && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.unitCustodian}
+            </p>
           )}
         </div>
 
@@ -366,8 +396,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               <option value="4W">4 Weeks</option>
               <option value="6W">6 Weeks</option>
             </select>
-            {errors.durationOption && (
-              <p className="text-sm text-red-500 mt-1">{errors.durationOption}</p>
+            {localErrors.durationOption && (
+              <p className="text-sm text-red-500 mt-1">
+                {localErrors.durationOption}
+              </p>
             )}
           </div>
         )}
@@ -381,12 +413,15 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter duration"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              (formData.courseType === "Non Railway" &&
+                formData.designation &&
+                formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" &&
+                formData.durationOption)
             }
           />
-          {errors.duration && (
-            <p className="text-sm text-red-500 mt-1">{errors.duration}</p>
+          {localErrors.duration && (
+            <p className="text-sm text-red-500 mt-1">{localErrors.duration}</p>
           )}
         </div>
 
@@ -401,8 +436,11 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              (formData.courseType === "Non Railway" &&
+                formData.designation &&
+                formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" &&
+                formData.durationOption)
             }
           />
         </div>
@@ -418,8 +456,11 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
             readOnly={
-              (formData.courseType === "Non Railway" && formData.designation && formData.designation !== "Summer Vacation training") ||
-              (formData.designation === "Summer Vacation training" && formData.durationOption)
+              (formData.courseType === "Non Railway" &&
+                formData.designation &&
+                formData.designation !== "Summer Vacation training") ||
+              (formData.designation === "Summer Vacation training" &&
+                formData.durationOption)
             }
           />
         </div>
@@ -433,8 +474,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter working under"
           />
-          {errors.workingUnder && (
-            <p className="text-sm text-red-500 mt-1">{errors.workingUnder}</p>
+          {localErrors.workingUnder && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.workingUnder}
+            </p>
           )}
         </div>
 
@@ -447,8 +490,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             placeholder="Enter remark"
             rows="3"
           />
-          {errors.remark && (
-            <p className="text-sm text-red-500 mt-1">{errors.remark}</p>
+          {localErrors.remark && (
+            <p className="text-sm text-red-500 mt-1">{localErrors.remark}</p>
           )}
         </div>
       </div>
@@ -478,9 +521,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <option value="Master's Degree">Master's Degree</option>
             <option value="Ph.D">Ph.D</option>
           </select>
-          {errors.highestQualification && (
+          {localErrors.highestQualification && (
             <p className="text-sm text-red-500 mt-1">
-              {errors.highestQualification}
+              {localErrors.highestQualification}
             </p>
           )}
         </div>
@@ -499,8 +542,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               </option>
             ))}
           </select>
-          {errors.fieldOfStudy && (
-            <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
+          {localErrors.fieldOfStudy && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.fieldOfStudy}
+            </p>
           )}
         </div>
 
@@ -510,12 +555,16 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <input
               type="text"
               value={formData.customFieldOfStudy || ""}
-              onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
+              onChange={(e) =>
+                handleChange("customFieldOfStudy", e.target.value)
+              }
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Enter custom field of study"
             />
-            {errors.customFieldOfStudy && (
-              <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
+            {localErrors.customFieldOfStudy && (
+              <p className="text-sm text-red-500 mt-1">
+                {localErrors.customFieldOfStudy}
+              </p>
             )}
           </div>
         )}
@@ -529,8 +578,10 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter institution"
           />
-          {errors.institution && (
-            <p className="text-sm text-red-500 mt-1">{errors.institution}</p>
+          {localErrors.institution && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.institution}
+            </p>
           )}
         </div>
 
@@ -546,8 +597,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             <option value="CGPA (out of 10)">CGPA (out of 10)</option>
             <option value="CGPA (out of 4)">CGPA (out of 4)</option>
           </select>
-          {errors.gradeType && (
-            <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
+          {localErrors.gradeType && (
+            <p className="text-sm text-red-500 mt-1">{localErrors.gradeType}</p>
           )}
         </div>
 
@@ -555,14 +606,16 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           <OptionalLabel>Grade Value</OptionalLabel>
           <input
             type="number"
-            step="0.01"
+            // step="0.01"
             value={formData.gradeValue || ""}
             onChange={(e) => handleChange("gradeValue", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter grade value"
           />
-          {errors.gradeValue && (
-            <p className="text-sm text-red-500 mt-1">{errors.gradeValue}</p>
+          {localErrors.gradeValue && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.gradeValue}
+            </p>
           )}
         </div>
       </div>

@@ -87,11 +87,11 @@ const NonRailwayMain = () => {
 
     if (validationFunctions.current[currentKey]) {
       const validation = validationFunctions.current[currentKey]();
-      // if (!validation.isValid) {
-      //   setErrors(validation.errors);
-      //   return false;
-      // }
-      // setErrors({}); // Clear errors if validation passes
+      if (!validation.isValid) {
+        setErrors(validation.errors);
+        return false;
+      }
+      setErrors({}); // Clear errors if validation passes
       return true;
     }
 
