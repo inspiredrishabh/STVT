@@ -334,10 +334,21 @@ const courseStructure = {
 
 // Add this utility function before the MarksheetService class
 const getRawMarks = (paperMarks) => {
-  if (typeof paperMarks === "string" && paperMarks.endsWith("C")) {
-    return parseInt(paperMarks.slice(0, -1));
+  if (typeof paperMarks === "string") {
+    const match = paperMarks.match(/^(\d+)C/);
+    if (match) return parseInt(match[1]);
+    if (paperMarks.endsWith("C")) return parseInt(paperMarks.slice(0, -1));
   }
   return paperMarks;
+};
+
+// Utility to get supplementary marks from "mainMarkCsupMark"
+const getSupplementaryParsedMarks = (paperMarks) => {
+  if (typeof paperMarks === "string") {
+    const match = paperMarks.match(/^(\d+)C(\d+)$/);
+    if (match) return parseInt(match[2]);
+  }
+  return null;
 };
 
 // Helper to compute 60% passing marks
@@ -1132,7 +1143,7 @@ const Marksheet = () => {
       return Object.entries(papers).map(([paper, config], idx) => {
         const paperMarks = marksheetData[session]?.[paper] ?? "";
         const str = paperMarks.toString();
-        const isCleared = str.endsWith("C");
+        const isCleared = str.includes("C"); // "C" present anywhere
         const rawMarks = getRawMarks(paperMarks) || 0;
         const percentage = ((rawMarks / config.maxMarks) * 100).toFixed(1);
         const passingMarks = getPassingMarks(config.maxMarks);
@@ -1202,7 +1213,7 @@ const Marksheet = () => {
                 color: !isPassed ? "#dc2626" : "black",
               }}
             >
-              {isCleared ? rawMarks : str}
+              {rawMarks}
             </td>
             <td
               style={{
@@ -2006,10 +2017,12 @@ const Marksheet = () => {
                       : true
                   );
                   // If there are failed subjects, check if any are not cleared
+
                   const hasUncleared = relevantFailed.some((subject) => {
                     const marks =
                       marksheetData?.[subject.session]?.[subject.paper];
-                    return !(typeof marks === "string" && marks.endsWith("C"));
+                    // "C" present anywhere means cleared
+                    return !(typeof marks === "string" && marks.includes("C"));
                   });
                   if (relevantFailed.length > 0 && hasUncleared) {
                     return (
@@ -2035,8 +2048,9 @@ const Marksheet = () => {
                                 marksheetData?.[subject.session]?.[
                                   subject.paper
                                 ];
+                              // "C" present anywhere means cleared
                               return !(
-                                typeof marks === "string" && marks.endsWith("C")
+                                typeof marks === "string" && marks.includes("C")
                               );
                             })
                             .map((subject) =>

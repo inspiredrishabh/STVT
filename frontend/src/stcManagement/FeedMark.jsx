@@ -324,12 +324,23 @@ const courseStructure = {
   },
 };
 
-// Utility to get raw marks (removes trailing 'C' if present)
+// Utility to get raw marks (removes trailing 'C' and any supplementary marks)
 const getRawMarks = (paperMarks) => {
-  if (typeof paperMarks === "string" && paperMarks.endsWith("C")) {
-    return parseInt(paperMarks.slice(0, -1));
+  if (typeof paperMarks === "string") {
+    const match = paperMarks.match(/^(\d+)C(\d+)?$/);
+    if (match) return parseInt(match[1]);
+    if (paperMarks.endsWith("C")) return parseInt(paperMarks.slice(0, -1));
   }
   return paperMarks;
+};
+
+// Utility to get supplementary marks from "mainMarkCsupMark"
+const getSupplementaryParsedMarks = (paperMarks) => {
+  if (typeof paperMarks === "string") {
+    const match = paperMarks.match(/^(\d+)C(\d+)$/);
+    if (match) return parseInt(match[2]);
+  }
+  return null;
 };
 
 // Real API Functions
@@ -860,7 +871,7 @@ const FeedMark = () => {
     }));
   };
 
-  // Clear supplementary: append "C" and re-save
+  // Clear supplementary: store as "mainMarkCsupMark"
   const handleClearSubjectSupplementary = async (session, paper) => {
     if (!candidateData) {
       setMessage({ type: "error", text: "No candidate selected" });
@@ -883,8 +894,9 @@ const FeedMark = () => {
     )
       return;
 
-    // Append "C"
-    const newMark = `${marks[session][paper]}C`;
+    // Store as "mainMarkCsupMark"
+    const mainMark = getRawMarks(marks[session][paper]);
+    const newMark = `${mainMark}C${supp}`;
     const updated = {
       ...marks,
       [session]: { ...marks[session], [paper]: newMark },
@@ -1407,8 +1419,9 @@ const FeedMark = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {Object.entries(papers).map(([paper, config]) => {
                           const paperMarks = marks[session]?.[paper];
-                          // Use raw marks for display
                           const displayMarks = getRawMarks(paperMarks);
+                          const displaySupMarks =
+                            getSupplementaryParsedMarks(paperMarks);
                           const passingMarks = getPassingMarks(config.maxMarks);
                           const isFailingGrade = shouldShowAsFailed(
                             session,
@@ -1492,6 +1505,17 @@ const FeedMark = () => {
                                     : "border-gray-300"
                                 }`}
                               />
+
+                              {/* Show supplementary marks if present */}
+                              {displaySupMarks !== null && (
+                                <div className="text-xs text-yellow-700 mt-1">
+                                  Supplementary Cleared:{" "}
+                                  <span className="font-bold">
+                                    {displaySupMarks}
+                                  </span>{" "}
+                                  / {config.maxMarks}
+                                </div>
+                              )}
 
                               {isOverMaxMarks && (
                                 <p className="text-xs text-red-600 font-medium">
@@ -1663,74 +1687,86 @@ const FeedMark = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {failedSubjects.map((subject, index) => (
-                      <div
-                        key={index}
-                        className="bg-white p-4 rounded-lg border border-red-200"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <span className="font-semibold text-red-800">
-                              {subject.session} - {subject.paper}
-                            </span>
-                            <span className="text-xs text-red-600 block">
-                              Required: {subject.passingMarks} (60% of{" "}
-                              {subject.maxMarks})
-                            </span>
+                    {failedSubjects.map((subject, index) => {
+                      const mainExamMark = getRawMarks(subject.marks);
+                      const supExamMark = getSupplementaryParsedMarks(
+                        subject.marks
+                      );
+                      return (
+                        <div
+                          key={index}
+                          className="bg-white p-4 rounded-lg border border-red-200"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <span className="font-semibold text-red-800">
+                                {subject.session} - {subject.paper}
+                              </span>
+                              <span className="text-xs text-red-600 block">
+                                Required: {subject.passingMarks} (60% of{" "}
+                                {subject.maxMarks})
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-red-600 font-bold">
+                                {mainExamMark}/{subject.maxMarks}
+                                {supExamMark !== null && (
+                                  <span className="text-yellow-700 ml-2">
+                                    (Supplementary: {supExamMark}/
+                                    {subject.maxMarks})
+                                  </span>
+                                )}
+                              </span>
+                              <span className="text-xs text-red-500 block">
+                                Main Exam
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <span className="text-red-600 font-bold">
-                              {getRawMarks(subject.marks)}/{subject.maxMarks}
-                            </span>
-                            <span className="text-xs text-red-500 block">
-                              Main Exam
-                            </span>
-                          </div>
-                        </div>
 
-                        {/* Supplementary Marks Input */}
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <label className="block text-xs font-medium text-blue-700 mb-1">
-                                Supplementary Exam Marks (Record Only)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                max={subject.maxMarks}
-                                value={
-                                  supplementaryMarks[subject.session]?.[
-                                    subject.paper
-                                  ] || ""
-                                }
-                                onChange={(e) =>
-                                  handleSupplementaryMarksChange(
-                                    subject.session,
-                                    subject.paper,
-                                    e.target.value
-                                  )
-                                }
-                                readOnly={hasExistingMarks && !isEditMode}
-                                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                  hasExistingMarks && !isEditMode
-                                    ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
-                                    : "border-blue-300"
-                                }`}
-                                placeholder={`0-${subject.maxMarks}`}
-                              />
+                          {/* Supplementary Marks Input */}
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <label className="block text-xs font-medium text-blue-700 mb-1">
+                                  Supplementary Exam Marks (Record Only)
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={subject.maxMarks}
+                                  value={
+                                    supplementaryMarks[subject.session]?.[
+                                      subject.paper
+                                    ] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleSupplementaryMarksChange(
+                                      subject.session,
+                                      subject.paper,
+                                      e.target.value
+                                    )
+                                  }
+                                  readOnly={hasExistingMarks && !isEditMode}
+                                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                    hasExistingMarks && !isEditMode
+                                      ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
+                                      : "border-blue-300"
+                                  }`}
+                                  placeholder={`0-${subject.maxMarks}`}
+                                />
+                              </div>
+                              <div className="text-xs text-gray-500 pt-4">
+                                /{subject.maxMarks}
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500 pt-4">
-                              /{subject.maxMarks}
-                            </div>
+                            <p className="text-xs text-blue-600 mt-1">
+                              💡 These marks are for record keeping only. Main
+                              exam marks will be used in marksheet generation.
+                            </p>
                           </div>
-                          <p className="text-xs text-blue-600 mt-1">
-                            💡 These marks are for record keeping only. Main
-                            exam marks will be used in marksheet generation.
-                          </p>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
