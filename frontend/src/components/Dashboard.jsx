@@ -187,13 +187,17 @@ class DashboardAPI {
       const totalCandidates = stcCount + wtcCount + nonRailwayCount;
       const railwayCandidates = stcCount + wtcCount;
 
+      // Active courses: Only count courses with enrolled candidates > 0
+      const activeCourses =
+        totalCandidates > 0 ? Math.ceil(totalCandidates / 25) : 0;
+
       const data = {
         totalCandidates: totalCandidates,
         railwayCandidates: railwayCandidates,
         nonRailwayCandidates: nonRailwayCount,
         stcCandidates: stcCount,
         wtcCandidates: wtcCount,
-        activeCourses: Math.ceil(totalCandidates / 25), // Assuming 25 candidates per course
+        activeCourses: activeCourses,
         completedCourses: Math.floor(totalCandidates / 30), // Assuming some courses are completed
         pendingApplications: Math.floor(totalCandidates * 0.1), // 10% pending
         trainingCapacity: trainingCapacity,
