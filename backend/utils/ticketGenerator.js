@@ -71,13 +71,40 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
     return new Promise((resolve, reject) => {
         console.log(`Generating ticket number for designation: ${designation} in ${traineeType}`);
         
-        // For STC candidates, use designation directly as prefix
-        // For other trainee types, create acronym from designation
-        const prefix = traineeType === 'stc' ? designation.toUpperCase() : createAcronym(designation);
+        let prefix;
+        // Special handling for WTC designations
+        if (traineeType === 'wtc') {
+            // Handle specific cases
+            switch(designation) {
+                case 'CG Apprentice':
+                    prefix = 'CG';
+                    break;
+                case 'RRB Apprentice Technician III':
+                case 'GDCE App. Tech. III':
+                    prefix = 'TECH';
+                    break;
+                case 'RRC Act Apprentice 1961':
+                    prefix = 'ATR';
+                    break;
+                case 'RRC Assistant Workshop':
+                case 'CG Assistant Workshop':
+                    prefix = 'HK';
+                    break;
+                case 'Act Junior Apprentices':
+                    prefix = 'AHA';
+                    break;
+                default:
+                    // For all other cases, use acronym
+                    prefix = createAcronym(designation);
+            }
+        } else {
+            // For non-WTC candidates, keep existing logic
+            prefix = traineeType === 'stc' ? designation.toUpperCase() : createAcronym(designation);
+        }
+
         const tableName = `${traineeType}_candidates`;
         const prefixKey = `${traineeType}_${prefix.toLowerCase()}`;
 
-        // Simple query to get all tickets for this prefix, then find the max
         const query = `
             SELECT ticket_no
             FROM ${tableName}
@@ -95,13 +122,11 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
             let maxNumber = 0;
             const prefixLower = prefix.toLowerCase();
 
-            // Find the highest number for this exact prefix
             if (rows && rows.length > 0) {
                 rows.forEach(row => {
                     const ticket = row.ticket_no;
                     const ticketLower = ticket.toLowerCase();
                     
-                    // Check if ticket starts with our prefix (case-insensitive)
                     if (ticketLower.startsWith(prefixLower)) {
                         const numericPart = ticket.slice(prefix.length);
                         const number = parseInt(numericPart, 10);
@@ -113,18 +138,17 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
                 });
             }
 
-            // Check if we've generated any numbers for this prefix in this session
             if (generatedNumbers[prefixKey] && generatedNumbers[prefixKey] > maxNumber) {
                 maxNumber = generatedNumbers[prefixKey];
             }
 
             const newNumber = maxNumber + 1;
+            // Use 5 digits padding for the numeric part
             const newTicketNumber = `${prefix}${String(newNumber).padStart(5, '0')}`;
             
-            // Track this generated number
             generatedNumbers[prefixKey] = newNumber;
             
-            console.log(`Generated new ticket number: ${newTicketNumber} (prefix: ${prefix}, max found: ${maxNumber}, session max: ${generatedNumbers[prefixKey]})`);
+            console.log(`Generated new ticket number: ${newTicketNumber} (prefix: ${prefix}, max found: ${maxNumber})`);
             resolve(newTicketNumber);
         });
     });

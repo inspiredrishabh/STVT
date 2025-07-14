@@ -1,14 +1,45 @@
 import React, { useCallback, useMemo } from "react";
 
+const getImageDimensions = (file) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 const Personal = ({ formData, onChange, errors = {} }) => {
   const validateField = useCallback(
     (fieldName, value) => {
       const validations = {
-        picture: (v) => {
+        picture: async (v) => {
           if (!v) return "Picture is required";
           if (!v.type?.startsWith("image/"))
             return "Please select a valid image file";
-          if (v.size > 1024 * 1024) return "Image size should be less than 1MB";
+          if (v.size > 1024 * 1024) 
+            return "Image size should be less than 1MB";
+          
+          try {
+            // Convert cm to pixels (at 96 DPI)
+            const expectedWidth = Math.round(3.5 * 37.8); // 3.5cm
+            const expectedHeight = Math.round(4.5 * 37.8); // 4.5cm
+            const margin = Math.round(0.1 * 37.8); // 0.1cm margin
+
+            const dimensions = await getImageDimensions(v);
+            
+            const isWidthValid = Math.abs(dimensions.width - expectedWidth) <= margin;
+            const isHeightValid = Math.abs(dimensions.height - expectedHeight) <= margin;
+
+            if (!isWidthValid || !isHeightValid) {
+              return `Image dimensions must be 4.5cm x 3.5cm (${expectedHeight}px x ${expectedWidth}px). Current dimensions: ${dimensions.height}px x ${dimensions.width}px`;
+            }
+          } catch (error) {
+            return "Error validating image dimensions";
+          }
+          
           return "";
         },
         name: (v) => validateName(v, "Name"),
@@ -151,11 +182,18 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               id="pictureUpload"
               type="file"
               accept="image/*"
-              onChange={(e) => onChange(field, e.target.files[0])}
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                onChange(field, file);
+                const error = await validateField("picture", file);
+                if (error) {
+                  onChange.setFieldError?.("picture", error);
+                }
+              }}
               className="hidden"
             />
             <span className="text-gray-500 text-sm truncate">
-              {formData[field] ? formData[field].name : "No file chosen ,File must be 4.5cm x 3.5cm in size"}
+              {formData[field] ? formData[field].name : "No file chosen (Image must be 4.5cm x 3.5cm)"}
             </span>
           </div>
         ) : type === "select" ? (
