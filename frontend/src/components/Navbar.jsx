@@ -220,6 +220,7 @@ const Navbar = () => {
               <div>
                 <Link to="/dashboard" className="block">
                   <h1 className="text-xl font-bold text-blue-800 hover:text-blue-600 transition-colors cursor-pointer">Northern Railway</h1>
+                  <h2 className="text-lg font-semibold text-blue-700">Supervisor Training Center</h2>
                 </Link>
                 <p className="text-sm text-gray-600">Trainee Management System</p>
               </div>
