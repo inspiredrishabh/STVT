@@ -3,8 +3,7 @@ import React from 'react';
 const PageHeader = ({
   selectedFilters,
   setSelectedFilters,
-  isListView,
-  dropdownData
+  isListView
 }) => {
   // Function to toggle selected filters
   const toggleFilter = (filter) => {
@@ -36,10 +35,10 @@ const PageHeader = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-200">
+    <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-orange-100">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Manage Candidates</h1>
+          <h1 className="text-3xl font-bold text-[#1B2A41] mb-1">Manage Candidates</h1>
           <p className="text-gray-600">View, filter, and manage all candidate records.</p>
         </div>
 
@@ -47,30 +46,30 @@ const PageHeader = ({
         {isListView && (
           <div className="flex flex-col gap-2">
             {/* Main Filter Categories */}
-            <div className="flex items-center bg-gray-100 rounded-xl p-1 shadow-inner flex-wrap gap-1">
+            <div className="flex items-center bg-white rounded-xl p-1 shadow-inner flex-wrap gap-1">
               <ToggleButton
                 isActive={areAllSelected()}
                 onClick={toggleAllFilters}
                 text="All"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-[#FF8D21] hover:bg-[#FFA652]"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('STC')}
                 onClick={() => toggleFilter('STC')}
                 text="STC"
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-[#008080] hover:bg-[#006666]"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('WTC')}
                 onClick={() => toggleFilter('WTC')}
                 text="WTC"
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-[#FFA652] hover:bg-[#FF8D21]"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('Non Railway')}
                 onClick={() => toggleFilter('Non Railway')}
                 text="Non Railway"
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-purple-500 hover:bg-purple-600"
               />
             </div>
           </div>
@@ -85,7 +84,7 @@ const ToggleButton = ({ isActive, onClick, text, className }) => (
     onClick={onClick}
     className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap ${isActive
       ? `text-white shadow-md ${className}`
-      : 'text-gray-600 hover:text-gray-800 hover:bg-white/80'
+      : 'text-gray-600 hover:text-[#1B2A41] hover:bg-white/80'
       }`}
   >
     {text}

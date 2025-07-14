@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { Shield, Settings, ClipboardList, Eye, EyeOff, Train, User, Lock } from "lucide-react";
+import { Shield, Settings, ClipboardList, Eye, EyeOff, User, Lock } from "lucide-react";
 
 // Import images
 import anjiKhadBridge from "../assets/Anji-Khad-railway-bridge.jpg";
@@ -84,17 +84,17 @@ const Login2 = () => {
     };
 
     return (
-        <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-yellow-400">
+        <div className="h-screen w-screen overflow-hidden bg-orange-100">
             {/* Header Navbar */}
-            <header className="bg-gradient-to-r from-orange-50 to-yellow-50 shadow-lg border-b-4 border-orange-600 h-20 flex-shrink-0">
+            <header className="bg-orange-50 shadow-lg border-b-4 border-orange-600 h-20 flex-shrink-0">
                 <div className="w-full px-3 h-full">
                     <div className="flex justify-between items-center h-full max-w-7xl mx-auto">
                         {/* Left side - Government logos */}
                         <div className="flex items-center space-x-2 flex-shrink-0">
                             <img src={nationalEmblem} alt="National Emblem" className="h-11 w-auto" />
                             <div className="border-l border-orange-300 pl-2">
-                                <h1 className="text-sm font-bold text-orange-900 leading-tight">Government of India</h1>
-                                <h2 className="text-xs text-orange-700 leading-tight">Republic of India</h2>
+                                <h1 className="text-sm font-bold text-black leading-tight">Government of India</h1>
+                                <h2 className="text-xs text-black leading-tight">Republic of India</h2>
                             </div>
                         </div>
 
@@ -102,18 +102,18 @@ const Login2 = () => {
                         <div className="flex items-center space-x-2 flex-shrink-0">
                             <img src={rail2} alt="Railway Logo" className="h-11 w-auto" />
                             <div className="text-center">
-                                <h1 className="text-sm font-bold text-orange-900 leading-tight">Northern Railway</h1>
-                                <h2 className="text-sm font-semibold text-orange-800 leading-tight">Indian Railways</h2>
-                                <p className="text-xs text-orange-700 leading-tight">Trainee Management System</p>
-                                <p className="text-xs text-orange-700 leading-tight">Digital Platform</p>
+                                <h1 className="text-sm font-bold text-black leading-tight">Indian Railways</h1>
+                                <h2 className="text-sm font-semibold text-black leading-tight">Northern Railway</h2>
+                                <p className="text-xs text-black leading-tight">Trainee Management System</p>
+                                <p className="text-xs text-black leading-tight">Digital Platform</p>
                             </div>
                         </div>
 
                         {/* Right side - Additional info */}
                         <div className="text-right flex-shrink-0 flex items-center space-x-2">
                             <img src={railPng} alt="Railway Ministry Logo" className="h-11 w-auto" />
-                            <div className="text-xs text-orange-700">
-                                <p className="leading-tight">Ministry of Railways</p>
+                            <div className="text-xs text-black">
+                                <p className="leading-tight font-bold">Ministry of Railways</p>
                                 <p className="leading-tight">Government of India</p>
                             </div>
                         </div>
@@ -124,10 +124,10 @@ const Login2 = () => {
             {/* Main Content */}
             <div className="flex h-[calc(100vh-80px)] w-full">
                 {/* Left Side - Photo Gallery */}
-                <div className="w-1/2 p-4 flex items-center justify-center bg-gradient-to-br from-orange-100 to-yellow-100">
+                <div className="w-1/2 p-4 flex items-center justify-center bg-orange-100">
                     <div className="w-full max-w-md">
                         {/* Gallery Container Box */}
-                        <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl shadow-2xl overflow-hidden border-2 border-orange-300">
+                        <div className="bg-orange-50 rounded-xl shadow-2xl overflow-hidden border-2 border-orange-300">
                             <div className="relative h-80 overflow-hidden">
                                 {/* Image Slider */}
                                 {galleryImages.map((image, index) => (
@@ -142,8 +142,7 @@ const Login2 = () => {
                                             alt={image.title}
                                             className="w-full h-full object-cover"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-orange-900/70 via-transparent to-transparent"></div>
-                                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/30">
                                             <h3 className="text-white text-sm font-bold text-center drop-shadow-lg">
                                                 {image.title}
                                             </h3>
@@ -153,7 +152,7 @@ const Login2 = () => {
                             </div>
                             
                             {/* Image Indicators */}
-                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-3 flex justify-center space-x-2">
+                            <div className="bg-orange-50 p-3 flex justify-center space-x-2">
                                 {galleryImages.map((_, index) => (
                                     <button
                                         key={index}
@@ -177,12 +176,12 @@ const Login2 = () => {
                 </div>
 
                 {/* Right Side - Login Form */}
-                <div className="w-1/2 flex items-center justify-center p-4 bg-gradient-to-br from-orange-50 to-yellow-50 overflow-y-auto">
+                <div className="w-1/2 flex items-center justify-center p-4 bg-orange-50 overflow-y-auto">
                     <div className="w-full max-w-md">
                         {/* Login Card Header */}
                         <div className="text-center mb-6">
-                            <h2 className="text-2xl font-bold text-orange-900 mb-2">Welcome</h2>
-                            <h3 className="text-xl font-bold text-orange-800 mb-2">Login Portal</h3>
+                            <h2 className="text-2xl font-bold text-black mb-2">Welcome</h2>
+                            <h3 className="text-x1 font-bold text-black mb-2">Login Portal</h3>
                             <p className="text-orange-700 text-sm leading-tight">Please login to Trainee Management System</p>
                             <p className="text-orange-700 text-sm leading-tight">Secure Authentication Required</p>
                         </div>
@@ -213,9 +212,9 @@ const Login2 = () => {
                                             onClick={() =>
                                                 handleChange({ target: { name: "role", value: option.value } })
                                             }
-                                            className={`cursor-pointer rounded-lg border-2 p-2 transition-all duration-200 ${
+                                            className={`cursor-pointer rounded-lg border-2 p-3 transition-all duration-200 ${
                                                 credentials.role === option.value
-                                                    ? "bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-400 shadow-sm"
+                                                    ? "bg-orange-50 border-orange-400 shadow-sm"
                                                     : "border-orange-200 hover:bg-orange-50 hover:border-orange-300"
                                             }`}
                                         >
@@ -226,7 +225,7 @@ const Login2 = () => {
                                                     {option.icon}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className={`font-medium text-xs ${
+                                                    <div className={`font-medium text-base ${
                                                         credentials.role === option.value ? 'text-orange-700' : 'text-orange-600'
                                                     }`}>
                                                         {option.label}
@@ -261,7 +260,7 @@ const Login2 = () => {
                                         required
                                         value={credentials.password}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 pr-10 rounded-lg border-2 border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors text-xs bg-gradient-to-r from-orange-50 to-yellow-50"
+                                        className="w-full px-3 py-2 pr-10 rounded-lg border-2 border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors text-xs bg-orange-50"
                                         placeholder="Enter your password"
                                     />
                                     <button
@@ -282,7 +281,7 @@ const Login2 = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-2 px-4 bg-gradient-to-r from-orange-600 to-yellow-500 text-white font-semibold rounded-lg hover:from-orange-700 hover:to-yellow-600 focus:ring-4 focus:ring-orange-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-xs shadow-lg"
+                                className="w-full py-2 px-4 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 focus:ring-4 focus:ring-orange-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-xs shadow-lg"
                             >
                                 {isLoading ? (
                                     <div className="flex items-center justify-center">

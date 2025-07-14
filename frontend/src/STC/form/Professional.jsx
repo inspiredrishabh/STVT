@@ -172,7 +172,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       {/* Date of Appointment */}
       <div className="mb-6">
         <RequiredLabel>Date of Appointment</RequiredLabel>

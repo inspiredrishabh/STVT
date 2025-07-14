@@ -181,7 +181,7 @@ const Navbar = () => {
     <>
       {/* Top Header Bar - Government Style */}
       <div className="bg-orange-50 border-b border-orange-300">
-        <div className="max-w-9xl mx-auto px-4 py-1">
+        <div className="max-w-7xl mx-auto px-4 py-1">
           <div className="flex justify-between items-center text-xs h-8">
             <div className="flex items-center">
               <span
@@ -241,7 +241,7 @@ const Navbar = () => {
 
       {/* Main Header */}
       <div className="bg-white border-b-4 border-orange-600">
-        <div className="max-w-9xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             {/* Left - National Emblem, Logo and Title */}
             <div className="flex items-center space-x-4">
@@ -253,14 +253,14 @@ const Navbar = () => {
               <img src={logo} alt="Railway logo" className="w-16 h-16" />
               <div>
                 <Link to="/dashboard" className="block">
-                  <h1 className="text-xl font-bold text-orange-800 hover:text-orange-600 transition-colors cursor-pointer">
+                  <h1 className="text-xl font-bold text-black-800 hover:text-black-600 transition-colors cursor-pointer">
                     Northern Railway
                   </h1>
-                  <h2 className="text-lg font-semibold text-orange-700">
+                  <h2 className="text-lg font-semibold text-black-700">
                     Supervisor Training Center
                   </h2>
                 </Link>
-                <p className="text-sm text-orange-600">
+                <p className="text-sm text-black-600">
                   Trainee Management System
                 </p>
               </div>
@@ -353,7 +353,7 @@ const Navbar = () => {
         className="bg-orange-600 shadow-md sticky top-0 z-40"
         aria-label="Main Navigation"
       >
-        <div className="max-w-9xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center h-12">
             {/* Navigation Items */}
             <div className="hidden md:flex items-center space-x-0">

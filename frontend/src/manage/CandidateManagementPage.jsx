@@ -2296,7 +2296,7 @@ const CandidateManagementPage = () => {
     setNotificationTimeout(timeout);
   };
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-8xl mx-auto space-y-8">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -2331,11 +2331,11 @@ const CandidateManagementPage = () => {
 
         {/* Auto-filter notification */}
         {autoFilterNotification && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+          <div className="bg-blue-50 border-2 border-blue-300 text-blue-800 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-blue-400"
+                  className="h-5 w-5 text-blue-600"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >

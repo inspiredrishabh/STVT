@@ -277,13 +277,13 @@ const STCMain = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 bg-white">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           STC Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation */}
@@ -335,7 +335,7 @@ const STCMain = () => {
           type="button"
           onClick={step === steps.length - 1 ? handleSubmit : handleNext}
           disabled={isSubmitting}
-          className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting
             ? "Submitting..."

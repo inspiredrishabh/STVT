@@ -204,7 +204,7 @@ const NonRailwayMain = () => {
 
       const result = await response.json();
       console.log("Submission result:", result);
-      
+
       // Show success message with ticket number
       const ticketNumber = result.data?.ticket_no || "Generated";
       alert(
@@ -293,7 +293,7 @@ const NonRailwayMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Non-Railway Candidate Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation Bar */}
@@ -302,20 +302,18 @@ const NonRailwayMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold transition-colors duration-200
-              ${
-                step === index
+              ${step === index
                   ? "bg-orange-500"
                   : step > index
-                  ? "bg-green-500"
-                  : "bg-gray-500"
-              }`}
+                    ? "bg-green-500"
+                    : "bg-gray-500"
+                }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${
-                step === index ? "text-white" : "text-gray-300"
-              }`}
+              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
+                }`}
             >
               {label} Details
             </p>
@@ -351,7 +349,7 @@ const NonRailwayMain = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 flex items-center transition-colors"
+            className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 flex items-center transition-colors"
           >
             {isLoading && (
               <svg
@@ -377,8 +375,8 @@ const NonRailwayMain = () => {
             {isLoading
               ? "Submitting..."
               : step === steps.length - 1
-              ? "Submit Registration"
-              : "Save and Next →"}
+                ? "Submit Registration"
+                : "Save and Next →"}
           </button>
         </div>
       </form>

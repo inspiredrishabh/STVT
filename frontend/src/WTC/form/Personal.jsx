@@ -19,9 +19,9 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           if (!v) return "Picture is required";
           if (!v.type?.startsWith("image/"))
             return "Please select a valid image file";
-          if (v.size > 1024 * 1024) 
+          if (v.size > 1024 * 1024)
             return "Image size should be less than 1MB";
-          
+
           try {
             // Convert cm to pixels (at 96 DPI)
             const expectedWidth = Math.round(3.5 * 37.8); // 3.5cm
@@ -29,7 +29,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             const margin = Math.round(0.1 * 37.8); // 0.1cm margin
 
             const dimensions = await getImageDimensions(v);
-            
+
             const isWidthValid = Math.abs(dimensions.width - expectedWidth) <= margin;
             const isHeightValid = Math.abs(dimensions.height - expectedHeight) <= margin;
 
@@ -39,7 +39,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           } catch (error) {
             return "Error validating image dimensions";
           }
-          
+
           return "";
         },
         name: (v) => validateName(v, "Name"),
@@ -226,7 +226,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
           👤

@@ -214,7 +214,7 @@ const WtcMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           WTC Candidate Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation Bar */}
@@ -267,7 +267,7 @@ const WtcMain = () => {
             disabled={isSubmitting}
             className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-pink-500 hover:bg-pink-700"
+              : "bg-orange-500 hover:bg-orange-600"
               } text-white`}
           >
             {isSubmitting

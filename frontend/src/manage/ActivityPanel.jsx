@@ -42,13 +42,12 @@ const ActivityPanel = ({ candidates }) => {
       const activity = recentCandidates.map((cand) => ({
         id: cand.id,
         timestamp: cand.dateOfJoiningStcWtcNonRailway,
-        description: `${cand.name} joined as ${
-          cand.workInfo || cand.designation
-        }`,
+        description: `${cand.name} joined as ${cand.workInfo || cand.designation
+          }`,
         candidate: cand,
       }));
       setRecentActivity(activity);
-    } catch (err) {
+    } catch {
       setError("Could not load activity.");
       setRecentActivity([]);
     } finally {
@@ -61,7 +60,7 @@ const ActivityPanel = ({ candidates }) => {
   }, [fetchRecentActivity]);
 
   return (
-    <div className="flex flex-col bg-white rounded-3xl p-6 shadow-md border border-gray-200 h-full">
+    <div className="flex flex-col bg-white rounded-3xl p-6 shadow-lg border-2 border-orange-100 h-full">
       <Header />
 
       <div className="flex-1 overflow-auto">
@@ -102,10 +101,10 @@ ActivityPanel.propTypes = {
 
 const Header = () => (
   <div className="flex items-center mb-4 space-x-3">
-    <div className="p-2 bg-blue-100 rounded-xl">
-      <Activity className="w-5 h-5 text-blue-600" />
+    <div className="p-2 bg-[#FF8D21] rounded-xl">
+      <Activity className="w-5 h-5 text-white" />
     </div>
-    <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
+    <h3 className="text-lg font-semibold text-[#1B2A41]">Recent Activity</h3>
   </div>
 );
 
@@ -113,11 +112,11 @@ const LoadingSkeleton = () => (
   <div role="status" aria-label="Loading recent activity" className="space-y-4">
     {Array.from({ length: 5 }).map((_, i) => (
       <div key={i} className="flex items-center animate-pulse space-x-4 p-3">
-        <div className="w-10 h-10 bg-gray-200 rounded-full" />
+        <div className="w-10 h-10 bg-[#FFA652] rounded-full" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
-          <div className="h-3 bg-gray-200 rounded w-1/2" />
-          <div className="h-3 bg-gray-200 rounded w-1/3" />
+          <div className="h-4 bg-[#FFA652] rounded w-3/4" />
+          <div className="h-3 bg-[#FFA652] rounded w-1/2" />
+          <div className="h-3 bg-[#FFA652] rounded w-1/3" />
         </div>
       </div>
     ))}
@@ -129,11 +128,11 @@ const ErrorState = ({ message, onRetry }) => (
     <div className="p-3 mb-4 bg-red-100 rounded-full">
       <Activity className="w-8 h-8 text-red-500" />
     </div>
-    <h4 className="text-gray-800 font-medium mb-2">Unable to Load Activity</h4>
-    <p className="text-gray-500 text-sm mb-4">{message}</p>
+    <h4 className="text-[#1B2A41] font-medium mb-2">Unable to Load Activity</h4>
+    <p className="text-gray-600 text-sm mb-4">{message}</p>
     <button
       onClick={onRetry}
-      className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+      className="px-3 py-1.5 text-xs font-medium text-white bg-[#FF8D21] rounded hover:bg-[#FFA652] transition-colors"
     >
       Try Again
     </button>
@@ -142,11 +141,11 @@ const ErrorState = ({ message, onRetry }) => (
 
 const EmptyState = () => (
   <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-    <div className="p-3 mb-4 bg-gray-100 rounded-full">
-      <Clock className="w-8 h-8 text-gray-400" />
+    <div className="p-3 mb-4 bg-[#FFA652] rounded-full">
+      <Clock className="w-8 h-8 text-white" />
     </div>
-    <h4 className="text-gray-800 font-medium mb-2">No Recent Activity</h4>
-    <p className="text-gray-500 text-sm">
+    <h4 className="text-[#1B2A41] font-medium mb-2">No Recent Activity</h4>
+    <p className="text-gray-600 text-sm">
       Candidate join events will appear here as they happen.
     </p>
   </div>
@@ -173,18 +172,18 @@ const ActivityItem = ({ activity }) => {
   });
 
   const badgeColors = {
-    railway: "bg-blue-100 text-blue-800",
-    "non-railway": "bg-green-100 text-green-800",
+    railway: "bg-[#008080] text-white",
+    "non-railway": "bg-green-500 text-white",
   };
   const badgeClass =
-    badgeColors[candidate.stream?.toLowerCase()] || "bg-gray-100 text-gray-800";
+    badgeColors[candidate.stream?.toLowerCase()] || "bg-[#FFA652] text-white";
 
   return (
-    <li className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+    <li className="flex items-center p-3 hover:bg-white/50 rounded-lg transition-colors">
       {/* Avatar */}
       <div className="flex-shrink-0 mr-3">
         {
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center font-semibold text-gray-600">
+          <div className="w-10 h-10 bg-[#FF8D21] rounded-full flex items-center justify-center font-semibold text-white">
             {candidate.name?.[0]?.toUpperCase() || "?"}
           </div>
         }
@@ -193,15 +192,15 @@ const ActivityItem = ({ activity }) => {
       {/* Text */}
       <div className="flex-1 min-w-0">
         <p
-          className="text-sm font-semibold text-gray-800 truncate"
+          className="text-sm font-semibold text-[#1B2A41] truncate"
           title={candidate.name}
         >
           {candidate.name}
         </p>
-        <p className="text-xs text-gray-500 truncate" title={description}>
+        <p className="text-xs text-gray-600 truncate" title={description}>
           {description}
         </p>
-        <p className="text-xs text-gray-400">{dateStr}</p>
+        <p className="text-xs text-gray-500">{dateStr}</p>
       </div>
 
       {/* Stream badge */}
@@ -217,7 +216,7 @@ const ActivityItem = ({ activity }) => {
 const Summary = ({ total, active }) => {
   const rate = total > 0 ? Math.round((active / total) * 100) : 0;
   return (
-    <div className="mt-6 pt-4 border-t border-gray-200">
+    <div className="mt-6 pt-4 border-t border-orange-100">
       <div className="grid grid-cols-3 text-center gap-4">
         <Stat label="Total" value={total.toLocaleString()} />
         <Stat label="Active" value={active.toLocaleString()} highlight />
@@ -230,14 +229,13 @@ const Summary = ({ total, active }) => {
 const Stat = ({ label, value, highlight }) => (
   <div>
     <p
-      className={`text-xl font-bold ${
-        highlight ? "text-green-600" : "text-gray-900"
-      }`}
+      className={`text-xl font-bold ${highlight ? "text-[#008080]" : "text-[#1B2A41]"
+        }`}
       title={`${value} ${label.toLowerCase()}`}
     >
       {value}
     </p>
-    <p className="text-xs text-gray-500">{label}</p>
+    <p className="text-xs text-gray-600">{label}</p>
   </div>
 );
 

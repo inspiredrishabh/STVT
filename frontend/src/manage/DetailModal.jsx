@@ -190,9 +190,9 @@ const DetailModal = ({ candidate, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border-2 border-orange-100">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
           <div className="flex items-center space-x-4">
             <img
               src={`http://localhost:5000/${candidate.picture}`}
@@ -200,18 +200,18 @@ const DetailModal = ({ candidate, onClose }) => {
               className="w-16 h-16 rounded-2xl object-cover shadow-lg"
             />
             <div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-bold text-[#1B2A41]">
                 {candidate.name}
               </h3>
               <p className="text-gray-600">{designation}</p>
-              <p className="text-sm text-blue-600 font-medium">
+              <p className="text-sm text-black font-medium">
                 {candidate.type} Candidate
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+            className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
           >
             <X className="h-5 w-5" />
           </button>
@@ -272,23 +272,22 @@ const DetailModal = ({ candidate, onClose }) => {
 };
 
 const InfoSection = ({ title, icon: Icon, data }) => (
-  <div className="bg-gray-50 rounded-2xl p-4 h-full">
-    <h5 className="font-semibold text-gray-800 flex items-center mb-4">
-      <Icon className="h-5 w-5 mr-2 text-blue-500" />
+  <div className="bg-white rounded-2xl p-4 h-full border-2 border-orange-100">
+    <h5 className="font-semibold text-[#1B2A41] flex items-center mb-4">
+      {Icon && <Icon className="h-5 w-5 mr-2 text-black" />}
       {title}
     </h5>
     <div className="space-y-3 text-sm">
       {data.map(({ label, value, fullWidth }) => (
         <div
           key={label}
-          className={`flex ${
-            fullWidth ? "flex-col items-start" : "justify-between items-center"
-          }`}
+          className={`flex ${fullWidth ? "flex-col items-start" : "justify-between items-center"
+            }`}
         >
-          <span className="font-medium text-gray-600 whitespace-nowrap">
+          <span className="font-medium text-black whitespace-nowrap">
             {label}:
           </span>
-          <span className={`text-gray-800 ${!fullWidth && "text-right pl-2"}`}>
+          <span className={`text-[#1B2A41] ${!fullWidth && "text-right pl-2"}`}>
             {value || "N/A"}
           </span>
         </div>

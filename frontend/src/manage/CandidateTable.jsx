@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Eye, Edit, Trash2, Briefcase, Zap, Save, X, User, Mail, Phone, MapPin, Calendar, Building } from 'lucide-react';
 
-const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }) => {
+const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
   const [editingCandidate, setEditingCandidate] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
@@ -9,7 +9,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
   if (candidates.length === 0) {
     return <EmptyState />;
   }
-  
+
 
   const handleEditClick = (candidate) => {
     // For comprehensive editing, open modal
@@ -61,20 +61,20 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
 
   return (
     <>
-      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-orange-100">
         <TableHeader />
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
                 {['Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
-                  <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-black uppercase tracking-wider">
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-orange-200">
               {candidates.map((candidate) => (
                 <CandidateRow
                   key={candidate.id}
@@ -109,12 +109,12 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onEdit, onUpdate }
 };
 
 const TableHeader = () => (
-  <div className="bg-blue-100 px-8 py-6 border-b border-gray-200">
+  <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
     <div className="flex items-center space-x-3">
-      <div className="p-2 bg-blue-200 rounded-xl">
-        <Users className="h-5 w-5 text-blue-600" />
+      <div className="p-2 bg-[#FF8D21] rounded-xl">
+        <Users className="h-5 w-5 text-white" />
       </div>
-      <h3 className="text-lg font-bold text-gray-800">Candidate Directory</h3>
+      <h3 className="text-lg font-bold text-[#1B2A41]">Candidate Directory</h3>
     </div>
   </div>
 );
@@ -142,12 +142,12 @@ const CandidateRow = ({
   }
 
   return (
-    <tr className="hover:bg-blue-50 transition-colors duration-200">
+    <tr className="hover:bg-gray-50 transition-colors duration-200">
       <td className="px-6 py-4">
         <div className="flex items-center space-x-4">
           <img src={`http://localhost:5000/${candidate.picture}`} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
           <div>
-            <div className="text-sm font-bold text-gray-900">{candidate.name}</div>
+            <div className="text-sm font-bold text-[#1B2A41]">{candidate.name}</div>
             <div className="text-xs text-gray-500">Ticket No: {candidate.ticketNumber || candidate.employeeNumber}</div>
           </div>
         </div>
@@ -395,12 +395,12 @@ const getProfessionalFields = (candidate) => {
       { label: "Appointment Date", field: "dateOfAppointmentInRailway", type: "date", value: candidate.dateOfAppointmentInRailway },
       { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", value: candidate.modeOfAppointment }
     ];
-    
+
     // Add station code specifically for STC candidates
     if (candidate.type === 'STC') {
       railwayFields.push({ label: "Station Code", field: "stationCode", type: "text", value: candidate.stationCode });
     }
-    
+
     return railwayFields;
   } else if (candidate.type === 'Non Railway') {
     return [

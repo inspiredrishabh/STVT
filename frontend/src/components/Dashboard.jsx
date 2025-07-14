@@ -44,12 +44,12 @@ class DashboardAPI {
       return {
         success: true,
         data: [
-          { category: "STC", count: stc, color: "#ea580c" },
-          { category: "WTC", count: wtc, color: "#f59e0b" },
-          { category: "Non-Railway", count: nonRailway, color: "#fbbf24" },
+          { category: "STC", count: stc, color: "#3b82f6" }, // Blue
+          { category: "WTC", count: wtc, color: "#10b981" }, // Green  
+          { category: "Non-Railway", count: nonRailway, color: "#8b5cf6" }, // Purple
         ],
       };
-    } catch (error) {
+    } catch {
       return { success: false, data: [] };
     }
   }
@@ -61,30 +61,29 @@ class DashboardAPI {
         this.getNonRailwayCandidatesCount(),
       ]);
       const total = stc + wtc + nonRailway;
-      if (!total) return { success: true, data: [] };
-      return {
-        success: true,
-        data: [
-          {
-            name: "STC",
-            value: Math.round((stc / total) * 100),
-            count: stc,
-            color: "#ea580c",
-          },
-          {
-            name: "WTC",
-            value: Math.round((wtc / total) * 100),
-            count: wtc,
-            color: "#f59e0b",
-          },
-          {
-            name: "Non-Railway",
-            value: Math.round((nonRailway / total) * 100),
-            count: nonRailway,
-            color: "#fbbf24",
-          },
-        ],
-      };
+      if (!total) return { success: true, data: [] };        return {
+          success: true,
+          data: [
+            {
+              name: "STC",
+              value: Math.round((stc / total) * 100),
+              count: stc,
+              color: "#3b82f6", // Blue
+            },
+            {
+              name: "WTC",
+              value: Math.round((wtc / total) * 100),
+              count: wtc,
+              color: "#10b981", // Green
+            },
+            {
+              name: "Non-Railway",
+              value: Math.round((nonRailway / total) * 100),
+              count: nonRailway,
+              color: "#8b5cf6", // Purple
+            },
+          ],
+        };
     } catch {
       return { success: false, data: [] };
     }
@@ -167,7 +166,7 @@ class DashboardAPI {
               activity: "STC candidate registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(c.created_at),
-              icon: "🟧",
+              icon: "�", // Blue circle
               category: "STC",
             })
         );
@@ -180,7 +179,7 @@ class DashboardAPI {
               activity: "WTC candidate registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(c.created_at),
-              icon: "🟨",
+              icon: "�", // Green circle
               category: "WTC",
             })
         );
@@ -195,7 +194,7 @@ class DashboardAPI {
             activity: "Non-Railway application submitted",
             candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
             time: this.getTimeAgo(c.created_at),
-            icon: "🟩",
+            icon: "�", // Purple circle
             category: "Non-Railway",
           })
         );
@@ -228,21 +227,21 @@ class DashboardAPI {
 
 const SimpleBarChart = ({ data, title }) => (
   <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-orange-800 text-center">
+    <h3 className="text-lg font-semibold text-gray-900 text-center">
       {title}
     </h3>
     {!data ||
     data.length === 0 ||
     Math.max(...data.map((d) => d.count)) === 0 ? (
-      <div className="text-center text-orange-400 py-8">No data available</div>
+      <div className="text-center text-gray-400 py-8">No data available</div>
     ) : (
       <div className="space-y-3">
         {data.map((item, idx) => (
           <div key={idx} className="flex items-center space-x-3">
-            <div className="w-16 text-sm font-medium text-orange-700 text-right">
+            <div className="w-16 text-sm font-medium text-gray-700 text-right">
               {item.category}
             </div>
-            <div className="flex-1 bg-orange-100 rounded-full h-6 relative">
+            <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
               <div
                 className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
                 style={{
@@ -265,13 +264,13 @@ const SimpleBarChart = ({ data, title }) => (
 
 const SimplePieChart = ({ data, title }) => (
   <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-orange-800 text-center">
+    <h3 className="text-lg font-semibold text-gray-900 text-center">
       {title}
     </h3>
     {!data ||
     data.length === 0 ||
     data.reduce((sum, item) => sum + item.count, 0) === 0 ? (
-      <div className="text-center text-orange-400 py-8">No data available</div>
+      <div className="text-center text-gray-400 py-8">No data available</div>
     ) : (
       <div className="flex items-center justify-center space-x-8">
         <div className="relative">
@@ -281,7 +280,7 @@ const SimplePieChart = ({ data, title }) => (
               cy="100"
               r="80"
               fill="none"
-              stroke="#fed7aa"
+              stroke="#e5e7eb"
               strokeWidth="2"
             />
             {(() => {
@@ -400,10 +399,10 @@ function Dashboard() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-          <span className="mt-3 text-orange-700 font-semibold">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+          <span className="mt-3 text-gray-700 font-semibold">
             Loading dashboard...
           </span>
         </div>
@@ -412,18 +411,18 @@ function Dashboard() {
 
   if (error)
     return (
-      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
-        <div className="bg-white border border-orange-200 rounded-lg p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="bg-white border-2 border-orange-100 rounded-3xl p-6 shadow-lg">
           <div className="flex items-center">
-            <div className="text-orange-600 mr-3">⚠️</div>
+            <div className="text-orange-400 mr-3">⚠️</div>
             <div>
-              <h3 className="text-lg font-medium text-orange-800">
+              <h3 className="text-lg font-medium text-gray-900">
                 Error Loading Dashboard
               </h3>
-              <p className="text-orange-700 mt-1">{error}</p>
+              <p className="text-gray-600 mt-1">{error}</p>
               <button
                 onClick={loadDashboardData}
-                className="mt-3 bg-orange-100 hover:bg-orange-200 text-orange-800 px-4 py-2 rounded text-sm"
+                className="mt-3 bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl text-sm transition-colors"
               >
                 Retry
               </button>
@@ -434,22 +433,22 @@ function Dashboard() {
     );
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-9xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-orange-900">
+              <h1 className="text-3xl font-bold text-gray-900">
                 Form Data Visualization
               </h1>
-              <p className="text-orange-600 mt-2">
+              <p className="text-gray-600 mt-2">
                 Overview of training programs and candidate statistics
               </p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={loadDashboardData}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+                className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
               >
                 <RefreshCw className="mr-2 w-4 h-4" />
                 Refresh
@@ -459,7 +458,7 @@ function Dashboard() {
               {(userRole === "admin" || userRole === "master") && (
                 <button
                   onClick={handleExportData}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
                 >
                   <Download className="mr-2 w-4 h-4" />
                   Export
@@ -471,43 +470,43 @@ function Dashboard() {
 
         {overallStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-500">
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
               <div>
-                <p className="text-sm font-medium text-orange-600">
+                <p className="text-sm font-medium text-gray-600">
                   Total Candidates
                 </p>
-                <p className="text-2xl font-bold text-orange-900">
+                <p className="text-2xl font-bold text-gray-900">
                   {overallStats.totalCandidates}
                 </p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
               <div>
-                <p className="text-sm font-medium text-yellow-600">
+                <p className="text-sm font-medium text-gray-600">
                   Active Courses
                 </p>
-                <p className="text-2xl font-bold text-yellow-900">
+                <p className="text-2xl font-bold text-gray-900">
                   {overallStats.activeCourses}
                 </p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
               <div>
-                <p className="text-sm font-medium text-green-600">Completed</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {overallStats.completedCourses}
                 </p>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-400">
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
               <div>
-                <p className="text-sm font-medium text-orange-600">
+                <p className="text-sm font-medium text-gray-600">
                   Training Capacity
                 </p>
-                <p className="text-2xl font-bold text-orange-900">
+                <p className="text-2xl font-bold text-gray-900">
                   {overallStats.trainingCapacity}
                 </p>
-                <p className="text-xs text-orange-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1">
                   {overallStats.classroomCapacity} ×{" "}
                   {overallStats.workingDaysThisMonth} days
                 </p>
@@ -517,53 +516,53 @@ function Dashboard() {
         )}
 
         {overallStats && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-bold text-orange-900 mb-4">
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
               Training Categories Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                <h3 className="text-lg font-semibold text-orange-700">
+              <div className="text-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-600">
                   Railway Training
                 </h3>
-                <p className="text-3xl font-bold text-orange-900 mt-2">
+                <p className="text-3xl font-bold text-gray-900 mt-2">
                   {overallStats.railwayCandidates}
                 </p>
                 <div className="mt-3 space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-orange-600">STC:</span>
-                    <span className="font-medium text-orange-700">
+                    <span className="text-gray-600">STC:</span>
+                    <span className="font-medium text-gray-900">
                       {overallStats.stcCandidates}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-orange-600">WTC:</span>
-                    <span className="font-medium text-orange-700">
+                    <span className="text-gray-600">WTC:</span>
+                    <span className="font-medium text-gray-900">
                       {overallStats.wtcCandidates}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
-                <h3 className="text-lg font-semibold text-yellow-700">
+              <div className="text-center p-4 bg-purple-50 rounded-2xl border-2 border-purple-100">
+                <h3 className="text-lg font-semibold text-purple-600">
                   Non-Railway Training
                 </h3>
-                <p className="text-3xl font-bold text-yellow-900 mt-2">
+                <p className="text-3xl font-bold text-gray-900 mt-2">
                   {overallStats.nonRailwayCandidates}
                 </p>
-                <p className="text-sm text-orange-600 mt-3">
+                <p className="text-sm text-gray-600 mt-3">
                   General training for non-railway personnel
                 </p>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                <h3 className="text-lg font-semibold text-green-700">
+              <div className="text-center p-4 bg-green-50 rounded-2xl border-2 border-green-100">
+                <h3 className="text-lg font-semibold text-green-600">
                   Total Candidates
                 </h3>
-                <p className="text-3xl font-bold text-green-900 mt-2">
+                <p className="text-3xl font-bold text-gray-900 mt-2">
                   {overallStats.totalCandidates}
                 </p>
                 <div className="mt-3">
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-gray-600">
                     Railway:{" "}
                     {Math.round(
                       (overallStats.railwayCandidates /
@@ -572,7 +571,7 @@ function Dashboard() {
                     )}
                     %
                   </div>
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-gray-600">
                     Non-Railway:{" "}
                     {Math.round(
                       (overallStats.nonRailwayCandidates /
@@ -588,13 +587,13 @@ function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
             <SimpleBarChart
               data={categoriesData}
               title="STC, WTC & Non-Railway Categories"
             />
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
             <SimplePieChart
               data={distributionData}
               title="Distribution (Pie Chart)"
@@ -602,9 +601,9 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-orange-800">
+            <h3 className="text-lg font-semibold text-gray-900">
               Recent Activities
             </h3>
           </div>
@@ -612,22 +611,22 @@ function Dashboard() {
             {recentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-orange-50 transition-colors border-l-4"
+                className="flex items-start space-x-3 p-3 rounded-2xl hover:bg-orange-50 transition-colors border-l-4"
                 style={{
                   borderLeftColor:
                     activity.category === "STC"
-                      ? "#ea580c"
+                      ? "#FF8D21"
                       : activity.category === "WTC"
-                      ? "#f59e0b"
+                      ? "#FFA652"
                       : activity.category === "Non-Railway"
-                      ? "#fbbf24"
+                      ? "#008080"
                       : "#6b7280",
                 }}
               >
                 <div className="flex-shrink-0 text-lg">{activity.icon}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-1">
-                    <p className="text-sm font-medium text-orange-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {activity.activity}
                     </p>
                     <span
@@ -635,19 +634,19 @@ function Dashboard() {
                         activity.category === "STC"
                           ? "bg-orange-100 text-orange-700"
                           : activity.category === "WTC"
-                          ? "bg-yellow-100 text-yellow-700"
+                          ? "bg-orange-100 text-orange-700"
                           : activity.category === "Non-Railway"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-teal-100 text-teal-700"
                           : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {activity.category}
                     </span>
                   </div>
-                  <p className="text-sm text-orange-600 truncate">
+                  <p className="text-sm text-gray-600 truncate">
                     {activity.candidate}
                   </p>
-                  <p className="text-xs text-orange-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1">
                     {activity.time}
                   </p>
                 </div>
@@ -656,13 +655,13 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      <div className="bg-orange-900 text-white py-8 mt-8 w-full">
+      <div className="bg-cyan-50 text-grey py-8 mt-8 w-full">
         <div className="container mx-auto px-0">
           <div className="text-center space-y-4">
             <p className="text-base font-semibold">
               © 2025 All Rights Reserved.
             </p>
-            <p className="text-sm text-orange-100 leading-relaxed px-8">
+            <p className="text-sm text-grey leading-relaxed px-8">
               Supervisor Training Center, Charbagh, Northern Railways, Ministry
               of Railways, Government of India.
             </p>
