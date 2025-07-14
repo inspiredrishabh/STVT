@@ -83,9 +83,9 @@ const DetailModal = ({ candidate, onClose }) => {
     if (candidate.type === "STC") {
       courseData.push(
         { label: "Module No.", value: candidate.moduleNo },
-        { label: "Module Name", value: candidate.moduleName },
+        // { label: "Module Name", value: candidate.moduleName },
         { label: "Course Duration", value: candidate.courseDuration },
-        { label: "Station Code", value: candidate.stationCode }
+        // { label: "Station Code", value: candidate.stationCode }
       );
     } else if (candidate.type === "WTC") {
       courseData.push(
@@ -160,9 +160,9 @@ const DetailModal = ({ candidate, onClose }) => {
     }
 
     // Add station code for STC
-    if (candidate.type === "STC") {
-      workData.push({ label: "Station Code", value: candidate.stationCode });
-    }
+    // if (candidate.type === "STC") {
+    //   workData.push({ label: "Station Code", value: candidate.stationCode });
+    // }
 
     return workData;
   };
