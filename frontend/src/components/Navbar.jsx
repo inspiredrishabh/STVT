@@ -159,11 +159,11 @@ const Navbar = () => {
   return (
     <>
       {/* Top Header Bar - Government Style */}
-      <div className="bg-slate-100 border-b border-gray-300">
+      <div className="bg-orange-50 border-b border-orange-300">
         <div className="max-w-7xl mx-auto px-4 py-1">
           <div className="flex justify-between items-center text-xs h-8">
             <div className="flex items-center">
-              <span className="text-gray-600 font-medium">
+              <span className="text-orange-700 font-medium">
                 {new Date().toLocaleDateString('en-IN', { 
                   weekday: 'long', 
                   year: 'numeric', 
@@ -176,28 +176,28 @@ const Navbar = () => {
               <div className="relative" ref={fontSizeDropdownRef}>
                 <button 
                   onClick={() => setShowFontSizeDropdown(!showFontSizeDropdown)}
-                  className="text-gray-600 hover:text-blue-600 transition-colors text-xs flex items-center space-x-1"
+                  className="text-orange-700 hover:text-orange-900 transition-colors text-xs flex items-center space-x-1"
                 >
                   <span>Font Size</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {showFontSizeDropdown && (
-                  <div className="absolute top-full right-0 mt-1 w-24 bg-white rounded shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute top-full right-0 mt-1 w-24 bg-white rounded shadow-lg border border-orange-200 py-1 z-50">
                     <button 
                       onClick={() => handleFontSizeChange('small')}
-                      className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-blue-50"
+                      className="block w-full text-left px-3 py-1 text-xs text-orange-700 hover:bg-orange-50"
                     >
                       Small
                     </button>
                     <button 
                       onClick={() => handleFontSizeChange('normal')}
-                      className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-blue-50"
+                      className="block w-full text-left px-3 py-1 text-xs text-orange-700 hover:bg-orange-50"
                     >
                       Normal
                     </button>
                     <button 
                       onClick={() => handleFontSizeChange('large')}
-                      className="block w-full text-left px-3 py-1 text-xs text-gray-700 hover:bg-blue-50"
+                      className="block w-full text-left px-3 py-1 text-xs text-orange-700 hover:bg-orange-50"
                     >
                       Large
                     </button>
@@ -210,7 +210,7 @@ const Navbar = () => {
       </div>
 
       {/* Main Header */}
-      <div className="bg-white border-b-2 border-blue-600">
+      <div className="bg-white border-b-4 border-orange-600">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             {/* Left - National Emblem, Logo and Title */}
@@ -219,10 +219,10 @@ const Navbar = () => {
               <img src={logo} alt="Railway logo" className="w-16 h-16" />
               <div>
                 <Link to="/dashboard" className="block">
-                  <h1 className="text-xl font-bold text-blue-800 hover:text-blue-600 transition-colors cursor-pointer">Northern Railway</h1>
-                  <h2 className="text-lg font-semibold text-blue-700">Supervisor Training Center</h2>
+                  <h1 className="text-xl font-bold text-orange-800 hover:text-orange-600 transition-colors cursor-pointer">Northern Railway</h1>
+                  <h2 className="text-lg font-semibold text-orange-700">Supervisor Training Center</h2>
                 </Link>
-                <p className="text-sm text-gray-600">Trainee Management System</p>
+                <p className="text-sm text-orange-600">Trainee Management System</p>
               </div>
             </div>
 
@@ -235,21 +235,21 @@ const Navbar = () => {
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={handleSearchInputChange}
-                    className="px-3 py-2 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-orange-300 rounded text-sm w-48 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-orange-50"
                     autoComplete="off"
                   />
                   {/* Search Dropdown */}
                   {showSearchDropdown && searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 mt-1 w-full bg-white rounded shadow-lg border border-gray-200 py-1 z-[9999] max-h-80 overflow-y-auto">
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white rounded shadow-lg border border-orange-200 py-1 z-[9999] max-h-80 overflow-y-auto">
                       {searchResults.map((item, index) => (
                         <button
                           key={index}
                           onClick={() => handleSearchResultClick(item)}
-                          className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-none bg-transparent"
+                          className="block w-full text-left px-3 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900 border-none bg-transparent"
                         >
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{item.name}</span>
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{item.category}</span>
+                            <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">{item.category}</span>
                           </div>
                         </button>
                       ))}
@@ -258,7 +258,7 @@ const Navbar = () => {
                 </div>
                 <button 
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-orange-600 text-white rounded text-sm hover:bg-orange-700 transition-colors"
                 >
                   Search
                 </button>
@@ -287,7 +287,7 @@ const Navbar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="bg-blue-700 shadow-md sticky top-0 z-40">
+      <nav className="bg-orange-600 shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center h-12">
             {/* Navigation Items */}
@@ -296,17 +296,17 @@ const Navbar = () => {
               <div className="relative" ref={addDropdownRef}>
                 <button
                   onClick={() => setShowAddDropdown(!showAddDropdown)}
-                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 border-r border-blue-600 transition-colors h-12"
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Candidate</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showAddDropdown && (
-                  <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-b-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-b-lg shadow-lg border border-orange-200 py-1 z-50">
                     <Link
                       to="/stc-form"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
                       onClick={() => setShowAddDropdown(false)}
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -314,7 +314,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to="/wtc-form"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
                       onClick={() => setShowAddDropdown(false)}
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -322,7 +322,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to="/non-railway-form"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
                       onClick={() => setShowAddDropdown(false)}
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -335,7 +335,7 @@ const Navbar = () => {
               {/* Manage Candidate */}
               <Link
                 to="/manage-candidate"
-                className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 border-r border-blue-600 transition-colors h-12"
+                className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12"
               >
                 <Users className="w-4 h-4" />
                 <span>Manage Candidate</span>
@@ -347,28 +347,28 @@ const Navbar = () => {
                   onClick={() =>
                     setShowManagementDropdown(!showManagementDropdown)
                   }
-                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 border-r border-blue-600 transition-colors h-12"
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Management Systems</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showManagementDropdown && (
-                  <div className="absolute top-full left-0 mt-0 w-64 bg-white rounded-b-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute top-full left-0 mt-0 w-64 bg-white rounded-b-lg shadow-lg border border-orange-200 py-1 z-50">
                     <Link
                       to="/stc-management"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
                       onClick={() => setShowManagementDropdown(false)}
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       STC Management System
                     </Link>
 
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div className="border-t border-orange-100 my-1"></div>
 
                     <Link
                       to="/wtc"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
                       onClick={() => setShowManagementDropdown(false)}
                     >
                       <Settings className="w-4 h-4 mr-2" />
@@ -382,53 +382,53 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        <div className="md:hidden border-t border-blue-600 bg-blue-700">
+        <div className="md:hidden border-t border-orange-500 bg-orange-600">
           <div className="px-4 py-2 space-y-1">
-            <div className="text-xs font-semibold text-blue-200 uppercase tracking-wide mb-2">
+            <div className="text-xs font-semibold text-orange-100 uppercase tracking-wide mb-2">
               Add Candidate
             </div>
             <Link
               to="/stc-form"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Plus className="w-4 h-4 mr-2" />
               STC Candidate
             </Link>
             <Link
               to="/wtc-form"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Plus className="w-4 h-4 mr-2" />
               WTC Candidate
             </Link>
             <Link
               to="/non-railway-form"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Plus className="w-4 h-4 mr-2" />
               Non-Railway Candidate
             </Link>
 
-            <div className="text-xs font-semibold text-blue-200 uppercase tracking-wide mb-2 mt-4">
+            <div className="text-xs font-semibold text-orange-100 uppercase tracking-wide mb-2 mt-4">
               Management
             </div>
             <Link
               to="/manage-candidate"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Users className="w-4 h-4 mr-2" />
               Manage Candidate
             </Link>
             <Link
               to="/stc-management"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Settings className="w-4 h-4 mr-2" />
               STC Management System
             </Link>
             <Link
               to="/wtc"
-              className="flex items-center px-2 py-1 text-sm text-white hover:bg-blue-600 rounded"
+              className="flex items-center px-2 py-1 text-sm text-white hover:bg-orange-700 rounded"
             >
               <Settings className="w-4 h-4 mr-2" />
               WTC Management System
