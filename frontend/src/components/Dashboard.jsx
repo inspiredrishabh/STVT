@@ -250,9 +250,8 @@ class DashboardAPI {
           activities.push({
             id: `stc-${candidate.id || index}`,
             activity: "STC candidate registered",
-            candidate: `${candidate.name || "Unknown"} - ${
-              candidate.ticket_no || "N/A"
-            }`,
+            candidate: `${candidate.name || "Unknown"} - ${candidate.ticket_no || "N/A"
+              }`,
             time: this.getTimeAgo(candidate.created_at || new Date()),
             type: "registration",
             icon: " ",
@@ -270,9 +269,8 @@ class DashboardAPI {
           activities.push({
             id: `wtc-${candidate.id || index}`,
             activity: "WTC candidate registered",
-            candidate: `${candidate.name || "Unknown"} - ${
-              candidate.ticket_no || "N/A"
-            }`,
+            candidate: `${candidate.name || "Unknown"} - ${candidate.ticket_no || "N/A"
+              }`,
             time: this.getTimeAgo(candidate.created_at || new Date()),
             type: "registration",
             icon: "🎓",
@@ -290,9 +288,8 @@ class DashboardAPI {
           activities.push({
             id: `nonrailway-${candidate.id || index}`,
             activity: "Non-Railway application submitted",
-            candidate: `${candidate.name || "Unknown"} - ${
-              candidate.ticket_no || "N/A"
-            }`,
+            candidate: `${candidate.name || "Unknown"} - ${candidate.ticket_no || "N/A"
+              }`,
             time: this.getTimeAgo(candidate.created_at || new Date()),
             type: "application",
             icon: "📝",
@@ -399,6 +396,8 @@ const SimpleBarChart = ({ data, title }) => {
       </div>
     );
   }
+
+
 
   return (
     <div className="space-y-4">
@@ -617,6 +616,49 @@ function Dashboard() {
     );
   }
 
+  const handleExportData = async () => {
+    try {
+      // Show loading state
+      setLoading(true);
+
+      // Make API call to backend to export database
+      const response = await fetch('/api/export-database', {
+        method: 'GET',
+      });
+
+      // Check if response is ok
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to export database');
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element to trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `STVT_Database_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Show success message
+      alert('Database exported successfully!');
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      alert(`Failed to export database: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -651,6 +693,25 @@ function Dashboard() {
                   />
                 </svg>
                 Refresh Data
+              </button>
+              <button
+                onClick={handleExportData}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                  />
+                </svg>
+                Export to Excel
               </button>
             </div>
           </div>
@@ -830,7 +891,7 @@ function Dashboard() {
                     {Math.round(
                       (overallStats.railwayCandidates /
                         overallStats.totalCandidates) *
-                        100
+                      100
                     )}
                     %
                   </div>
@@ -839,7 +900,7 @@ function Dashboard() {
                     {Math.round(
                       (overallStats.nonRailwayCandidates /
                         overallStats.totalCandidates) *
-                        100
+                      100
                     )}
                     %
                   </div>
@@ -888,10 +949,10 @@ function Dashboard() {
                     activity.category === "STC"
                       ? "#2563eb"
                       : activity.category === "WTC"
-                      ? "#10b981"
-                      : activity.category === "Non-Railway"
-                      ? "#f59e0b"
-                      : "#6b7280",
+                        ? "#10b981"
+                        : activity.category === "Non-Railway"
+                          ? "#f59e0b"
+                          : "#6b7280",
                 }}
               >
                 <div className="flex-shrink-0 text-lg">{activity.icon}</div>
@@ -901,15 +962,14 @@ function Dashboard() {
                       {activity.activity}
                     </p>
                     <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        activity.category === "STC"
-                          ? "bg-blue-100 text-blue-700"
-                          : activity.category === "WTC"
+                      className={`px-2 py-1 text-xs rounded-full font-medium ${activity.category === "STC"
+                        ? "bg-blue-100 text-blue-700"
+                        : activity.category === "WTC"
                           ? "bg-green-100 text-green-700"
                           : activity.category === "Non-Railway"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
                     >
                       {activity.category}
                     </span>

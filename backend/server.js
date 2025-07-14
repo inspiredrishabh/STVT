@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { initializeDatabase } = require("./config/db");
-
 // TEST COMMIT to back safe commit before major changes
 
 // Import routes
@@ -13,6 +12,7 @@ const nonRailwayRoutes = require("./routes/nonRailwayRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const lineTrainingRoutes = require("./routes/lineTrainingRoutes");
 
+const exportRoutes = require('./routes/exportRoutes');
 // Course‐specific routes (12 total)
 const mjiCwRoutes = require("./routes/mjicwRoutes");
 const mjidRoutes = require("./routes/mjidRoutes");
@@ -46,6 +46,7 @@ app.use("/api/stc", stcRoutes);
 app.use("/api/wtc", wtcRoutes);
 app.use("/api/nonrailway", nonRailwayRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use('/api/export-database', exportRoutes);
 
 // Line‐Training
 app.use("/api/line-trainings", lineTrainingRoutes);
