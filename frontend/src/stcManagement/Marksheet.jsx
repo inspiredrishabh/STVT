@@ -20,6 +20,61 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import railwayLogo from "../assets/rail.png";
 
+// Subject code to name mapping
+const subjectMapping = {
+  "MRT-01": "Railway Organization & Management",
+  "MRT-02": "Role of Mechanical Dept.",
+  "MRT-03": "Rolling Stock Theory- Carriage",
+  "MRT-04": "Rolling Stock Theory - Wagon",
+  "MRT-05": "Rolling Stock Theory - Diesel Loco, DEMU, SPART, Train Sets: MEMU/ EMU",
+  "MRT-06": "Industrial Safety, First aid & Firefighting",
+  "MRT-07": "Tender & Contract",
+  "MRT-08": "Accident & Disaster management",
+  "MRT-09": "Managerial Skills",
+  "MRT-10": "Welding & Non-Destructive Testing",
+  "MRT-11": "Train operations with signaling",
+  "MRT-12": "Integrated Course at IRIMEE",
+  "MRT-13": "Introduction to Rolling Stock",
+  "MRT-14": "Computer Awareness",
+  "MRT-15": "Technical English",
+  "MRT-16": "Industrial Safety, First Aid & Fire Fighting",
+  "MRT-17": "Accident & Disaster Management",
+  "MRT-18": "Supervisory Skills",
+  "MRT-19": "Technical English",
+  "MET-01": "Applied Mechanics",
+  "MET-02": "Hydraulics",
+  "MET-03": "Manufacturing Process",
+  "MET-04": "Engineering Drawing",
+  "MET-05": "Electrical Engineering",
+  "MET-06": "Strength of Material",
+  "MET-07": "Heat Engine & Thermodynamics",
+  "MET-08": "Theory of Machines",
+  "MET-09": "Material Science",
+  "MET-10": "Machine Design & Drawing",
+  "MET-11": "Industrial Engineering",
+  "MET-12": "Manufacturing Process",
+  "MET-13": "Industrial Engineering",
+  "MET-14": "Engineering Drawing",
+  "MCT-01": "C & W Theory - 01",
+  "MCT-02": "C & W Theory - 02",
+  "MCT-03": "C & W Theory - 03",
+  "MCT-04": "C & W Theory - 04",
+  "MDT-01": "Diesel Locomotive Theory (Common) - 01",
+  "MDT-02 M": "Diesel Locomotive Theory (Mechanical) – 02 M",
+  "MDT-02 E": "Diesel Locomotive Theory (Electrical) – 02 E",
+  "MDT-03 M": "Diesel Locomotive Theory (Mechanical) – 03 M",
+  "MDT-04 M": "Diesel Locomotive Theory (Mechanical) – 04 M",
+  "MDT-03 E": "Diesel Locomotive Theory (Electrical) – 03 E",
+  "MDT-04 E": "Diesel Locomotive Theory (Electrical) – 04 E",
+  "MDT-05 M": "Diesel Locomotive Theory (Mechanical) – 05 M",
+  "MDT-05 E": "Diesel Locomotive Theory (Electrical) – 05 E",
+  "MWT-01": "Workshop Theory - 01",
+  "MWT-02": "Workshop Theory - 02",
+  "MWT-03": "Workshop Theory - 03",
+  "MWT-04": "Workshop Trade Theory - 04",
+  "MWT-05": "Workshop Theory - 05",
+};
+
 // Course structure definition
 const courseStructure = {
   "MSE-C&W": {
@@ -345,10 +400,13 @@ const getRawMarks = (paperMarks) => {
 // Utility to get supplementary marks from "mainMarkCsupMark"
 const getSupplementaryParsedMarks = (paperMarks) => {
   if (typeof paperMarks === "string") {
+    // Looks for strings like "45C12" → main 45, sup 12
     const match = paperMarks.match(/^(\d+)C(\d+)$/);
-    if (match) return parseInt(match[2]);
+    if (match) {
+      return parseInt(match[2], 10);
+    }
   }
-  return null;
+  return 0;
 };
 
 // Helper to compute 60% passing marks
@@ -580,6 +638,7 @@ const marksheetService = new MarksheetService();
 
 const Marksheet = () => {
   // State management - optimized
+  // const supplyMarks = getSupplementaryParsedMarks(paperMarks);
   const [searchMethod, setSearchMethod] = useState("ticket");
   const [ticketNumber, setTicketNumber] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState("");
@@ -874,7 +933,7 @@ const Marksheet = () => {
           <style>
             @page {
               size: A4;
-              margin: 15mm;
+              margin: 8mm;
             }
             @media print {
               * {
@@ -1142,6 +1201,7 @@ const Marksheet = () => {
     (session, papers) => {
       return Object.entries(papers).map(([paper, config], idx) => {
         const paperMarks = marksheetData[session]?.[paper] ?? "";
+        const supplyMarks = getSupplementaryParsedMarks(paperMarks);
         const str = paperMarks.toString();
         const isCleared = str.includes("C"); // "C" present anywhere
         const rawMarks = getRawMarks(paperMarks) || 0;
@@ -1159,12 +1219,12 @@ const Marksheet = () => {
                 rowSpan={Object.keys(papers).length}
                 style={{
                   border: "1px solid black",
-                  padding: "8px 12px",
+                  padding: "4px 6px",
                   fontWeight: "600",
                   color: "black",
                   textAlign: "center",
                   verticalAlign: "top",
-                  fontSize: "13px",
+                  fontSize: "11px",
                 }}
               >
                 {session}
@@ -1173,8 +1233,8 @@ const Marksheet = () => {
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "13px",
+                padding: "4px 6px",
+                fontSize: "11px",
                 color: "black",
               }}
             >
@@ -1183,19 +1243,24 @@ const Marksheet = () => {
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "11px",
+                padding: "4px 6px",
+                fontSize: "9px",
                 color: "black",
-                textAlign: "center",
+                textAlign: "left",
               }}
             >
-              {config.subjects.length > 0 ? config.subjects.join(", ") : "-"}
+              {config.subjects.length > 0 
+                ? config.subjects.map(code => {
+                    const subjectName = subjectMapping[code];
+                    return subjectName ? `${subjectName} (${code})` : code;
+                  }).join(", ")
+                : "-"}
             </td>
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "13px",
+                padding: "4px 6px",
+                fontSize: "11px",
                 fontWeight: "600",
                 color: "black",
                 textAlign: "center",
@@ -1206,8 +1271,8 @@ const Marksheet = () => {
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "13px",
+                padding: "4px 6px",
+                fontSize: "11px",
                 fontWeight: "bold",
                 textAlign: "center",
                 color: !isPassed ? "#dc2626" : "black",
@@ -1218,8 +1283,8 @@ const Marksheet = () => {
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "13px",
+                padding: "4px 6px",
+                fontSize: "11px",
                 textAlign: "center",
                 color: !isPassed ? "#dc2626" : "black",
               }}
@@ -1229,14 +1294,18 @@ const Marksheet = () => {
             <td
               style={{
                 border: "1px solid black",
-                padding: "8px 12px",
-                fontSize: "13px",
+                padding: "4px 6px",
+                fontSize: "10px",
                 fontWeight: "600",
                 textAlign: "center",
                 color: !isPassed ? "#dc2626" : "#16a34a",
               }}
             >
-              {isCleared ? "CLEARED" : isPassed ? "PASS" : "FAIL"}
+              {isCleared
+                ? `PASSED IN SUPPLEMENTARY WITH MARKS : ${supplyMarks}`
+                : isPassed
+                ? "PASS"
+                : "FAIL"}
             </td>
           </tr>
         );
@@ -1586,20 +1655,20 @@ const Marksheet = () => {
                 borderRadius: "16px",
                 boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                 border: "1px solid #e5e7eb",
-                padding: "24px",
+                padding: "16px",
                 marginBottom: "32px",
                 fontFamily: "Times New Roman, serif",
-                fontSize: "14px",
-                lineHeight: "1.4",
+                fontSize: "12px",
+                lineHeight: "1.2",
                 color: "black",
               }}
             >
-              {/* Header - Exact format from image */}
+              {/* Header - Compact format */}
               <div
                 style={{
                   borderBottom: "2px solid #6b7280",
-                  paddingBottom: "16px",
-                  marginBottom: "24px",
+                  paddingBottom: "12px",
+                  marginBottom: "16px",
                 }}
               >
                 <div
@@ -1611,19 +1680,19 @@ const Marksheet = () => {
                     width: "100%",
                   }}
                 >
-                  {/* Railway Logo */}
+                  {/* Railway Logo - Smaller */}
                   <div
                     style={{
                       position: "absolute",
                       left: "0",
-                      width: "100px",
-                      height: "100px",
+                      width: "80px",
+                      height: "80px",
                       backgroundColor: "white",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: "0",
-                      padding: "4px",
+                      padding: "2px",
                     }}
                   >
                     <img
@@ -1644,7 +1713,7 @@ const Marksheet = () => {
                         textAlign: "center",
                         display: "none",
                         flexDirection: "column",
-                        fontSize: "10px",
+                        fontSize: "8px",
                         fontWeight: "bold",
                       }}
                     >
@@ -1654,13 +1723,13 @@ const Marksheet = () => {
                     </div>
                   </div>
 
-                  {/* Header text - Centered */}
+                  {/* Header text - Centered and Compact */}
                   <div
                     style={{
                       textAlign: "center",
                       flex: "1",
-                      paddingLeft: "100px",
-                      paddingRight: "100px",
+                      paddingLeft: "80px",
+                      paddingRight: "80px",
                     }}
                   >
                     <h1
@@ -1668,27 +1737,37 @@ const Marksheet = () => {
                         fontSize: "18px",
                         fontWeight: "bold",
                         color: "black",
-                        margin: "0 0 4px 0",
+                        margin: "0 0 2px 0",
                       }}
                     >
                       NORTHERN RAILWAYS
                     </h1>
                     <h2
                       style={{
-                        fontSize: "13px",
+                        fontSize: "12px",
                         fontWeight: "600",
                         color: "black",
-                        margin: "0 0 4px 0",
+                        margin: "0 0 1px 0",
                       }}
                     >
                       SUPERVISORS TRAINING CENTRE
                     </h2>
+                    <h2
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        color: "black",
+                        margin: "0 0 1px 0",
+                      }}
+                    >
+                      CHARBAGH, LUCKNOW
+                    </h2>
                     <h3
                       style={{
-                        fontSize: "15px",
+                        fontSize: "14px",
                         fontWeight: "bold",
                         color: "black",
-                        margin: "8px 0 4px 0",
+                        margin: "4px 0 2px 0",
                       }}
                     >
                       STATEMENT OF MARKS
@@ -1697,22 +1776,22 @@ const Marksheet = () => {
                       selectedSession !== "all" && (
                         <h4
                           style={{
-                            fontSize: "12px",
+                            fontSize: "10px",
                             fontWeight: "600",
                             color: "#374151",
-                            margin: "2px 0 0 0",
+                            margin: "1px 0 0 0",
                           }}
                         >
-                          ({selectedSession} - Sessional)
+                          (Sessional - {selectedSession})
                         </h4>
                       )}
                     {viewMode === "complete" && (
                       <h4
                         style={{
-                          fontSize: "12px",
+                          fontSize: "10px",
                           fontWeight: "600",
                           color: "#374151",
-                          margin: "2px 0 0 0",
+                          margin: "1px 0 0 0",
                         }}
                       >
                         (Complete/Annual)
@@ -1722,8 +1801,8 @@ const Marksheet = () => {
                 </div>
               </div>
 
-              {/* Candidate Information - Exact format from image */}
-              <div style={{ marginBottom: "24px" }}>
+              {/* Candidate Information - Compact */}
+              <div style={{ marginBottom: "16px" }}>
                 <table
                   style={{
                     width: "100%",
@@ -1735,21 +1814,21 @@ const Marksheet = () => {
                     <tr>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Name: {candidateData.name}
                       </td>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
                           textAlign: "right",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Father's Name:{" "}
@@ -1759,21 +1838,21 @@ const Marksheet = () => {
                     <tr>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Batch: {candidateData.batch}
                       </td>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
                           textAlign: "right",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Ticket No:{" "}
@@ -1783,21 +1862,21 @@ const Marksheet = () => {
                     <tr>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Post: {candidateData.designation}
                       </td>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
                           textAlign: "right",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Module: {candidateData.courseCode}
@@ -1806,10 +1885,10 @@ const Marksheet = () => {
                     <tr>
                       <td
                         style={{
-                          padding: "4px 0",
+                          padding: "2px 0",
                           fontWeight: "600",
                           color: "black",
-                          fontSize: "14px",
+                          fontSize: "12px",
                         }}
                       >
                         Unit: {candidateData.unit}
@@ -1820,9 +1899,9 @@ const Marksheet = () => {
                 </table>
               </div>
 
-              {/* Marks Table */}
+              {/* Marks Table - Compact */}
               {currentCourseStructure && (
-                <div style={{ marginBottom: "32px" }}>
+                <div style={{ marginBottom: "20px" }}>
                   <table
                     style={{
                       width: "100%",
@@ -1835,8 +1914,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1847,8 +1926,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1859,8 +1938,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1871,8 +1950,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1883,8 +1962,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1895,8 +1974,8 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
@@ -1907,14 +1986,14 @@ const Marksheet = () => {
                         <th
                           style={{
                             border: "1px solid black",
-                            padding: "8px 12px",
-                            fontSize: "13px",
+                            padding: "4px 6px",
+                            fontSize: "11px",
                             fontWeight: "bold",
                             color: "black",
                             textAlign: "center",
                           }}
                         >
-                          Result
+                          Remark
                         </th>
                       </tr>
                     </thead>
@@ -1936,10 +2015,10 @@ const Marksheet = () => {
                 </div>
               )}
 
-              {/* Summary Section - Exact format from image */}
+              {/* Summary Section - Compact */}
               <div
                 style={{
-                  marginBottom: "32px",
+                  marginBottom: "20px",
                   border: "2px solid #d1d5db",
                   backgroundColor: "#f9fafb",
                 }}
@@ -1953,24 +2032,24 @@ const Marksheet = () => {
                 >
                   <div
                     style={{
-                      padding: "16px",
+                      padding: "10px",
                       textAlign: "center",
                       borderRight: "2px solid #d1d5db",
                     }}
                   >
                     <h3
                       style={{
-                        fontSize: "13px",
+                        fontSize: "11px",
                         fontWeight: "bold",
                         color: "black",
-                        margin: "0 0 4px 0",
+                        margin: "0 0 2px 0",
                       }}
                     >
                       TOTAL MARKS
                     </h3>
                     <p
                       style={{
-                        fontSize: "20px",
+                        fontSize: "16px",
                         fontWeight: "bold",
                         color: "black",
                         margin: "0",
@@ -1981,23 +2060,23 @@ const Marksheet = () => {
                   </div>
                   <div
                     style={{
-                      padding: "16px",
+                      padding: "10px",
                       textAlign: "center",
                     }}
                   >
                     <h3
                       style={{
-                        fontSize: "13px",
+                        fontSize: "11px",
                         fontWeight: "bold",
                         color: "black",
-                        margin: "0 0 4px 0",
+                        margin: "0 0 2px 0",
                       }}
                     >
                       FINAL PERCENTAGE
                     </h3>
                     <p
                       style={{
-                        fontSize: "20px",
+                        fontSize: "16px",
                         fontWeight: "bold",
                         color: "black",
                         margin: "0",
@@ -2041,7 +2120,7 @@ const Marksheet = () => {
                             margin: "0 0 4px 0",
                           }}
                         >
-                          Disclaimer: Candidate has failed in subject(s):{" "}
+                          Remark : Candidate has failed in subject(s):{" "}
                           {relevantFailed
                             .filter((subject) => {
                               const marks =
@@ -2078,18 +2157,18 @@ const Marksheet = () => {
                 })()}
               </div>
 
-              {/* Footer - Exact format from image */}
+              {/* Footer - Compact */}
               <div
                 style={{
                   borderTop: "2px solid #6b7280",
-                  paddingTop: "24px",
+                  paddingTop: "16px",
                 }}
               >
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "32px",
+                    gap: "20px",
                   }}
                 >
                   <div style={{ textAlign: "center" }}>
@@ -2097,17 +2176,17 @@ const Marksheet = () => {
                       style={{
                         fontWeight: "600",
                         color: "black",
-                        fontSize: "13px",
+                        fontSize: "11px",
                         margin: "0",
                       }}
                     >
                       Senior Lecturer (IC)
                     </p>
-                    <div style={{ height: "48px", marginTop: "32px" }}></div>
+                    <div style={{ height: "30px", marginTop: "20px" }}></div>
                     <div
                       style={{
                         borderTop: "2px solid black",
-                        width: "128px",
+                        width: "100px",
                         margin: "0 auto",
                       }}
                     ></div>
@@ -2117,27 +2196,27 @@ const Marksheet = () => {
                       style={{
                         fontWeight: "600",
                         color: "black",
-                        fontSize: "13px",
+                        fontSize: "11px",
                         margin: "0",
                       }}
                     >
                       Director
                     </p>
-                    <div style={{ height: "48px", marginTop: "32px" }}></div>
+                    <div style={{ height: "30px", marginTop: "20px" }}></div>
                     <div
                       style={{
                         borderTop: "2px solid black",
-                        width: "128px",
+                        width: "100px",
                         margin: "0 auto",
                       }}
                     ></div>
                     <p
                       style={{
-                        fontSize: "11px",
+                        fontSize: "9px",
                         color: "#6b7280",
                         fontStyle: "italic",
-                        marginTop: "8px",
-                        margin: "8px 0 0 0",
+                        marginTop: "4px",
+                        margin: "4px 0 0 0",
                       }}
                     >
                       Date of Generation:{" "}
@@ -2171,3 +2250,4 @@ const Marksheet = () => {
 };
 
 export default Marksheet;
+
