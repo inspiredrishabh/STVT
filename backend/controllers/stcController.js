@@ -310,76 +310,132 @@ class StcController {
     try {
       const { ticketNumber } = req.params;
       const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
+
       if (!candidate) {
-        return res.status(404).json({ success: false, message: "Not found" });
+        return res.status(404).json({
+          success: false,
+          message: "Candidate not found",
+        });
       }
-      const {
-        session1start,
-        session1end,
-        session2start,
-        session2end,
-        session3start,
-        session3end,
-        session4start,
-        session4end,
-      } = candidate;
+
+      // Get the course structure based on designation
+      const courseStructure = {
+        "MSE-C&W": { sessions: 4 },
+        "MSE-D": { sessions: 4 },
+        "MSE-W": { sessions: 4 },
+        "MJR-C&W": { sessions: 4 },
+        "MJR-D": { sessions: 4 },
+        "MJR-W": { sessions: 4 },
+        "MJI-C&W": { sessions: 4 },
+        "MJI-D": { sessions: 4 },
+        "MJI-W": { sessions: 4 },
+        "MJP-C&W": { sessions: 2 },
+        "MJP-D": { sessions: 2 },
+        "MJP-W": { sessions: 2 },
+      };
+
+      // Get session data from candidate based on designation type
+      const moduleDesignation = candidate.designation;
+      
+      // Base session data structure
+      let sessionData = {
+        session1: {
+          start: candidate.session1start,
+          end: candidate.session1end,
+        },
+        session2: {
+          start: candidate.session2start,
+          end: candidate.session2end,
+        }
+      };
+
+      // Add sessions 3 and 4 only for non-MJP designations
+      if (!moduleDesignation.startsWith('MJP-')) {
+        sessionData = {
+          ...sessionData,
+          session3: {
+            start: candidate.session3start,
+            end: candidate.session3end,
+          },
+          session4: {
+            start: candidate.session4start,
+            end: candidate.session4end,
+          }
+        };
+      }
+
+      // Get required number of sessions based on designation type
+      const requiredSessions = moduleDesignation.startsWith('MJP-') ? 2 : 4;
 
       res.status(200).json({
         success: true,
+        message: "Session dates retrieved successfully",
         data: {
-          session1start,
-          session1end,
-          session2start,
-          session2end,
-          session3start,
-          session3end,
-          session4start,
-          session4end,
+          sessionData,
+          requiredSessions,
+          designation: candidate.designation,
         },
       });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: "Server error" });
+      console.error("Error getting session dates:", err);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve session dates",
+      });
     }
   }
 
   async updateSessionDates(req, res) {
     try {
       const { ticketNumber } = req.params;
-      const dates = req.body; // expect JSON with those eight keys
+      const { sessionData } = req.body;
 
-      // fetch existing record
-      const existing = await this.stcModel.getByTicketNumber(ticketNumber);
-      if (!existing) {
-        return res.status(404).json({ success: false, message: "Not found" });
+      // Validate session data
+      if (!sessionData) {
+        return res.status(400).json({
+          success: false,
+          message: "Session data is required",
+        });
       }
 
-      // merge only session-fields into the candidate object, defaulting to null
-      const updatedCandidate = {
-        ...existing,
-        session1start: dates.session1start ?? null,
-        session1end: dates.session1end ?? null,
-        session2start: dates.session2start ?? null,
-        session2end: dates.session2end ?? null,
-        session3start: dates.session3start ?? null,
-        session3end: dates.session3end ?? null,
-        session4start: dates.session4start ?? null,
-        session4end: dates.session4end ?? null,
+      // Get existing candidate
+      const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
+      if (!candidate) {
+        return res.status(404).json({
+          success: false,
+          message: "Candidate not found",
+        });
+      }
+
+      // Update session dates
+      const updatedData = {
+        ...candidate,
+        session1start: sessionData.session1?.start || null,
+        session1end: sessionData.session1?.end || null,
+        session2start: sessionData.session2?.start || null,
+        session2end: sessionData.session2?.end || null,
+        session3start: sessionData.session3?.start || null,
+        session3end: sessionData.session3?.end || null,
+        session4start: sessionData.session4?.start || null,
+        session4end: sessionData.session4?.end || null,
       };
 
-      const result = await this.stcModel.updateByTicketNumber(
+      const updatedCandidate = await this.stcModel.updateByTicketNumber(
         ticketNumber,
-        updatedCandidate
+        updatedData
       );
 
       res.status(200).json({
         success: true,
-        message: "Session dates updated",
-        data: result,
+        message: "Session dates updated successfully",
+        data: updatedCandidate,
       });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: "Server error" });
+      console.error("Error updating session dates:", err);
+      res.status(500).json({
+        success: false,
+        message: "Failed to update session dates",
+      });
     }
   }
 

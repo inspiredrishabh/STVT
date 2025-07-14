@@ -3,20 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Search,
-  Edit,
-  Eye,
   Users,
   Phone,
   Mail,
-  MapPin,
   Calendar,
   GraduationCap,
   Award,
   FileText,
-  Plus,
   Settings,
   Hash,
-  CheckCircle,
 } from "lucide-react";
 // import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
@@ -35,6 +30,122 @@ const TraineeProfile = () => {
     reason: "",
   });
   const [submittingResignation, setSubmittingResignation] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [selectedTraineeForSession, setSelectedTraineeForSession] = useState(
+    null
+  );
+  const [sessionData, setSessionData] = useState({
+    session1: { start: null, end: null },
+    session2: { start: null, end: null },
+    session3: { start: null, end: null },
+    session4: { start: null, end: null },
+  });
+  const [requiredSessions, setRequiredSessions] = useState(4);
+
+  const courseStructure = {
+    "MSE-C&W": {
+      moduleName: "Mechanical Supervisor Electrical - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MSE-D": {
+      moduleName: "Mechanical Supervisor Electrical - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MSE-W": {
+      moduleName: "Mechanical Supervisor Electrical - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-C&W": {
+      moduleName: "Mechanical Junior Engineer - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-D": {
+      moduleName: "Mechanical Junior Engineer - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-W": {
+      moduleName: "Mechanical Junior Engineer - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-C&W": {
+      moduleName: "Mechanical Junior Instructor - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-D": {
+      moduleName: "Mechanical Junior Instructor - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-W": {
+      moduleName: "Mechanical Junior Instructor - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJP-C&W": {
+      moduleName: "Mechanical Junior Programmer - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+    "MJP-D": {
+      moduleName: "Mechanical Junior Programmer - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+    "MJP-W": {
+      moduleName: "Mechanical Junior Programmer - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+  };
 
   // Fetch trainees from backend
   useEffect(() => {
@@ -54,27 +165,6 @@ const TraineeProfile = () => {
   // Backend API endpoints
   const API_BASE = "/api/stc";
 
-  // const apiCall = async (endpoint, options = {}) => {
-  //   try {
-  //     const response = await fetch(`${API_BASE}${endpoint}`, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         ...options.headers,
-  //       },
-  //       ...options,
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-
-  //     return await response.json();
-  //   } catch (error) {
-  //     console.error(`API call failed for ${endpoint}:`, error);
-  //     throw error;
-  //   }
-  // };
-
   // API Functions
   const resignTrainee = async (traineeTicketNo) => {
     const response = await fetch(`${API_BASE}/${traineeTicketNo}/resign`, {
@@ -91,22 +181,7 @@ const TraineeProfile = () => {
     return await response.json();
   };
 
-  // const getTraineeResignationHistory = async (traineeId) => {
-  //   return await apiCall(`/trainees/${traineeId}/resignation-history`);
-  // };
 
-  // const updateTraineeStatus = async (traineeId, status, metadata = {}) => {
-  //   return await apiCall('/trainees/status', {
-  //     method: 'PUT',
-  //     body: JSON.stringify({
-  //       traineeId,
-  //       status,
-  //       metadata,
-  //       updatedBy: 'Admin',
-  //       updatedAt: new Date().toISOString()
-  //     })
-  //   });
-  // };
 
   const fetchTrainees = async () => {
     try {
@@ -283,6 +358,264 @@ const TraineeProfile = () => {
     setResignationData({ date: "", reason: "" });
   };
 
+  const verifyModuleAndGetSessions = (trainee) => {
+    // Extract module number and clean it up
+    const moduleNo = trainee.module_no?.toString().trim().toUpperCase();
+    if (!moduleNo) {
+      throw new Error("Module number is required");
+    }
+
+    // Direct mapping if the module number matches exactly
+    if (courseStructure[moduleNo]) {
+      return {
+        designation: moduleNo,
+        moduleInfo: courseStructure[moduleNo],
+        sessions: Object.keys(courseStructure[moduleNo].sessions).length
+      };
+    }
+
+    // If not direct match, try the detailed module mapping
+    const moduleMap = {
+      // MSE modules
+      "MSE-CW-01": "MSE-C&W",
+      "MSE-CW-02": "MSE-C&W",
+      "MSE-D-01": "MSE-D",
+      "MSE-D-02": "MSE-D",
+      "MSE-W-01": "MSE-W",
+      "MSE-W-02": "MSE-W",
+
+      // MJR modules
+      "MJR-CW-01": "MJR-C&W",
+      "MJR-CW-02": "MJR-C&W",
+      "MJR-D-01": "MJR-D",
+      "MJR-D-02": "MJR-D",
+      "MJR-W-01": "MJR-W",
+      "MJR-W-02": "MJR-W",
+
+      // MJI modules
+      "MJI-CW-01": "MJI-C&W",
+      "MJI-CW-02": "MJI-C&W",
+      "MJI-D-01": "MJI-D",
+      "MJI-D-02": "MJI-D",
+      "MJI-W-01": "MJI-W",
+      "MJI-W-02": "MJI-W",
+
+      // MJP modules
+      "MJP-CW-01": "MJP-C&W",
+      "MJP-D-01": "MJP-D",
+      "MJP-W-01": "MJP-W",
+    };
+
+    // Find the matching designation
+    const designation = moduleMap[moduleNo];
+    if (!designation) {
+      throw new Error(`Invalid module number: ${moduleNo}`);
+    }
+
+    // Get course structure for the designation
+    const moduleInfo = courseStructure[designation];
+    if (!moduleInfo) {
+      throw new Error(`Course structure not found for designation: ${designation}`);
+    }
+
+    return {
+      designation,
+      moduleInfo,
+      sessions: Object.keys(moduleInfo.sessions).length,
+    };
+  };
+
+  const handleSessionManagement = async (trainee) => {
+    try {
+      // First verify the module number and get session info
+      const { moduleInfo, sessions } = verifyModuleAndGetSessions(trainee);
+
+      const response = await fetch(`/api/stc/${trainee.ticketNo}/sessions`);
+      if (!response.ok) throw new Error("Failed to fetch session data");
+      const data = await response.json();
+
+      setSessionData(data.data.sessionData);
+      setRequiredSessions(sessions);
+      setSelectedTraineeForSession({
+        ...trainee,
+        moduleInfo,
+      });
+      setShowSessionModal(true);
+    } catch (error) {
+      console.error("Error in session management:", error);
+      alert(error.message || "Failed to manage sessions");
+    }
+  };
+
+  const handleSessionUpdate = async () => {
+    try {
+      const response = await fetch(
+        `/api/stc/${selectedTraineeForSession.ticketNo}/sessions`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionData }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update session data");
+
+      alert("Session dates updated successfully");
+      setShowSessionModal(false);
+      fetchTrainees(); // Refresh the trainee list
+    } catch (error) {
+      console.error("Error updating session data:", error);
+      alert("Failed to update session data");
+    }
+  };
+
+  const renderSessionModal = () => {
+    if (!showSessionModal || !selectedTraineeForSession) return null;
+
+    const moduleInfo = selectedTraineeForSession.moduleInfo;
+    if (!moduleInfo) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Session Management
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {moduleInfo.moduleName}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Module: {selectedTraineeForSession.module_no}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSessionModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                {selectedTraineeForSession.picture ? (
+                  <img
+                    src={`http://localhost:5000/${selectedTraineeForSession.picture}`}
+                    alt={selectedTraineeForSession.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {selectedTraineeForSession.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {selectedTraineeForSession.name}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Ticket No: {selectedTraineeForSession.ticketNo}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {Object.keys(moduleInfo.sessions).map((sessionKey) => {
+              const sessionNum = sessionKey.split(" ")[1];
+              return (
+                <div key={sessionKey} className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-medium text-lg text-gray-900 mb-4">
+                    {sessionKey}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={sessionData[`session${sessionNum}`]?.start || ""}
+                        onChange={(e) =>
+                          setSessionData((prev) => ({
+                            ...prev,
+                            [`session${sessionNum}`]: {
+                              ...prev[`session${sessionNum}`],
+                              start: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={sessionData[`session${sessionNum}`]?.end || ""}
+                        onChange={(e) =>
+                          setSessionData((prev) => ({
+                            ...prev,
+                            [`session${sessionNum}`]: {
+                              ...prev[`session${sessionNum}`],
+                              end: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-end gap-4 mt-6 pt-4 border-t">
+            <button
+              onClick={() => setShowSessionModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSessionUpdate}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Save Sessions
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -450,27 +783,49 @@ const TraineeProfile = () => {
 
               {/* Course Info */}
               <div className="p-4 bg-gray-50">
-                <h4 className="font-medium text-gray-900 mb-2">
-                  Course Details
-                </h4>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p>Module: {trainee.module_no}</p>
-                  <p>Duration: {trainee.course_duration}</p>
-                  <p>
-                    Joining:{" "}
-                    {trainee.date_of_joining_stc_wtc_non_railway
-                      ? formatDateDDMMYYYY(
-                          trainee.date_of_joining_stc_wtc_non_railway
-                        )
-                      : "N/A"}
-                  </p>
-                  <p>
-                    Sparing:{" "}
-                    {trainee.date_of_sparing
-                      ? formatDateDDMMYYYY(trainee.date_of_sparing)
-                      : "N/A"}
-                  </p>
-                  <p>Working Under: {trainee.working_under || "N/A"}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Basic Course Details */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Course Details
+                    </h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>Module: {trainee.module_no}</p>
+                      <p>Duration: {trainee.course_duration}</p>
+                      <p>Working Under: {trainee.working_under || "N/A"}</p>
+                    </div>
+                  </div>
+
+                  {/* Session Details */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Session Timeline
+                    </h4>
+                    <div className="space-y-2">
+                      {(() => {
+                        const sessionCount = trainee.designation?.startsWith('MJP-') || 
+                                          trainee.module_no?.includes('MJP') ? 2 : 4;
+                        
+                        return Array.from({ length: sessionCount }, (_, i) => {
+                          const sessionNum = i + 1;
+                          const startDate = trainee[`session${sessionNum}start`];
+                          const endDate = trainee[`session${sessionNum}end`];
+                          
+                          if (!startDate && !endDate) return null;
+
+                          return (
+                            <div key={sessionNum} className="text-sm bg-white rounded-lg p-2">
+                              <p className="text-indigo-600 font-medium mb-1">Session {sessionNum}</p>
+                              <div className="grid grid-cols-2 gap-2 text-gray-600">
+                                <p>Start: {formatDateDDMMYYYY(startDate)}</p>
+                                <p>End: {formatDateDDMMYYYY(endDate)}</p>
+                              </div>
+                            </div>
+                          );
+                        }).filter(Boolean)
+                      })()}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -519,6 +874,13 @@ const TraineeProfile = () => {
                   >
                     <Users className="w-4 h-4 mr-1" />
                     {trainee.status === "Resigned" ? "Resigned" : "Resign"}
+                  </button>
+                  <button
+                    onClick={() => handleSessionManagement(trainee)}
+                    className="flex items-center justify-center px-3 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm"
+                  >
+                    <Calendar className="w-4 h-4 mr-1" />
+                    Sessions
                   </button>
                 </div>
               </div>
@@ -659,6 +1021,9 @@ const TraineeProfile = () => {
           </div>
         </div>
       )}
+
+      {/* Session Management Modal */}
+      {renderSessionModal()}
     </div>
   );
 };
