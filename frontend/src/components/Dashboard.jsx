@@ -50,6 +50,7 @@ class DashboardAPI {
         ],
       };
     } catch {
+  
       return { success: false, data: [] };
     }
   }
