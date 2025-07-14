@@ -16,7 +16,7 @@ class RealBackendAPI {
 
   // Helper method to determine the correct API endpoint for a candidate
   getCandidateEndpoint(candidate) {
-    const { type, workInfo } = candidate;
+    const { type } = candidate;
     // Get ticket number from multiple possible field names, with type-specific preferences
     let ticketNo;
 

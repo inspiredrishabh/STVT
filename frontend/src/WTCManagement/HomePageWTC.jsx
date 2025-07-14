@@ -103,7 +103,7 @@ const HomePageWTC = () => {
       </div>
 
       {/* Quick Stats
-      <div className="bg-white rounded-2xl shadow-lg p-8 mt-6 border border-gray-200 max-w-7xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-lg p-8 mt-6 border border-gray-200 max-w-9xl mx-auto">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Quick Overview
         </h2>

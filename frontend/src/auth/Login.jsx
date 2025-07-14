@@ -88,7 +88,7 @@ const Login2 = () => {
             {/* Header Navbar */}
             <header className="bg-orange-50 shadow-lg border-b-4 border-orange-600 h-20 flex-shrink-0">
                 <div className="w-full px-3 h-full">
-                    <div className="flex justify-between items-center h-full max-w-7xl mx-auto">
+                    <div className="flex justify-between items-center h-full max-w-9xl mx-auto">
                         {/* Left side - Government logos */}
                         <div className="flex items-center space-x-2 flex-shrink-0">
                             <img src={nationalEmblem} alt="National Emblem" className="h-11 w-auto" />

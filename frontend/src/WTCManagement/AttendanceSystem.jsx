@@ -506,7 +506,7 @@ const AttendanceSystem = () => {
 
       {/* Main Content */}
       <div className="w-full px-8 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-9xl mx-auto">
           {/* Search Section */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
             <div className="flex items-center gap-3 mb-6">
