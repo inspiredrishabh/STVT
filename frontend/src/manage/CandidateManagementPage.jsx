@@ -12,21 +12,6 @@ import ActivityPanel from "./ActivityPanel";
 class RealBackendAPI {
   constructor() {
     this.baseURL = "/api";
-    // Course structure mapping for course-specific candidates
-    this.courseStructure = {
-      "MSE-C&W": "mse-c&w",
-      "MSE-D": "mse-d",
-      "MSE-W": "mse-w",
-      "MJR-C&W": "mjr-c&w",
-      "MJR-D": "mjr-d",
-      "MJR-W": "mjr-w",
-      "MJI-C&W": "mji-c&w",
-      "MJI-D": "mji-d",
-      "MJI-W": "mji-w",
-      "MJP-C&W": "mjp-c&w",
-      "MJP-D": "mjp-d",
-      "MJP-W": "mjp-w",
-    };
   }
 
   // Helper method to determine the correct API endpoint for a candidate
@@ -49,16 +34,12 @@ class RealBackendAPI {
     if (!ticketNo) {
       console.error("Ticket number is undefined for candidate:", candidate);
       throw new Error(
-        `Ticket number is undefined for candidate ${candidate.name || candidate.id
+        `Ticket number is undefined for candidate ${
+          candidate.name || candidate.id
         }`
       );
     }
 
-    // Check if this is a course-specific candidate
-    if (type === "STC" && workInfo && this.courseStructure[workInfo]) {
-      const endpoint = `${this.baseURL}/${this.courseStructure[workInfo]}/${ticketNo}`;
-      return endpoint;
-    }
 
     // Default endpoints for basic candidates
     const endpoints = {
@@ -70,169 +51,7 @@ class RealBackendAPI {
     const endpoint = endpoints[type] || endpoints["STC"];
     return endpoint;
   }
-
-  // Helper method to transform frontend camelCase fields to backend snake_case fields
-  // transformFieldsForBackend(candidateData) {
-  //   // Common field mappings that apply to all candidate types
-  //   const commonFieldMapping = {
-  //     // Personal Information
-  //     fatherName: 'father_name',
-  //     motherName: 'mother_name',
-  //     phoneNumber: 'phone_number',
-  //     emergencyContactNumber: 'emergency_contact_number',
-  //     permanentAddress: 'permanent_address',
-  //     currentAddress: 'current_address',
-
-  //     // Contact Information
-  //     email: 'email',
-
-  //     // Professional Information (common)
-  //     employeeNumber: 'employee_number',
-  //     ticketNumber: 'ticket_no',
-  //     workingUnder: 'working_under',
-  //     hrmsId: 'hrms_id',
-  //     pfNoNpsUps: 'pf_no_nps_ups',
-  //     dateOfAppointmentInRailway: 'date_of_appointment_in_railway',
-  //     modeOfAppointment: 'mode_of_appointment',
-
-  //     // Educational Information
-  //     highestQualification: 'highest_qualification',
-  //     fieldOfStudy: 'field_of_study',
-  //     gradeType: 'grade_type',
-  //     gradeValue: 'grade_value',
-
-  //     // Course Information (common)
-  //     dateOfSparing: 'date_of_sparing',
-  //     dateOfJoiningStcWtcNonRailway: 'date_of_joining_stc_wtc_non_railway',
-
-  //     // Additional fields
-  //     typeOfDisability: 'type_of_disability',
-  //     resignationStatus: 'resignation_status'
-  //   };
-
-  //   // STC-specific field mappings
-  //   const stcFieldMapping = {
-  //     ...commonFieldMapping,
-  //     // STC specific fields
-  //     moduleNo: 'module_no',
-  //     moduleName: 'module_name',
-  //     courseDuration: 'course_duration',
-  //     stationCode: 'station_code'
-  //   };
-
-  //   // WTC-specific field mappings (WTC uses camelCase in backend, so no transformation needed for most fields)
-  //   const wtcFieldMapping = {
-  //     // Transform only the common fields that need snake_case conversion
-  //     fatherName: 'fatherName', // Keep camelCase for WTC
-  //     motherName: 'motherName', // Keep camelCase for WTC
-  //     phoneNumber: 'phoneNumber', // Keep camelCase for WTC
-  //     emergencyContactNumber: 'emergencyContactNumber', // Keep camelCase for WTC
-  //     permanentAddress: 'permanentAddress', // Keep camelCase for WTC
-  //     currentAddress: 'currentAddress', // Keep camelCase for WTC
-
-  //     // Professional Information (WTC uses camelCase)
-  //     employeeNumber: 'employeeNumber',
-  //     ticketNumber: 'ticketNumber', // WTC uses ticketNumber (camelCase) not ticket_no
-  //     workingUnder: 'workingUnder',
-  //     hrmsId: 'hrmsId',
-  //     pfNoNpsUps: 'pfNoNpsUps',
-  //     dateOfAppointmentInRailway: 'dateOfAppointmentInRailway',
-  //     modeOfAppointment: 'modeOfAppointment',
-
-  //     // Educational Information (WTC uses camelCase)
-  //     highestQualification: 'highestQualification',
-  //     fieldOfStudy: 'fieldOfStudy',
-  //     gradeType: 'gradeType',
-  //     gradeValue: 'gradeValue',
-
-  //     // Course Information (WTC uses camelCase)
-  //     dateOfSparing: 'dateOfSparing',
-  //     dateOfJoiningStcWtcNonRailway: 'dateOfJoiningStcWtcNonRailway',
-
-  //     // WTC specific fields (all camelCase)
-  //     courseType: 'courseType',
-  //     designationOther: 'designationOther',
-  //     trainingPeriod: 'trainingPeriod',
-  //     customTrainingPeriod: 'customTrainingPeriod',
-  //     theoryDuration: 'theoryDuration',
-  //     customTheoryDuration: 'customTheoryDuration',
-  //     practicalDuration: 'practicalDuration',
-  //     customPracticalDuration: 'customPracticalDuration',
-  //     customFieldOfStudy: 'customFieldOfStudy',
-  //     courseCoordinator: 'courseCoordinator',
-
-  //     // Additional fields (WTC uses camelCase)
-  //     typeOfDisability: 'typeOfDisability',
-  //     resignationStatus: 'resignationStatus'
-  //   };
-
-  //   // Non-Railway specific field mappings
-  //   const nonRailwayFieldMapping = {
-  //     ...commonFieldMapping,
-  //     // Non-Railway specific fields (uses snake_case like STC)
-  //     courseType: 'course_type',
-  //     duration: 'duration',
-  //     theory: 'theory',
-  //     practical: 'practical',
-  //     remarks: 'remarks',
-  //     moduleNo: 'module_no',
-  //     courseCoordinator: 'course_coordinator',
-  //     // Additional Non-Railway fields (some stay as-is, some transform)
-  //     unit: 'unit',
-  //     institution: 'institution',
-  //     nationality: 'nationality',
-  //     pwd: 'pwd',
-  //     designation: 'designation',
-  //     batch: 'batch'
-  //   };
-
-  //   // Determine which field mapping to use based on candidate type
-  //   let fieldMapping = commonFieldMapping;
-  //   const candidateType = candidateData.type;
-
-  //   if (candidateType === 'STC') {
-  //     fieldMapping = stcFieldMapping;
-  //   } else if (candidateType === 'WTC') {
-  //     fieldMapping = wtcFieldMapping;
-  //   } else if (candidateType === 'Non Railway') {
-  //     fieldMapping = nonRailwayFieldMapping;
-  //   }
-
-  //   console.log(`Using field mapping for candidate type: ${candidateType}`);
-  //   console.log('Field mapping being used:', candidateType === 'STC' ? 'STC (snake_case)' : candidateType === 'WTC' ? 'WTC (camelCase)' : candidateType === 'Non Railway' ? 'Non Railway (snake_case)' : 'Common');
-
-  //   const transformedData = {};
-
-  //   // Transform fields that have mappings
-  //   Object.keys(candidateData).forEach(key => {
-  //     const backendKey = fieldMapping[key] || key;
-  //     // Only include fields that are not undefined or null
-  //     if (candidateData[key] !== undefined && candidateData[key] !== null) {
-  //       transformedData[backendKey] = candidateData[key];
-  //     }
-  //   });
-
-  //   console.log(`Transformed ${Object.keys(candidateData).length} frontend fields to ${Object.keys(transformedData).length} backend fields for ${candidateType}`);
-  //   if (candidateType === 'WTC') {
-  //     console.log('WTC transformation details:');
-  //     console.log('Original data keys:', Object.keys(candidateData));
-  //     console.log('Transformed data keys:', Object.keys(transformedData));
-  //     console.log('Sample transformed fields:', Object.fromEntries(Object.entries(transformedData).slice(0, 10)));
-  //   }
-  //   if (candidateType === 'Non Railway') {
-  //     console.log('Non Railway transformation details:');
-  //     console.log('Original data keys:', Object.keys(candidateData));
-  //     console.log('Transformed data keys:', Object.keys(transformedData));
-  //     console.log('Sample transformed fields:', Object.fromEntries(Object.entries(transformedData).slice(0, 10)));
-  //   }
-
-  //   return transformedData;
-  // }
-
-  // Update in RealBackendAPI class:
-
-  // Helper method to transform frontend camelCase fields to backend snake_case fields
-
+  
   transformFieldsForBackend(candidateData) {
     const transformed = { ...candidateData };
 
@@ -301,7 +120,6 @@ class RealBackendAPI {
     return transformed;
   }
 
-  // Helper method to transform backend response back to frontend camelCase format
   // transformBackendResponseToFrontend(backendData, candidateType) {
   //   // Reverse field mappings - from snake_case to camelCase
   //   const commonReverseMapping = {
@@ -675,7 +493,6 @@ class RealBackendAPI {
       const data = await response.json();
       if (data.success) {
         return data.data.map((candidate) => {
-
           // Get ticket number from any available field
           const ticketNumber =
             candidate.ticket_no ||
@@ -755,84 +572,6 @@ class RealBackendAPI {
     }
   }
 
-  // Fetch all Non-Railway candidates
-  // async getNonRailwayCandidates() {
-  //   try {
-  //     const response = await fetch(`${this.baseURL}/nonrailway`);
-  //     const data = await response.json();
-  //     if (data.success) {
-  //       return data.data.map((candidate) => {
-  //         console.log("Non-Railway Candidate raw data:", candidate); // Debug logging
-  //         return {
-  //           ...candidate,
-  //           id: `nonrailway-${candidate.id}`, // Make ID unique across types
-  //           originalId: candidate.id,
-  //           type: "Non Railway",
-  //           category: "Non Railway",
-  //           stream: "Non Railway",
-  //           workInfo: candidate.designation || "N/A",
-  //           ticketNumber:
-  //             candidate.ticket_no ||
-  //             candidate.ticketNumber ||
-  //             `NR${candidate.id}`, // Multiple fallbacks
-  //           ticket_no:
-  //             candidate.ticket_no ||
-  //             candidate.ticketNumber ||
-  //             `NR${candidate.id}`, // Ensure ticket_no is also set
-  //           serialNo: candidate.id + 3000,
-  //           batch: candidate.batch || "2024-2025",
-  //           status: "Active",
-  //           phoneNumber: candidate.phone_number || "N/A",
-  //           // Personal Information
-  //           fatherName: candidate.father_name,
-  //           motherName: candidate.mother_name,
-  //           sex: candidate.sex,
-  //           dob: candidate.dob,
-  //           // Contact Information
-  //           email: candidate.email,
-  //           emergencyContactNumber: candidate.emergency_contact_number,
-  //           permanentAddress: candidate.permanent_address,
-  //           currentAddress: candidate.current_address,
-  //           // Professional Information (Non-Railway specific)
-  //           designation: candidate.designation,
-  //           unit: candidate.unit,
-  //           workingUnder: candidate.working_under,
-  //           remarks: candidate.remarks,
-  //           // Educational Information
-  //           highestQualification: candidate.highest_qualification,
-  //           fieldOfStudy: candidate.field_of_study,
-  //           institution: candidate.institution,
-  //           gradeType: candidate.grade_type,
-  //           gradeValue: candidate.grade_value,
-  //           // Course Information (Non-Railway specific)
-  //           courseType: candidate.course_type,
-  //           duration: candidate.duration,
-  //           theory: candidate.theory,
-  //           practical: candidate.practical,
-  //           moduleNo: candidate.module_no,
-  //           dateOfSparing: candidate.date_of_sparing,
-  //           courseCoordinator: candidate.course_coordinator,
-  //           // Additional fields
-  //           nationality: candidate.nationality,
-  //           category: candidate.category,
-  //           pwd: candidate.pwd,
-  //           typeOfDisability: candidate.type_of_disability,
-  //           dateOfJoiningStcWtcNonRailway:
-  //             candidate.date_of_joining_stc_wtc_non_railway ||
-  //             candidate.created_at,
-  //           createdAt: candidate.created_at,
-  //           updatedAt: candidate.updated_at,
-  //           picture: candidate.picture ? `/${candidate.picture}` : null,
-  //         };
-  //       });
-  //     }
-  //     return [];
-  //   } catch (error) {
-  //     console.error("Error fetching Non-Railway candidates:", error);
-  //     return [];
-  //   }
-  // }
-  // Update the getNonRailwayCandidates method:
 
   // Fetch all Non-Railway candidates
   async getNonRailwayCandidates() {
@@ -911,7 +650,8 @@ class RealBackendAPI {
     }
   }
 
-  // Fetch all candidates from all three systems
+
+  // Fetch all candidates from only the 3 tables/endpoints
   async getAllCandidates() {
     try {
       // Fetch basic candidates
@@ -922,100 +662,10 @@ class RealBackendAPI {
           this.getNonRailwayCandidates(),
         ]);
 
-      // Fetch course-specific candidates
-      const courseSpecificCandidates = await this.getCourseSpecificCandidates();
-
-      return [
-        ...stcCandidates,
-        ...wtcCandidates,
-        ...nonRailwayCandidates,
-        ...courseSpecificCandidates,
-      ];
+      // RETURN ONLY THESE - no extra course-specific candidates
+      return [...stcCandidates, ...wtcCandidates, ...nonRailwayCandidates];
     } catch (error) {
       console.error("Error fetching all candidates:", error);
-      return [];
-    }
-  }
-
-  // Fetch candidates from course-specific tables
-  async getCourseSpecificCandidates() {
-    try {
-      const coursePromises = Object.entries(this.courseStructure).map(
-        async ([courseCode, apiPath]) => {
-          try {
-            const response = await fetch(`${this.baseURL}/${apiPath}`);
-            const data = await response.json();
-            if (data.success) {
-              return data.data.map((candidate) => ({
-                ...candidate,
-                id: `${apiPath}-${candidate.id}`, // Unique ID for course-specific candidates
-                originalId: candidate.id,
-                type: "STC", // All course-specific candidates are STC type
-                category: "Railway",
-                stream: "Railway",
-                workInfo: courseCode, // Use the course code as workInfo
-                ticketNumber: candidate.ticket_no || candidate.ticketNo, // Handle both field names
-                serialNo: candidate.id + 5000, // Different serial number range
-                batch: candidate.batch || "2024-2025",
-                status: "Active",
-                phoneNumber: candidate.phone_number || "N/A",
-                // Personal Information
-                fatherName: candidate.father_name,
-                motherName: candidate.mother_name,
-                sex: candidate.sex,
-                dob: candidate.dob,
-                // Contact Information
-                email: candidate.email,
-                emergencyContactNumber: candidate.emergency_contact_number,
-                permanentAddress: candidate.permanent_address,
-                currentAddress: candidate.current_address,
-                // Professional Information
-                designation: candidate.designation,
-                unit: candidate.unit,
-                workingUnder: candidate.working_under,
-                hrmsId: candidate.hrms_id,
-                pfNoNpsUps: candidate.pf_no_nps_ups,
-                employeeNumber: candidate.employee_number,
-                stationCode: candidate.station_code,
-                dateOfAppointmentInRailway:
-                  candidate.date_of_appointment_in_railway,
-                modeOfAppointment: candidate.mode_of_appointment,
-                // Educational Information
-                highestQualification: candidate.highest_qualification,
-                fieldOfStudy: candidate.field_of_study,
-                institution: candidate.institution,
-                gradeType: candidate.grade_type,
-                gradeValue: candidate.grade_value,
-                // Course Information
-                moduleNo: candidate.module_no,
-                moduleName: candidate.module_name,
-                courseDuration: candidate.course_duration,
-                dateOfSparing: candidate.date_of_sparing,
-                // Additional fields
-                nationality: candidate.nationality,
-                // category: candidate.category,
-                pwd: candidate.pwd,
-                typeOfDisability: candidate.type_of_disability,
-                dateOfJoiningStcWtcNonRailway:
-                  candidate.date_of_joining_stc_wtc_non_railway ||
-                  candidate.created_at,
-                createdAt: candidate.created_at,
-                updatedAt: candidate.updated_at,
-                picture: candidate.picture ? `${candidate.picture}` : null,
-              }));
-            }
-            return [];
-          } catch (error) {
-            console.error(`Error fetching ${courseCode} candidates:`, error);
-            return [];
-          }
-        }
-      );
-
-      const courseResults = await Promise.all(coursePromises);
-      return courseResults.flat();
-    } catch (error) {
-      console.error("Error fetching course-specific candidates:", error);
       return [];
     }
   }
@@ -1126,8 +776,8 @@ class RealBackendAPI {
               type === "STC"
                 ? `stc-${data.data.id}`
                 : type === "WTC"
-                  ? `wtc-${data.data.id}`
-                  : `nonrailway-${data.data.id}`,
+                ? `wtc-${data.data.id}`
+                : `nonrailway-${data.data.id}`,
             type,
             category: type === "Non Railway" ? "Non Railway" : "Railway",
             stream: type === "Non Railway" ? "Non Railway" : "Railway",
@@ -1183,7 +833,6 @@ class RealBackendAPI {
       const data = await response.json();
 
       if (data.success) {
-
         // Transform the backend response to match our expected format
         const transformedBackendData = this.transformBackendResponseToFrontend(
           data.data,
@@ -1205,11 +854,11 @@ class RealBackendAPI {
           ticketNumber:
             candidate.type === "WTC"
               ? data.data.ticketNumber ||
-              data.data.ticket_no ||
-              candidate.ticketNumber
+                data.data.ticket_no ||
+                candidate.ticketNumber
               : data.data.ticket_no ||
-              data.data.ticketNumber ||
-              candidate.ticketNumber,
+                data.data.ticketNumber ||
+                candidate.ticketNumber,
           status: candidate.status,
           // Update timestamps
           updatedAt:
@@ -1721,7 +1370,7 @@ class MockBackendAPI {
         candidateData.picture instanceof File
           ? URL.createObjectURL(candidateData.picture)
           : candidateData.picture ||
-          "https://randomuser.me/api/portraits/lego/1.jpg",
+            "https://randomuser.me/api/portraits/lego/1.jpg",
       status: candidateData.status || "Active",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -2256,7 +1905,6 @@ const CandidateManagementPage = () => {
     }
     return "Filtered"; // Fallback for other combinations
   };
-
 
   // Helper function to show success notifications
   const showSuccessNotification = (message) => {
