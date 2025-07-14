@@ -8,7 +8,7 @@ import React, {
 import {
   Search,
   FileText,
-  Download,
+  // Download,
   Printer,
   ArrowLeft,
   GraduationCap,
@@ -16,8 +16,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
 import railwayLogo from "../assets/rail.png";
 
 // Subject code to name mapping
@@ -26,7 +26,8 @@ const subjectMapping = {
   "MRT-02": "Role of Mechanical Dept.",
   "MRT-03": "Rolling Stock Theory- Carriage",
   "MRT-04": "Rolling Stock Theory - Wagon",
-  "MRT-05": "Rolling Stock Theory - Diesel Loco, DEMU, SPART, Train Sets: MEMU/ EMU",
+  "MRT-05":
+    "Rolling Stock Theory - Diesel Loco, DEMU, SPART, Train Sets: MEMU/ EMU",
   "MRT-06": "Industrial Safety, First aid & Firefighting",
   "MRT-07": "Tender & Contract",
   "MRT-08": "Accident & Disaster management",
@@ -995,142 +996,62 @@ const Marksheet = () => {
     }, 1000);
   }, [candidateData]);
 
-  const handleExportPDF = async () => {
-    if (!marksheetRef.current || !candidateData) {
-      setMessage({
-        type: "error",
-        text: "No marksheet data available for export",
-      });
-      return;
-    }
+//  const handleExportPDF = useCallback(async () => {
+//   if (!marksheetRef.current) {
+//     setMessage({ type: "error", text: "No marksheet to export." });
+//     return;
+//   }
+//   setGenerating(true);
 
-    setGenerating(true);
-    setMessage({ type: "", text: "" });
+//   try {
+//     // 1) Render DOM node to canvas
+//     const canvas = await html2canvas(marksheetRef.current, {
+//       scale: 2,
+//       useCORS: true,
+//       allowTaint: true,
+//       backgroundColor: "#ffffff",
+//     });
 
-    try {
-      // Call backend API first for logging/analytics
-      const result = await marksheetService.exportMarksheetPDF(
-        candidateData.ticketNumber || candidateData.ticket_no,
-        { sessionWise: viewMode === "sessionWise" }
-      );
+//     // 2) Prepare image data for the PDF
+//     const imgData = canvas.toDataURL("image/jpeg", 1.0);
+//     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+//     const pageWidth = pdf.internal.pageSize.getWidth();
+//     const pageHeight = pdf.internal.pageSize.getHeight();
 
-      // Clone the element and add print-specific styling for better PDF output
-      const element = marksheetRef.current;
-      const clonedElement = element.cloneNode(true);
+//     // 3) Calculate the rendered image dimensions
+//     const imgWidth = pageWidth;
+//     const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-      // Apply print-specific styles to the clone
-      clonedElement.style.cssText = `
-        background: white !important;
-        color: black !important;
-        font-family: 'Times New Roman', serif !important;
-        font-size: 14px !important;
-        line-height: 1.4 !important;
-        width: 210mm !important;
-        padding: 15mm !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-      `;
+//     // 4) Add first page
+//     let heightLeft = imgHeight;
+//     let position = 0;
+//     pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+//     heightLeft -= pageHeight;
 
-      // Create a temporary container
-      const container = document.createElement("div");
-      container.style.cssText = `
-        position: fixed;
-        top: -9999px;
-        left: -9999px;
-        width: 210mm;
-        background: white;
-        font-family: 'Times New Roman', serif;
-      `;
-      container.appendChild(clonedElement);
-      document.body.appendChild(container);
+//     // 5) Add additional pages if the content overflows
+//     while (heightLeft > 0) {
+//       position = position - pageHeight;
+//       pdf.addPage();
+//       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+//       heightLeft -= pageHeight;
+//     }
 
-      // Generate canvas with high quality settings
-      const canvas = await html2canvas(clonedElement, {
-        scale: 3, // Higher scale for better quality
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        imageTimeout: 30000,
-        removeContainer: false,
-        foreignObjectRendering: true,
-        width: 794, // A4 width in pixels at 96 DPI
-        height: 1123, // A4 height in pixels at 96 DPI
-        windowWidth: 794,
-        windowHeight: 1123,
-        scrollX: 0,
-        scrollY: 0,
-        ignoreElements: (element) => {
-          // Ignore any non-essential elements
-          return element.classList?.contains("no-print") || false;
-        },
-      });
+//     // 6) Save the file
+//     const filename = `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}.pdf`;
+//     pdf.save(filename);
 
-      // Clean up temporary container
-      document.body.removeChild(container);
+//     setMessage({ type: "success", text: "PDF exported successfully!" });
+//   } catch (err) {
+//     console.error("PDF export failed:", err);
+//     setMessage({
+//       type: "error",
+//       text: "Failed to export PDF. Check console for details.",
+//     });
+//   } finally {
+//     setGenerating(false);
+//   }
+// }, [candidateData]);
 
-      // Create PDF with exact A4 dimensions
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-
-      // Calculate dimensions to fit A4 page with margins
-      const pageWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const margin = 10; // 10mm margin
-      const contentWidth = pageWidth - 2 * margin;
-      const contentHeight = pageHeight - 2 * margin;
-
-      // Calculate scaling to fit content
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(
-        contentWidth / (imgWidth * 0.264583),
-        contentHeight / (imgHeight * 0.264583)
-      );
-
-      const finalWidth = imgWidth * 0.264583 * ratio;
-      const finalHeight = imgHeight * 0.264583 * ratio;
-
-      // Center the content on the page
-      const x = (pageWidth - finalWidth) / 2;
-      const y = margin;
-
-      // Add image to PDF
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      pdf.addImage(
-        imgData,
-        "JPEG",
-        x,
-        y,
-        finalWidth,
-        finalHeight,
-        undefined,
-        "FAST"
-      );
-
-      // Save the PDF
-      const fileName =
-        result.data?.fileName ||
-        `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}_${
-          viewMode === "sessionWise" ? "Sessional" : "Complete"
-        }_${new Date().toISOString().split("T")[0]}.pdf`;
-      pdf.save(fileName);
-
-      setMessage({ type: "success", text: "PDF exported successfully!" });
-    } catch (error) {
-      console.error("PDF Export Error:", error);
-      setMessage({
-        type: "error",
-        text: "Failed to export PDF. Please try again.",
-      });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   // Helper functions with useMemo for optimization
   const calculateTotalMarks = useMemo(() => {
@@ -1249,13 +1170,20 @@ const Marksheet = () => {
                 textAlign: "left",
               }}
             >
-              {config.subjects.length > 0 
-                ? config.subjects.map(code => {
-                    const subjectName = subjectMapping[code];
-                    return subjectName ? `${subjectName} (${code})` : code;
-                  }).join(", ")
+              {config.subjects.length > 0
+                ? config.subjects.map((code, idx) => {
+                    const subjectName = subjectMapping[code] || "";
+                    return (
+                      <span key={code}>
+                        <span style={{ fontWeight: "bold" }}>{code}</span>
+                        {subjectName ? ` – ${subjectName}` : ""}
+                        {idx < config.subjects.length - 1 && ", "}
+                      </span>
+                    );
+                  })
                 : "-"}
             </td>
+
             <td
               style={{
                 border: "1px solid black",
@@ -1544,7 +1472,7 @@ const Marksheet = () => {
                     <Printer className="w-5 h-5" />
                     Print
                   </button>
-                  <button
+                  {/* <button
                     onClick={handleExportPDF}
                     disabled={generating || !candidateData}
                     className="flex items-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -1555,7 +1483,7 @@ const Marksheet = () => {
                       <Download className="w-5 h-5" />
                     )}
                     {generating ? "Exporting..." : "Export PDF"}
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -1570,9 +1498,7 @@ const Marksheet = () => {
                     onChange={(e) => setViewMode(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                   >
-                    <option value="complete">
-                      Complete Marksheet (Annual)
-                    </option>
+                    <option value="complete">Final Marksheet</option>
                     <option value="sessionWise">Sessional Marksheet</option>
                   </select>
                 </div>
@@ -1740,7 +1666,7 @@ const Marksheet = () => {
                         margin: "0 0 2px 0",
                       }}
                     >
-                      NORTHERN RAILWAYS
+                      NORTHERN RAILWAY
                     </h1>
                     <h2
                       style={{
@@ -1750,7 +1676,7 @@ const Marksheet = () => {
                         margin: "0 0 1px 0",
                       }}
                     >
-                      SUPERVISORS TRAINING CENTRE
+                      SUPERVISOR TRAINING CENTRE
                     </h2>
                     <h2
                       style={{
@@ -1764,10 +1690,10 @@ const Marksheet = () => {
                     </h2>
                     <h3
                       style={{
-                        fontSize: "14px",
+                        fontSize: "12px",
                         fontWeight: "bold",
                         color: "black",
-                        margin: "4px 0 2px 0",
+                        margin: "6px 0 2px 0",
                       }}
                     >
                       STATEMENT OF MARKS
@@ -1782,7 +1708,7 @@ const Marksheet = () => {
                             margin: "1px 0 0 0",
                           }}
                         >
-                          (Sessional - {selectedSession})
+                          (Sessional Marksheet - {selectedSession})
                         </h4>
                       )}
                     {viewMode === "complete" && (
@@ -1794,7 +1720,7 @@ const Marksheet = () => {
                           margin: "1px 0 0 0",
                         }}
                       >
-                        (Complete/Annual)
+                        (Final Marksheet)
                       </h4>
                     )}
                   </div>
@@ -1815,85 +1741,99 @@ const Marksheet = () => {
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           fontSize: "12px",
                         }}
                       >
-                        Name: {candidateData.name}
+                        <span style={{ fontWeight: 600 }}>Name:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.name}
+                        </span>
                       </td>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           textAlign: "right",
                           fontSize: "12px",
                         }}
                       >
-                        Father's Name:{" "}
-                        {candidateData.fatherName || candidateData.father_name}
+                        <span style={{ fontWeight: 600 }}>Father's Name:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.fatherName ||
+                            candidateData.father_name}
+                        </span>
                       </td>
                     </tr>
                     <tr>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           fontSize: "12px",
                         }}
                       >
-                        Batch: {candidateData.batch}
+                        <span style={{ fontWeight: 600 }}>Batch:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.batch}
+                        </span>
                       </td>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           textAlign: "right",
                           fontSize: "12px",
                         }}
                       >
-                        Ticket No:{" "}
-                        {candidateData.ticketNumber || candidateData.ticket_no}
+                        <span style={{ fontWeight: 600 }}>Ticket No:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.ticketNumber ||
+                            candidateData.ticket_no}
+                        </span>
                       </td>
                     </tr>
                     <tr>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           fontSize: "12px",
                         }}
                       >
-                        Post: {candidateData.designation}
+                        <span style={{ fontWeight: 600 }}>Post:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.designation}
+                        </span>
                       </td>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           textAlign: "right",
                           fontSize: "12px",
                         }}
                       >
-                        Module: {candidateData.courseCode}
+                        <span style={{ fontWeight: 600 }}>Module:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.courseCode}
+                        </span>
                       </td>
                     </tr>
                     <tr>
                       <td
                         style={{
                           padding: "2px 0",
-                          fontWeight: "600",
                           color: "black",
                           fontSize: "12px",
                         }}
                       >
-                        Unit: {candidateData.unit}
+                        <span style={{ fontWeight: 600 }}>Unit:</span>{" "}
+                        <span style={{ fontWeight: 400 }}>
+                          {candidateData.unit}
+                        </span>
                       </td>
-                      <td></td>
+                      <td />
                     </tr>
                   </tbody>
                 </table>
@@ -2250,4 +2190,3 @@ const Marksheet = () => {
 };
 
 export default Marksheet;
-
