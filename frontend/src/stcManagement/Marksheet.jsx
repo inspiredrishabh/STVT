@@ -1242,7 +1242,7 @@ const Marksheet = () => {
               }}
             >
               {isCleared
-                ? `Passed in Supplementary with marks : ${supplyMarks}`
+                ? `PASSED IN SUPPLEMENTARY WITH MARKS : ${supplyMarks}`
                 : isPassed
                 ? "PASS"
                 : "FAIL"}
