@@ -345,10 +345,13 @@ const getRawMarks = (paperMarks) => {
 // Utility to get supplementary marks from "mainMarkCsupMark"
 const getSupplementaryParsedMarks = (paperMarks) => {
   if (typeof paperMarks === "string") {
+    // Looks for strings like "45C12" → main 45, sup 12
     const match = paperMarks.match(/^(\d+)C(\d+)$/);
-    if (match) return parseInt(match[2]);
+    if (match) {
+      return parseInt(match[2], 10);
+    }
   }
-  return null;
+  return 0;
 };
 
 // Helper to compute 60% passing marks
@@ -580,6 +583,7 @@ const marksheetService = new MarksheetService();
 
 const Marksheet = () => {
   // State management - optimized
+  // const supplyMarks = getSupplementaryParsedMarks(paperMarks);
   const [searchMethod, setSearchMethod] = useState("ticket");
   const [ticketNumber, setTicketNumber] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState("");
@@ -1142,6 +1146,7 @@ const Marksheet = () => {
     (session, papers) => {
       return Object.entries(papers).map(([paper, config], idx) => {
         const paperMarks = marksheetData[session]?.[paper] ?? "";
+        const supplyMarks = getSupplementaryParsedMarks(paperMarks);
         const str = paperMarks.toString();
         const isCleared = str.includes("C"); // "C" present anywhere
         const rawMarks = getRawMarks(paperMarks) || 0;
@@ -1236,7 +1241,11 @@ const Marksheet = () => {
                 color: !isPassed ? "#dc2626" : "#16a34a",
               }}
             >
-              {isCleared ? "CLEARED" : isPassed ? "PASS" : "FAIL"}
+              {isCleared
+                ? `Passed in Supplementary with marks : ${supplyMarks}`
+                : isPassed
+                ? "PASS"
+                : "FAIL"}
             </td>
           </tr>
         );
@@ -1665,7 +1674,7 @@ const Marksheet = () => {
                   >
                     <h1
                       style={{
-                        fontSize: "18px",
+                        fontSize: "20px",
                         fontWeight: "bold",
                         color: "black",
                         margin: "0 0 4px 0",
@@ -1678,10 +1687,20 @@ const Marksheet = () => {
                         fontSize: "13px",
                         fontWeight: "600",
                         color: "black",
-                        margin: "0 0 4px 0",
+                        margin: "0 0 1px 0",
                       }}
                     >
                       SUPERVISORS TRAINING CENTRE
+                    </h2>
+                    <h2
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "black",
+                        margin: "0 0 2px 0",
+                      }}
+                    >
+                      CHARBAGH, LUCKNOW
                     </h2>
                     <h3
                       style={{
@@ -1703,7 +1722,7 @@ const Marksheet = () => {
                             margin: "2px 0 0 0",
                           }}
                         >
-                          ({selectedSession} - Sessional)
+                          (Sessional - {selectedSession})
                         </h4>
                       )}
                     {viewMode === "complete" && (
@@ -1914,7 +1933,7 @@ const Marksheet = () => {
                             textAlign: "center",
                           }}
                         >
-                          Result
+                          Remark
                         </th>
                       </tr>
                     </thead>
@@ -2041,7 +2060,7 @@ const Marksheet = () => {
                             margin: "0 0 4px 0",
                           }}
                         >
-                          Disclaimer: Candidate has failed in subject(s):{" "}
+                          Remark : Candidate has failed in subject(s):{" "}
                           {relevantFailed
                             .filter((subject) => {
                               const marks =
