@@ -83,7 +83,7 @@ const DetailModal = ({ candidate, onClose }) => {
     if (candidate.type === "STC") {
       courseData.push(
         { label: "Module No.", value: candidate.moduleNo },
-        // { label: "Module Name", value: candidate.moduleName },
+        { label: "Module Name", value: candidate.moduleName },
         { label: "Course Duration", value: candidate.courseDuration },
         // { label: "Station Code", value: candidate.stationCode }
       );
