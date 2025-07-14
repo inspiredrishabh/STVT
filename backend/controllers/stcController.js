@@ -1,350 +1,460 @@
-const { generateTicketNumber } = require('../utils/ticketGenerator');
-const fs = require('fs');
-const path = require('path');
+const { generateTicketNumber } = require("../utils/ticketGenerator");
+const fs = require("fs");
+const path = require("path");
 
 class StcController {
-    constructor(stcModel) {
-        this.stcModel = stcModel;
+  constructor(stcModel) {
+    this.stcModel = stcModel;
+  }
+
+  async createCandidate(req, res) {
+    try {
+      const candidateData = req.body;
+
+      // Generate ticket number
+      const ticketNumber = await generateTicketNumber(
+        candidateData.designation,
+        "stc"
+      );
+      candidateData.ticket_no = ticketNumber;
+
+      // Handle image upload
+      if (req.file) {
+        const imagePath = await this.handleImageUpload(
+          req.file,
+          ticketNumber,
+          "stc"
+        );
+        candidateData.picture = imagePath;
+      }
+
+      // Ensure session fields default to null if not provided
+      candidateData.session1start = candidateData.session1start ?? null;
+      candidateData.session1end = candidateData.session1end ?? null;
+      candidateData.session2start = candidateData.session2start ?? null;
+      candidateData.session2end = candidateData.session2end ?? null;
+      candidateData.session3start = candidateData.session3start ?? null;
+      candidateData.session3end = candidateData.session3end ?? null;
+      candidateData.session4start = candidateData.session4start ?? null;
+      candidateData.session4end = candidateData.session4end ?? null;
+
+      const newCandidate = await this.stcModel.create(candidateData);
+
+      res.status(201).json({
+        success: true,
+        message: "STC Candidate created successfully",
+        ticketNumber: ticketNumber,
+      });
+    } catch (error) {
+      console.error("Error creating STC candidate:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to create STC candidate",
+      });
     }
+  }
 
-    async createCandidate(req, res) {
-        try {
-            const candidateData = req.body;
+  async getCandidates(req, res) {
+    try {
+      const candidates = await this.stcModel.getAll();
+      res.status(200).json({
+        success: true,
+        message: "STC Candidates retrieved successfully",
+        data: candidates,
+        count: candidates.length,
+      });
+    } catch (error) {
+      console.error("Error getting STC candidates:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve STC candidates",
+      });
+    }
+  }
 
-            // Generate ticket number
-            const ticketNumber = await generateTicketNumber(candidateData.designation, 'stc');
-            candidateData.ticket_no = ticketNumber;
+  async getCandidateByTicketNumber(req, res) {
+    try {
+      const { ticketNumber } = req.params;
+      const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
 
-            // Handle image upload
-            if (req.file) {
-                const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
-                candidateData.picture = imagePath;
-            }
+      if (!candidate) {
+        return res.status(404).json({
+          success: false,
+          message: "STC Candidate not found",
+        });
+      }
 
-            const newCandidate = await this.stcModel.create(candidateData);
-            
-            res.status(201).json({
-                success: true,
-                message: 'STC Candidate created successfully',
-                ticketNumber: ticketNumber
-            });
+      res.status(200).json({
+        success: true,
+        message: "STC Candidate retrieved successfully",
+        data: candidate,
+      });
+    } catch (error) {
+      console.error("Error getting STC candidate:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve STC candidate",
+      });
+    }
+  }
 
-        } catch (error) {
-            console.error('Error creating STC candidate:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Failed to create STC candidate'
-            });
+  async updateCandidateByTicketNumber(req, res) {
+    try {
+      const { ticketNumber } = req.params;
+      const updatedData = req.body;
+
+      // Check if candidate exists
+      const existingCandidate = await this.stcModel.getByTicketNumber(
+        ticketNumber
+      );
+      if (!existingCandidate) {
+        return res.status(404).json({
+          success: false,
+          message: "STC Candidate not found",
+        });
+      }
+
+      // Handle image upload
+      if (req.file) {
+        // Delete old image if exists
+        if (existingCandidate.picture) {
+          const oldImagePath = path.join(
+            __dirname,
+            "../../",
+            existingCandidate.picture
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
         }
-    }
 
-    async getCandidates(req, res) {
-        try {
-            const candidates = await this.stcModel.getAll();
-            res.status(200).json({
-                success: true,
-                message: 'STC Candidates retrieved successfully',
-                data: candidates,
-                count: candidates.length
-            });
-        } catch (error) {
-            console.error('Error getting STC candidates:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve STC candidates'
-            });
+        const imagePath = await this.handleImageUpload(
+          req.file,
+          ticketNumber,
+          "stc"
+        );
+        updatedData.picture = imagePath;
+      }
+
+      const updatedCandidate = await this.stcModel.updateByTicketNumber(
+        ticketNumber,
+        updatedData
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "STC Candidate updated successfully",
+        data: updatedCandidate,
+      });
+    } catch (error) {
+      console.error("Error updating STC candidate:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to update STC candidate",
+      });
+    }
+  }
+
+  async deleteCandidateByTicketNumber(req, res) {
+    try {
+      const { ticketNumber } = req.params;
+
+      // Get candidate to check image
+      const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
+      if (!candidate) {
+        return res.status(404).json({
+          success: false,
+          message: "STC Candidate not found",
+        });
+      }
+
+      // Delete candidate
+      const deleted = await this.stcModel.deleteByTicketNumber(ticketNumber);
+
+      // Delete image file if exists
+      if (candidate.picture) {
+        const imagePath = path.join(__dirname, "../../", candidate.picture);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
         }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "STC Candidate deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting STC candidate:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete STC candidate",
+      });
     }
+  }
 
-    async getCandidateByTicketNumber(req, res) {
-        try {
-            const { ticketNumber } = req.params;
-            const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
+  // Resign candidate method
+  async resignCandidate(req, res) {
+    try {
+      const { ticketNumber } = req.params;
 
-            if (!candidate) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'STC Candidate not found'
-                });
-            }
+      // Check if candidate exists
+      const existingCandidate = await this.stcModel.getByTicketNumber(
+        ticketNumber
+      );
+      if (!existingCandidate) {
+        return res.status(404).json({
+          success: false,
+          message: "STC Candidate not found",
+        });
+      }
 
-            res.status(200).json({
-                success: true,
-                message: 'STC Candidate retrieved successfully',
-                data: candidate
-            });
-        } catch (error) {
-            console.error('Error getting STC candidate:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve STC candidate'
-            });
-        }
+      // Check if already resigned
+      if (existingCandidate.resignation_status === "yes") {
+        return res.status(400).json({
+          success: false,
+          message: "Candidate is already resigned",
+        });
+      }
+
+      // Update resignation status
+      const updatedData = {
+        ...existingCandidate,
+        resignation_status: "yes",
+      };
+
+      const updatedCandidate = await this.stcModel.updateByTicketNumber(
+        ticketNumber,
+        updatedData
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "STC Candidate resigned successfully",
+        data: updatedCandidate,
+      });
+    } catch (error) {
+      console.error("Error resigning STC candidate:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to resign STC candidate",
+      });
     }
+  }
 
-    async updateCandidateByTicketNumber(req, res) {
-        try {
-            const { ticketNumber } = req.params;
-            const updatedData = req.body;
+  async getCandidatesByDesignation(req, res) {
+    try {
+      const { designation } = req.params;
+      const candidates = await this.stcModel.getByDesignation(designation);
 
-            // Check if candidate exists
-            const existingCandidate = await this.stcModel.getByTicketNumber(ticketNumber);
-            if (!existingCandidate) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'STC Candidate not found'
-                });
-            }
-
-            // Handle image upload
-            if (req.file) {
-                // Delete old image if exists
-                if (existingCandidate.picture) {
-                    const oldImagePath = path.join(__dirname, '../../', existingCandidate.picture);
-                    if (fs.existsSync(oldImagePath)) {
-                        fs.unlinkSync(oldImagePath);
-                    }
-                }
-
-                const imagePath = await this.handleImageUpload(req.file, ticketNumber, 'stc');
-                updatedData.picture = imagePath;
-            }
-
-            const updatedCandidate = await this.stcModel.updateByTicketNumber(ticketNumber, updatedData);
-
-            res.status(200).json({
-                success: true,
-                message: 'STC Candidate updated successfully',
-                data: updatedCandidate
-            });
-        } catch (error) {
-            console.error('Error updating STC candidate:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Failed to update STC candidate'
-            });
-        }
+      res.status(200).json({
+        success: true,
+        message: `STC Candidates with designation ${designation} retrieved successfully`,
+        data: candidates,
+        count: candidates.length,
+      });
+    } catch (error) {
+      console.error("Error getting STC candidates by designation:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve STC candidates by designation",
+      });
     }
+  }
 
-    async deleteCandidateByTicketNumber(req, res) {
-        try {
-            const { ticketNumber } = req.params;
+  async getCandidatesByUnit(req, res) {
+    try {
+      const { unit } = req.params;
+      const candidates = await this.stcModel.getByUnit(unit);
 
-            // Get candidate to check image
-            const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
-            if (!candidate) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'STC Candidate not found'
-                });
-            }
-
-            // Delete candidate
-            const deleted = await this.stcModel.deleteByTicketNumber(ticketNumber);
-
-            // Delete image file if exists
-            if (candidate.picture) {
-                const imagePath = path.join(__dirname, '../../', candidate.picture);
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
-                }
-            }
-
-            res.status(200).json({
-                success: true,
-                message: 'STC Candidate deleted successfully'
-            });
-        } catch (error) {
-            console.error('Error deleting STC candidate:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to delete STC candidate'
-            });
-        }
+      res.status(200).json({
+        success: true,
+        message: `STC Candidates with unit ${unit} retrieved successfully`,
+        data: candidates,
+        count: candidates.length,
+      });
+    } catch (error) {
+      console.error("Error getting STC candidates by unit:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve STC candidates by unit",
+      });
     }
+  }
 
-    // Resign candidate method
-    async resignCandidate(req, res) {
-        try {
-            const { ticketNumber } = req.params;
+  // Image upload handler
+  async handleImageUpload(file, ticketNumber, traineeType) {
+    try {
+      const oldPath = file.path;
+      const fileExtension = path.extname(file.originalname);
+      const newFileName = `${ticketNumber}${fileExtension}`;
 
-            // Check if candidate exists
-            const existingCandidate = await this.stcModel.getByTicketNumber(ticketNumber);
-            if (!existingCandidate) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'STC Candidate not found'
-                });
-            }
+      const uploadDir = path.join(__dirname, "../uploads", traineeType);
+      const newFullPath = path.join(uploadDir, newFileName);
+      const relativePath = `uploads/${traineeType}/${newFileName}`;
 
-            // Check if already resigned
-            if (existingCandidate.resignation_status === 'yes') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Candidate is already resigned'
-                });
-            }
+      // Create directory if doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
 
-            // Update resignation status
-            const updatedData = {
-                ...existingCandidate,
-                resignation_status: 'yes'
-            };
+      // Move file with new name
+      fs.renameSync(oldPath, newFullPath);
 
-            const updatedCandidate = await this.stcModel.updateByTicketNumber(ticketNumber, updatedData);
-
-            res.status(200).json({
-                success: true,
-                message: 'STC Candidate resigned successfully',
-                data: updatedCandidate
-            });
-        } catch (error) {
-            console.error('Error resigning STC candidate:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message || 'Failed to resign STC candidate'
-            });
-        }
+      return relativePath;
+    } catch (error) {
+      throw new Error("Error handling image upload: " + error.message);
     }
+  }
 
-    async getCandidatesByDesignation(req, res) {
-        try {
-            const { designation } = req.params;
-            const candidates = await this.stcModel.getByDesignation(designation);
+  async getSessionDates(req, res) {
+    try {
+      const { ticketNumber } = req.params;
+      const candidate = await this.stcModel.getByTicketNumber(ticketNumber);
+      if (!candidate) {
+        return res.status(404).json({ success: false, message: "Not found" });
+      }
+      const {
+        session1start,
+        session1end,
+        session2start,
+        session2end,
+        session3start,
+        session3end,
+        session4start,
+        session4end,
+      } = candidate;
 
-            res.status(200).json({
-                success: true,
-                message: `STC Candidates with designation ${designation} retrieved successfully`,
-                data: candidates,
-                count: candidates.length
-            });
-        } catch (error) {
-            console.error('Error getting STC candidates by designation:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve STC candidates by designation'
-            });
-        }
+      res.status(200).json({
+        success: true,
+        data: {
+          session1start,
+          session1end,
+          session2start,
+          session2end,
+          session3start,
+          session3end,
+          session4start,
+          session4end,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
     }
+  }
 
-    async getCandidatesByUnit(req, res) {
-        try {
-            const { unit } = req.params;
-            const candidates = await this.stcModel.getByUnit(unit);
+  async updateSessionDates(req, res) {
+    try {
+      const { ticketNumber } = req.params;
+      const dates = req.body; // expect JSON with those eight keys
 
-            res.status(200).json({
-                success: true,
-                message: `STC Candidates with unit ${unit} retrieved successfully`,
-                data: candidates,
-                count: candidates.length
-            });
-        } catch (error) {
-            console.error('Error getting STC candidates by unit:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve STC candidates by unit'
-            });
-        }
+      // fetch existing record
+      const existing = await this.stcModel.getByTicketNumber(ticketNumber);
+      if (!existing) {
+        return res.status(404).json({ success: false, message: "Not found" });
+      }
+
+      // merge only session-fields into the candidate object, defaulting to null
+      const updatedCandidate = {
+        ...existing,
+        session1start: dates.session1start ?? null,
+        session1end: dates.session1end ?? null,
+        session2start: dates.session2start ?? null,
+        session2end: dates.session2end ?? null,
+        session3start: dates.session3start ?? null,
+        session3end: dates.session3end ?? null,
+        session4start: dates.session4start ?? null,
+        session4end: dates.session4end ?? null,
+      };
+
+      const result = await this.stcModel.updateByTicketNumber(
+        ticketNumber,
+        updatedCandidate
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Session dates updated",
+        data: result,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
     }
+  }
 
-    // Image upload handler
-    async handleImageUpload(file, ticketNumber, traineeType) {
-        try {
-            const oldPath = file.path;
-            const fileExtension = path.extname(file.originalname);
-            const newFileName = `${ticketNumber}${fileExtension}`;
+  // async getCandidatesByTrainingPeriod(req, res) {
+  //    try {
+  //        const { trainingPeriod } = req.params;
+  //        const candidates = await this.stcModel.getByTrainingPeriod(trainingPeriod);
+  //        res.status(200).json({
+  //            success: true,
+  //            message: `STC Candidates with training period ${trainingPeriod} retrieved successfully`,
+  //            data: candidates,
+  //            count: candidates.length
+  //        });
+  //    } catch (error) {
+  //        console.error('Error getting STC candidates by training period:', error);
+  //        res.status(500).json({
+  //            success: false,
+  //            message: 'Failed to retrieve STC candidates by training period'
+  //        });
+  //    }
+  // }
 
-            const uploadDir = path.join(__dirname, '../uploads', traineeType);
-            const newFullPath = path.join(uploadDir, newFileName);
-            const relativePath = `uploads/${traineeType}/${newFileName}`;
+  // async getCandidatesByTheoryDuration(req, res) {
+  //    try {
+  //        const { theoryDuration } = req.params;
+  //        const candidates = await this.stcModel.getByTheoryDuration(theoryDuration);
+  //        res.status(200).json({
+  //            success: true,
+  //            message: `STC Candidates with theory duration ${theoryDuration} retrieved successfully`,
+  //            data: candidates,
+  //            count: candidates.length
+  //        });
+  //    } catch (error) {
+  //        console.error('Error getting STC candidates by theory duration:', error);
+  //        res.status(500).json({
+  //            success: false,
+  //            message: 'Failed to retrieve STC candidates by theory duration'
+  //        });
+  //    }
+  // }
 
-            // Create directory if doesn't exist
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
+  // async getCandidatesByPracticalDuration(req, res) {
+  //    try {
+  //        const { practicalDuration } = req.params;
+  //        const candidates = await this.stcModel.getByPracticalDuration(practicalDuration);
+  //        res.status(200).json({
+  //            success: true,
+  //            message: `STC Candidates with practical duration ${practicalDuration} retrieved successfully`,
+  //            data: candidates,
+  //            count: candidates.length
+  //        });
+  //    } catch (error) {
+  //        console.error('Error getting STC candidates by practical duration:', error);
+  //        res.status(500).json({
+  //            success: false,
+  //            message: 'Failed to retrieve STC candidates by practical duration'
+  //        });
+  //    }
+  // }
 
-            // Move file with new name
-            fs.renameSync(oldPath, newFullPath);
+  // Backward Compatibility Methods
+  async getCandidateById(req, res) {
+    req.params.ticketNumber = req.params.id;
+    return this.getCandidateByTicketNumber(req, res);
+  }
 
-            return relativePath;
-        } catch (error) {
-            throw new Error('Error handling image upload: ' + error.message);
-        }
-    }
+  async updateCandidate(req, res) {
+    req.params.ticketNumber = req.params.id;
+    return this.updateCandidateByTicketNumber(req, res);
+  }
 
-
-    // async getCandidatesByTrainingPeriod(req, res) {
-    //     try {
-    //         const { trainingPeriod } = req.params;
-    //         const candidates = await this.stcModel.getByTrainingPeriod(trainingPeriod);
-    //         res.status(200).json({
-    //             success: true,
-    //             message: `STC Candidates with training period ${trainingPeriod} retrieved successfully`,
-    //             data: candidates,
-    //             count: candidates.length
-    //         });
-    //     } catch (error) {
-    //         console.error('Error getting STC candidates by training period:', error);
-    //         res.status(500).json({
-    //             success: false,
-    //             message: 'Failed to retrieve STC candidates by training period'
-    //         });
-    //     }
-    // }
-
-    // async getCandidatesByTheoryDuration(req, res) {
-    //     try {
-    //         const { theoryDuration } = req.params;
-    //         const candidates = await this.stcModel.getByTheoryDuration(theoryDuration);
-    //         res.status(200).json({
-    //             success: true,
-    //             message: `STC Candidates with theory duration ${theoryDuration} retrieved successfully`,
-    //             data: candidates,
-    //             count: candidates.length
-    //         });
-    //     } catch (error) {
-    //         console.error('Error getting STC candidates by theory duration:', error);
-    //         res.status(500).json({
-    //             success: false,
-    //             message: 'Failed to retrieve STC candidates by theory duration'
-    //         });
-    //     }
-    // }
-
-    // async getCandidatesByPracticalDuration(req, res) {
-    //     try {
-    //         const { practicalDuration } = req.params;
-    //         const candidates = await this.stcModel.getByPracticalDuration(practicalDuration);
-    //         res.status(200).json({
-    //             success: true,
-    //             message: `STC Candidates with practical duration ${practicalDuration} retrieved successfully`,
-    //             data: candidates,
-    //             count: candidates.length
-    //         });
-    //     } catch (error) {
-    //         console.error('Error getting STC candidates by practical duration:', error);
-    //         res.status(500).json({
-    //             success: false,
-    //             message: 'Failed to retrieve STC candidates by practical duration'
-    //         });
-    //     }
-    // }
-
-    // Backward Compatibility Methods
-    async getCandidateById(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.getCandidateByTicketNumber(req, res);
-    }
-
-    async updateCandidate(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.updateCandidateByTicketNumber(req, res);
-    }
-
-    async deleteCandidate(req, res) {
-        req.params.ticketNumber = req.params.id;
-        return this.deleteCandidateByTicketNumber(req, res);
-    }
+  async deleteCandidate(req, res) {
+    req.params.ticketNumber = req.params.id;
+    return this.deleteCandidateByTicketNumber(req, res);
+  }
 }
 
 module.exports = StcController;

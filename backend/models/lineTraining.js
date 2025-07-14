@@ -63,6 +63,7 @@ class lineTrainingModel {
                     remark TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(ticket_no) REFERENCES stc_candidates(ticket_no),
                     UNIQUE(ticket_no, activity_centre, start_date, end_date)
                 )`,
           (err) => {
@@ -120,6 +121,7 @@ class lineTrainingModel {
             remark TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(ticket_no) REFERENCES stc_candidates(ticket_no),
             UNIQUE(ticket_no, activity_centre, start_date, end_date)
         )`);
   }
