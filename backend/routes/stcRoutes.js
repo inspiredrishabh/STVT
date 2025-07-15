@@ -43,6 +43,11 @@ router.get("/filter/unit/:unit", (req, res) => {
   stcController.getCandidatesByUnit(req, res);
 });
 
+// Add this route for bulk creation
+router.post("/bulk", (req, res) => {
+  stcController.createMultipleCandidates(req, res);
+});
+
 // Backward Compatibility Routes (Optional)
 router.get("/legacy/:id", (req, res) => {
   stcController.getCandidateById(req, res);

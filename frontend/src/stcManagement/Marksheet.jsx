@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
 import railwayLogo from "../assets/rail.png";
+import northLogo from "../assets/north.jpeg";
 
 // Subject code to name mapping
 const subjectMapping = {
@@ -1611,8 +1612,8 @@ const Marksheet = () => {
                     style={{
                       position: "absolute",
                       left: "0",
-                      width: "80px",
-                      height: "80px",
+                      width: "84px",
+                      height: "84px",
                       backgroundColor: "white",
                       display: "flex",
                       alignItems: "center",
@@ -1645,6 +1646,49 @@ const Marksheet = () => {
                     >
                       <div>INDIAN</div>
                       <div>RAILWAYS</div>
+                      <div>LOGO</div>
+                    </div>
+                  </div>
+
+                  {/* North Logo - Same size and position as Railway Logo */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: "0",
+                      width: "84px",
+                      height: "84px",
+                      backgroundColor: "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: "0",
+                      padding: "2px",
+                    }}
+                  >
+                    <img
+                      src={northLogo}
+                      alt="Northern Railway Logo"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
+                      }}
+                    />
+                    <div
+                      style={{
+                        textAlign: "center",
+                        display: "none",
+                        flexDirection: "column",
+                        fontSize: "8px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      <div>NORTHERN</div>
+                      <div>RAILWAY</div>
                       <div>LOGO</div>
                     </div>
                   </div>
@@ -1716,7 +1760,7 @@ const Marksheet = () => {
                         style={{
                           fontSize: "10px",
                           fontWeight: "600",
-                          color: "#374151",
+                          color: "black",
                           margin: "1px 0 0 0",
                         }}
                       >
@@ -1909,7 +1953,7 @@ const Marksheet = () => {
                             textAlign: "center",
                           }}
                         >
-                          Obtained
+                          Marks Obtained
                         </th>
                         <th
                           style={{
@@ -1921,7 +1965,7 @@ const Marksheet = () => {
                             textAlign: "center",
                           }}
                         >
-                          %
+                          Percentage (%)
                         </th>
                         <th
                           style={{
