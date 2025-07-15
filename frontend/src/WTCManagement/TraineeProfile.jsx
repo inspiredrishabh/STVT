@@ -19,6 +19,7 @@ import {
   Download,
   Printer,
 } from "lucide-react";
+import { API_BASE_URL } from "../auth/request";
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
@@ -183,9 +184,7 @@ const TraineeProfile = () => {
                       <span className="text-white font-bold text-sm">
                         {trainee.picture ? (
                           <img
-                            src={`http://${
-                              import.meta.env.VITE_BACKEND_IP
-                            }:5000/${trainee.picture}`}
+                            src={`${API_BASE_URL}/${trainee.picture}`}
                             alt={trainee.name}
                             className="rounded-full w-full h-full object-cover"
                           />
@@ -209,11 +208,10 @@ const TraineeProfile = () => {
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      trainee.status === "Active"
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === "Active"
                         ? "bg-green-100 text-green-800"
                         : "bg-red-100 text-red-800"
-                    }`}
+                      }`}
                   >
                     {trainee.status}
                   </span>

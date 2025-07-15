@@ -7,6 +7,7 @@ import {
   Phone,
   GraduationCap,
 } from "lucide-react";
+import { API_BASE_URL } from '../auth/request';
 
 const DetailModal = ({ candidate, onClose }) => {
   if (!candidate) return null;
@@ -195,7 +196,7 @@ const DetailModal = ({ candidate, onClose }) => {
         <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
           <div className="flex items-center space-x-4">
             <img
-              src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`}
+              src={`${API_BASE_URL}/${candidate.picture}`}
               alt={candidate.name}
               className="w-16 h-16 rounded-2xl object-cover shadow-lg"
             />

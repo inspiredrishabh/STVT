@@ -13,6 +13,7 @@ import {
   Settings,
   Hash,
 } from "lucide-react";
+import { API_BASE_URL } from '../auth/request';
 // import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
@@ -193,14 +194,14 @@ const TraineeProfile = () => {
 
       const TraineeArray = Array.isArray(data.data)
         ? data.data.map((trainee) => ({
-            ...trainee,
-            // Map resignation_status to status for UI consistency
-            status:
-              trainee.resignation_status === "yes" ? "Resigned" : "Active",
-            // Keep original data for ticket number consistency
-            ticketNo: trainee.ticket_no,
-            ticketNumber: trainee.ticket_no,
-          }))
+          ...trainee,
+          // Map resignation_status to status for UI consistency
+          status:
+            trainee.resignation_status === "yes" ? "Resigned" : "Active",
+          // Keep original data for ticket number consistency
+          ticketNo: trainee.ticket_no,
+          ticketNumber: trainee.ticket_no,
+        }))
         : [];
 
       console.log("Fetched trainees:", TraineeArray);
@@ -252,8 +253,7 @@ const TraineeProfile = () => {
     try {
       // Navigate to line training page with trainee data
       navigate(
-        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${
-          trainee.ticketNo
+        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
         }&name=${encodeURIComponent(trainee.name)}`
       );
     } catch (error) {
@@ -280,17 +280,17 @@ const TraineeProfile = () => {
       // Call resignation API with ticket number
       await resignTrainee(
         selectedTraineeForResignation.ticket_no ||
-          selectedTraineeForResignation.ticketNo
+        selectedTraineeForResignation.ticketNo
       );
 
       // Update local state
       const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
-              ...trainee,
-              status: "Resigned",
-              resignation_status: "yes",
-            }
+            ...trainee,
+            status: "Resigned",
+            resignation_status: "yes",
+          }
           : trainee
       );
 
@@ -324,10 +324,10 @@ const TraineeProfile = () => {
       const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
-              ...trainee,
-              status: "Resigned",
-              resignation_status: "yes",
-            }
+            ...trainee,
+            status: "Resigned",
+            resignation_status: "yes",
+          }
           : trainee
       );
 
@@ -517,7 +517,7 @@ const TraineeProfile = () => {
               <div className="flex-shrink-0">
                 {selectedTraineeForSession.picture ? (
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForSession.picture}`}
+                    src={`${API_BASE_URL}/${selectedTraineeForSession.picture}`}
                     alt={selectedTraineeForSession.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -700,7 +700,7 @@ const TraineeProfile = () => {
                     {trainee.picture ? (
                       <div className="relative">
                         <img
-                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
+                          src={`${API_BASE_URL}/${trainee.picture}`}
                           alt={trainee.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
                           onError={(e) => {
@@ -745,13 +745,12 @@ const TraineeProfile = () => {
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      trainee.status === "Active"
-                        ? "bg-green-100 text-green-800"
-                        : trainee.status === "Resigned"
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${trainee.status === "Active"
+                      ? "bg-green-100 text-green-800"
+                      : trainee.status === "Resigned"
                         ? "bg-red-100 text-red-800"
                         : "bg-gray-100 text-gray-800"
-                    }`}
+                      }`}
                   >
                     {trainee.status}
                   </span>
@@ -803,14 +802,14 @@ const TraineeProfile = () => {
                     </h4>
                     <div className="space-y-2">
                       {(() => {
-                        const sessionCount = trainee.designation?.startsWith('MJP-') || 
-                                          trainee.module_no?.includes('MJP') ? 2 : 4;
-                        
+                        const sessionCount = trainee.designation?.startsWith('MJP-') ||
+                          trainee.module_no?.includes('MJP') ? 2 : 4;
+
                         return Array.from({ length: sessionCount }, (_, i) => {
                           const sessionNum = i + 1;
                           const startDate = trainee[`session${sessionNum}start`];
                           const endDate = trainee[`session${sessionNum}end`];
-                          
+
                           if (!startDate && !endDate) return null;
 
                           return (
@@ -840,16 +839,13 @@ const TraineeProfile = () => {
                     Manage
                   </button>
                   <Link
-                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${
-                      trainee.ticketNo
-                    }&name=${encodeURIComponent(trainee.name)}&courseCode=${
-                      trainee.courseCode
-                    }&autoSelect=true`}
-                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${
-                      trainee.id
-                        ? "bg-green-500 hover:bg-green-600"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    }`}
+                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
+                      }&name=${encodeURIComponent(trainee.name)}&courseCode=${trainee.courseCode
+                      }&autoSelect=true`}
+                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${trainee.id
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-orange-500 hover:bg-orange-600"
+                      }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
                     {trainee.id ? "View Marks" : "Add Marks"}
@@ -866,11 +862,10 @@ const TraineeProfile = () => {
                   <button
                     onClick={() => handleResignation(trainee)}
                     disabled={trainee.status === "Resigned"}
-                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${
-                      trainee.status === "Resigned"
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-red-500 text-white hover:bg-red-600"
-                    }`}
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${trainee.status === "Resigned"
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-red-500 text-white hover:bg-red-600"
+                      }`}
                   >
                     <Users className="w-4 h-4 mr-1" />
                     {trainee.status === "Resigned" ? "Resigned" : "Resign"}
@@ -933,7 +928,7 @@ const TraineeProfile = () => {
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   {selectedTraineeForResignation.picture ? (
                     <img
-                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForResignation.picture}`}
+                      src={`${API_BASE_URL}/${selectedTraineeForResignation.picture}`}
                       alt={selectedTraineeForResignation.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
