@@ -1,46 +1,60 @@
-import React, { useCallback, useMemo } from "react";
-
-const getImageDimensions = (file) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      resolve({ width: img.width, height: img.height });
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-};
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 
 const Personal = ({ formData, onChange, errors = {} }) => {
+  const [imageValidationInProgress, setImageValidationInProgress] = useState(false);
+  const [imageValidationError, setImageValidationError] = useState("");
+
+  // Function to get image dimensions
+  const getImageDimensions = (file) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Handle file change separately to validate dimensions
+  const handleFileChange = async (file) => {
+    setImageValidationInProgress(true);
+    setImageValidationError("");
+
+    try {
+      if (!file) {
+        setImageValidationError("Picture is required");
+      } else if (!file.type?.startsWith("image/")) {
+        setImageValidationError("Please select a valid image file");
+      } else if (file.size > 1024 * 1024) {
+        setImageValidationError("Image size should be less than 1MB");
+      } else {
+        // Check dimensions
+        const dimensions = await getImageDimensions(file);
+        if (dimensions.height <= dimensions.width) {
+          setImageValidationError("Image height must be greater than width (portrait orientation)");
+        } else if (dimensions.height > dimensions.width * 1.5) {
+          setImageValidationError("Image height should not be greater than 1.5 times the width");
+        } else {
+          // Valid image
+          onChange("picture", file);
+        }
+      }
+    } catch (error) {
+      setImageValidationError("Unable to validate image dimensions");
+    } finally {
+      setImageValidationInProgress(false);
+    }
+  };
+
   const validateField = useCallback(
     (fieldName, value) => {
       const validations = {
-        picture: async (v) => {
+        picture: (v) => {
           if (!v) return "Picture is required";
+          // Basic validations only - dimensions are validated separately
           if (!v.type?.startsWith("image/"))
             return "Please select a valid image file";
-          if (v.size > 1024 * 1024)
-            return "Image size should be less than 1MB";
-
-          try {
-            // Convert cm to pixels (at 96 DPI)
-            const expectedWidth = Math.round(3.5 * 37.8); // 3.5cm
-            const expectedHeight = Math.round(4.5 * 37.8); // 4.5cm
-            const margin = Math.round(0.1 * 37.8); // 0.1cm margin
-
-            const dimensions = await getImageDimensions(v);
-
-            const isWidthValid = Math.abs(dimensions.width - expectedWidth) <= margin;
-            const isHeightValid = Math.abs(dimensions.height - expectedHeight) <= margin;
-
-            if (!isWidthValid || !isHeightValid) {
-              return `Image dimensions must be 4.5cm x 3.5cm (${expectedHeight}px x ${expectedWidth}px). Current dimensions: ${dimensions.height}px x ${dimensions.width}px`;
-            }
-          } catch (error) {
-            return "Error validating image dimensions";
-          }
-
-          return "";
+          if (v.size > 1024 * 1024) return "Image size should be less than 1MB";
+          return imageValidationError || "";
         },
         name: (v) => validateName(v, "Name"),
         fatherName: (v) => validateName(v, "Father's name"),
@@ -85,7 +99,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
 
       return validations[fieldName]?.(value) || "";
     },
-    [formData.pwd]
+    [formData.pwd, imageValidationError]
   );
 
   const validateName = (value, fieldLabel, required = true) => {
@@ -176,24 +190,18 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         {type === "file" ? (
           <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
             <label htmlFor="pictureUpload" className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4">
-              Choose File
+              {imageValidationInProgress ? "Processing..." : "Choose File"}
             </label>
             <input
               id="pictureUpload"
               type="file"
               accept="image/*"
-              onChange={async (e) => {
-                const file = e.target.files[0];
-                onChange(field, file);
-                const error = await validateField("picture", file);
-                if (error) {
-                  onChange.setFieldError?.("picture", error);
-                }
-              }}
+              onChange={(e) => handleFileChange(e.target.files[0])}
               className="hidden"
+              disabled={imageValidationInProgress}
             />
             <span className="text-gray-500 text-sm truncate">
-              {formData[field] ? formData[field].name : "No file chosen (Image must be 4.5cm x 3.5cm)"}
+              {formData[field] ? formData[field].name : "No file chosen, Image must be portrait with height not exceeding 1.5x width"}
             </span>
           </div>
         ) : type === "select" ? (
