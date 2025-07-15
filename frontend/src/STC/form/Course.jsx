@@ -113,7 +113,12 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
       const isoString = joining.toISOString().split("T")[0];
       onChange("dateOfSparing", isoString);
-    } else if (!joiningDate || !moduleNo || moduleNo === "" || moduleNo === "Other") {
+    } else if (
+      !joiningDate ||
+      !moduleNo ||
+      moduleNo === "" ||
+      moduleNo === "Other"
+    ) {
       // Clear date of sparing when required fields are empty or custom module selected
       if (moduleNo !== "Other") {
         onChange("dateOfSparing", "");
@@ -215,8 +220,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
         <div>
           <RequiredLabel>Batch</RequiredLabel>
           <select
-            value={formData.batch || ""}
-            onChange={(e) => onChange("batch", e.target.value)}
+            value={
+              batchOptions.includes(formData.batch) ? formData.batch : "Other"
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value !== "Other") {
+                onChange("batch", value);
+              } else {
+                onChange("batch", ""); // Clear batch for custom input
+              }
+            }}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           >
             <option value="">Select batch</option>
@@ -226,12 +240,13 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
               </option>
             ))}
           </select>
-          {formData.batch === "Other" && (
+          {(formData.batch === "" ||
+            !batchOptions.includes(formData.batch)) && (
             <input
               type="text"
               placeholder="Enter custom batch"
-              value={formData.customBatch || ""}
-              onChange={(e) => onChange("customBatch", e.target.value)}
+              value={formData.batch}
+              onChange={(e) => onChange("batch", e.target.value)}
               className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
             />
           )}
@@ -291,14 +306,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             {formData.moduleNo !== "Other" && (
               <span className="text-xs text-gray-500">(Auto-calculated)</span>
             )}
-            {formData.moduleNo === "Other" && <span className="text-red-500">*</span>}
+            {formData.moduleNo === "Other" && (
+              <span className="text-red-500">*</span>
+            )}
           </label>
           <input
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
-              }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
+              formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+            }`}
             readOnly={formData.moduleNo !== "Other"}
           />
           {errors.dateOfSparing && (
@@ -312,15 +330,22 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             {formData.moduleNo !== "Other" && (
               <span className="text-xs text-gray-500"> (Auto-filled)</span>
             )}
-            {formData.moduleNo === "Other" && <span className="text-xs text-gray-500"> (Optional)</span>}
+            {formData.moduleNo === "Other" && (
+              <span className="text-xs text-gray-500"> (Optional)</span>
+            )}
           </label>
           <input
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
-              }`}
-            placeholder={formData.moduleNo === "Other" ? "Enter course duration" : "Auto-filled"}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
+              formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+            }`}
+            placeholder={
+              formData.moduleNo === "Other"
+                ? "Enter course duration"
+                : "Auto-filled"
+            }
             readOnly={formData.moduleNo !== "Other"}
           />
           {errors.courseDuration && (
