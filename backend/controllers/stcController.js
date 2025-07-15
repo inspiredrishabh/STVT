@@ -155,75 +155,76 @@ class StcController {
     }
   }
 
-  async createMultipleCandidates(req, res) {
-  try {
-    const { candidates } = req.body;
+//   async createMultipleCandidates(req, res) {
+//   try {
+//     const { candidates } = req.body;
     
-    if (!Array.isArray(candidates) || candidates.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide an array of candidates"
-      });
-    }
+//     if (!Array.isArray(candidates) || candidates.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Please provide an array of candidates"
+//       });
+//     }
 
-    const results = [];
-    const errors = [];
+//     const results = [];
+//     const errors = [];
 
-    for (let i = 0; i < candidates.length; i++) {
-      try {
-        const candidateData = candidates[i];
+//     for (let i = 0; i < candidates.length; i++) {
+//       try {
+//         const candidateData = candidates[i];
         
-        // Generate ticket number for each candidate
-        const ticketNumber = await generateTicketNumber(
-          candidateData.designation,
-          "stc"
-        );
-        candidateData.ticket_no = ticketNumber;
+//         // Generate ticket number for each candidate
+//         const ticketNumber = await generateTicketNumber(
+//           candidateData.designation,
+//           "stc"
+//         );
+//         candidateData.ticket_no = ticketNumber;
 
-        // Set default session values
-        candidateData.session1start = candidateData.session1start ?? null;
-        candidateData.session1end = candidateData.session1end ?? null;
-        candidateData.session2start = candidateData.session2start ?? null;
-        candidateData.session2end = candidateData.session2end ?? null;
-        candidateData.session3start = candidateData.session3start ?? null;
-        candidateData.session3end = candidateData.session3end ?? null;
-        candidateData.session4start = candidateData.session4start ?? null;
-        candidateData.session4end = candidateData.session4end ?? null;
+//         // Set default session values
+//         candidateData.session1start = candidateData.session1start ?? null;
+//         candidateData.session1end = candidateData.session1end ?? null;
+//         candidateData.session2start = candidateData.session2start ?? null;
+//         candidateData.session2end = candidateData.session2end ?? null;
+//         candidateData.session3start = candidateData.session3start ?? null;
+//         candidateData.session3end = candidateData.session3end ?? null;
+//         candidateData.session4start = candidateData.session4start ?? null;
+//         candidateData.session4end = candidateData.session4end ?? null;
 
-        const newCandidate = await this.stcModel.create(candidateData);
-        results.push({
-          index: i,
-          ticketNumber: ticketNumber,
-          success: true,
-          data: newCandidate
-        });
-      } catch (error) {
-        errors.push({
-          index: i,
-          candidate: candidates[i]?.name || `Candidate ${i + 1}`,
-          error: error.message
-        });
-      }
-    }
+//         const newCandidate = await this.stcModel.create(candidateData);
+//         results.push({
+//           index: i,
+//           ticketNumber: ticketNumber,
+//           success: true,
+//           data: newCandidate
+//         });
+//       } catch (error) {
+//         errors.push({
+//           index: i,
+//           candidate: candidates[i]?.name || `Candidate ${i + 1}`,
+//           error: error.message
+//         });
+//       }
+//     }
 
-    res.status(201).json({
-      success: true,
-      message: `${results.length} candidates created successfully`,
-      totalProcessed: candidates.length,
-      successful: results.length,
-      failed: errors.length,
-      results: results,
-      errors: errors
-    });
+//     res.status(201).json({
+//       success: true,
+//       message: `${results.length} candidates created successfully`,
+//       totalProcessed: candidates.length,
+//       successful: results.length,
+//       failed: errors.length,
+//       results: results,
+//       errors: errors
+//     });
 
-  } catch (error) {
-    console.error("Error creating multiple STC candidates:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to create multiple STC candidates"
-    });
-  }
-}
+//   } catch (error) {
+//     console.error("Error creating multiple STC candidates:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to create multiple STC candidates"
+//     });
+//   }
+// }
+
 
   async deleteCandidateByTicketNumber(req, res) {
     try {
