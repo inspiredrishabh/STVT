@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "./request";
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   const verifyToken = async (token) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/auth/verify`,
+        `${import.meta.env.VITE_API_BASE_URL}/auth/verify`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (role, password) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/auth/login`,
+        `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

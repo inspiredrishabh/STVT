@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Users, Eye, Edit, Trash2, Briefcase, Zap, Save, X, User, Mail, Phone, MapPin, Calendar, Building } from 'lucide-react';
-import { API_BASE_URL } from '../auth/request';
 
 const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
   const [editingCandidate, setEditingCandidate] = useState(null);
@@ -146,7 +145,7 @@ const CandidateRow = ({
     <tr className="hover:bg-gray-50 transition-colors duration-200">
       <td className="px-6 py-4">
         <div className="flex items-center space-x-4">
-          <img src={`${API_BASE_URL}/${candidate.picture}`} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
+          <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
           <div>
             <div className="text-sm font-bold text-[#1B2A41]">{candidate.name}</div>
             <div className="text-xs text-gray-500">Ticket No: {candidate.ticketNumber || candidate.employeeNumber}</div>

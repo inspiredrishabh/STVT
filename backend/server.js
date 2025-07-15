@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { initializeDatabase } = require("./config/db");
+const fs = require("fs");
 const os = require("os");
 
 // TEST COMMIT to back safe commit before major changes
@@ -110,8 +111,19 @@ function getLocalIP() {
   return "localhost";
 }
 
+function updateFrontendEnv(ip) {
+  const envPath = path.join(__dirname, "../frontend/.env");
+  let envContent = fs.readFileSync(envPath, "utf-8");
+  envContent = envContent.replace(
+    /VITE_BACKEND_IP=.*/g,
+    `VITE_BACKEND_IP=${ip}`
+  );
+  fs.writeFileSync(envPath, envContent, "utf-8");
+}
+
 const PORT = process.env.PORT || 5000;
 const localIP = getLocalIP();
+updateFrontendEnv(localIP);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
