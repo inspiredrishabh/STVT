@@ -3,8 +3,13 @@ import React, { useEffect, useCallback, useMemo } from "react";
 const Course = ({ formData, onChange, errors = {} }) => {
   // Auto-calculate sparing date based on training period from Professional.jsx
   useEffect(() => {
-    const { dateOfJoiningStcWtcNonRailway, trainingPeriod, customTrainingPeriod } = formData;
-    const periodToUse = trainingPeriod === "Custom" ? customTrainingPeriod : trainingPeriod;
+    const {
+      dateOfJoiningStcWtcNonRailway,
+      trainingPeriod,
+      customTrainingPeriod,
+    } = formData;
+    const periodToUse =
+      trainingPeriod === "Custom" ? customTrainingPeriod : trainingPeriod;
 
     if (dateOfJoiningStcWtcNonRailway && periodToUse) {
       const joining = new Date(dateOfJoiningStcWtcNonRailway);
@@ -28,14 +33,15 @@ const Course = ({ formData, onChange, errors = {} }) => {
         if (!isNaN(months)) joining.setMonth(joining.getMonth() + months);
       } else if (containsTerm(periodToUse, "Week")) {
         const weeks = extractNumber(periodToUse);
-        if (!isNaN(weeks)) joining.setDate(joining.getDate() + (weeks * 7));
+        if (!isNaN(weeks)) joining.setDate(joining.getDate() + weeks * 7);
       } else if (containsTerm(periodToUse, "Day")) {
         const days = extractNumber(periodToUse);
         if (!isNaN(days)) joining.setDate(joining.getDate() + days);
       } else {
         // If no recognized time unit, try to parse as days
         const possibleDays = extractNumber(periodToUse);
-        if (!isNaN(possibleDays)) joining.setDate(joining.getDate() + possibleDays);
+        if (!isNaN(possibleDays))
+          joining.setDate(joining.getDate() + possibleDays);
       }
 
       onChange("dateOfSparing", joining.toISOString().split("T")[0]);
@@ -43,13 +49,14 @@ const Course = ({ formData, onChange, errors = {} }) => {
       onChange("dateOfSparing", "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.dateOfJoiningStcWtcNonRailway, formData.trainingPeriod, formData.customTrainingPeriod]); // We need to recalculate when any of these values change
+  }, [
+    formData.dateOfJoiningStcWtcNonRailway,
+    formData.trainingPeriod,
+    formData.customTrainingPeriod,
+  ]); // We need to recalculate when any of these values change
 
   const validateAllFields = useCallback(() => {
-    const requiredFields = [
-      "batch",
-      "dateOfJoiningStcWtcNonRailway",
-    ];
+    const requiredFields = ["batch", "dateOfJoiningStcWtcNonRailway"];
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -62,8 +69,13 @@ const Course = ({ formData, onChange, errors = {} }) => {
     });
 
     // Check if we have a valid training period to calculate date of sparing
-    if (formData.trainingPeriod === "Custom" && (!formData.customTrainingPeriod || formData.customTrainingPeriod.trim() === "")) {
-      validationErrors.customTrainingPeriod = "Please provide a custom training period to calculate date of sparing";
+    if (
+      formData.trainingPeriod === "Custom" &&
+      (!formData.customTrainingPeriod ||
+        formData.customTrainingPeriod.trim() === "")
+    ) {
+      validationErrors.customTrainingPeriod =
+        "Please provide a custom training period to calculate date of sparing";
     }
 
     return {
@@ -72,6 +84,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
     };
   }, [formData]);
 
+
+  // Set the validation function to be used by the parent component
   useEffect(() => {
     onChange.setValidationFunction?.(validateAllFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,7 +110,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
         field: "dateOfSparing",
         type: "date",
         disabled: true,
-        helpText: "(Auto-calculated based on Date of Joining + Training Period)",
+        helpText:
+          "(Auto-calculated based on Date of Joining + Training Period)",
       },
     ],
     []
@@ -122,8 +137,20 @@ const Course = ({ formData, onChange, errors = {} }) => {
         {type === "select" ? (
           <>
             <select
-              value={formData[field] || ""}
-              onChange={(e) => onChange(field, e.target.value)}
+              value={
+                formData[field] === "Other" ||
+                !options.includes(formData[field])
+                  ? "Other"
+                  : formData[field]
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (hasCustom && value === "Other") {
+                  onChange(field, ""); // Clear batch for custom input
+                } else {
+                  onChange(field, value);
+                }
+              }}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
               {options.map((opt) => (
@@ -132,32 +159,27 @@ const Course = ({ formData, onChange, errors = {} }) => {
                 </option>
               ))}
             </select>
-            {hasCustom && formData[field] === "Other" && (
-              <input
-                type="text"
-                placeholder={`Enter custom ${label.toLowerCase()}`}
-                value={
-                  formData[
-                  `custom${field.charAt(0).toUpperCase() + field.slice(1)}`
-                  ] || ""
-                }
-                onChange={(e) =>
-                  onChange(
-                    `custom${field.charAt(0).toUpperCase() + field.slice(1)}`,
-                    e.target.value
-                  )
-                }
-                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
-              />
-            )}
+            {hasCustom &&
+              (formData[field] === "Other" ||
+                !options.includes(formData[field]) ||
+                formData[field] === "") && (
+                <input
+                  type="text"
+                  placeholder={`Enter custom ${label.toLowerCase()}`}
+                  value={formData[field] || ""}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
+                />
+              )}
           </>
         ) : (
           <input
             type={type}
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${disabled ? "bg-gray-50" : ""
-              }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
+              disabled ? "bg-gray-50" : ""
+            }`}
             placeholder={
               disabled ? "Auto-filled" : `Enter ${label.toLowerCase()}`
             }
