@@ -121,7 +121,7 @@ const CertificatePreview = () => {
               </div>
               <div className="w-1/4 flex justify-end">
                 <div className="h-36 w-32 border-4 border-double border-gray-800 flex items-center justify-center text-center text-xs text-gray-500">
-                  <img src={`http://localhost:5000/${trainee.picture}`} alt={trainee.name} />
+                  <img src={`http://192.168.244.85:5000/${trainee.picture}`} alt={trainee.name} />
                 </div>
               </div>
             </div>

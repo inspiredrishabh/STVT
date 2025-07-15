@@ -195,7 +195,7 @@ const DetailModal = ({ candidate, onClose }) => {
         <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
           <div className="flex items-center space-x-4">
             <img
-              src={`http://localhost:5000/${candidate.picture}`}
+              src={`http://192.168.244.85:5000/${candidate.picture}`}
               alt={candidate.name}
               className="w-16 h-16 rounded-2xl object-cover shadow-lg"
             />

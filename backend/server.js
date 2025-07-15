@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { initializeDatabase } = require("./config/db");
+const os = require("os");
+
 // TEST COMMIT to back safe commit before major changes
 
 // Import routes
@@ -12,7 +14,7 @@ const nonRailwayRoutes = require("./routes/nonRailwayRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const lineTrainingRoutes = require("./routes/lineTrainingRoutes");
 
-const exportRoutes = require('./routes/exportRoutes');
+const exportRoutes = require("./routes/exportRoutes");
 // Course‐specific routes (12 total)
 const mjiCwRoutes = require("./routes/mjicwRoutes");
 const mjidRoutes = require("./routes/mjidRoutes");
@@ -33,7 +35,11 @@ const app = express();
 initializeDatabase();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -46,7 +52,7 @@ app.use("/api/stc", stcRoutes);
 app.use("/api/wtc", wtcRoutes);
 app.use("/api/nonrailway", nonRailwayRoutes);
 app.use("/api/attendance", attendanceRoutes);
-app.use('/api/export-database', exportRoutes);
+app.use("/api/export-database", exportRoutes);
 
 // Line‐Training
 app.use("/api/line-trainings", lineTrainingRoutes);
@@ -92,14 +98,26 @@ app.use((err, req, res, next) => {
   });
 });
 
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === "IPv4" && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return "localhost";
+}
+
 const PORT = process.env.PORT || 5000;
+const localIP = getLocalIP();
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📋 API Documentation:`);
-  console.log(`126*27 : ${126 * 27}`);
   console.log(`   Local: http://localhost:${PORT}/api`);
-  console.log(`   Network: http://192.168.29.89:${PORT}/api`);
-  console.log(`   STC: http://192.168.29.89:${PORT}/api/stc`);
-  console.log(`   WTC: http://192.168.29.89:${PORT}/api/wtc`);
-  console.log(`   NonRailway: http://192.168.29.89:${PORT}/api/nonrailway`);
+  console.log(`   Network: http://${localIP}:${PORT}/api`);
+  console.log(`   STC: http://${localIP}:${PORT}/api/stc`);
+  console.log(`   WTC: http://${localIP}:${PORT}/api/wtc`);
+  console.log(`   NonRailway: http://${localIP}:${PORT}/api/nonrailway`);
 });

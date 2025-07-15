@@ -1,4 +1,4 @@
-fetch('http://localhost:5000/api/wtc')
+fetch('http://192.168.244.85:5000/api/wtc')
     .then(response => {
         if (!response.ok) throw new Error('Failed to fetch trainees');
         return response.json();
@@ -7,7 +7,7 @@ fetch('http://localhost:5000/api/wtc')
         const trainees = Array.isArray(data.data) ? data.data : [];
         trainees.forEach(trainee => {
             console.log(`Trainee: ${trainee.name}`);
-            console.log(`Picture URL: http://localhost:5000/${trainee.picture}`);
+            console.log(`Picture URL: http://192.168.244.85:5000/${trainee.picture}`);
         });
     })
     .catch(err => {
