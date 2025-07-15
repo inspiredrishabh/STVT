@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -12,16 +11,6 @@ import {
 const HomePageSTC = () => {
   const managementOptions = [
     {
-      id: "feed-marks",
-      title: "Feed Marks",
-      description: "Input and manage trainee marks",
-      icon: ClipboardList,
-      path: "/stc/feed-marks",
-      color: "bg-blue-500 hover:bg-blue-600",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    {
       id: "trainee-profile",
       title: "Trainee Profile",
       description: "View and manage trainee profiles",
@@ -30,6 +19,16 @@ const HomePageSTC = () => {
       color: "bg-green-500 hover:bg-green-600",
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
+    },
+    {
+      id: "feed-marks",
+      title: "Feed Marks",
+      description: "Input and manage trainee marks",
+      icon: ClipboardList,
+      path: "/stc/feed-marks",
+      color: "bg-blue-500 hover:bg-blue-600",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
     },
     {
       id: "line-training",
@@ -54,7 +53,7 @@ const HomePageSTC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       {/* Enhanced Header */}
       <div className="bg-white shadow-lg border-b border-gray-200 w-full">
         <div className="w-full px-8 py-4">
@@ -69,7 +68,7 @@ const HomePageSTC = () => {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
                   STC Management
@@ -111,7 +110,7 @@ const HomePageSTC = () => {
             const IconComponent = option.icon;
             return (
               <Link key={option.id} to={option.path} className="group">
-                <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border border-gray-200">
+                <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border-2 border-orange-100">
                   {/* Icon */}
                   <div
                     className={`w-16 h-16 rounded-full ${option.iconBg} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}
@@ -132,7 +131,7 @@ const HomePageSTC = () => {
                   {/* Hover Effect */}
                   <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div
-                      className={`w-full py-2 px-4 ${option.color} text-white text-center rounded-lg font-medium`}
+                      className={`w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white text-center rounded-lg font-medium`}
                     >
                       Open Module
                     </div>
@@ -143,7 +142,7 @@ const HomePageSTC = () => {
           })}
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Quick Overview
@@ -162,7 +161,7 @@ const HomePageSTC = () => {
               <div className="text-gray-600">Completed This Month</div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
-import { db } from '../config/db.js';
-import { rolePermissions } from '../config/config.js';
+const  { db } = require ('../config/db.js');
+const  { rolePermissions } = require ('../config/config.js');
 
 class User {
     // Verify user credentials
@@ -34,4 +34,4 @@ class User {
 
 }
 
-export default User;
+module.exports= User;

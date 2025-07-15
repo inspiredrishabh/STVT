@@ -15,9 +15,8 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       case "name":
       case "fatherName":
         if (!trimmedValue)
-          return `${
-            fieldName === "name" ? "Name" : "Father's name"
-          } is required`;
+          return `${fieldName === "name" ? "Name" : "Father's name"
+            } is required`;
         if (trimmedValue.length < 2)
           return "Must be at least 2 characters long";
         if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
@@ -86,7 +85,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
   const handleFieldChange = (fieldName, value) => onChange(fieldName, value);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
           👤

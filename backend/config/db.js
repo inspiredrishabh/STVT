@@ -1,24 +1,27 @@
-import sqlite3 from 'sqlite3';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
+const sqlite3 = require('sqlite3').verbose();
+const { join } = require('path'); // Only join is needed from 'path'
+const fs = require('fs');
 
-// Get the current file path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Ensure db directory exists
 const dbDir = join(__dirname, '..', 'db');
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-}
+const uploadsDir = join(__dirname, '..', 'uploads');
+const tempDir = join(uploadsDir, 'temp');
 
-// Set up the database path and Initialize the database
+// Create directories if they don't exist
+[dbDir, uploadsDir, tempDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
+
+// Set up the full path for the SQLite database file
 const dbPath = join(dbDir, 'db.sqlite');
-const db = new sqlite3.Database(dbPath);
 
-// Set up the database schema
+// Create a new SQLite database instance
+const db = new sqlite3.Database(dbPath)
+
+// Function to set up the database schema (create tables if they don't exist)
 const initializeDatabase = () => {
+    // `db.serialize()` ensures that all subsequent `db.run()` calls are executed in sequence
     db.serialize(() => {
         db.run(`
             CREATE TABLE IF NOT EXISTS users (
@@ -27,8 +30,15 @@ const initializeDatabase = () => {
                 password TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        `);
+        `, (err) => {
+            if (err) {
+                console.error('Error creating users table:', err.message);
+            } else {
+                console.log('Users table checked/created successfully.');
+            }
+        });
+        // You can add more `db.run()` calls here for other tables if needed
     });
 };
 
-export { db, initializeDatabase, dbPath };
+module.exports = { db, initializeDatabase, dbPath };

@@ -33,6 +33,7 @@ const LineTraining = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTraineeInfo, setSelectedTraineeInfo] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   // Modal states
   const [viewModal, setViewModal] = useState({ isOpen: false, training: null });
@@ -46,10 +47,80 @@ const LineTraining = () => {
     activityCentre: "",
     startDate: "",
     endDate: "",
-    parentUnit: "",
-    supervisor: "",
     description: "",
   });
+
+  const [formErrors, setFormErrors] = useState({});
+
+  // Status update function
+  const updateTrainingStatus = async (training, newStatus) => {
+    try {
+      const response = await fetch(
+        `/api/line-trainings/${training.id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        // Update local state
+        setTrainings((prev) =>
+          prev.map((t) =>
+            t.id === training.id ? { ...t, status: newStatus } : t
+          )
+        );
+        alert(`Training status updated to ${newStatus}`);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert(`Error updating status: ${error.message}`);
+    }
+  };
+
+  // Date validation function
+  const validateDates = (startDate, endDate) => {
+    const errors = {};
+    const today = new Date().toISOString().split("T")[0];
+
+    if (startDate && endDate) {
+      if (new Date(startDate) >= new Date(endDate)) {
+        errors.endDate = "End date must be after start date";
+      }
+    }
+
+    return errors;
+  };
+
+  // Function to determine status based on start date
+  const determineStatus = (startDate) => {
+    const today = new Date().toISOString().split("T")[0];
+    return new Date(startDate) <= new Date(today) ? "In Progress" : "Scheduled";
+  };
+
+  // Handle form data changes with validation
+  const handleFormDataChange = (field, value) => {
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+
+    // Clear previous errors for this field
+    setFormErrors((prev) => ({ ...prev, [field]: "" }));
+
+    // Validate dates if start or end date changed
+    if (field === "startDate" || field === "endDate") {
+      const dateErrors = validateDates(
+        field === "startDate" ? value : formData.startDate,
+        field === "endDate" ? value : formData.endDate
+      );
+      setFormErrors((prev) => ({ ...prev, ...dateErrors }));
+    }
+  };
 
   // Check if coming from trainee profile
   const urlParams = new URLSearchParams(location.search);
@@ -64,121 +135,53 @@ const LineTraining = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // Fetch trainees
-      const traineeResponse = await fetch("/api/trainees");
-      const traineeData = traineeResponse.ok
-        ? await traineeResponse.json()
-        : mockTrainees;
-      setTrainees(traineeData);
+      // Fetch STC candidates (trainees)
+      const traineeResponse = await fetch("/api/stc");
+      if (traineeResponse.ok) {
+        const traineeData = await traineeResponse.json();
+        setTrainees(traineeData.data || traineeData);
+
+        // If coming from trainee profile, preselect the trainee
+        if (preselectedTraineeId && preselectedTicketNo) {
+          const candidates = traineeData.data || traineeData; // Use the already parsed data
+          const selectedTrainee = candidates.find(
+            (t) =>
+              t.id.toString() === preselectedTraineeId ||
+              t.ticket_no === preselectedTicketNo
+          );
+          if (selectedTrainee) {
+            setSelectedTickets([selectedTrainee.ticket_no]);
+            setSelectedTraineeInfo({
+              id: preselectedTraineeId,
+              ticketNo: selectedTrainee.ticket_no,
+              name: decodeURIComponent(preselectedName || selectedTrainee.name),
+              designation: selectedTrainee.designation,
+              unit: selectedTrainee.unit,
+            });
+            setIsAddMode(true);
+          }
+        }
+      } else {
+        throw new Error("Failed to fetch trainees");
+      }
 
       // Fetch line trainings
       const trainingResponse = await fetch("/api/line-trainings");
-      const trainingData = trainingResponse.ok
-        ? await trainingResponse.json()
-        : mockTrainings;
-      setTrainings(trainingData);
-
-      // If coming from trainee profile, preselect the trainee
-      if (preselectedTraineeId && preselectedTicketNo) {
-        const selectedTrainee = traineeData.find(
-          (t) => t.id.toString() === preselectedTraineeId
-        );
-        if (selectedTrainee) {
-          setSelectedTickets([selectedTrainee.ticketNo]);
-          setSelectedTraineeInfo({
-            id: preselectedTraineeId,
-            ticketNo: preselectedTicketNo,
-            name: decodeURIComponent(preselectedName || selectedTrainee.name),
-            designation: selectedTrainee.designation,
-            unit: selectedTrainee.unit,
-          });
-          setIsAddMode(true);
-        }
+      if (trainingResponse.ok) {
+        const trainingData = await trainingResponse.json();
+        setTrainings(trainingData.data || trainingData);
+      } else {
+        throw new Error("Failed to fetch line trainings");
       }
     } catch (err) {
+      console.error("Error fetching data:", err);
       setError(err.message);
-      // Use mock data
-      setTrainees(mockTrainees);
-      setTrainings(mockTrainings);
-
-      // Handle preselection with mock data
-      if (preselectedTicketNo) {
-        const selectedTrainee = mockTrainees.find(
-          (t) => t.ticketNo === preselectedTicketNo
-        );
-        if (selectedTrainee) {
-          setSelectedTickets([selectedTrainee.ticketNo]);
-          setSelectedTraineeInfo({
-            id: preselectedTraineeId,
-            ticketNo: preselectedTicketNo,
-            name: decodeURIComponent(preselectedName || selectedTrainee.name),
-            designation: selectedTrainee.designation,
-            unit: selectedTrainee.unit,
-          });
-          setIsAddMode(true);
-        }
-      }
     } finally {
       setLoading(false);
     }
   };
-
-  // Mock data
-  const mockTrainees = [
-    {
-      id: 1,
-      ticketNo: "ASE00001",
-      name: "Rahul Sharma",
-      designation: "ASE",
-      unit: "JAT",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 2,
-      ticketNo: "AJE00001",
-      name: "Priya Singh",
-      designation: "AJE",
-      unit: "FZD",
-      batch: "2024-2025",
-      status: "Active",
-    },
-    {
-      id: 3,
-      ticketNo: "IJE00001",
-      name: "Amit Kumar",
-      designation: "IJE",
-      unit: "MB",
-      batch: "2024-2025",
-      status: "Active",
-    },
-  ];
-
-  const mockTrainings = [
-    {
-      id: 1,
-      ticketNumbers: ["ASE00001"],
-      activityCentre: "JAT Diesel Shed",
-      startDate: "2024-06-01",
-      endDate: "2024-08-31",
-      parentUnit: "JAT Division",
-      supervisor: "Mr. R.K. Sharma",
-      status: "In Progress",
-      description: "Practical training on diesel locomotive maintenance",
-    },
-    {
-      id: 2,
-      ticketNumbers: ["AJE00001", "IJE00001"],
-      activityCentre: "FZD Electric Shed",
-      startDate: "2024-07-01",
-      endDate: "2024-09-30",
-      parentUnit: "FZD Division",
-      supervisor: "Mr. S.K. Verma",
-      status: "Scheduled",
-      description: "Electric traction training program",
-    },
-  ];
 
   const handleTicketSelection = (ticketNo) => {
     setSelectedTickets((prev) =>
@@ -190,54 +193,73 @@ const LineTraining = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
     if (selectedTickets.length === 0) {
       alert("Please select at least one trainee");
+      setSaving(false);
       return;
     }
+
+    // Validate dates before submission
+    const dateErrors = validateDates(formData.startDate, formData.endDate);
+    if (Object.keys(dateErrors).length > 0) {
+      setFormErrors(dateErrors);
+      alert("Please fix the date validation errors before submitting");
+      setSaving(false);
+      return;
+    }
+
+    // Determine status based on start date
+    const status = determineStatus(formData.startDate);
 
     const trainingData = {
       ...formData,
       ticketNumbers: selectedTickets,
-      status: "Scheduled",
+      status: status,
     };
 
     try {
       const response = await fetch("/api/line-trainings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(trainingData),
       });
 
       if (response.ok) {
-        const newTraining = await response.json();
+        const result = await response.json();
+        const newTraining = result.data || result;
         setTrainings((prev) => [...prev, newTraining]);
+
+        // Reset form
+        setFormData({
+          activityCentre: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        });
+        setFormErrors({});
+        setSelectedTickets([]);
+        setSelectedTraineeInfo(null);
+        setIsAddMode(false);
+
+        alert(
+          `Line training ${
+            status === "In Progress" ? "started" : "scheduled"
+          } successfully!`
+        );
       } else {
-        // Mock success for demo
-        const newTraining = {
-          id: Date.now(),
-          ...trainingData,
-        };
-        setTrainings((prev) => [...prev, newTraining]);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create training");
       }
-
-      // Reset form
-      setFormData({
-        activityCentre: "",
-        startDate: "",
-        endDate: "",
-        parentUnit: "",
-        supervisor: "",
-        description: "",
-      });
-      setSelectedTickets([]);
-      setSelectedTraineeInfo(null);
-      setIsAddMode(false);
-
-      alert("Line training scheduled successfully!");
     } catch (error) {
       console.error("Error creating training:", error);
-      alert("Error scheduling training. Please try again.");
+      alert(`Error scheduling training: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -249,6 +271,10 @@ const LineTraining = () => {
         return "bg-blue-100 text-blue-800";
       case "Scheduled":
         return "bg-yellow-100 text-yellow-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
+      case "On Hold":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -262,38 +288,75 @@ const LineTraining = () => {
         return <Clock className="w-4 h-4" />;
       case "Scheduled":
         return <Calendar className="w-4 h-4" />;
+      case "Cancelled":
+        return <X className="w-4 h-4" />;
+      case "On Hold":
+        return <AlertCircle className="w-4 h-4" />;
       default:
         return <AlertCircle className="w-4 h-4" />;
     }
   };
 
-  const filteredTrainees = trainees.filter(
-    (trainee) =>
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.designation.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTrainees = Array.isArray(trainees)
+    ? trainees.filter(
+        (trainee) =>
+          trainee &&
+          (trainee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.ticket_no
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()))
+      )
+    : [];
 
   // Calculate stats function
   const calculateStats = () => {
+    // Defensive check: ensure trainings is an array
+    if (!Array.isArray(trainings) || trainings.length === 0) {
+      return {
+        totalPrograms: 0,
+        activePrograms: 0,
+        completedPrograms: 0,
+        scheduledPrograms: 0,
+        totalTraineesInTraining: 0,
+        uniqueTraineesCount: 0,
+        completionRate: 0,
+      };
+    }
+
     const totalPrograms = trainings.length;
     const activePrograms = trainings.filter(
-      (t) => t.status === "In Progress"
+      (t) => t && t.status === "In Progress"
     ).length;
     const completedPrograms = trainings.filter(
-      (t) => t.status === "Completed"
+      (t) => t && t.status === "Completed"
     ).length;
     const scheduledPrograms = trainings.filter(
-      (t) => t.status === "Scheduled"
+      (t) => t && t.status === "Scheduled"
+    ).length;
+    const cancelledPrograms = trainings.filter(
+      (t) => t && t.status === "Cancelled"
+    ).length;
+    const onHoldPrograms = trainings.filter(
+      (t) => t && t.status === "On Hold"
     ).length;
 
     const totalTraineesInTraining = trainings.reduce((acc, training) => {
+      if (!training || !Array.isArray(training.ticketNumbers)) {
+        return acc;
+      }
       return acc + training.ticketNumbers.length;
     }, 0);
 
     const uniqueTrainees = new Set();
     trainings.forEach((training) => {
-      training.ticketNumbers.forEach((ticket) => uniqueTrainees.add(ticket));
+      if (training && Array.isArray(training.ticketNumbers)) {
+        training.ticketNumbers.forEach((ticket) => {
+          if (ticket) uniqueTrainees.add(ticket);
+        });
+      }
     });
 
     const completionRate =
@@ -306,6 +369,8 @@ const LineTraining = () => {
       activePrograms,
       completedPrograms,
       scheduledPrograms,
+      cancelledPrograms,
+      onHoldPrograms,
       totalTraineesInTraining,
       uniqueTraineesCount: uniqueTrainees.size,
       completionRate,
@@ -325,10 +390,9 @@ const LineTraining = () => {
       activityCentre: training.activityCentre,
       startDate: training.startDate,
       endDate: training.endDate,
-      parentUnit: training.parentUnit,
-      supervisor: training.supervisor || "",
       description: training.description || "",
     });
+    setFormErrors({});
     setSelectedTickets(training.ticketNumbers);
   };
 
@@ -344,21 +408,25 @@ const LineTraining = () => {
         `/api/line-trainings/${trainingToDelete.id}`,
         {
           method: "DELETE",
+          headers: {
+            Accept: "application/json",
+          },
         }
       );
 
-      if (response.ok || !response.ok) {
-        // Remove from state (works for both API and mock)
+      if (response.ok) {
+        // Remove from state
         setTrainings((prev) =>
           prev.filter((t) => t.id !== trainingToDelete.id)
         );
         alert("Training program deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete training");
       }
     } catch (error) {
       console.error("Error deleting training:", error);
-      // Still remove from state for demo
-      setTrainings((prev) => prev.filter((t) => t.id !== trainingToDelete.id));
-      alert("Training program deleted successfully!");
+      alert(`Error deleting training: ${error.message}`);
     }
 
     setDeleteModal({ isOpen: false, training: null });
@@ -366,16 +434,30 @@ const LineTraining = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
     if (selectedTickets.length === 0) {
       alert("Please select at least one trainee");
+      setSaving(false);
       return;
     }
 
+    // Validate dates before submission
+    const dateErrors = validateDates(formData.startDate, formData.endDate);
+    if (Object.keys(dateErrors).length > 0) {
+      setFormErrors(dateErrors);
+      alert("Please fix the date validation errors before submitting");
+      setSaving(false);
+      return;
+    }
+
+    // Determine status based on start date
+    const status = determineStatus(formData.startDate);
+
     const updatedTraining = {
-      ...editModal.training,
       ...formData,
       ticketNumbers: selectedTickets,
+      status: status,
     };
 
     try {
@@ -383,39 +465,47 @@ const LineTraining = () => {
         `/api/line-trainings/${editModal.training.id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify(updatedTraining),
         }
       );
 
-      if (response.ok || !response.ok) {
-        // Update in state (works for both API and mock)
+      if (response.ok) {
+        const result = await response.json();
+        const updated = result.data || result;
+
+        // Update in state
         setTrainings((prev) =>
           prev.map((t) =>
-            t.id === editModal.training.id ? updatedTraining : t
+            t.id === editModal.training.id
+              ? { ...editModal.training, ...updated }
+              : t
           )
         );
         alert("Training program updated successfully!");
+
+        setEditModal({ isOpen: false, training: null });
+        setSelectedTickets([]);
+        setFormErrors({});
+        setFormData({
+          activityCentre: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update training");
       }
     } catch (error) {
       console.error("Error updating training:", error);
-      // Still update state for demo
-      setTrainings((prev) =>
-        prev.map((t) => (t.id === editModal.training.id ? updatedTraining : t))
-      );
-      alert("Training program updated successfully!");
+      alert(`Error updating training: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
-
-    setEditModal({ isOpen: false, training: null });
-    setSelectedTickets([]);
-    setFormData({
-      activityCentre: "",
-      startDate: "",
-      endDate: "",
-      parentUnit: "",
-      supervisor: "",
-      description: "",
-    });
   };
 
   if (loading) {
@@ -443,7 +533,7 @@ const LineTraining = () => {
           </Link>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 -r bg-purple-500 hover:bg-purple-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               Line Training
@@ -491,7 +581,7 @@ const LineTraining = () => {
           <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12  bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center">
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -521,9 +611,9 @@ const LineTraining = () => {
         )}
 
         {error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">
-              Demo Mode: Using mock data. {error}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800">
+              Error: {error}. Please check your connection and try again.
             </p>
           </div>
         )}
@@ -570,7 +660,7 @@ const LineTraining = () => {
                       <div className="flex flex-wrap gap-2">
                         {selectedTickets.map((ticket) => {
                           const trainee = trainees.find(
-                            (t) => t.ticketNo === ticket
+                            (t) => t.ticket_no === ticket
                           );
                           return (
                             <span
@@ -597,9 +687,9 @@ const LineTraining = () => {
                     {filteredTrainees.map((trainee) => (
                       <div
                         key={trainee.id}
-                        onClick={() => handleTicketSelection(trainee.ticketNo)}
+                        onClick={() => handleTicketSelection(trainee.ticket_no)}
                         className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedTickets.includes(trainee.ticketNo)
+                          selectedTickets.includes(trainee.ticket_no)
                             ? "border-purple-500 bg-purple-50"
                             : "border-gray-200 hover:border-purple-300"
                         }`}
@@ -610,7 +700,7 @@ const LineTraining = () => {
                               {trainee.name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {trainee.ticketNo}
+                              {trainee.ticket_no}
                             </p>
                             <p className="text-sm text-gray-500">
                               {trainee.designation} - {trainee.unit}
@@ -618,12 +708,12 @@ const LineTraining = () => {
                           </div>
                           <div
                             className={`w-4 h-4 rounded border-2 ${
-                              selectedTickets.includes(trainee.ticketNo)
+                              selectedTickets.includes(trainee.ticket_no)
                                 ? "bg-purple-500 border-purple-500"
                                 : "border-gray-300"
                             }`}
                           >
-                            {selectedTickets.includes(trainee.ticketNo) && (
+                            {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
                             )}
                           </div>
@@ -657,30 +747,6 @@ const LineTraining = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Parent Unit <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.parentUnit}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        parentUnit: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  >
-                    <option value="">Select Parent Unit</option>
-                    <option value="JAT Division">JAT Division</option>
-                    <option value="FZD Division">FZD Division</option>
-                    <option value="MB Division">MB Division</option>
-                    <option value="LKO Division">LKO Division</option>
-                    <option value="DLI Division">DLI Division</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Start Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -688,13 +754,19 @@ const LineTraining = () => {
                     required
                     value={formData.startDate}
                     onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        startDate: e.target.value,
-                      }))
+                      handleFormDataChange("startDate", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      formErrors.startDate
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                   />
+                  {formErrors.startDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.startDate}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -706,31 +778,17 @@ const LineTraining = () => {
                     required
                     value={formData.endDate}
                     onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        endDate: e.target.value,
-                      }))
+                      handleFormDataChange("endDate", e.target.value)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      formErrors.endDate ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Supervisor
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.supervisor}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        supervisor: e.target.value,
-                      }))
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="e.g., Mr. R.K. Sharma"
-                  />
+                  {formErrors.endDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.endDate}
+                    </p>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">
@@ -768,10 +826,11 @@ const LineTraining = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center"
+                  disabled={saving}
+                  className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Schedule Training
+                  {saving ? "Scheduling..." : "Schedule Training"}
                 </button>
               </div>
             </form>
@@ -794,7 +853,7 @@ const LineTraining = () => {
                   All time
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-500 hover:bg-blue-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -814,7 +873,7 @@ const LineTraining = () => {
                   In progress
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-xl flex items-center justify-center">
                 <Clock className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -834,7 +893,7 @@ const LineTraining = () => {
                   Unique trainees
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-purple-500 hover:bg-purple-600 rounded-xl flex items-center justify-center">
                 <Users className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -854,7 +913,7 @@ const LineTraining = () => {
                   {stats.completedPrograms} completed
                 </p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-500 hover:bg-orange-600 rounded-xl flex items-center justify-center">
                 <Award className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -898,7 +957,7 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {trainings.length > 0
+                {Array.isArray(trainings) && trainings.length > 0
                   ? Math.round(stats.totalTraineesInTraining / trainings.length)
                   : 0}
               </p>
@@ -906,14 +965,18 @@ const LineTraining = () => {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(trainings.map((t) => t.parentUnit)).size}
+                {Array.isArray(trainings)
+                  ? new Set(
+                      trainings
+                        .filter((t) => t && t.activityCentre)
+                        .map((t) => t.activityCentre)
+                    ).size
+                  : 0}
               </p>
-              <p className="text-sm text-gray-600">Active Units</p>
+              <p className="text-sm text-gray-600">Active Centres</p>
             </div>
           </div>
         </div>
-
-        {/* ...existing code... */}
 
         {/* Training List */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
@@ -924,7 +987,7 @@ const LineTraining = () => {
               : "Active Line Training Programs"}
           </h2>
 
-          {trainings.length === 0 ? (
+          {!Array.isArray(trainings) || trainings.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -936,98 +999,113 @@ const LineTraining = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {trainings.map((training) => (
-                <div
-                  key={training.id}
-                  className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {training.activityCentre}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                            training.status
-                          )}`}
+              {Array.isArray(trainings) &&
+                trainings.map((training) => (
+                  <div
+                    key={training.id}
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {training.activityCentre || "Unknown Centre"}
+                          </h3>
+
+                          {/* Status Dropdown */}
+                          <div className="relative">
+                            <select
+                              value={training.status || "Scheduled"}
+                              onChange={(e) =>
+                                updateTrainingStatus(training, e.target.value)
+                              }
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border-0 focus:ring-2 focus:ring-purple-500 ${getStatusColor(
+                                training.status || "Scheduled"
+                              )}`}
+                            >
+                              <option value="Scheduled">📅 Scheduled</option>
+                              <option value="In Progress">
+                                🔄 In Progress
+                              </option>
+                              <option value="Completed">✅ Completed</option>
+                              <option value="Cancelled">❌ Cancelled</option>
+                              <option value="On Hold">⏸️ On Hold</option>
+                            </select>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 mb-3">
+                          {training.description || "No description available"}
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center text-gray-600">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {training.startDate
+                              ? new Date(
+                                  training.startDate
+                                ).toLocaleDateString()
+                              : "TBD"}{" "}
+                            -{" "}
+                            {training.endDate
+                              ? new Date(training.endDate).toLocaleDateString()
+                              : "TBD"}
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Users className="w-4 h-4 mr-2" />
+                            {Array.isArray(training.ticketNumbers)
+                              ? training.ticketNumbers.length
+                              : 0}{" "}
+                            Trainee(s)
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => handleView(training)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
                         >
-                          {getStatusIcon(training.status)}
-                          <span className="ml-1">{training.status}</span>
-                        </span>
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(training)}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Edit Training"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(training)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Training"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                      <p className="text-gray-600 mb-3">
-                        {training.description}
-                      </p>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(
-                            training.startDate
-                          ).toLocaleDateString()} -{" "}
-                          {new Date(training.endDate).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {training.parentUnit}
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <Users className="w-4 h-4 mr-2" />
-                          {training.ticketNumbers.length} Trainee(s)
-                        </div>
-                      </div>
-
-                      {training.supervisor && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          <strong>Supervisor:</strong> {training.supervisor}
-                        </div>
-                      )}
                     </div>
 
-                    <div className="flex space-x-2 ml-4">
-                      <button
-                        onClick={() => handleView(training)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(training)}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Edit Training"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(training)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Training"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    {/* Trainee Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(training.ticketNumbers) &&
+                        training.ticketNumbers.map((ticketNo) => {
+                          const trainee = Array.isArray(trainees)
+                            ? trainees.find(
+                                (t) => t && t.ticket_no === ticketNo
+                              )
+                            : null;
+                          return (
+                            <span
+                              key={ticketNo}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                            >
+                              {ticketNo} {trainee && `- ${trainee.name}`}
+                            </span>
+                          );
+                        })}
                     </div>
                   </div>
-
-                  {/* Trainee Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {training.ticketNumbers.map((ticketNo) => {
-                      const trainee = trainees.find(
-                        (t) => t.ticketNo === ticketNo
-                      );
-                      return (
-                        <span
-                          key={ticketNo}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {ticketNo} {trainee && `- ${trainee.name}`}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -1065,14 +1143,6 @@ const LineTraining = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Parent Unit
-                    </label>
-                    <p className="text-gray-900">
-                      {viewModal.training?.parentUnit}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Start Date
                     </label>
                     <p className="text-gray-900">
@@ -1104,14 +1174,6 @@ const LineTraining = () => {
                       <span className="ml-1">{viewModal.training?.status}</span>
                     </span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Supervisor
-                    </label>
-                    <p className="text-gray-900">
-                      {viewModal.training?.supervisor || "Not assigned"}
-                    </p>
-                  </div>
                 </div>
 
                 <div>
@@ -1127,13 +1189,13 @@ const LineTraining = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Assigned Trainees (
-                    {viewModal.training?.ticketNumbers.length})
+                    {viewModal.training?.ticketNumbers?.length || 0})
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {viewModal.training?.ticketNumbers.map((ticketNo) => {
-                      const trainee = trainees.find(
-                        (t) => t.ticketNo === ticketNo
-                      );
+                    {viewModal.training?.ticketNumbers?.map((ticketNo) => {
+                      const trainee = Array.isArray(trainees)
+                        ? trainees.find((t) => t && t.ticket_no === ticketNo)
+                        : null;
                       return (
                         <span
                           key={ticketNo}
@@ -1196,7 +1258,7 @@ const LineTraining = () => {
                       <div className="flex flex-wrap gap-2">
                         {selectedTickets.map((ticket) => {
                           const trainee = trainees.find(
-                            (t) => t.ticketNo === ticket
+                            (t) => t.ticket_no === ticket
                           );
                           return (
                             <span
@@ -1223,9 +1285,9 @@ const LineTraining = () => {
                     {trainees.map((trainee) => (
                       <div
                         key={trainee.id}
-                        onClick={() => handleTicketSelection(trainee.ticketNo)}
+                        onClick={() => handleTicketSelection(trainee.ticket_no)}
                         className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedTickets.includes(trainee.ticketNo)
+                          selectedTickets.includes(trainee.ticket_no)
                             ? "border-purple-500 bg-purple-50"
                             : "border-gray-200 hover:border-purple-300"
                         }`}
@@ -1236,7 +1298,7 @@ const LineTraining = () => {
                               {trainee.name}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {trainee.ticketNo}
+                              {trainee.ticket_no}
                             </p>
                             <p className="text-xs text-gray-500">
                               {trainee.designation} - {trainee.unit}
@@ -1244,12 +1306,12 @@ const LineTraining = () => {
                           </div>
                           <div
                             className={`w-4 h-4 rounded border-2 ${
-                              selectedTickets.includes(trainee.ticketNo)
+                              selectedTickets.includes(trainee.ticket_no)
                                 ? "bg-purple-500 border-purple-500"
                                 : "border-gray-300"
                             }`}
                           >
-                            {selectedTickets.includes(trainee.ticketNo) && (
+                            {selectedTickets.includes(trainee.ticket_no) && (
                               <CheckCircle className="w-4 h-4 text-white" />
                             )}
                           </div>
@@ -1281,30 +1343,6 @@ const LineTraining = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Parent Unit <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      required
-                      value={formData.parentUnit}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          parentUnit: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="">Select Parent Unit</option>
-                      <option value="JAT Division">JAT Division</option>
-                      <option value="FZD Division">FZD Division</option>
-                      <option value="MB Division">MB Division</option>
-                      <option value="LKO Division">LKO Division</option>
-                      <option value="DLI Division">DLI Division</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Start Date <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1312,13 +1350,19 @@ const LineTraining = () => {
                       required
                       value={formData.startDate}
                       onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          startDate: e.target.value,
-                        }))
+                        handleFormDataChange("startDate", e.target.value)
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        formErrors.startDate
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                     />
+                    {formErrors.startDate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.startDate}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -1330,30 +1374,19 @@ const LineTraining = () => {
                       required
                       value={formData.endDate}
                       onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          endDate: e.target.value,
-                        }))
+                        handleFormDataChange("endDate", e.target.value)
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        formErrors.endDate
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
                     />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Supervisor
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.supervisor}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          supervisor: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
+                    {formErrors.endDate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.endDate}
+                      </p>
+                    )}
                   </div>
 
                   <div className="md:col-span-2">
@@ -1384,8 +1417,6 @@ const LineTraining = () => {
                         activityCentre: "",
                         startDate: "",
                         endDate: "",
-                        parentUnit: "",
-                        supervisor: "",
                         description: "",
                       });
                     }}
@@ -1395,10 +1426,11 @@ const LineTraining = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center"
+                    disabled={saving}
+                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    Update Training
+                    {saving ? "Updating..." : "Update Training"}
                   </button>
                 </div>
               </form>

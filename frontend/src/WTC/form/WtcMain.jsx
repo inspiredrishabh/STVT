@@ -4,56 +4,61 @@ import Contact from "./Contact";
 import Professional from "./Professional";
 import Course from "./Course";
 
+const initialFormData = {
+  picture: null,
+  name: "",
+  sex: "",
+  fatherName: "",
+  motherName: "",
+  dob: "",
+  category: "",
+  pwd: "",
+  typeOfDisability: "",
+  nationality: "INDIAN",
+
+
+  currentAddress: "",
+  permanentAddress: "",
+  phoneNumber: "",
+  emergencyContactNumber: "",
+  email: "",
+
+  dateOfAppointmentInRailway: "",
+  modeOfAppointment: "",
+  modeOfAppointmentOther: "",
+  courseType: "",
+  courseTypeOther: "",
+  designation: "",
+  designationOther: "",
+  unit: "",
+  unitOther: "",
+  trainingPeriod: "",
+  customTrainingPeriod: "",
+  theoryDuration: "",
+  customTheoryDuration: "",
+  practicalDuration: "",
+  customPracticalDuration: "",
+  workingUnder: "",
+  hrmsId: "",
+  pfNoNpsUps: "",
+  employeeNumber: "",
+
+  highestQualification: "",
+  otherQualification: "",
+  fieldOfStudy: "",
+  customFieldOfStudy: "",
+  institution: "",
+  gradeType: "",
+  gradeValue: "",
+
+  batch: "",
+  customBatch: "",
+  dateOfJoiningStcWtcNonRailway: "",
+  dateOfSparing: "",
+}
+
 const WtcMain = () => {
-  const [formData, setFormData] = useState({
-    picture: null,
-    name: "",
-    sex: "",
-    fatherName: "",
-    motherName: "",
-    dob: "",
-    category: "",
-    pwd: "",
-    typeOfDisability: "",
-    nationality: "INDIAN",
-    maritalStatus: "",
-    currentAddress: "",
-    permanentAddress: "",
-    phoneNumber: "",
-    emergencyContactNumber: "",
-    email: "",
-    dateOfAppointmentInRailway: "",
-    modeOfAppointment: "",
-    designation: "",
-    unit: "",
-    workingUnder: "",
-    hrmsId: "",
-    pfNoNpsUps: "",
-    employeeNumber: "",
-    highestQualification: "",
-    otherQualification: "",
-    fieldOfStudy: "",
-    institution: "",
-    boardType: "",
-    educationStartYear: "",
-    eduCourseDuration: "",
-    yearOfGraduation: "",
-    modeOfStudy: "",
-    gradeType: "",
-    gradeValue: "",
-    division: "",
-    hasAdditionalQualification: "",
-    additionalQualificationName: "",
-    additionalQualificationOrg: "",
-    additionalQualificationYear: "",
-    thesisTitle: "",
-    ticketNo: "",
-    batch: "",
-    dateOfJoiningStcWtcNonRailway: "",
-    dateOfSparing: "",
-    moduleNo: "",
-    courseDuration: "",
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
@@ -69,14 +74,15 @@ const WtcMain = () => {
   const handleChange = useCallback(
     (field, value) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
-      if (errors[field]) {
-        setErrors((prev) => {
-          const { [field]: removed, ...rest } = prev;
+      setErrors((prevErrors) => {
+        if (prevErrors[field]) {
+          const { [field]: _, ...rest } = prevErrors;
           return rest;
-        });
-      }
+        }
+        return prevErrors;
+      });
     },
-    [errors]
+    []
   );
 
   const createChangeHandler = useCallback(
@@ -134,13 +140,17 @@ const WtcMain = () => {
     setIsSubmitting(true);
     try {
       const formDataToSend = new FormData();
+
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
+        if (key === 'picture' && value) {
+          // The backend expects the file under the key 'image'
+          formDataToSend.append('image', value);
+        } else if (value !== null && value !== undefined && value !== "") {
           formDataToSend.append(key, value);
         }
       });
 
-      const response = await fetch("http://localhost:5000/api/wtc/submit", {
+      const response = await fetch("/api/wtc", {
         method: "POST",
         body: formDataToSend,
       });
@@ -151,6 +161,8 @@ const WtcMain = () => {
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
+
+
       return await response.json();
     } catch (error) {
       console.error("API submission error:", error);
@@ -175,17 +187,17 @@ const WtcMain = () => {
       const result = await submitToAPI(formData);
       console.log("Submission successful:", result);
       alert(
-        `Registration completed successfully! Registration ID: ${result.registrationId}`
+        `Registration completed successfully! Ticket Number: ${result.ticketNumber}`
       );
 
       // Optional: Reset form after successful submission
-      // setFormData(initialFormData);
-      // setStep(0);
+      setFormData(initialFormData);
+      setStep(0);
     } catch (error) {
       console.error("Submission failed:", error);
       alert(`Failed to submit registration: ${error.message}`);
     }
-  }, [isStepValid, submitToAPI, formData]);
+  }, [isStepValid, submitToAPI, formData,]);
 
   const renderForm = useCallback(() => {
     const formComponents = [Personal, Contact, Professional, Course];
@@ -202,7 +214,7 @@ const WtcMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           WTC Candidate Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation Bar */}
@@ -255,7 +267,7 @@ const WtcMain = () => {
             disabled={isSubmitting}
             className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-pink-500 hover:bg-pink-700"
+              : "bg-orange-500 hover:bg-orange-600"
               } text-white`}
           >
             {isSubmitting

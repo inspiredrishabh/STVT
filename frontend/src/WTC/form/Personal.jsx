@@ -1,15 +1,60 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 
 const Personal = ({ formData, onChange, errors = {} }) => {
+  const [imageValidationInProgress, setImageValidationInProgress] = useState(false);
+  const [imageValidationError, setImageValidationError] = useState("");
+
+  // Function to get image dimensions
+  const getImageDimensions = (file) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Handle file change separately to validate dimensions
+  const handleFileChange = async (file) => {
+    setImageValidationInProgress(true);
+    setImageValidationError("");
+
+    try {
+      if (!file) {
+        setImageValidationError("Picture is required");
+      } else if (!file.type?.startsWith("image/")) {
+        setImageValidationError("Please select a valid image file");
+      } else if (file.size > 1024 * 1024) {
+        setImageValidationError("Image size should be less than 1MB");
+      } else {
+        // Check dimensions
+        const dimensions = await getImageDimensions(file);
+        if (dimensions.height <= dimensions.width) {
+          setImageValidationError("Image height must be greater than width (portrait orientation)");
+        } else if (dimensions.height > dimensions.width * 1.5) {
+          setImageValidationError("Image height should not be greater than 1.5 times the width");
+        } else {
+          // Valid image
+          onChange("picture", file);
+        }
+      }
+    } catch (error) {
+      setImageValidationError("Unable to validate image dimensions");
+    } finally {
+      setImageValidationInProgress(false);
+    }
+  };
+
   const validateField = useCallback(
     (fieldName, value) => {
       const validations = {
         picture: (v) => {
           if (!v) return "Picture is required";
+          // Basic validations only - dimensions are validated separately
           if (!v.type?.startsWith("image/"))
             return "Please select a valid image file";
           if (v.size > 1024 * 1024) return "Image size should be less than 1MB";
-          return "";
+          return imageValidationError || "";
         },
         name: (v) => validateName(v, "Name"),
         fatherName: (v) => validateName(v, "Father's name"),
@@ -18,8 +63,8 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           !v
             ? "Gender is required"
             : !["Male", "Female", "Other"].includes(v)
-            ? "Please select a valid gender"
-            : "",
+              ? "Please select a valid gender"
+              : "",
         dob: (v) => {
           if (!v) return "Date of birth is required";
           const dobDate = new Date(v);
@@ -34,14 +79,14 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           !v
             ? "Category is required"
             : !["General", "OBC", "SC", "ST", "EWS"].includes(v)
-            ? "Please select a valid category"
-            : "",
+              ? "Please select a valid category"
+              : "",
         pwd: (v) =>
           !v
             ? "PWD selection is required"
             : !["Yes", "No"].includes(v)
-            ? "Please select Yes or No for PWD"
-            : "",
+              ? "Please select Yes or No for PWD"
+              : "",
         typeOfDisability: (v) => {
           if (formData.pwd === "Yes" && (!v || !v.trim()))
             return "Type of disability is required when PWD is Yes";
@@ -50,15 +95,11 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           return "";
         },
         nationality: (v) => validateName(v, "Nationality"),
-        maritalStatus: (v) =>
-          v && !["Single", "Married", "Divorced", "Widowed"].includes(v)
-            ? "Please select a valid marital status"
-            : "",
       };
 
       return validations[fieldName]?.(value) || "";
     },
-    [formData.pwd]
+    [formData.pwd, imageValidationError]
   );
 
   const validateName = (value, fieldLabel, required = true) => {
@@ -79,7 +120,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       "pwd",
       "nationality",
     ];
-    const optionalFields = ["motherName", "typeOfDisability", "maritalStatus"];
+    const optionalFields = ["motherName", "typeOfDisability"];
     const validationErrors = {};
 
     [...requiredFields, ...optionalFields.filter((field) => formData[field])].forEach(
@@ -136,12 +177,6 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         defaultValue: "Indian",
         required: true,
       },
-      {
-        label: "Marital Status",
-        field: "maritalStatus",
-        type: "select",
-        options: ["", "Single", "Married", "Divorced", "Widowed"],
-      },
     ],
     [formData.pwd]
   );
@@ -154,21 +189,19 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         </label>
         {type === "file" ? (
           <div className="flex items-center w-full border border-gray-300 rounded-lg px-4 py-2 bg-white">
-            <label
-              htmlFor="pictureUpload"
-              className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4"
-            >
-              Choose File
+            <label htmlFor="pictureUpload" className="bg-gray-200 text-gray-700 px-4 py-1 rounded cursor-pointer text-sm mr-4">
+              {imageValidationInProgress ? "Processing..." : "Choose File"}
             </label>
             <input
               id="pictureUpload"
               type="file"
               accept="image/*"
-              onChange={(e) => onChange(field, e.target.files[0])}
+              onChange={(e) => handleFileChange(e.target.files[0])}
               className="hidden"
+              disabled={imageValidationInProgress}
             />
             <span className="text-gray-500 text-sm truncate">
-              {formData[field] ? formData[field].name : "No file chosen"}
+              {formData[field] ? formData[field].name : "No file chosen, Image must be portrait with height not exceeding 1.5x width"}
             </span>
           </div>
         ) : type === "select" ? (
@@ -201,7 +234,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
           👤
@@ -216,4 +249,3 @@ const Personal = ({ formData, onChange, errors = {} }) => {
 };
 
 export default Personal;
-         

@@ -1,153 +1,228 @@
-import React, { useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Buffer } from 'buffer';
+globalThis.Buffer = Buffer;
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import BgImage from '../assets/fullsizelogo.png';
+
+
+// Format date for display (can be used by both components)
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const designationToHindi = (designation) => {
+  const translations = {
+    "CG Apprentice Technician III ": "सीजी अपरेंटिस तकनीशियन III कोर्स",
+    "RRB Apprentice Technician III": "आरआरबी अपरेंटिस तकनीशियन III कोर्स",
+    "RRC Assistant Workshop": "आरआरसी सहायक कार्यशाला",
+    "CG Assistant Workshop ": "सीजी सहायक कार्यशाला",
+    "GDCE Apprentice tech. III ": "जीडीसीई अपरेंटिस तकनीशियन III कोर्स",
+    "Refresher Course for Welders ": "वेल्डर्स के लिए रिफ्रेशर कोर्स",
+    "Refresher Course for Artisans ": "कल कारखाने के लिए रिफ्रेशर कोर्स",
+    "Special Course on MIG/ MAG Welding & Air Plasma Cutting ": "एमआईजी/एमएजी वेल्डिंग और एयर प्लाज्मा कटिंग पर विशेष पाठ्यक्रम",
+    "Basic Welding Training for Beginners": "आरंभकर्ता करने वालों के लिए बुनियादी वेल्डिंग ",
+    "Pre-selection Coaching for JE Selection": "जेई चयन के लिए पूर्व-चयन कोचिंग",
+  };
+  // Return the Hindi translation or the original designation if not found
+  return translations[designation] || designation;
+};
 
 const CertificatePreview = () => {
-    const location = useLocation();
-    const certificateRef = useRef(null);
-    const queryParams = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const [trainees, setTrainees] = useState([]);
 
-    // Get trainee data from URL params
-    const traineeId = queryParams.get('traineeId');
-    const ticketNo = queryParams.get('ticketNo');
-    const traineeName = queryParams.get('name');
-    const trade = queryParams.get('trade');
-    const fromDate = queryParams.get('from') ? new Date(queryParams.get('from')) : null;
-    const toDate = queryParams.get('to') ? new Date(queryParams.get('to')) : null;
+  // Load selected trainees from sessionStorage or URL params
+  useEffect(() => {
+    try {
+      const storedTrainees = sessionStorage.getItem('selectedTrainees');
+      if (storedTrainees) {
+        setTrainees(JSON.parse(storedTrainees));
+        return;
+      }
 
-    // Format date for display
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+      const queryParams = new URLSearchParams(window.location.search);
+      const traineeIdsParam = queryParams.get('trainees');
+      if (traineeIdsParam) {
+        const traineeIds = JSON.parse(decodeURIComponent(traineeIdsParam));
+        fetch('/api/wtc')
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch trainees');
+            return response.json();
+          })
+          .then(data => {
+            const traineeArray = Array.isArray(data.data) ? data.data : [];
+            const selectedTrainees = traineeArray.filter(trainee =>
+              traineeIds.includes(trainee.id)
+            );
+            if (selectedTrainees.length > 0) {
+              setTrainees(selectedTrainees);
+            } else {
+              throw new Error('No matching trainees found');
+            }
+          })
+          .catch(err => {
+            console.error('Error fetching trainee data:', err);
+            navigate('/wtc/certificate');
+          });
+        return;
+      }
+
+      navigate('/wtc/certificate');
+    } catch (err) {
+      console.error('Error loading trainee data:', err);
+      navigate('/wtc/certificate');
+    }
+
+    return () => {
+      sessionStorage.removeItem('selectedTrainees');
     };
+  }, [navigate]);
 
-    // Calculate duration in weeks
-    const calculateDuration = () => {
-        if (!fromDate || !toDate) return 'N/A';
-
-        const diffTime = Math.abs(toDate - fromDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const diffWeeks = Math.ceil(diffDays / 7);
-
-        return `${diffWeeks} Weeks`;
-    };
-
-    // Export to PDF
-    const exportToPdf = () => {
-        const element = certificateRef.current;
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: `Certificate_${ticketNo}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save();
-    };
-
+  // Individual Certificate Component for HTML Preview
+  const CertificateTemplate = ({ trainee }) => {
     return (
-        <div className="min-h-screen bg-gray-100 py-8 px-4">
-            <div className="max-w-4xl mx-auto">
-                {/* Header with back button and actions */}
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center space-x-4">
-                        <Link
-                            to="/wtc/certificate"
-                            className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
-                        >
-                            <ArrowLeft className="w-4 h-4 text-gray-600" />
-                        </Link>
-                        <h1 className="text-2xl font-bold text-gray-800">Certificate Preview</h1>
-                    </div>
+      <div className='certificate-container mb-8 page-break-after'>
+        <div className="certificate border-4 border-double border-gray-800 p-8 bg-pink-300/5 relative overflow-hidden" >
+          {/* Watermark background image */}
+          <img
+            src={BgImage}
+            alt="Watermark"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '100%',
+              height: '100%',
+              transform: 'translate(-50%, -50%)',
+              opacity: 0.2,
+              zIndex: 0,
+              pointerEvents: 'none',
+              objectFit: 'contain',
+            }}
+            draggable={false}
+          />
 
-                    <div className="flex space-x-3">
-                        <button
-                            onClick={exportToPdf}
-                            className="flex items-center space-x-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span>Export as PDF</span>
-                        </button>
-                        <button
-                            onClick={() => window.print()}
-                            className="flex items-center space-x-2 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
-                        >
-                            <Printer className="w-4 h-4" />
-                            <span>Print</span>
-                        </button>
-                    </div>
+          <div className="relative z-10">
+            <div className="flex justify-between items-center mb-8">
+              <div className="w-1/4">
+                <img src={BgImage} alt="Logo" className="w-28" />
+              </div>
+              <div className="w-1/2 text-center">
+                <h1 className="text-blue-700 text-4xl font-bold uppercase mb-2">पर्यवेक्षक प्रशिक्षण केंद्र</h1>
+                <h2 className="text-blue-700 text-2xl font-bold uppercase">चारबाग, लखनऊ – 226005</h2>
+                <h3 className="text-2xl mt-2 underline">प्रशिक्षण प्रमाण – पत्र</h3>
+              </div>
+              <div className="w-1/4 flex justify-end">
+                <div className="h-36 w-32 border-4 border-double border-gray-800 flex items-center justify-center text-center text-xs text-gray-500">
+                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} />
                 </div>
-
-                {/* Certificate Container */}
-                <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
-                    <div ref={certificateRef} className="certificate">
-                        <div className="certificate border-4 border-double border-gray-800 p-8 bg-white">
-                            <div className="text-center mb-6">
-                                <h1 className="text-2xl font-bold uppercase">Workshop Training Center</h1>
-                                <h2 className="text-xl font-bold uppercase">Northern Railway - Charbagh, Lucknow</h2>
-                                <div className="text-lg mt-2">Certificate of Completion</div>
-                            </div>
-
-                            <div className="text-center mb-8">
-                                <p className="text-lg">This is to certify that</p>
-                                <p className="text-xl font-bold mt-2">{traineeName}</p>
-                                <p className="text-lg mt-2">Ticket No: {ticketNo}</p>
-                                <p className="text-lg mt-2">has successfully completed</p>
-                                <p className="text-xl font-bold mt-2">{trade}</p>
-                                <p className="text-lg">Module</p>
-                                <p className="text-lg mt-2">from</p>
-                                <p className="text-lg font-semibold mt-1">
-                                    {formatDate(fromDate)} to {formatDate(toDate)}
-                                </p>
-                                <p className="text-lg mt-2">Duration: {calculateDuration()}</p>
-                            </div>
-
-                            <div className="flex justify-between mt-16">
-                                <div className="text-center">
-                                    <div className="border-t border-black pt-2 w-32 mx-auto">
-                                        <p className="font-semibold">Date</p>
-                                        <p>{new Date().toLocaleDateString('en-IN')}</p>
-                                    </div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="border-t border-black pt-2 w-32 mx-auto">
-                                        <p className="font-semibold">WTC Director</p>
-                                        <p>Northern Railway</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
 
-            {/* Add CSS for PDF printing */}
-            <style jsx="true">{`
-                @media print {
-                    body * {
-                        visibility: hidden;
-                    }
-                    .certificate, .certificate * {
-                        visibility: visible;
-                    }
-                    .certificate {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        padding: 40px;
-                    }
-                }
-            `}</style>
+            <div className="text-justify text-2xl font-mangal mb-16 leading-14">
+              <p className=""> प्रमाणित किया जाता है कि श्री
+                <span className="font-bold mr-2 capitalize "> {trainee.name} </span>
+                <span className=" mr-2"> पद </span>
+                <span className="underline mr-2" contentEditable={true} > ___________________ </span>
+                <span className=""> स्टाफ सं. </span>
+                <span className="underline mr-2" contentEditable={true} > _______________________________ </span>
+                <span className="mr-2"> कार्य स्थल / यूनिट </span>
+                <span className="underline mr-2" contentEditable={true} > ________________________________ </span>
+                <span className=""> ने इस संस्थान में {designationToHindi(trainee.designation)} प्रशिक्षण कार्यक्रम में दिनांक </span>
+                <span className="italic mr-2">
+                  {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} से दिनांक  {formatDate(trainee.dateOfSparing)}
+                </span>
+                तक सफलतापूर्वक भाग लिया है। </p>
+              <p className="mt-8 font-semibold text-left text-2xl" contentEditable={true}>दिनांक:</p>
+            </div>
+
+            <div className="flex justify-between mt-16">
+              <div className="text-center">
+                <div className="w-56 mx-auto">
+                  <p className="text-xl my-1" contentEditable={true} >(___________)</p>
+                  <p className="font-semibold text-2xl">पाठ्यक्रम समन्वयक </p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="w-48 mx-auto">
+                  <p className="text-xl my-1" contentEditable={true} >(___________)</p>
+                  <p className="font-semibold text-2xl">निदेशक</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div >
     );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-4">
+            <Link to="/wtc/certificate" className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200">
+              <ArrowLeft className="w-4 h-4 text-gray-600" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Certificates Preview
+            </h1>
+          </div>
+
+          <div className="flex space-x-3">
+            <button onClick={() => window.print()} className="flex items-center space-x-2 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+              <Printer className="w-4 h-4" />
+              <span>Print All</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Certificates Container for HTML Preview */}
+        <div className="certificates-container">
+          {trainees.map(trainee => (
+            <CertificateTemplate key={trainee.id} trainee={trainee} />
+          ))}
+        </div>
+      </div>
+
+      {/* Add CSS for PDF printing */}
+      <style jsx="true">{`
+        @media print {
+          @page {size: landscape}
+          body * {
+            visibility: hidden;
+          }
+          .certificates-container, .certificates-container * {
+            visibility: visible;
+          }
+          .certificates-container {
+            position: absolute;
+            left: 0;
+            top: -20px;
+            width: 100%;
+            padding: 20px;
+          }
+          .page-break-after {
+            page-break-after: always;
+          }
+          .certificate {
+            height: 190mm;
+            width: 270mm;
+            margin: auto;
+            padding: 20mm;
+          }
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default CertificatePreview;

@@ -1,137 +1,215 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Search, 
-  Edit, 
-  Eye, 
-  Users, 
-  Phone, 
-  Mail, 
-  MapPin,
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Search,
+  Users,
+  Phone,
+  Mail,
   Calendar,
   GraduationCap,
   Award,
   FileText,
-  Plus,
   Settings,
   Hash,
-  CheckCircle
-} from 'lucide-react';
-import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
+} from "lucide-react";
+// import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
   const [trainees, setTrainees] = useState([]);
   const [filteredTrainees, setFilteredTrainees] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showResignationModal, setShowResignationModal] = useState(false);
+  const [selectedTraineeForResignation, setSelectedTraineeForResignation] =
+    useState(null);
+  const [resignationData, setResignationData] = useState({
+    date: "",
+    reason: "",
+  });
+  const [submittingResignation, setSubmittingResignation] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [selectedTraineeForSession, setSelectedTraineeForSession] = useState(
+    null
+  );
+  const [sessionData, setSessionData] = useState({
+    session1: { start: null, end: null },
+    session2: { start: null, end: null },
+    session3: { start: null, end: null },
+    session4: { start: null, end: null },
+  });
+  const [requiredSessions, setRequiredSessions] = useState(4);
+
+  const courseStructure = {
+    "MSE-C&W": {
+      moduleName: "Mechanical Supervisor Electrical - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MSE-D": {
+      moduleName: "Mechanical Supervisor Electrical - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MSE-W": {
+      moduleName: "Mechanical Supervisor Electrical - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-C&W": {
+      moduleName: "Mechanical Junior Engineer - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-D": {
+      moduleName: "Mechanical Junior Engineer - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJR-W": {
+      moduleName: "Mechanical Junior Engineer - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-C&W": {
+      moduleName: "Mechanical Junior Instructor - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-D": {
+      moduleName: "Mechanical Junior Instructor - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJI-W": {
+      moduleName: "Mechanical Junior Instructor - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+        "Session 3": {},
+        "Session 4": {},
+      },
+    },
+    "MJP-C&W": {
+      moduleName: "Mechanical Junior Programmer - Carriage & Wagon",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+    "MJP-D": {
+      moduleName: "Mechanical Junior Programmer - Diesel",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+    "MJP-W": {
+      moduleName: "Mechanical Junior Programmer - Workshop",
+      sessions: {
+        "Session 1": {},
+        "Session 2": {},
+      },
+    },
+  };
 
   // Fetch trainees from backend
   useEffect(() => {
     fetchTrainees();
   }, []);
 
+  const formatDateDDMMYYYY = (dateStr) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return "N/A";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Backend API endpoints
+  const API_BASE = "/api/stc";
+
+  // API Functions
+  const resignTrainee = async (traineeTicketNo) => {
+    const response = await fetch(`${API_BASE}/${traineeTicketNo}/resign`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  };
+
+
+
   const fetchTrainees = async () => {
     try {
       setLoading(true);
-      // Replace with your actual API endpoint
-      const response = await fetch('/api/trainees');
-      if (!response.ok) throw new Error('Failed to fetch trainees');
-      
+      // Try to fetch from backend API endpoint
+      const response = await fetch("/api/stc");
+      if (!response.ok) throw new Error("Failed to fetch trainees");
       const data = await response.json();
-      setTrainees(data);
-      setFilteredTrainees(data);
+
+      const TraineeArray = Array.isArray(data.data)
+        ? data.data.map((trainee) => ({
+            ...trainee,
+            // Map resignation_status to status for UI consistency
+            status:
+              trainee.resignation_status === "yes" ? "Resigned" : "Active",
+            // Keep original data for ticket number consistency
+            ticketNo: trainee.ticket_no,
+            ticketNumber: trainee.ticket_no,
+          }))
+        : [];
+
+      console.log("Fetched trainees:", TraineeArray);
+
+      setTrainees(TraineeArray);
+      setFilteredTrainees(TraineeArray);
     } catch (err) {
       setError(err.message);
-      // Mock data for development
-      const baseMockData = [
-        {
-          id: 1,
-          ticketNo: 'ASE00001',
-          name: 'Rahul Sharma',
-          designation: 'ASE',
-          unit: 'JAT',
-          batch: '2024-2025',
-          email: 'rahul.sharma@railway.gov.in',
-          phone: '9876543210',
-          picture: null,
-          course: {
-            moduleNo: 'ASE',
-            duration: '52 Weeks',
-            joiningDate: '2024-01-15',
-            sparingDate: '2025-01-15'
-          },
-          lineTraining: {
-            status: 'Completed',
-            duration: '6 months',
-            location: 'JAT Division'
-          },
-          status: 'Active'
-        },
-        {
-          id: 2,
-          ticketNo: 'AJE00001',
-          name: 'Priya Singh',
-          designation: 'AJE',
-          unit: 'FZD',
-          batch: '2024-2025',
-          email: 'priya.singh@railway.gov.in',
-          phone: '9876543211',
-          picture: null,
-          course: {
-            moduleNo: 'AJE',
-            duration: '52 Weeks',
-            joiningDate: '2024-02-01',
-            sparingDate: '2025-02-01'
-          },
-          lineTraining: {
-            status: 'In Progress',
-            duration: '6 months',
-            location: 'FZD Division'
-          },
-          status: 'Active'
-        },
-        {
-          id: 3,
-          ticketNo: 'IJE00001',
-          name: 'Amit Kumar',
-          designation: 'IJE',
-          unit: 'MB',
-          batch: '2024-2025',
-          email: 'amit.kumar@railway.gov.in',
-          phone: '9876543212',
-          picture: null,
-          course: {
-            moduleNo: 'IJE',
-            duration: '52 Weeks',
-            joiningDate: '2024-03-01',
-            sparingDate: '2025-03-01'
-          },
-          lineTraining: {
-            status: 'Scheduled',
-            duration: '6 months',
-            location: 'MB Division'
-          },
-          status: 'Active'
-        }
-      ];
-
-      // Enhance mock data with calculated marks from FeedMark data
-      const mockData = baseMockData.map(trainee => {
-        const calculatedMarks = hasMarksData(trainee.id) 
-          ? calculateOverallMarks(trainee.id)
-          : { theory: 0, practical: 0, overall: 0 };
-        
-        return {
-          ...trainee,
-          marks: calculatedMarks
-        };
-      });
-      
-      setTrainees(mockData);
-      setFilteredTrainees(mockData);
+      console.log("API not available:", err.message);
     } finally {
       setLoading(false);
     }
@@ -139,11 +217,12 @@ const TraineeProfile = () => {
 
   // Search functionality
   useEffect(() => {
-    const filtered = trainees.filter(trainee =>
-      trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = trainees.filter(
+      (trainee) =>
+        trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredTrainees(filtered);
   }, [searchTerm, trainees]);
@@ -151,14 +230,20 @@ const TraineeProfile = () => {
   // Handle edit trainee - redirect to manage candidate
   const handleEditTrainee = (trainee) => {
     try {
-      // Store trainee ID in localStorage for manage candidate page
-      localStorage.setItem('editTraineeId', trainee.id);
-      localStorage.setItem('editTraineeName', trainee.name);
-      
+      // Store trainee information in localStorage for manage candidate page
+      localStorage.setItem("editTraineeId", trainee.id);
+      localStorage.setItem("editTraineeName", trainee.name);
+      localStorage.setItem("editTraineeTicket", trainee.ticketNo);
+      localStorage.setItem("editTraineeDesignation", trainee.designation);
+
+      console.log(
+        `Navigating to manage candidate for: ${trainee.name} (${trainee.ticketNo})`
+      );
+
       // Navigate to manage candidate page
-      navigate('/manage-candidate');
+      navigate("/manage-candidate");
     } catch (error) {
-      console.error('Error navigating to manage candidate:', error);
+      console.error("Error navigating to manage candidate:", error);
     }
   };
 
@@ -166,10 +251,369 @@ const TraineeProfile = () => {
   const handleLineTraining = (trainee) => {
     try {
       // Navigate to line training page with trainee data
-      navigate(`/stc/line-training?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`);
+      navigate(
+        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${
+          trainee.ticketNo
+        }&name=${encodeURIComponent(trainee.name)}`
+      );
     } catch (error) {
-      console.error('Error navigating to line training:', error);
+      console.error("Error navigating to line training:", error);
     }
+  };
+
+  // Handle resignation
+  const handleResignation = (trainee) => {
+    setSelectedTraineeForResignation(trainee);
+    setResignationData({ date: "", reason: "" });
+    setShowResignationModal(true);
+  };
+
+  const handleResignationSubmit = async () => {
+    if (!resignationData.date || !resignationData.reason.trim()) {
+      alert("Please provide both resignation date and reason");
+      return;
+    }
+
+    setSubmittingResignation(true);
+
+    try {
+      // Call resignation API with ticket number
+      await resignTrainee(
+        selectedTraineeForResignation.ticket_no ||
+          selectedTraineeForResignation.ticketNo
+      );
+
+      // Update local state
+      const updatedTrainees = trainees.map((trainee) =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+              ...trainee,
+              status: "Resigned",
+              resignation_status: "yes",
+            }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(
+        updatedTrainees.filter(
+          (trainee) =>
+            trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: "", reason: "" });
+
+      alert(
+        `${selectedTraineeForResignation.name} has been marked as resigned successfully.`
+      );
+    } catch (error) {
+      console.error("Error processing resignation:", error);
+      alert(
+        "Failed to process resignation. This is a demo - in production, this would save to the database."
+      );
+
+      // For demo purposes, still update the UI
+      const updatedTrainees = trainees.map((trainee) =>
+        trainee.id === selectedTraineeForResignation.id
+          ? {
+              ...trainee,
+              status: "Resigned",
+              resignation_status: "yes",
+            }
+          : trainee
+      );
+
+      setTrainees(updatedTrainees);
+      setFilteredTrainees(
+        updatedTrainees.filter(
+          (trainee) =>
+            trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            trainee.designation
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            trainee.unit.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+
+      setShowResignationModal(false);
+      setSelectedTraineeForResignation(null);
+      setResignationData({ date: "", reason: "" });
+    } finally {
+      setSubmittingResignation(false);
+    }
+  };
+
+  const closeResignationModal = () => {
+    setShowResignationModal(false);
+    setSelectedTraineeForResignation(null);
+    setResignationData({ date: "", reason: "" });
+  };
+
+  const verifyModuleAndGetSessions = (trainee) => {
+    // Extract module number and clean it up
+    const moduleNo = trainee.module_no?.toString().trim().toUpperCase();
+    if (!moduleNo) {
+      throw new Error("Module number is required");
+    }
+
+    // Direct mapping if the module number matches exactly
+    if (courseStructure[moduleNo]) {
+      return {
+        designation: moduleNo,
+        moduleInfo: courseStructure[moduleNo],
+        sessions: Object.keys(courseStructure[moduleNo].sessions).length
+      };
+    }
+
+    // If not direct match, try the detailed module mapping
+    const moduleMap = {
+      // MSE modules
+      "MSE-CW-01": "MSE-C&W",
+      "MSE-CW-02": "MSE-C&W",
+      "MSE-D-01": "MSE-D",
+      "MSE-D-02": "MSE-D",
+      "MSE-W-01": "MSE-W",
+      "MSE-W-02": "MSE-W",
+
+      // MJR modules
+      "MJR-CW-01": "MJR-C&W",
+      "MJR-CW-02": "MJR-C&W",
+      "MJR-D-01": "MJR-D",
+      "MJR-D-02": "MJR-D",
+      "MJR-W-01": "MJR-W",
+      "MJR-W-02": "MJR-W",
+
+      // MJI modules
+      "MJI-CW-01": "MJI-C&W",
+      "MJI-CW-02": "MJI-C&W",
+      "MJI-D-01": "MJI-D",
+      "MJI-D-02": "MJI-D",
+      "MJI-W-01": "MJI-W",
+      "MJI-W-02": "MJI-W",
+
+      // MJP modules
+      "MJP-CW-01": "MJP-C&W",
+      "MJP-D-01": "MJP-D",
+      "MJP-W-01": "MJP-W",
+    };
+
+    // Find the matching designation
+    const designation = moduleMap[moduleNo];
+    if (!designation) {
+      throw new Error(`Invalid module number: ${moduleNo}`);
+    }
+
+    // Get course structure for the designation
+    const moduleInfo = courseStructure[designation];
+    if (!moduleInfo) {
+      throw new Error(`Course structure not found for designation: ${designation}`);
+    }
+
+    return {
+      designation,
+      moduleInfo,
+      sessions: Object.keys(moduleInfo.sessions).length,
+    };
+  };
+
+  const handleSessionManagement = async (trainee) => {
+    try {
+      // First verify the module number and get session info
+      const { moduleInfo, sessions } = verifyModuleAndGetSessions(trainee);
+
+      const response = await fetch(`/api/stc/${trainee.ticketNo}/sessions`);
+      if (!response.ok) throw new Error("Failed to fetch session data");
+      const data = await response.json();
+
+      setSessionData(data.data.sessionData);
+      setRequiredSessions(sessions);
+      setSelectedTraineeForSession({
+        ...trainee,
+        moduleInfo,
+      });
+      setShowSessionModal(true);
+    } catch (error) {
+      console.error("Error in session management:", error);
+      alert(error.message || "Failed to manage sessions");
+    }
+  };
+
+  const handleSessionUpdate = async () => {
+    try {
+      const response = await fetch(
+        `/api/stc/${selectedTraineeForSession.ticketNo}/sessions`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionData }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update session data");
+
+      alert("Session dates updated successfully");
+      setShowSessionModal(false);
+      fetchTrainees(); // Refresh the trainee list
+    } catch (error) {
+      console.error("Error updating session data:", error);
+      alert("Failed to update session data");
+    }
+  };
+
+  const renderSessionModal = () => {
+    if (!showSessionModal || !selectedTraineeForSession) return null;
+
+    const moduleInfo = selectedTraineeForSession.moduleInfo;
+    if (!moduleInfo) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Session Management
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {moduleInfo.moduleName}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Module: {selectedTraineeForSession.module_no}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSessionModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                {selectedTraineeForSession.picture ? (
+                  <img
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForSession.picture}`}
+                    alt={selectedTraineeForSession.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {selectedTraineeForSession.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {selectedTraineeForSession.name}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Ticket No: {selectedTraineeForSession.ticketNo}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {Object.keys(moduleInfo.sessions).map((sessionKey) => {
+              const sessionNum = sessionKey.split(" ")[1];
+              return (
+                <div key={sessionKey} className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-medium text-lg text-gray-900 mb-4">
+                    {sessionKey}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={sessionData[`session${sessionNum}`]?.start || ""}
+                        onChange={(e) =>
+                          setSessionData((prev) => ({
+                            ...prev,
+                            [`session${sessionNum}`]: {
+                              ...prev[`session${sessionNum}`],
+                              start: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={sessionData[`session${sessionNum}`]?.end || ""}
+                        onChange={(e) =>
+                          setSessionData((prev) => ({
+                            ...prev,
+                            [`session${sessionNum}`]: {
+                              ...prev[`session${sessionNum}`],
+                              end: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-end gap-4 mt-6 pt-4 border-t">
+            <button
+              onClick={() => setShowSessionModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSessionUpdate}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Save Sessions
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -185,9 +629,8 @@ const TraineeProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Main Content */}
-      <div className="w-full px-8 py-8">
-        {/* Page Header */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
         <div className="flex items-center space-x-4 mb-8">
           <Link
             to="/stc-management"
@@ -202,7 +645,9 @@ const TraineeProfile = () => {
               </div>
               Trainee Profile
             </h1>
-            <p className="text-gray-600 text-sm mt-1">View and manage trainee profiles</p>
+            <p className="text-gray-600 text-sm mt-1">
+              View and manage trainee profiles
+            </p>
           </div>
         </div>
 
@@ -226,7 +671,9 @@ const TraineeProfile = () => {
                   {filteredTrainees.length} Trainees
                 </span>
               </div>
-              <span className="text-sm text-gray-600">Total: {filteredTrainees.length}</span>
+              <span className="text-sm text-gray-600">
+                Total: {filteredTrainees.length}
+              </span>
             </div>
           </div>
         </div>
@@ -234,37 +681,82 @@ const TraineeProfile = () => {
         {/* Trainees Grid */}
         {error && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">Demo Mode: Using mock data. {error}</p>
+            <p className="text-yellow-800">
+              Demo Mode: Using mock data. {error}
+            </p>
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTrainees.map((trainee) => (
-            <div key={trainee.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200">
+            <div
+              key={trainee.id}
+              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
+            >
               {/* Card Header */}
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">
-                        {trainee.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
+                    {trainee.picture ? (
+                      <div className="relative">
+                        <img
+                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
+                          alt={trainee.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
+                          onError={(e) => {
+                            // Hide the image and show fallback
+                            e.target.style.display = "none";
+                            const fallback =
+                              e.target.parentNode.querySelector(
+                                ".fallback-avatar"
+                              );
+                            if (fallback) fallback.style.display = "flex";
+                          }}
+                        />
+                        <div
+                          className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0"
+                          style={{ display: "none" }}
+                        >
+                          <span className="text-white font-bold text-sm">
+                            {trainee.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold text-sm">
+                          {trainee.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </span>
+                      </div>
+                    )}
                     <div>
-                      <h3 className="font-semibold text-gray-900">{trainee.name}</h3>
-                      <p className="text-sm text-gray-500">{trainee.ticketNo}</p>
+                      <h3 className="font-semibold text-gray-900">
+                        {trainee.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {trainee.ticketNo}
+                      </p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    trainee.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      trainee.status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : trainee.status === "Resigned"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
                     {trainee.status}
                   </span>
                 </div>
-
-                {/* Basic Info */}
+                {/* Trainee Details */}
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
                     <Hash className="w-4 h-4 mr-2" />
@@ -280,7 +772,7 @@ const TraineeProfile = () => {
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="w-4 h-4 mr-2" />
-                    {trainee.phone}
+                    {trainee.phone_number}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Mail className="w-4 h-4 mr-2" />
@@ -291,54 +783,55 @@ const TraineeProfile = () => {
 
               {/* Course Info */}
               <div className="p-4 bg-gray-50">
-                <h4 className="font-medium text-gray-900 mb-2">Course Details</h4>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <p>Module: {trainee.course.moduleNo}</p>
-                  <p>Duration: {trainee.course.duration}</p>
-                  <p>Joining: {new Date(trainee.course.joiningDate).toLocaleDateString()}</p>
-                </div>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Basic Course Details */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Course Details
+                    </h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>Module: {trainee.module_no}</p>
+                      <p>Duration: {trainee.course_duration}</p>
+                      <p>Working Under: {trainee.working_under || "N/A"}</p>
+                    </div>
+                  </div>
 
-              {/* Stats */}
-              <div className="p-4 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Academic Performance</span>
-                  {hasMarksData(trainee.id) ? (
-                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full flex items-center">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Live Data
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                      No Data
-                    </span>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
+                  {/* Session Details */}
                   <div>
-                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {trainee.marks.theory}%
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Session Timeline
+                    </h4>
+                    <div className="space-y-2">
+                      {(() => {
+                        const sessionCount = trainee.designation?.startsWith('MJP-') || 
+                                          trainee.module_no?.includes('MJP') ? 2 : 4;
+                        
+                        return Array.from({ length: sessionCount }, (_, i) => {
+                          const sessionNum = i + 1;
+                          const startDate = trainee[`session${sessionNum}start`];
+                          const endDate = trainee[`session${sessionNum}end`];
+                          
+                          if (!startDate && !endDate) return null;
+
+                          return (
+                            <div key={sessionNum} className="text-sm bg-white rounded-lg p-2">
+                              <p className="text-indigo-600 font-medium mb-1">Session {sessionNum}</p>
+                              <div className="grid grid-cols-2 gap-2 text-gray-600">
+                                <p>Start: {formatDateDDMMYYYY(startDate)}</p>
+                                <p>End: {formatDateDDMMYYYY(endDate)}</p>
+                              </div>
+                            </div>
+                          );
+                        }).filter(Boolean)
+                      })()}
                     </div>
-                    <div className="text-xs text-gray-500">Theory</div>
-                  </div>
-                  <div>
-                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-green-600' : 'text-gray-400'}`}>
-                      {trainee.marks.practical}%
-                    </div>
-                    <div className="text-xs text-gray-500">Practical</div>
-                  </div>
-                  <div>
-                    <div className={`text-lg font-bold ${hasMarksData(trainee.id) ? 'text-purple-600' : 'text-gray-400'}`}>
-                      {trainee.marks.overall}%
-                    </div>
-                    <div className="text-xs text-gray-500">Overall</div>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="p-4 border-t border-gray-100">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <button
                     onClick={() => handleEditTrainee(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
@@ -347,22 +840,47 @@ const TraineeProfile = () => {
                     Manage
                   </button>
                   <Link
-                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo}&name=${encodeURIComponent(trainee.name)}`}
+                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${
+                      trainee.ticketNo
+                    }&name=${encodeURIComponent(trainee.name)}&courseCode=${
+                      trainee.courseCode
+                    }&autoSelect=true`}
                     className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${
-                      hasMarksData(trainee.id) 
-                        ? 'bg-green-500 hover:bg-green-600' 
-                        : 'bg-orange-500 hover:bg-orange-600'
+                      trainee.id
+                        ? "bg-green-500 hover:bg-green-600"
+                        : "bg-orange-500 hover:bg-orange-600"
                     }`}
                   >
                     <FileText className="w-4 h-4 mr-1" />
-                    {hasMarksData(trainee.id) ? 'View Marks' : 'Add Marks'}
+                    {trainee.id ? "View Marks" : "Add Marks"}
                   </Link>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleLineTraining(trainee)}
                     className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
                   >
                     <GraduationCap className="w-4 h-4 mr-1" />
                     Training
+                  </button>
+                  <button
+                    onClick={() => handleResignation(trainee)}
+                    disabled={trainee.status === "Resigned"}
+                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${
+                      trainee.status === "Resigned"
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-red-500 text-white hover:bg-red-600"
+                    }`}
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    {trainee.status === "Resigned" ? "Resigned" : "Resign"}
+                  </button>
+                  <button
+                    onClick={() => handleSessionManagement(trainee)}
+                    className="flex items-center justify-center px-3 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm"
+                  >
+                    <Calendar className="w-4 h-4 mr-1" />
+                    Sessions
                   </button>
                 </div>
               </div>
@@ -374,13 +892,139 @@ const TraineeProfile = () => {
         {filteredTrainees.length === 0 && (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No trainees found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No trainees found
+            </h3>
             <p className="text-gray-500">Try adjusting your search criteria</p>
           </div>
         )}
       </div>
+
+      {/* Resignation Modal */}
+      {showResignationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Process Resignation
+              </h3>
+              <button
+                onClick={closeResignationModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {selectedTraineeForResignation && (
+              <div className="mb-6">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {selectedTraineeForResignation.picture ? (
+                    <img
+                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForResignation.picture}`}
+                      alt={selectedTraineeForResignation.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
+                        {selectedTraineeForResignation.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {selectedTraineeForResignation.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {selectedTraineeForResignation.ticketNo}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resignation Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={resignationData.date}
+                  onChange={(e) =>
+                    setResignationData((prev) => ({
+                      ...prev,
+                      date: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Resignation <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={resignationData.reason}
+                  onChange={(e) =>
+                    setResignationData((prev) => ({
+                      ...prev,
+                      reason: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows="4"
+                  placeholder="Enter the reason for resignation..."
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={closeResignationModal}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResignationSubmit}
+                disabled={
+                  submittingResignation ||
+                  !resignationData.date ||
+                  !resignationData.reason.trim()
+                }
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {submittingResignation
+                  ? "Processing..."
+                  : "Confirm Resignation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session Management Modal */}
+      {renderSessionModal()}
     </div>
   );
 };
-
 export default TraineeProfile;

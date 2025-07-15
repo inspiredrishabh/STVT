@@ -36,27 +36,27 @@ const STCMain = () => {
     pfNoNpsUps: "",
     employeeNumber: "",
 
-    // Education
+    // Education - These are not in your SQL schema directly but might be in `otherQualification` or handled separately
     highestQualification: "",
-    otherQualification: "",
+    otherQualification: "", // This field exists in the frontend but not explicitly in SQL table, need to clarify its use.
     fieldOfStudy: "",
     institution: "",
-    boardType: "",
-    educationStartYear: "",
-    eduCourseDuration: "",
-    yearOfGraduation: "",
-    modeOfStudy: "",
+    boardType: "", // Not in SQL
+    educationStartYear: "", // Not in SQL
+    eduCourseDuration: "", // Not in SQL
+    yearOfGraduation: "", // Not in SQL
+    modeOfStudy: "", // Not in SQL
     gradeType: "",
     gradeValue: "",
-    division: "",
-    hasAdditionalQualification: "",
-    additionalQualificationName: "",
-    additionalQualificationOrg: "",
-    additionalQualificationYear: "",
-    thesisTitle: "",
+    division: "", // Not in SQL
+    hasAdditionalQualification: "", // Not in SQL
+    additionalQualificationName: "", // Not in SQL
+    additionalQualificationOrg: "", // Not in SQL
+    additionalQualificationYear: "", // Not in SQL
+    thesisTitle: "", // Not in SQL
 
     // Course
-    ticketNo: "",
+    // ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
     dateOfSparing: "",
@@ -124,21 +124,36 @@ const STCMain = () => {
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) setStep(step - 1); // Fixed the typo: should be step - 1
   };
 
   const submitToAPI = async (data) => {
     try {
-      const response = await fetch("/api/stc/register", {
+      // Use FormData for file uploads instead of JSON
+      const formDataToSend = new FormData();
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'picture' && value) {
+          formDataToSend.append('image', value); // Backend expects 'image'
+        } else if (value !== null && value !== undefined && value !== "") {
+          // Transform camelCase to snake_case for backend
+          const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+          formDataToSend.append(snakeKey, value);
+        }
+      });
+
+      const response = await fetch("/api/stc", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formDataToSend, // Send FormData (no Content-Type header needed)
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json(); // Read error message from response
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${
+            errorData.message || response.statusText
+          }`
+        );
       }
 
       const result = await response.json();
@@ -163,13 +178,73 @@ const STCMain = () => {
         alert("Registration submitted successfully!");
         console.log("Response:", result.data);
         // Reset form or redirect
-        setFormData({});
+        // For actual deployment, you might want a more sophisticated clear
+        // or confirmation. For now, setting initial state.
+        setFormData({
+          // Personal
+          picture: null,
+          name: "",
+          sex: "",
+
+          fatherName: "",
+          motherName: "",
+          dob: "",
+          category: "",
+          pwd: "",
+          typeOfDisability: "",
+          nationality: "INDIAN",
+          maritalStatus: "",
+
+          // Contact
+          currentAddress: "",
+          permanentAddress: "",
+          phoneNumber: "",
+          emergencyContactNumber: "",
+          email: "",
+
+          // Professional
+          dateOfAppointmentInRailway: "",
+          modeOfAppointment: "",
+          designation: "",
+          unit: "",
+          workingUnder: "",
+          hrmsId: "",
+          pfNoNpsUps: "",
+          employeeNumber: "",
+
+          // Education
+          highestQualification: "",
+          otherQualification: "",
+          fieldOfStudy: "",
+          institution: "",
+          boardType: "",
+          educationStartYear: "",
+          eduCourseDuration: "",
+          yearOfGraduation: "",
+          modeOfStudy: "",
+          gradeType: "",
+          gradeValue: "",
+          division: "",
+          hasAdditionalQualification: "",
+          additionalQualificationName: "",
+          additionalQualificationOrg: "",
+          additionalQualificationYear: "",
+          thesisTitle: "",
+
+          // Course
+          // ticketNo: "",
+          batch: "",
+          dateOfJoiningStcWtcNonRailway: "",
+          dateOfSparing: "",
+          moduleNo: "",
+          courseDuration: "",
+        });
         setStep(0);
       } else {
         alert(`Submission failed: ${result.error}`);
       }
     } catch (error) {
-      alert("An unexpected error occurred. Please try again.");
+      alert("An unexpected error occurred. Please try again.", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,13 +277,13 @@ const STCMain = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto my-7 px-4 sm:px-6 lg:px-8 bg-white">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           STC Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation */}
@@ -217,18 +292,20 @@ const STCMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${step === index
+              ${
+                step === index
                   ? "bg-orange-500"
                   : step > index
-                    ? "bg-green-500"
-                    : "bg-gray-500"
-                }`}
+                  ? "bg-green-500"
+                  : "bg-gray-500"
+              }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
-                }`}
+              className={`text-sm font-semibold ${
+                step === index ? "text-white" : "text-gray-300"
+              }`}
             >
               {label}
             </p>
@@ -258,13 +335,13 @@ const STCMain = () => {
           type="button"
           onClick={step === steps.length - 1 ? handleSubmit : handleNext}
           disabled={isSubmitting}
-          className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting
             ? "Submitting..."
             : step === steps.length - 1
-              ? "Submit"
-              : "Save and Next →"}
+            ? "Submit"
+            : "Save and Next →"}
         </button>
       </div>
     </div>

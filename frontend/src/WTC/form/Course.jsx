@@ -1,91 +1,54 @@
 import React, { useEffect, useCallback, useMemo } from "react";
 
 const Course = ({ formData, onChange, errors = {} }) => {
-  const courseModules = useMemo(
-    () => ({
-      "MSE-C": 52,
-      "MSE-D": 52,
-      "MSE-W": 52,
-      "MJR-C": 52,
-      "MJR-D": 52,
-      "MJR-W": 52,
-      "MJI-C": 52,
-      "MJI-D": 52,
-      "MJ1-W": 52,
-      "MJP-C": 13,
-      "MJP-D": 13,
-      "MJP-W": 13,
-      ASE: 52,
-      AJE: 52,
-      IJE: 52,
-      RJE: 13,
-      RCW: 3,
-      RD: 2,
-      TS: 1,
-      "LH-I": 1,
-      "LH-II": 1,
-      FM: 1,
-      WT: "3 Days",
-      DM: "3 Days",
-      WE: "3 Days",
-      NDT: "4 Days",
-      EA: "4 Days",
-      "3DMP": "3 Days",
-    }),
-    []
-  );
-
-  const moduleOptions = useMemo(
-    () => [...Object.keys(courseModules), "Other"],
-    [courseModules]
-  );
-
-  // Auto-calculate course duration
+  // Auto-calculate sparing date based on training period from Professional.jsx
   useEffect(() => {
-    const duration = courseModules[formData.moduleNo];
-    if (duration) {
-      onChange(
-        "courseDuration",
-        typeof duration === "number" ? `${duration} Weeks` : duration
-      );
-    } else if (!formData.moduleNo) {
-      onChange("courseDuration", "");
-    }
-  }, [formData.moduleNo, courseModules, onChange]);
+    const { dateOfJoiningStcWtcNonRailway, trainingPeriod, customTrainingPeriod } = formData;
+    const periodToUse = trainingPeriod === "Custom" ? customTrainingPeriod : trainingPeriod;
 
-  // Auto-calculate sparing date
-  useEffect(() => {
-    const { dateOfJoiningStcWtcNonRailway, moduleNo } = formData;
-    const duration = courseModules[moduleNo];
-
-    if (dateOfJoiningStcWtcNonRailway && duration && moduleNo) {
+    if (dateOfJoiningStcWtcNonRailway && periodToUse) {
       const joining = new Date(dateOfJoiningStcWtcNonRailway);
 
-      if (typeof duration === "number") {
-        joining.setDate(joining.getDate() + duration * 7);
-      } else if (duration.includes("Days")) {
-        const days = parseInt(duration.split(" ")[0]);
+      // Helper function to parse and extract the numeric value
+      const extractNumber = (str) => {
+        const match = str.match(/^(\d+(\.\d+)?)/);
+        return match ? parseFloat(match[1]) : NaN;
+      };
+
+      // Helper function to check if a string contains a term (case insensitive)
+      const containsTerm = (str, term) =>
+        str.toLowerCase().includes(term.toLowerCase());
+
+      // Parse the training period with improved pattern matching
+      if (containsTerm(periodToUse, "Year")) {
+        const years = extractNumber(periodToUse);
+        if (!isNaN(years)) joining.setFullYear(joining.getFullYear() + years);
+      } else if (containsTerm(periodToUse, "Month")) {
+        const months = extractNumber(periodToUse);
+        if (!isNaN(months)) joining.setMonth(joining.getMonth() + months);
+      } else if (containsTerm(periodToUse, "Week")) {
+        const weeks = extractNumber(periodToUse);
+        if (!isNaN(weeks)) joining.setDate(joining.getDate() + (weeks * 7));
+      } else if (containsTerm(periodToUse, "Day")) {
+        const days = extractNumber(periodToUse);
         if (!isNaN(days)) joining.setDate(joining.getDate() + days);
+      } else {
+        // If no recognized time unit, try to parse as days
+        const possibleDays = extractNumber(periodToUse);
+        if (!isNaN(possibleDays)) joining.setDate(joining.getDate() + possibleDays);
       }
 
       onChange("dateOfSparing", joining.toISOString().split("T")[0]);
-    } else if (!dateOfJoiningStcWtcNonRailway || !moduleNo) {
+    } else if (!dateOfJoiningStcWtcNonRailway || !periodToUse) {
       onChange("dateOfSparing", "");
     }
-  }, [
-    formData.dateOfJoiningStcWtcNonRailway,
-    formData.moduleNo,
-    courseModules,
-    onChange,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.dateOfJoiningStcWtcNonRailway, formData.trainingPeriod, formData.customTrainingPeriod]); // We need to recalculate when any of these values change
 
   const validateAllFields = useCallback(() => {
     const requiredFields = [
-      "ticketNo",
       "batch",
       "dateOfJoiningStcWtcNonRailway",
-      "moduleNo",
-      "courseDuration",
     ];
     const validationErrors = {};
 
@@ -98,6 +61,11 @@ const Course = ({ formData, onChange, errors = {} }) => {
       }
     });
 
+    // Check if we have a valid training period to calculate date of sparing
+    if (formData.trainingPeriod === "Custom" && (!formData.customTrainingPeriod || formData.customTrainingPeriod.trim() === "")) {
+      validationErrors.customTrainingPeriod = "Please provide a custom training period to calculate date of sparing";
+    }
+
     return {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
@@ -106,11 +74,11 @@ const Course = ({ formData, onChange, errors = {} }) => {
 
   useEffect(() => {
     onChange.setValidationFunction?.(validateAllFields);
-  }, [validateAllFields, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validateAllFields]); // Removed onChange from dependencies
 
   const courseFields = useMemo(
     () => [
-      { label: "Ticket Number", field: "ticketNo" },
       {
         label: "Batch",
         field: "batch",
@@ -124,27 +92,14 @@ const Course = ({ formData, onChange, errors = {} }) => {
         type: "date",
       },
       {
-        label: "Module Number",
-        field: "moduleNo",
-        type: "select",
-        options: ["", ...moduleOptions],
-        hasCustom: true,
-      },
-      {
         label: "Date of Sparing",
         field: "dateOfSparing",
         type: "date",
         disabled: true,
-        helpText: "(Auto-calculated)",
-      },
-      {
-        label: "Course Duration",
-        field: "courseDuration",
-        disabled: true,
-        helpText: "Auto-filled",
+        helpText: "(Auto-calculated based on Date of Joining + Training Period)",
       },
     ],
-    [moduleOptions]
+    []
   );
 
   const renderField = useCallback(
@@ -183,7 +138,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
                 placeholder={`Enter custom ${label.toLowerCase()}`}
                 value={
                   formData[
-                    `custom${field.charAt(0).toUpperCase() + field.slice(1)}`
+                  `custom${field.charAt(0).toUpperCase() + field.slice(1)}`
                   ] || ""
                 }
                 onChange={(e) =>
@@ -201,9 +156,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
             type={type}
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
-              disabled ? "bg-gray-50" : ""
-            }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${disabled ? "bg-gray-50" : ""
+              }`}
             placeholder={
               disabled ? "Auto-filled" : `Enter ${label.toLowerCase()}`
             }
@@ -219,7 +173,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full shadow text-lg">
           🎓

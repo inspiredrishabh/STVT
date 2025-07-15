@@ -1,6 +1,63 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 const Contact = ({ formData, onChange, errors = {} }) => {
+  const [showEmailSuggestions, setShowEmailSuggestions] = useState(false);
+  const [emailSuggestions, setEmailSuggestions] = useState([]);
+  const emailInputRef = useRef(null);
+
+  const emailDomains = [
+    "gmail.com",
+    "yahoo.com",
+    "outlook.com",
+    "hotmail.com",
+    "rediffmail.com",
+    "zoho.com",
+    "protonmail.com",
+    "icloud.com",
+    "yandex.com",
+    "mail.com"
+  ];
+
+  const handleEmailChange = (value) => {
+    handleFieldChange("email", value);
+
+    // Check if user typed @ and show suggestions
+    if (value.includes("@") && !value.includes(".")) {
+      const parts = value.split("@");
+      if (parts.length === 2 && parts[1] === "") {
+        // User just typed @, show all suggestions
+        const suggestions = emailDomains.map(domain => `${parts[0]}@${domain}`);
+        setEmailSuggestions(suggestions);
+        setShowEmailSuggestions(true);
+      } else if (parts.length === 2 && parts[1].length > 0) {
+        // User is typing domain, filter suggestions
+        const filtered = emailDomains
+          .filter(domain => domain.toLowerCase().startsWith(parts[1].toLowerCase()))
+          .map(domain => `${parts[0]}@${domain}`);
+        setEmailSuggestions(filtered);
+        setShowEmailSuggestions(filtered.length > 0);
+      }
+    } else {
+      setShowEmailSuggestions(false);
+    }
+  };
+
+  const selectEmailSuggestion = (suggestion) => {
+    handleFieldChange("email", suggestion);
+    setShowEmailSuggestions(false);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emailInputRef.current && !emailInputRef.current.contains(event.target)) {
+        setShowEmailSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const validateField = (fieldName, value) => {
     const trimmedValue = value?.toString().trim() || "";
 
@@ -49,7 +106,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
           📞
@@ -124,13 +181,35 @@ const Contact = ({ formData, onChange, errors = {} }) => {
         {/* Email */}
         <div className="sm:col-span-2">
           <RequiredLabel>Email</RequiredLabel>
-          <input
-            type="email"
-            value={formData.email || ""}
-            onChange={(e) => handleFieldChange("email", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter email"
-          />
+          <div className="relative" ref={emailInputRef}>
+            <input
+              type="email"
+              value={formData.email || ""}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Enter email (e.g., username@gmail.com)"
+            />
+
+            {/* Email Suggestions Dropdown */}
+            {showEmailSuggestions && emailSuggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {emailSuggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    onClick={() => selectEmailSuggestion(suggestion)}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-800">{suggestion}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Type your email address. After typing "@", select from suggested domains.
+          </p>
           {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
         </div>
       </div>
@@ -139,4 +218,3 @@ const Contact = ({ formData, onChange, errors = {} }) => {
 };
 
 export default Contact;
-           

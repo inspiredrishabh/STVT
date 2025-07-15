@@ -1,42 +1,38 @@
 import React, { useEffect, useState } from "react";
 
 const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
-  const [ticketCounter, setTicketCounter] = useState({
-    ASE: 1,
-    AJE: 1,
-    IJE: 1,
-    RJE: 1,
-    RCW: 1,
-    RD: 1,
-    TS: 1,
-    LHI: 1,
-    LHII: 1,
-    FM: 1,
-    WT: 1,
-    DM: 1,
-    WE: 1,
-    NDT: 1,
-    EA: 1,
-    "3DMP": 1,
-  });
+  // const [ticketCounter, setTicketCounter] = useState({
+  //   ASE: 1,
+  //   AJE: 1,
+  //   IJE: 1,
+  //   RJE: 1,
+  //   RCW: 1,
+  //   RD: 1,
+  //   TS: 1,
+  //   LHI: 1,
+  //   LHII: 1,
+  //   FM: 1,
+  //   WT: 1,
+  //   DM: 1,
+  //   WE: 1,
+  //   NDT: 1,
+  //   EA: 1,
+  //   "3DMP": 1,
+  // });
 
   const courseModules = {
-    "MSE-C": 52,
+    "MSE-C&W": 52,
     "MSE-D": 52,
     "MSE-W": 52,
-    "MJR-C": 52,
+    "MJR-C&W": 52,
     "MJR-D": 52,
     "MJR-W": 52,
-    "MJI-C": 52,
+    "MJI-C&W": 52,
     "MJI-D": 52,
-    "MJ1-W": 52,
-    "MJP-C": 13,
+    "MJI-W": 52,
+    "MJP-C&W": 13,
     "MJP-D": 13,
     "MJP-W": 13,
-    ASE: 52,
-    AJE: 52,
-    IJE: 52,
-    RJE: 13,
     RCW: 3,
     RD: 2,
     TS: 1,
@@ -60,26 +56,30 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   const batchOptions = ["2024-2025", "Other"];
   const moduleOptions = [...Object.keys(courseModules), "Other"];
 
-  const generateTicketNumber = (designation) => {
-    if (!designation || !ticketCounter[designation]) return "";
-    const counter = ticketCounter[designation].toString().padStart(5, "0");
-    return `${designation}${counter}`;
-  };
+  // const generateTicketNumber = (designation) => {
+  //   if (!designation || !ticketCounter[designation]) return "";
+  //   const counter = ticketCounter[designation].toString().padStart(5, "0");
+  //   return `${designation}${counter}`;
+  // };
+
+  // useEffect(() => {
+  //   const designation = formData.designation;
+  //   if (designation && ticketCounter[designation] && !formData.ticketNo) {
+  //     const ticketNumber = generateTicketNumber(designation);
+  //     onChange("ticketNo", ticketNumber);
+  //     setTicketCounter((prev) => ({
+  //       ...prev,
+  //       [designation]: prev[designation] + 1,
+  //     }));
+  //   }
+  // }, [formData.designation]);
 
   useEffect(() => {
-    const designation = formData.designation;
-    if (designation && ticketCounter[designation] && !formData.ticketNo) {
-      const ticketNumber = generateTicketNumber(designation);
-      onChange("ticketNo", ticketNumber);
-      setTicketCounter((prev) => ({
-        ...prev,
-        [designation]: prev[designation] + 1,
-      }));
-    }
-  }, [formData.designation]);
-
-  useEffect(() => {
-    if (courseModules[formData.moduleNo]) {
+    if (formData.moduleNo === "Other") {
+      // For custom module, clear auto-calculated values
+      onChange("courseDuration", "");
+      onChange("dateOfSparing", "");
+    } else if (courseModules[formData.moduleNo]) {
       const duration = courseModules[formData.moduleNo];
       onChange(
         "courseDuration",
@@ -96,7 +96,8 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
     const moduleNo = formData.moduleNo;
     const duration = courseModules[moduleNo];
 
-    if (joiningDate && duration && moduleNo !== "") {
+    // Only auto-calculate for non-custom modules
+    if (joiningDate && duration && moduleNo !== "" && moduleNo !== "Other") {
       const joining = new Date(joiningDate);
 
       if (typeof duration === "number") {
@@ -112,25 +113,27 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
       const isoString = joining.toISOString().split("T")[0];
       onChange("dateOfSparing", isoString);
-    } else if (!joiningDate || !moduleNo || moduleNo === "") {
-      // Clear date of sparing when required fields are empty
-      onChange("dateOfSparing", "");
+    } else if (!joiningDate || !moduleNo || moduleNo === "" || moduleNo === "Other") {
+      // Clear date of sparing when required fields are empty or custom module selected
+      if (moduleNo !== "Other") {
+        onChange("dateOfSparing", "");
+      }
     }
   }, [formData.dateOfJoiningStcWtcNonRailway, formData.moduleNo]);
 
-  const handleTicketChange = (value) => onChange("ticketNo", value);
+  // const handleTicketChange = (value) => onChange("ticketNo", value);
 
-  const generateNewTicket = () => {
-    const designation = formData.designation;
-    if (designation && ticketCounter[designation]) {
-      const ticketNumber = generateTicketNumber(designation);
-      onChange("ticketNo", ticketNumber);
-      setTicketCounter((prev) => ({
-        ...prev,
-        [designation]: prev[designation] + 1,
-      }));
-    }
-  };
+  // const generateNewTicket = () => {
+  //   const designation = formData.designation;
+  //   if (designation && ticketCounter[designation]) {
+  //     const ticketNumber = generateTicketNumber(designation);
+  //     onChange("ticketNo", ticketNumber);
+  //     setTicketCounter((prev) => ({
+  //       ...prev,
+  //       [designation]: prev[designation] + 1,
+  //     }));
+  //   }
+  // };
 
   const validateField = (field, value) => {
     if (!value || (typeof value === "string" && value.trim() === "")) {
@@ -141,12 +144,17 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      "ticketNo",
+      // "ticketNo",
       "batch",
       "dateOfJoiningStcWtcNonRailway",
       "moduleNo",
-      "courseDuration",
     ];
+
+    // Add courseDuration to required fields only if moduleNo is not "Other"
+    if (formData.moduleNo !== "Other") {
+      requiredFields.push("courseDuration");
+    }
+
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -167,7 +175,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   }, [formData]);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
+    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full shadow text-lg">
           🎓
@@ -176,7 +184,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        <div>
+        {/* <div>
           <RequiredLabel>Ticket Number</RequiredLabel>
           <div className="flex gap-2">
             <input
@@ -202,7 +210,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           {errors.ticketNo && (
             <p className="text-sm text-red-500 mt-1">{errors.ticketNo}</p>
           )}
-        </div>
+        </div> */}
 
         <div>
           <RequiredLabel>Batch</RequiredLabel>
@@ -280,24 +288,40 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             Date of Sparing{" "}
-            <span className="text-xs text-gray-500">(Auto-calculated)</span>
+            {formData.moduleNo !== "Other" && (
+              <span className="text-xs text-gray-500">(Auto-calculated)</span>
+            )}
+            {formData.moduleNo === "Other" && <span className="text-red-500">*</span>}
           </label>
           <input
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
+            readOnly={formData.moduleNo !== "Other"}
           />
+          {errors.dateOfSparing && (
+            <p className="text-sm text-red-500 mt-1">{errors.dateOfSparing}</p>
+          )}
         </div>
 
         <div>
-          <RequiredLabel>Course Duration</RequiredLabel>
+          <label className="block text-gray-700 font-medium mb-1">
+            Course Duration
+            {formData.moduleNo !== "Other" && (
+              <span className="text-xs text-gray-500"> (Auto-filled)</span>
+            )}
+            {formData.moduleNo === "Other" && <span className="text-xs text-gray-500"> (Optional)</span>}
+          </label>
           <input
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
-            placeholder="Auto-filled"
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
+            placeholder={formData.moduleNo === "Other" ? "Enter course duration" : "Auto-filled"}
+            readOnly={formData.moduleNo !== "Other"}
           />
           {errors.courseDuration && (
             <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>

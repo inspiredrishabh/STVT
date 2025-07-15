@@ -1,15 +1,14 @@
 /**
  * Database initialization script
  * Run with: npm run init-db
+ * this can be seperatly run to set up the database
+ * or can be run with npm start
+ * currenlty not used in production
+ * but can be used to reset the database
  */
-import sqlite3 from 'sqlite3';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
-
-// Get current file path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const sqlite3 = require('sqlite3').verbose();
+const { join } = require('path');
+const fs = require('fs');
 
 // Ensure db directory exists
 const dbDir = join(__dirname, '..', 'db');
@@ -37,4 +36,15 @@ db.serialize(() => {
         )
     `);
 
+    db.run(`
+        INSERT OR IGNORE INTO users (role, password)
+        VALUES
+            ('admin', '1234'),
+            ('master', '5678'),
+            ('operator', '9012')
+    `);
+
 });
+
+
+module.exports = db;

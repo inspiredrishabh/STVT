@@ -28,6 +28,7 @@ const NonRailwayMain = () => {
     designation: "",
     unitCustodian: "",
     duration: "",
+    durationOption: "",
     theoryPeriod: "",
     practicalPeriod: "",
     workingUnder: "",
@@ -35,6 +36,7 @@ const NonRailwayMain = () => {
     // Educational fields
     highestQualification: "",
     fieldOfStudy: "",
+    customFieldOfStudy: "",
     institution: "",
     gradeType: "",
     gradeValue: "",
@@ -113,12 +115,60 @@ const NonRailwayMain = () => {
   const prepareFormDataForSubmission = () => {
     const submissionData = new FormData();
 
-    // Add all form fields
+    // Field mapping from frontend to backend
+    const fieldMapping = {
+      // Personal fields
+      picture: "picture",
+      name: "name",
+      sex: "sex",
+      fatherName: "father_name",
+      motherName: "mother_name",
+      dob: "dob",
+      category: "category",
+      pwd: "pwd",
+      typeOfDisability: "type_of_disability",
+      nationality: "nationality",
+      // Contact fields
+      currentAddress: "current_address",
+      permanentAddress: "permanent_address",
+      phoneNumber: "phone_number",
+      emergencyContactNumber: "emergency_contact_number",
+      email: "email",
+      // Professional fields
+      courseType: "course_type",
+      customCourseType: "course_type", // Use custom course type if provided
+      designation: "designation",
+      unitCustodian: "unit",
+      duration: "duration",
+      theoryPeriod: "theory",
+      practicalPeriod: "practical",
+      workingUnder: "working_under",
+      remark: "remarks",
+      // Educational fields
+      highestQualification: "highest_qualification",
+      fieldOfStudy: "field_of_study",
+      institution: "institution",
+      gradeType: "grade_type",
+      gradeValue: "grade_value",
+    };
+
+    // Add all form fields with proper mapping
     Object.keys(formData).forEach((key) => {
       if (key === "picture" && formData[key]) {
-        submissionData.append("picture", formData[key]);
+        submissionData.append("image", formData[key]); // Backend expects 'image' field
       } else if (formData[key] !== null && formData[key] !== "") {
-        submissionData.append(key, formData[key]);
+        const backendKey = fieldMapping[key];
+        if (backendKey) {
+          // Special handling for course type - use custom if available, otherwise use courseType
+          if (key === "courseType" && formData.customCourseType) {
+            submissionData.append(backendKey, formData.customCourseType);
+          } else if (key === "fieldOfStudy" && formData.customFieldOfStudy) {
+            // Use custom field of study if available, otherwise use selected field
+            submissionData.append(backendKey, formData.customFieldOfStudy);
+          } else if (key !== "customCourseType" && key !== "customFieldOfStudy") {
+            submissionData.append(backendKey, formData[key]);
+          }
+        }
       }
     });
 
@@ -136,7 +186,7 @@ const NonRailwayMain = () => {
     try {
       const submissionData = prepareFormDataForSubmission();
 
-      const response = await fetch("/api/candidates/nonrailway", {
+      const response = await fetch(`/api/nonrailway`, {
         method: "POST",
         body: submissionData,
         headers: {
@@ -146,15 +196,19 @@ const NonRailwayMain = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error("Error response data:", errorData);
         throw new Error(
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
 
       const result = await response.json();
+      console.log("Submission result:", result);
+
+      // Show success message with ticket number
+      const ticketNumber = result.data?.ticket_no || "Generated";
       alert(
-        "Registration completed successfully! Your application ID: " +
-          (result.applicationId || "Generated")
+        `Registration completed successfully! Your ticket number: ${ticketNumber}`
       );
 
       // Reset form after successful submission
@@ -179,12 +233,14 @@ const NonRailwayMain = () => {
         designation: "",
         unitCustodian: "",
         duration: "",
+        durationOption: "",
         theoryPeriod: "",
         practicalPeriod: "",
         workingUnder: "",
         remark: "",
         highestQualification: "",
         fieldOfStudy: "",
+        customFieldOfStudy: "",
         institution: "",
         gradeType: "",
         gradeValue: "",
@@ -237,7 +293,7 @@ const NonRailwayMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Non-Railway Candidate Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-pink-500 to-orange-500 mx-auto rounded-full"></div>
+        <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation Bar */}
@@ -246,20 +302,18 @@ const NonRailwayMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold transition-colors duration-200
-              ${
-                step === index
+              ${step === index
                   ? "bg-orange-500"
                   : step > index
-                  ? "bg-green-500"
-                  : "bg-gray-500"
-              }`}
+                    ? "bg-green-500"
+                    : "bg-gray-500"
+                }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${
-                step === index ? "text-white" : "text-gray-300"
-              }`}
+              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
+                }`}
             >
               {label} Details
             </p>
@@ -295,7 +349,7 @@ const NonRailwayMain = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-700 disabled:opacity-50 flex items-center transition-colors"
+            className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:opacity-50 flex items-center transition-colors"
           >
             {isLoading && (
               <svg
@@ -321,8 +375,8 @@ const NonRailwayMain = () => {
             {isLoading
               ? "Submitting..."
               : step === steps.length - 1
-              ? "Submit Registration"
-              : "Save and Next →"}
+                ? "Submit Registration"
+                : "Save and Next →"}
           </button>
         </div>
       </form>

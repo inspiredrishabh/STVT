@@ -1,553 +1,676 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { RefreshCw, Download } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
 
-// Mock API Class for Dashboard Data
 class DashboardAPI {
-    constructor() {
-        this.baseDelay = 500;
-        this.baseURL = '/api/dashboard'; // Backend endpoints will use this base URL
+  constructor() {
+    this.baseURL = "/api";
+  }
+
+  async getStcCandidatesCount() {
+    try {
+      const response = await fetch(`${this.baseURL}/stc`);
+      const data = await response.json();
+      return data.success ? data.count || data.data?.length || 0 : 0;
+    } catch {
+      return 0;
     }
-
-    // Simulate API delay
-    delay(ms = this.baseDelay) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }    // GET /api/dashboard/categories - STC, WTC, Non-Railway Categories Data for Bar Chart
-    async getCategoriesData() {
-        await this.delay();
-
-        // Only 3 categories: STC, WTC, Non-Railway
-        const mockData = [
-            { category: 'STC', count: 450, color: '#2563eb' },
-            { category: 'WTC', count: 320, color: '#10b981' },
-            { category: 'Non-Railway', count: 500, color: '#f59e0b' }
-        ];
-
-        return {
-            success: true,
-            data: mockData,
-            endpoint: `${this.baseURL}/categories`,
-            method: 'GET'
-        };
+  }
+  async getWtcCandidatesCount() {
+    try {
+      const response = await fetch(`${this.baseURL}/wtc`);
+      const data = await response.json();
+      return data.success ? data.count || data.data?.length || 0 : 0;
+    } catch {
+      return 0;
     }
-
-    // GET /api/dashboard/distribution - Distribution Data for Pie Chart
-    async getDistributionData() {
-        await this.delay();
-
-        // Pie chart showing STC, WTC, Non-Railway distribution
-        const total = 450 + 320 + 500; // 1270
-
-        const mockData = [
-            {
-                name: 'STC',
-                value: Math.round((450 / total) * 100), // 35%
-                count: 450,
-                color: '#2563eb'
-            },
-            {
-                name: 'WTC',
-                value: Math.round((320 / total) * 100), // 25%
-                count: 320,
-                color: '#10b981'
-            },
-            {
-                name: 'Non-Railway',
-                value: Math.round((500 / total) * 100), // 39%
-                count: 500,
-                color: '#f59e0b'
-            }
-        ];
-
-        return {
-            success: true,
-            data: mockData,
-            endpoint: `${this.baseURL}/distribution`,
-            method: 'GET'
-        };
-    }    // GET /api/dashboard/stats - Overall Statistics
-    async getOverallStats() {
-        await this.delay();
-
-        // Updated stats based on Railway (STC + WTC) vs Non-Railway structure
-        const mockData = {
-            totalCandidates: 1270, // 450 (STC) + 320 (WTC) + 500 (Non-Railway)
-            railwayCandidates: 770, // 450 (STC) + 320 (WTC)
-            nonRailwayCandidates: 500,
-            stcCandidates: 450,
-            wtcCandidates: 320,
-            activeCourses: 35,
-            completedCourses: 95,
-            pendingApplications: 67,
-            successRate: 89.5,
-            totalBatches: 18,
-            monthlyGrowth: 12.5
-        };
-
-        return {
-            success: true,
-            data: mockData,
-            endpoint: `${this.baseURL}/stats`,
-            method: 'GET'
-        };
-    }    // GET /api/dashboard/activities - Recent Activities
-    async getRecentActivities() {
-        await this.delay();
-
-        const mockData = [
-            {
-                id: 1,
-                activity: 'New STC candidate registered',
-                candidate: 'Rajesh Kumar - EMP001',
-                time: '2 hours ago',
-                type: 'registration',
-                icon: '👤',
-                category: 'STC'
-            },
-            {
-                id: 2,
-                activity: 'WTC course completion certificate issued',
-                candidate: 'Priya Sharma - EMP145',
-                time: '3 hours ago',
-                type: 'completion',
-                icon: '🎓',
-                category: 'WTC'
-            },
-            {
-                id: 3,
-                activity: 'STC batch evaluation completed',
-                candidate: 'Batch STC-2024-15 (25 candidates)',
-                time: '5 hours ago',
-                type: 'evaluation',
-                icon: '📊',
-                category: 'STC'
-            },
-            {
-                id: 4,
-                activity: 'New Non-Railway application submitted',
-                candidate: 'Anil Verma - CONT789',
-                time: '6 hours ago',
-                type: 'application',
-                icon: '📝',
-                category: 'Non-Railway'
-            },
-            {
-                id: 5,
-                activity: 'WTC training schedule updated',
-                candidate: 'Batch WTC-2024-08',
-                time: '8 hours ago',
-                type: 'schedule',
-                icon: '📅',
-                category: 'WTC'
-            },
-            {
-                id: 6,
-                activity: 'STC practical assessment conducted',
-                candidate: 'Mumbai Division - 15 trainees',
-                time: '10 hours ago',
-                type: 'assessment',
-                icon: '✅',
-                category: 'STC'
-            },
-            {
-                id: 7,
-                activity: 'Non-Railway certification approved',
-                candidate: 'Sunita Yadav - CERT456',
-                time: '12 hours ago',
-                type: 'approval',
-                icon: '✓',
-                category: 'Non-Railway'
-            },
-            {
-                id: 8,
-                activity: 'WTC theoretical exam results published',
-                candidate: 'Delhi Zone - Batch WTC-2024-12',
-                time: '1 day ago',
-                type: 'results',
-                icon: '📋',
-                category: 'WTC'
-            }
-        ];
-
-        return {
-            success: true,
-            data: mockData,
-            endpoint: `${this.baseURL}/activities`,
-            method: 'GET'
-        };
+  }
+  async getNonRailwayCandidatesCount() {
+    try {
+      const response = await fetch(`${this.baseURL}/nonrailway`);
+      const data = await response.json();
+      return data.success ? data.count || data.data?.length || 0 : 0;
+    } catch {
+      return 0;
     }
+  }
+  async getCategoriesData() {
+    try {
+      const [stc, wtc, nonRailway] = await Promise.all([
+        this.getStcCandidatesCount(),
+        this.getWtcCandidatesCount(),
+        this.getNonRailwayCandidatesCount(),
+      ]);
+      return {
+        success: true,
+        data: [
+          { category: "STC", count: stc, color: "#3b82f6" }, // Blue
+          { category: "WTC", count: wtc, color: "#10b981" }, // Green  
+          { category: "Non-Railway", count: nonRailway, color: "#8b5cf6" }, // Purple
+        ],
+      };
+    } catch {
+  
+      return { success: false, data: [] };
+    }
+  }
+  async getDistributionData() {
+    try {
+      const [stc, wtc, nonRailway] = await Promise.all([
+        this.getStcCandidatesCount(),
+        this.getWtcCandidatesCount(),
+        this.getNonRailwayCandidatesCount(),
+      ]);
+      const total = stc + wtc + nonRailway;
+      if (!total) return { success: true, data: [] };        return {
+          success: true,
+          data: [
+            {
+              name: "STC",
+              value: Math.round((stc / total) * 100),
+              count: stc,
+              color: "#3b82f6", // Blue
+            },
+            {
+              name: "WTC",
+              value: Math.round((wtc / total) * 100),
+              count: wtc,
+              color: "#10b981", // Green
+            },
+            {
+              name: "Non-Railway",
+              value: Math.round((nonRailway / total) * 100),
+              count: nonRailway,
+              color: "#8b5cf6", // Purple
+            },
+          ],
+        };
+    } catch {
+      return { success: false, data: [] };
+    }
+  }
+  calculateWorkingDays(year, month) {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    let workingDays = 0;
+    const holidays = {
+      1: [1, 26],
+      3: [8],
+      4: [14],
+      5: [1],
+      8: [15],
+      10: [2],
+      12: [25],
+    };
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day);
+      if (date.getDay() !== 0 && !holidays[month]?.includes(day)) workingDays++;
+    }
+    return workingDays;
+  }
+  async getOverallStats() {
+    try {
+      const [stc, wtc, nonRailway] = await Promise.all([
+        this.getStcCandidatesCount(),
+        this.getWtcCandidatesCount(),
+        this.getNonRailwayCandidatesCount(),
+      ]);
+      const classroomCapacity = 126;
+      const now = new Date();
+      const workingDays = this.calculateWorkingDays(
+        now.getFullYear(),
+        now.getMonth() + 1
+      );
+      const total = stc + wtc + nonRailway;
+      return {
+        success: true,
+        data: {
+          totalCandidates: total,
+          railwayCandidates: stc + wtc,
+          nonRailwayCandidates: nonRailway,
+          stcCandidates: stc,
+          wtcCandidates: wtc,
+          activeCourses: Math.ceil(total / 25),
+          completedCourses: Math.floor(total / 30),
+          trainingCapacity: classroomCapacity * workingDays,
+          classroomCapacity,
+          workingDaysThisMonth: workingDays,
+        },
+      };
+    } catch {
+      return { success: false, data: null };
+    }
+  }
+  async getRecentActivities() {
+    try {
+      const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
+        fetch(`${this.baseURL}/stc`).catch(() => ({
+          json: () => ({ success: false, data: [] }),
+        })),
+        fetch(`${this.baseURL}/wtc`).catch(() => ({
+          json: () => ({ success: false, data: [] }),
+        })),
+        fetch(`${this.baseURL}/nonrailway`).catch(() => ({
+          json: () => ({ success: false, data: [] }),
+        })),
+      ]);
+      const [stcData, wtcData, nonRailwayData] = await Promise.all([
+        stcRes.json(),
+        wtcRes.json(),
+        nonRailwayRes.json(),
+      ]);
+      const activities = [];
+      if (stcData.success && stcData.data) {
+        (Array.isArray(stcData.data) ? stcData.data.slice(0, 3) : []).forEach(
+          (c, i) =>
+            activities.push({
+              id: `stc-${c.id || i}`,
+              activity: "STC candidate registered",
+              candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
+              time: this.getTimeAgo(c.created_at),
+              icon: "�", // Blue circle
+              category: "STC",
+            })
+        );
+      }
+      if (wtcData.success && wtcData.data) {
+        (Array.isArray(wtcData.data) ? wtcData.data.slice(0, 3) : []).forEach(
+          (c, i) =>
+            activities.push({
+              id: `wtc-${c.id || i}`,
+              activity: "WTC candidate registered",
+              candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
+              time: this.getTimeAgo(c.created_at),
+              icon: "�", // Green circle
+              category: "WTC",
+            })
+        );
+      }
+      if (nonRailwayData.success && nonRailwayData.data) {
+        (Array.isArray(nonRailwayData.data)
+          ? nonRailwayData.data.slice(0, 2)
+          : []
+        ).forEach((c, i) =>
+          activities.push({
+            id: `nonrailway-${c.id || i}`,
+            activity: "Non-Railway application submitted",
+            candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
+            time: this.getTimeAgo(c.created_at),
+            icon: "�", // Purple circle
+            category: "Non-Railway",
+          })
+        );
+      }
+      return { success: true, data: activities.slice(0, 8) };
+    } catch {
+      return { success: false, data: [] };
+    }
+  }
+  getTimeAgo(dateString) {
+    if (!dateString) return "Recently";
+    let date;
+    if (
+      typeof dateString === "string" &&
+      dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)
+    ) {
+      date = new Date(dateString.replace(" ", "T") + "Z");
+    } else {
+      date = new Date(dateString);
+    }
+    if (isNaN(date.getTime())) return "Recently";
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60) return "Just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+    return date.toLocaleDateString();
+  }
 }
 
-// Simple Chart Components (Since recharts might not be installed)
-const SimpleBarChart = ({ data, title }) => {
-    const maxValue = Math.max(...data.map(d => d.count));
-
-    return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 text-center">{title}</h3>
-            <div className="space-y-3">
-                {data.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                        <div className="w-16 text-sm font-medium text-gray-600 text-right">
-                            {item.category}
-                        </div>
-                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                            <div
-                                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
-                                style={{
-                                    backgroundColor: item.color,
-                                    width: `${(item.count / maxValue) * 100}%`,
-                                    minWidth: '40px'
-                                }}
-                            >
-                                {item.count}
-                            </div>
-                        </div>
-                    </div>
-                ))}
+const SimpleBarChart = ({ data, title }) => (
+  <div className="space-y-4">
+    <h3 className="text-lg font-semibold text-gray-900 text-center">
+      {title}
+    </h3>
+    {!data ||
+    data.length === 0 ||
+    Math.max(...data.map((d) => d.count)) === 0 ? (
+      <div className="text-center text-gray-400 py-8">No data available</div>
+    ) : (
+      <div className="space-y-3">
+        {data.map((item, idx) => (
+          <div key={idx} className="flex items-center space-x-3">
+            <div className="w-16 text-sm font-medium text-gray-700 text-right">
+              {item.category}
             </div>
-        </div>
-    );
-};
-
-const SimplePieChart = ({ data, title }) => {
-    const total = data.reduce((sum, item) => sum + item.count, 0);
-    let currentAngle = 0;
-
-    return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 text-center">{title}</h3>
-            <div className="flex items-center justify-center space-x-8">
-                {/* SVG Pie Chart */}
-                <div className="relative">
-                    <svg width="200" height="200" className="transform -rotate-90">
-                        <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            fill="none"
-                            stroke="#e5e7eb"
-                            strokeWidth="2"
-                        />
-                        {data.map((item, index) => {
-                            const percentage = (item.count / total) * 100;
-                            const angle = (percentage / 100) * 360;
-                            const startAngle = currentAngle;
-                            const endAngle = currentAngle + angle;
-
-                            const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
-                            const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
-                            const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
-                            const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
-
-                            const largeArcFlag = angle > 180 ? 1 : 0;
-
-                            const pathData = [
-                                `M 100 100`,
-                                `L ${x1} ${y1}`,
-                                `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                                `Z`
-                            ].join(' ');
-
-                            currentAngle += angle;
-
-                            return (
-                                <path
-                                    key={index}
-                                    d={pathData}
-                                    fill={item.color}
-                                    stroke="white"
-                                    strokeWidth="2"
-                                />
-                            );
-                        })}
-                    </svg>
-                </div>
-
-                {/* Legend */}
-                <div className="space-y-3">
-                    {data.map((item, index) => (
-                        <div key={index} className="flex items-center space-x-3">
-                            <div
-                                className="w-4 h-4 rounded"
-                                style={{ backgroundColor: item.color }}
-                            ></div>
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                                <div className="text-xs text-gray-500">{item.value}% ({item.count})</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+              <div
+                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                style={{
+                  backgroundColor: item.color,
+                  width: `${
+                    (item.count / Math.max(...data.map((d) => d.count))) * 100
+                  }%`,
+                  minWidth: "40px",
+                }}
+              >
+                {item.count}
+              </div>
             </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const SimplePieChart = ({ data, title }) => (
+  <div className="space-y-4">
+    <h3 className="text-lg font-semibold text-gray-900 text-center">
+      {title}
+    </h3>
+    {!data ||
+    data.length === 0 ||
+    data.reduce((sum, item) => sum + item.count, 0) === 0 ? (
+      <div className="text-center text-gray-400 py-8">No data available</div>
+    ) : (
+      <div className="flex items-center justify-center space-x-8">
+        <div className="relative">
+          <svg width="200" height="200" className="transform -rotate-90">
+            <circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth="2"
+            />
+            {(() => {
+              let currentAngle = 0;
+              return data.map((item, idx) => {
+                const total = data.reduce((sum, i) => sum + i.count, 0);
+                const angle = (item.count / total) * 360;
+                const startAngle = currentAngle;
+                const endAngle = currentAngle + angle;
+                const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
+                const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
+                const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
+                const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
+                const largeArcFlag = angle > 180 ? 1 : 0;
+                const pathData = [
+                  `M 100 100`,
+                  `L ${x1} ${y1}`,
+                  `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                  `Z`,
+                ].join(" ");
+                currentAngle += angle;
+                return (
+                  <path
+                    key={idx}
+                    d={pathData}
+                    fill={item.color}
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                );
+              });
+            })()}
+          </svg>
         </div>
-    );
-};
+        <div className="space-y-3">
+          {data.map((item, idx) => (
+            <div key={idx} className="flex items-center space-x-3">
+              <div
+                className="w-4 h-4 rounded"
+                style={{ backgroundColor: item.color }}
+              ></div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-orange-900">
+                  {item.name}
+                </div>
+                <div className="text-xs text-orange-500">
+                  {item.value}% ({item.count})
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 
 function Dashboard() {
-    const [categoriesData, setCategoriesData] = useState([]);
-    const [distributionData, setDistributionData] = useState([]);
-    const [overallStats, setOverallStats] = useState(null);
-    const [recentActivities, setRecentActivities] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [distributionData, setDistributionData] = useState([]);
+  const [overallStats, setOverallStats] = useState(null);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { userRole } = useAuth();
+  const dashboardAPI = new DashboardAPI();
 
-    const dashboardAPI = new DashboardAPI();
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-    useEffect(() => {
-        loadDashboardData();
-    }, []);
-
-    const loadDashboardData = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const [categoriesRes, distributionRes, statsRes, activitiesRes] = await Promise.all([
-                dashboardAPI.getCategoriesData(),
-                dashboardAPI.getDistributionData(),
-                dashboardAPI.getOverallStats(),
-                dashboardAPI.getRecentActivities()
-            ]); if (categoriesRes.success) setCategoriesData(categoriesRes.data);
-            if (distributionRes.success) setDistributionData(distributionRes.data);
-            if (statsRes.success) setOverallStats(statsRes.data);
-            if (activitiesRes.success) setRecentActivities(activitiesRes.data);
-
-            // Backend API Endpoints for implementation:
-            // GET /api/dashboard/categories - Returns STC, WTC, Non-Railway categories data for bar chart
-            // GET /api/dashboard/distribution - Returns distribution data for pie chart  
-            // GET /api/dashboard/stats - Returns overall statistics
-            // GET /api/dashboard/activities - Returns recent activities
-        } catch (err) {
-            setError('Failed to load dashboard data');
-            console.error('Dashboard data loading error:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 p-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                        <span className="ml-3 text-gray-600">Loading dashboard...</span>
-                    </div>
-                </div>
-            </div>
-        );
+  const loadDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [cat, dist, stats, acts] = await Promise.all([
+        dashboardAPI.getCategoriesData(),
+        dashboardAPI.getDistributionData(),
+        dashboardAPI.getOverallStats(),
+        dashboardAPI.getRecentActivities(),
+      ]);
+      if (cat.success) setCategoriesData(cat.data);
+      if (dist.success) setDistributionData(dist.data);
+      if (stats.success) setOverallStats(stats.data);
+      if (acts.success) setRecentActivities(acts.data);
+    } catch {
+      setError("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error) {
-        return (
-            <div className="min-h-screen bg-gray-50 p-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-                        <div className="flex items-center">
-                            <div className="text-red-600 mr-3">⚠️</div>
-                            <div>
-                                <h3 className="text-lg font-medium text-red-800">Error Loading Dashboard</h3>
-                                <p className="text-red-700 mt-1">{error}</p>
-                                <button
-                                    onClick={loadDashboardData}
-                                    className="mt-3 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded text-sm"
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+  const handleExportData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/export-database");
+      if (!response.ok) throw new Error("Failed to export database");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `STVT_Database_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      alert("Database exported successfully!");
+    } catch (error) {
+      alert(`Failed to export database: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  if (loading)
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Form Data Visualization</h1>
-                            <p className="text-gray-600 mt-2">Comprehensive overview of training programs and candidate statistics</p>
-                        </div>
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={loadDashboardData}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-                            >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                Refresh Data
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Statistics Cards */}
-                {overallStats && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-blue-100 rounded-full">
-                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600">Total Candidates</p>
-                                    <p className="text-2xl font-bold text-gray-900">{overallStats.totalCandidates.toLocaleString()}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-green-100 rounded-full">
-                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600">Active Courses</p>
-                                    <p className="text-2xl font-bold text-gray-900">{overallStats.activeCourses}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-purple-100 rounded-full">
-                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600">Completed</p>
-                                    <p className="text-2xl font-bold text-gray-900">{overallStats.completedCourses}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
-                            <div className="flex items-center">
-                                <div className="p-3 bg-yellow-100 rounded-full">
-                                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                    </svg>
-                                </div>
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                                    <p className="text-2xl font-bold text-gray-900">{overallStats.successRate}%</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Railway Breakdown Summary */}
-                {overallStats && (
-                    <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Training Categories Overview</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="text-center p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                                <h3 className="text-lg font-semibold text-blue-700">Railway Training</h3>
-                                <p className="text-3xl font-bold text-blue-900 mt-2">{overallStats.railwayCandidates}</p>
-                                <div className="mt-3 space-y-1">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">STC:</span>
-                                        <span className="font-medium text-blue-700">{overallStats.stcCandidates}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">WTC:</span>
-                                        <span className="font-medium text-blue-700">{overallStats.wtcCandidates}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="text-center p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                                <h3 className="text-lg font-semibold text-orange-700">Non-Railway Training</h3>
-                                <p className="text-3xl font-bold text-orange-900 mt-2">{overallStats.nonRailwayCandidates}</p>
-                                <p className="text-sm text-gray-600 mt-3">General training programs for non-railway personnel</p>
-                            </div>
-
-                            <div className="text-center p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                                <h3 className="text-lg font-semibold text-green-700">Total Candidates</h3>
-                                <p className="text-3xl font-bold text-green-900 mt-2">{overallStats.totalCandidates}</p>
-                                <div className="mt-3">
-                                    <div className="text-sm text-gray-600">
-                                        Railway: {Math.round((overallStats.railwayCandidates / overallStats.totalCandidates) * 100)}%
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        Non-Railway: {Math.round((overallStats.nonRailwayCandidates / overallStats.totalCandidates) * 100)}%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Charts Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    {/* Bar Chart - STC, WTC, Non-Railway Categories */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <SimpleBarChart data={categoriesData} title="STC, WTC & Non-Railway Categories" />
-                    </div>
-
-                    {/* Pie Chart - Distribution */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <SimplePieChart data={distributionData} title="Distribution (Pie Chart)" />
-                    </div>
-                </div>
-
-                {/* Recent Activities - Full Width */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            View All
-                        </button>
-                    </div>
-                    <div className="space-y-3 max-h-80 overflow-y-auto">
-                        {recentActivities.map((activity) => (
-                            <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
-                                style={{
-                                    borderLeftColor:
-                                        activity.category === 'STC' ? '#2563eb' :
-                                            activity.category === 'WTC' ? '#10b981' :
-                                                activity.category === 'Non-Railway' ? '#f59e0b' : '#6b7280'
-                                }}>
-                                <div className="flex-shrink-0 text-lg">
-                                    {activity.icon}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center space-x-2 mb-1">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                            {activity.activity}
-                                        </p>
-                                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${activity.category === 'STC' ? 'bg-blue-100 text-blue-700' :
-                                            activity.category === 'WTC' ? 'bg-green-100 text-green-700' :
-                                                activity.category === 'Non-Railway' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {activity.category}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-gray-600 truncate">
-                                        {activity.candidate}
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        {activity.time}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+          <span className="mt-3 text-gray-700 font-semibold">
+            Loading dashboard...
+          </span>
         </div>
+      </div>
     );
+
+  if (error)
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="bg-white border-2 border-orange-100 rounded-3xl p-6 shadow-lg">
+          <div className="flex items-center">
+            <div className="text-orange-400 mr-3">⚠️</div>
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">
+                Error Loading Dashboard
+              </h3>
+              <p className="text-gray-600 mt-1">{error}</p>
+              <button
+                onClick={loadDashboardData}
+                className="mt-3 bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl text-sm transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-9xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Form Data Visualization
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Overview of training programs and candidate statistics
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={loadDashboardData}
+                className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+              >
+                <RefreshCw className="mr-2 w-4 h-4" />
+                Refresh
+              </button>
+
+              {/* Only show Export button for admin or master */}
+              {(userRole === "admin" || userRole === "master") && (
+                <button
+                  onClick={handleExportData}
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+                >
+                  <Download className="mr-2 w-4 h-4" />
+                  Export
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {overallStats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Candidates
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {overallStats.totalCandidates}
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Active Courses
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {overallStats.activeCourses}
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {overallStats.completedCourses}
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Training Capacity
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {overallStats.trainingCapacity}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {overallStats.classroomCapacity} ×{" "}
+                  {overallStats.workingDaysThisMonth} days
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {overallStats && (
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Training Categories Overview
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-600">
+                  Railway Training
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {overallStats.railwayCandidates}
+                </p>
+                <div className="mt-3 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">STC:</span>
+                    <span className="font-medium text-gray-900">
+                      {overallStats.stcCandidates}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">WTC:</span>
+                    <span className="font-medium text-gray-900">
+                      {overallStats.wtcCandidates}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-2xl border-2 border-purple-100">
+                <h3 className="text-lg font-semibold text-purple-600">
+                  Non-Railway Training
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {overallStats.nonRailwayCandidates}
+                </p>
+                <p className="text-sm text-gray-600 mt-3">
+                  General training for non-railway personnel
+                </p>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-2xl border-2 border-green-100">
+                <h3 className="text-lg font-semibold text-green-600">
+                  Total Candidates
+                </h3>
+                <p className="text-3xl font-bold text-gray-900 mt-2">
+                  {overallStats.totalCandidates}
+                </p>
+                <div className="mt-3">
+                  <div className="text-sm text-gray-600">
+                    Railway:{" "}
+                    {Math.round(
+                      (overallStats.railwayCandidates /
+                        overallStats.totalCandidates) *
+                        100
+                    )}
+                    %
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Non-Railway:{" "}
+                    {Math.round(
+                      (overallStats.nonRailwayCandidates /
+                        overallStats.totalCandidates) *
+                        100
+                    )}
+                    %
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+            <SimpleBarChart
+              data={categoriesData}
+              title="STC, WTC & Non-Railway Categories"
+            />
+          </div>
+          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+            <SimplePieChart
+              data={distributionData}
+              title="Distribution (Pie Chart)"
+            />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Recent Activities
+            </h3>
+          </div>
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-start space-x-3 p-3 rounded-2xl hover:bg-orange-50 transition-colors border-l-4"
+                style={{
+                  borderLeftColor:
+                    activity.category === "STC"
+                      ? "#FF8D21"
+                      : activity.category === "WTC"
+                      ? "#FFA652"
+                      : activity.category === "Non-Railway"
+                      ? "#008080"
+                      : "#6b7280",
+                }}
+              >
+                <div className="flex-shrink-0 text-lg">{activity.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {activity.activity}
+                    </p>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        activity.category === "STC"
+                          ? "bg-orange-100 text-orange-700"
+                          : activity.category === "WTC"
+                          ? "bg-orange-100 text-orange-700"
+                          : activity.category === "Non-Railway"
+                          ? "bg-teal-100 text-teal-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {activity.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">
+                    {activity.candidate}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {activity.time}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="bg-cyan-50 text-grey py-8 mt-8 w-full">
+        <div className="container mx-auto px-0">
+          <div className="text-center space-y-4">
+            <p className="text-base font-semibold">
+              © 2025 All Rights Reserved.
+            </p>
+            <p className="text-sm text-grey leading-relaxed px-8">
+              Supervisor Training Center, Charbagh, Northern Railways, Ministry
+              of Railways, Government of India.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Dashboard;
