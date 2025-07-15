@@ -517,7 +517,7 @@ const TraineeProfile = () => {
               <div className="flex-shrink-0">
                 {selectedTraineeForSession.picture ? (
                   <img
-                    src={`http://192.168.244.85:5000/${selectedTraineeForSession.picture}`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForSession.picture}`}
                     alt={selectedTraineeForSession.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -700,7 +700,7 @@ const TraineeProfile = () => {
                     {trainee.picture ? (
                       <div className="relative">
                         <img
-                          src={`http://192.168.244.85:5000/${trainee.picture}`}
+                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
                           alt={trainee.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
                           onError={(e) => {
@@ -933,7 +933,7 @@ const TraineeProfile = () => {
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   {selectedTraineeForResignation.picture ? (
                     <img
-                      src={`http://192.168.244.85:5000/${selectedTraineeForResignation.picture}`}
+                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForResignation.picture}`}
                       alt={selectedTraineeForResignation.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />

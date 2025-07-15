@@ -7,11 +7,11 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    host: '0.0.0.0', // Allow network access
+    host: "0.0.0.0", // Allow network access
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://192.168.244.85:5000", // Adjust the target as needed
+        target: "http://192.168.244.85:5000",
         changeOrigin: true,
         secure: false,
       },

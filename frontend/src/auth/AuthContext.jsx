@@ -9,9 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // API base URL
-  const API_BASE = "/api";
-
   // Check auth on initial load
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -25,12 +22,15 @@ export const AuthProvider = ({ children }) => {
   // Verify token with backend
   const verifyToken = async (token) => {
     try {
-      const response = await fetch(`${API_BASE}/auth/verify`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/verify`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -54,13 +54,16 @@ export const AuthProvider = ({ children }) => {
   // Login function - using role and password
   const login = async (role, password) => {
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ role, password }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ role, password }),
+        }
+      );
 
       const data = await response.json();
 
@@ -82,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (token) {
-        await fetch(`${API_BASE}/auth/logout`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

@@ -183,7 +183,9 @@ const TraineeProfile = () => {
                       <span className="text-white font-bold text-sm">
                         {trainee.picture ? (
                           <img
-                            src={`http://192.168.244.85:5000/${trainee.picture}`}
+                            src={`http://${
+                              import.meta.env.VITE_BACKEND_IP
+                            }:5000/${trainee.picture}`}
                             alt={trainee.name}
                             className="rounded-full w-full h-full object-cover"
                           />
