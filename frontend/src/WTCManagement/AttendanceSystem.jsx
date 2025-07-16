@@ -5,16 +5,15 @@ import {
   Search,
   UserCheck,
   Calendar,
-  Clock,
   BookOpen,
-  Wrench,
   CheckCircle,
   XCircle,
   BarChart3,
   Download,
   Filter,
   Users,
-  Award
+  Award,
+  Info
 } from 'lucide-react';
 
 // Real API Functions connected to Backend Endpoints
@@ -52,59 +51,72 @@ const attendanceAPI = {
     }
   },
 
-  // Get attendance data for a specific candidate
-  getAttendanceData: async (candidateId) => {
+  // Get monthly attendance data for a specific candidate
+  getMonthlyAttendanceData: async (candidateId) => {
     try {
-      const response = await fetch(`/api/attendance/candidate/${candidateId}`);
+      const response = await fetch(`/api/monthly-attendance/candidate/${candidateId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch attendance data: ${response.status}`);
+        throw new Error(`Failed to fetch monthly attendance data: ${response.status}`);
       }
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to fetch attendance data');
+        throw new Error(result.message || 'Failed to fetch monthly attendance data');
       }
 
-      // Transform the data to match the format expected by the frontend
-      const attendanceData = {
-        statistics: {
-          totalClasses: result.data.statistics?.totalClasses || 0,
-          classesAttended: result.data.statistics?.classesAttended || 0,
-          attendancePercentage: result.data.statistics?.attendancePercentage || 0
-        },
-        attendanceRecords: result.data.attendanceRecords.map(record => ({
-          totalClasses: record.totalClasses || 0,
-          classesAttended: record.classesAttended || 0
-        }))
-      };
-
-      return attendanceData;
+      return result.data;
     } catch (error) {
-      console.error('Error fetching attendance data:', error);
+      console.error('Error fetching monthly attendance data:', error);
       // Return empty data structure if this is the first time viewing attendance for this trainee
       return {
+        candidateDetails: {
+          id: candidateId,
+          dateOfJoining: null,
+          dateOfSparing: null
+        },
+        monthlyRecords: [],
         statistics: {
+          totalMonths: 0,
           totalClasses: 0,
           classesAttended: 0,
           attendancePercentage: 0
-        },
-        attendanceRecords: []
+        }
       };
     }
   },
 
-  // Mark attendance for a trainee
-  markAttendance: async (traineeId, totalClasses, classesAttended) => {
+  // Get available months for attendance based on joining and sparing dates
+  getAttendanceMonths: async (candidateId) => {
     try {
-      // Set up the payload for classes attended
+      const response = await fetch(`/api/monthly-attendance/months/${candidateId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch attendance months: ${response.status}`);
+      }
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to fetch attendance months');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching attendance months:', error);
+      return { months: [] };
+    }
+  },
+
+  // Mark monthly attendance for a trainee
+  markMonthlyAttendance: async (traineeId, month, totalClasses, classesAttended) => {
+    try {
+      // Set up the payload for monthly attendance
       const payload = {
         candidateId: traineeId,
+        month: month,
         totalClasses: totalClasses,
         classesAttended: classesAttended
       };
 
-
-      const response = await fetch('/api/attendance/mark', {
+      const response = await fetch('/api/monthly-attendance/mark', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -114,83 +126,56 @@ const attendanceAPI = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to mark attendance: ${errorText}`);
+        throw new Error(`Failed to mark monthly attendance: ${errorText}`);
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to mark attendance');
+        throw new Error(result.message || 'Failed to mark monthly attendance');
       }
 
-      // The API now returns updated attendance data directly
-      if (result.data && result.data.attendanceRecords) {
-        // Transform the data to match the format expected by the frontend
-        return {
-          statistics: {
-            totalClasses: result.data.statistics?.totalClasses || 0,
-            classesAttended: result.data.statistics?.classesAttended || 0,
-            attendancePercentage: result.data.statistics?.attendancePercentage || 0
-          },
-          attendanceRecords: result.data.attendanceRecords.map(record => ({
-            totalClasses: record.totalClasses || 0,
-            classesAttended: record.classesAttended || 0
-          }))
-        };
-      } else {
-        // Fallback to fetching attendance if not included in response
-        return attendanceAPI.getAttendanceData(traineeId);
-      }
+      // Return the updated attendance data
+      return result.data;
     } catch (error) {
-      console.error('Error marking attendance:', error);
+      console.error('Error marking monthly attendance:', error);
       throw error;
     }
   },
 
-  // Get attendance summary for a batch
-  getBatchAttendance: async (batch) => {
+  // Get monthly attendance summary for a batch
+  getBatchMonthlyAttendance: async (batch) => {
     try {
-      const response = await fetch(`/api/attendance/summary?batch=${batch}`);
+      const response = await fetch(`/api/monthly-attendance/summary?batch=${batch}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch batch attendance: ${response.status}`);
+        throw new Error(`Failed to fetch batch monthly attendance: ${response.status}`);
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to fetch batch attendance');
+        throw new Error(result.message || 'Failed to fetch batch monthly attendance');
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching batch attendance:', error);
+      console.error('Error fetching batch monthly attendance:', error);
       throw error;
     }
   },
 
-  // Bulk mark attendance for multiple trainees
-  bulkMarkAttendance: async (attendanceData) => {
+  // Bulk mark monthly attendance for multiple trainees
+  bulkMarkMonthlyAttendance: async (attendanceData) => {
     try {
       // Transform the data to match the backend API
-      const records = attendanceData.map(entry => {
-        const record = {
-          candidateId: entry.candidateId,
-          date: entry.date
-        };
+      const records = attendanceData.map(entry => ({
+        candidateId: entry.candidateId,
+        month: entry.month,
+        totalClasses: entry.totalClasses,
+        classesAttended: entry.classesAttended
+      }));
 
-        if (entry.attendanceType === 'theory') {
-          record.theoryStatus = entry.status;
-        } else if (entry.attendanceType === 'practical') {
-          record.practicalStatus = entry.status;
-        } else if (entry.attendanceType === 'classes') {
-          record.totalClasses = entry.totalClasses;
-          record.classesAttended = entry.classesAttended;
-        }
-
-        return record;
-      });
-
-      const response = await fetch('/api/attendance/bulk-mark', {
+      const response = await fetch('/api/monthly-attendance/bulk-mark', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -200,18 +185,18 @@ const attendanceAPI = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to bulk mark attendance: ${errorText}`);
+        throw new Error(`Failed to bulk mark monthly attendance: ${errorText}`);
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || 'Failed to bulk mark attendance');
+        throw new Error(result.message || 'Failed to bulk mark monthly attendance');
       }
 
       return result;
     } catch (error) {
-      console.error('Error bulk marking attendance:', error);
+      console.error('Error bulk marking monthly attendance:', error);
       throw error;
     }
   }
@@ -224,10 +209,17 @@ const AttendanceSystem = () => {
   const [selectedTrainee, setSelectedTrainee] = useState('');
   const [trainees, setTrainees] = useState([]);
   const [traineeData, setTraineeData] = useState(null);
-  const [attendanceData, setAttendanceData] = useState(null);
+  
+  // Monthly attendance states
+  const [monthlyAttendanceData, setMonthlyAttendanceData] = useState(null);
+  const [availableMonths, setAvailableMonths] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [monthlyTotalClasses, setMonthlyTotalClasses] = useState('');
+  const [monthlyClassesAttended, setMonthlyClassesAttended] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [attendanceView, setAttendanceView] = useState('mark'); // 'mark', 'summary', 'records'
+  const [attendanceView, setAttendanceView] = useState('monthly-mark'); // 'monthly-mark', 'monthly-summary'
   // Removed batch filter state
   const [exporting, setExporting] = useState(false);
 
@@ -250,7 +242,7 @@ const AttendanceSystem = () => {
     }
   }, [searchMethod, loadTrainees]);
 
-
+  // Load trainee data and attendance information
   const loadTraineeData = useCallback(async (trainee) => {
     setLoading(true);
     setMessage({ type: '', text: '' });
@@ -258,15 +250,27 @@ const AttendanceSystem = () => {
     try {
       setTraineeData(trainee);
 
-      // Load attendance data
-      const attendance = await attendanceAPI.getAttendanceData(trainee.id);
-      setAttendanceData(attendance);
+      // Load monthly attendance data
+      const monthlyAttendance = await attendanceAPI.getMonthlyAttendanceData(trainee.id);
+      setMonthlyAttendanceData(monthlyAttendance);
+      
+      // Load available months for attendance
+      const monthsData = await attendanceAPI.getAttendanceMonths(trainee.id);
+      setAvailableMonths(monthsData.months || []);
+      
+      // If there are available months, select the first one
+      if (monthsData.months && monthsData.months.length > 0) {
+        setSelectedMonth(monthsData.months[0]);
+      } else {
+        setSelectedMonth('');
+      }
 
       setMessage({ type: 'success', text: `Data loaded for: ${trainee.name}` });
     } catch (error) {
       setMessage({ type: 'error', text: error.message || 'Failed to load trainee data' });
       setTraineeData(null);
-      setAttendanceData(null);
+      setMonthlyAttendanceData(null);
+      setAvailableMonths([]);
     } finally {
       setLoading(false);
     }
@@ -285,7 +289,8 @@ const AttendanceSystem = () => {
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
       setTraineeData(null);
-      setAttendanceData(null);
+      setMonthlyAttendanceData(null);
+      setAvailableMonths([]);
     } finally {
       setLoading(false);
     }
@@ -294,7 +299,8 @@ const AttendanceSystem = () => {
   const handleTraineeSelect = useCallback(async (traineeId) => {
     if (!traineeId) {
       setTraineeData(null);
-      setAttendanceData(null);
+      setMonthlyAttendanceData(null);
+      setAvailableMonths([]);
       return;
     }
 
@@ -305,156 +311,149 @@ const AttendanceSystem = () => {
     }
   }, [trainees, loadTraineeData]);
 
-  const markAttendance = useCallback(async (totalClasses, classesAttended) => {
+  // Mark monthly attendance for a trainee
+  const markMonthlyAttendance = useCallback(async () => {
     if (!traineeData) {
       setMessage({ type: 'error', text: 'No trainee selected' });
       return;
     }
 
+    if (!selectedMonth) {
+      setMessage({ type: 'error', text: 'Please select a month' });
+      return;
+    }
+
+    const totalClasses = parseInt(monthlyTotalClasses);
+    const classesAttended = parseInt(monthlyClassesAttended);
+
+    if (isNaN(totalClasses) || isNaN(classesAttended)) {
+      setMessage({ type: 'error', text: 'Please enter valid numbers for total classes and classes attended' });
+      return;
+    }
+
+    if (classesAttended > totalClasses) {
+      setMessage({ type: 'error', text: 'Classes attended cannot exceed total classes' });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Call the API to mark attendance
-      const updatedAttendance = await attendanceAPI.markAttendance(
+      const updatedAttendanceData = await attendanceAPI.markMonthlyAttendance(
         traineeData.id,
+        selectedMonth,
         totalClasses,
         classesAttended
       );
 
-      console.log('Updated attendance:', updatedAttendance);
-
-      // Update the local state with new attendance data
-      setAttendanceData(updatedAttendance);
-
-      setMessage({
-        type: 'success',
-        text: `Class attendance updated successfully`
+      setMonthlyAttendanceData(updatedAttendanceData);
+      setMessage({ 
+        type: 'success', 
+        text: `Monthly attendance marked successfully for ${traineeData.name} (${selectedMonth})` 
       });
+      
+      // Clear form fields
+      setMonthlyTotalClasses('');
+      setMonthlyClassesAttended('');
     } catch (error) {
       setMessage({ type: 'error', text: error.message || 'Failed to mark attendance' });
     } finally {
       setLoading(false);
     }
-  }, [traineeData]);
+  }, [traineeData, selectedMonth, monthlyTotalClasses, monthlyClassesAttended]);
 
   const resetForm = useCallback(() => {
     setTicketNumber('');
     setSelectedTrainee('');
     setTraineeData(null);
-    setAttendanceData(null);
+    setMonthlyAttendanceData(null);
+    setAvailableMonths([]);
+    setSelectedMonth('');
+    setMonthlyTotalClasses('');
+    setMonthlyClassesAttended('');
     setMessage({ type: '', text: '' });
   }, []);
 
-  const generateCSVContent = useCallback(() => {
-    if (!traineeData || !attendanceData) return '';
+  // Format month for display
+  const formatMonth = useCallback((monthStr) => {
+    if (!monthStr) return '';
+    
+    const [year, month] = monthStr.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }, []);
 
+  // Generate CSV content for export
+  const generateMonthlyCSVContent = useCallback(() => {
+    if (!traineeData || !monthlyAttendanceData) return '';
+    
     const headers = [
       'Trainee Name',
       'Ticket Number',
       'Designation',
+      'Month',
       'Total Classes',
       'Classes Attended',
       'Attendance Percentage'
     ];
-
+    
     let csvContent = headers.join(',') + '\n';
-
-    // Add trainee info and attendance records
-    if (attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0) {
-      const record = attendanceData.attendanceRecords[0];
-      const percentage = record.totalClasses > 0 ? Math.round((record.classesAttended / record.totalClasses) * 100) : 0;
-
+    
+    monthlyAttendanceData.monthlyRecords.forEach(record => {
       const row = [
         `"${traineeData.name}"`,
         `"${traineeData.ticketNo}"`,
-        `"${traineeData.designation}"`,
-        `"${record.totalClasses || 0}"`,
-        `"${record.classesAttended || 0}"`,
-        `"${percentage}%"`
+        `"${traineeData.designation || ''}"`,
+        `"${formatMonth(record.month)}"`,
+        record.totalClasses,
+        record.classesAttended,
+        `${record.attendancePercentage}%`
       ];
+      
       csvContent += row.join(',') + '\n';
-    } else {
-      // If no records, add a row with trainee info and no attendance data
-      const row = [
-        `"${traineeData.name}"`,
-        `"${traineeData.ticketNo}"`,
-        `"${traineeData.designation}"`,
-        '"0"',
-        '"0"',
-        '"0%"'
-      ];
-      csvContent += row.join(',') + '\n';
-    }
-
-
-
-
-
-    // Add summary statistics
-    csvContent += '\n';
-    csvContent += 'ATTENDANCE SUMMARY\n';
-    csvContent += `Attendance Percentage,${attendanceData.statistics?.attendancePercentage || 0}%\n`;
-    csvContent += `Total Classes,${attendanceData.statistics?.totalClasses || 0}\n`;
-    csvContent += `Classes Attended,${attendanceData.statistics?.classesAttended || 0}\n`;
-    csvContent += `Export Date,"${new Date().toLocaleDateString('en-IN')}"\n`;
-
+    });
+    
     return csvContent;
-  }, [traineeData, attendanceData]);
-  const handleExportReport = useCallback(async () => {
-    if (!traineeData) {
-      setMessage({ type: 'error', text: 'No trainee selected for export' });
-      return;
-    }
+  }, [traineeData, monthlyAttendanceData, formatMonth]);
 
-    setExporting(true);
-    setMessage({ type: '', text: '' });
+  // Calculate remaining days between joining and sparing
+  const calculateRemainingDays = useMemo(() => {
+    if (!traineeData) return null;
+    
+    const joiningDate = traineeData.dateOfJoiningStcWtcNonRailway;
+    const sparingDate = traineeData.dateOfSparing;
+    
+    if (!joiningDate || !sparingDate) return null;
+    
+    const start = new Date(joiningDate);
+    const end = new Date(sparingDate);
+    const today = new Date();
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    
+    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const elapsedDays = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
+    const remainingDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    
+    return {
+      totalDays: totalDays > 0 ? totalDays : 0,
+      elapsedDays: elapsedDays > 0 ? elapsedDays : 0,
+      remainingDays: remainingDays > 0 ? remainingDays : 0
+    };
+  }, [traineeData]);
 
-    try {
-      // Generate CSV content
-      const csvContent = generateCSVContent();
-
-      // Create and download the file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Attendance_Report_${traineeData.ticketNo}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
-
-      setMessage({
-        type: 'success',
-        text: `Attendance report exported successfully for ${traineeData.name}`
-      });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to export attendance report' });
-      console.error('Export error:', error);
-    } finally {
-      setExporting(false);
-    }
-  }, [traineeData, generateCSVContent]);
-
+  // Find monthly record by month
+  const findMonthlyRecord = useCallback((month) => {
+    if (!monthlyAttendanceData || !monthlyAttendanceData.monthlyRecords) return null;
+    
+    return monthlyAttendanceData.monthlyRecords.find(record => record.month === month);
+  }, [monthlyAttendanceData]);
 
   // Computed values
   // Show all trainees in the list (no batch filter)
   const filteredTrainees = useMemo(() => trainees, [trainees]);
 
-  const attendanceStats = useMemo(() => {
-    if (!attendanceData) return null;
 
-    const records = attendanceData.attendanceRecords || [];
-    return {
-      totalClasses: attendanceData.statistics?.totalClasses || 0,
-      classesAttended: attendanceData.statistics?.classesAttended || 0,
-      attendancePercentage: attendanceData.statistics?.attendancePercentage || 0,
-      totalRecords: records.length
-    };
-  }, [attendanceData]);
 
   const getAttendanceStatusColor = (percentage) => {
     if (percentage >= 75) return 'text-green-600 bg-green-100';
@@ -524,21 +523,21 @@ const AttendanceSystem = () => {
               <button
                 onClick={() => setSearchMethod('ticket')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'ticket'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Search by Ticket Number
-              </button>
-              <button
-                onClick={() => setSearchMethod('dropdown')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Select from List
-              </button>
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Search by Ticket Number
+                </button>
+                <button
+                  onClick={() => setSearchMethod('dropdown')}
+                  className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Select from List
+                </button>
             </div>
 
             {/* Search Controls */}
@@ -641,31 +640,22 @@ const AttendanceSystem = () => {
                 {/* View Toggle */}
                 <div className="flex bg-gray-100 rounded-xl p-1">
                   <button
-                    onClick={() => setAttendanceView('mark')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'mark'
+                    onClick={() => setAttendanceView('monthly-mark')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-mark'
                       ? 'bg-white text-blue-600 shadow-md'
                       : 'text-gray-600 hover:text-gray-800'
                       }`}
                   >
-                    Mark Attendance
+                    Mark Monthly Attendance
                   </button>
                   <button
-                    onClick={() => setAttendanceView('summary')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'summary'
+                    onClick={() => setAttendanceView('monthly-summary')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-summary'
                       ? 'bg-white text-blue-600 shadow-md'
                       : 'text-gray-600 hover:text-gray-800'
                       }`}
                   >
-                    Summary
-                  </button>
-                  <button
-                    onClick={() => setAttendanceView('records')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'records'
-                      ? 'bg-white text-blue-600 shadow-md'
-                      : 'text-gray-600 hover:text-gray-800'
-                      }`}
-                  >
-                    Records
+                    Monthly Summary
                   </button>
                 </div>
               </div>
@@ -673,194 +663,270 @@ const AttendanceSystem = () => {
               {/* Trainee Info */}
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Trainee Name</p>
-                    <p className="font-semibold text-gray-900">{traineeData.name}</p>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Ticket No</span>
+                    <span className="font-semibold">{traineeData.ticketNo}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Ticket Number</p>
-                    <p className="font-semibold text-gray-900">{traineeData.ticketNo}</p>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Name</span>
+                    <span className="font-semibold">{traineeData.name}</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Trade</p>
-                    <p className="font-semibold text-gray-900">{traineeData.trade}</p>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Designation</span>
+                    <span className="font-semibold">{traineeData.designation || 'Not specified'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Date of Joining</span>
+                    <span className="font-semibold">{traineeData.dateOfJoiningStcWtcNonRailway || 'Not specified'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Date of Sparing</span>
+                    <span className="font-semibold">{traineeData.dateOfSparing || 'Not specified'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-500">Training Period</span>
+                    <span className="font-semibold">{traineeData.trainingPeriod || 'Not specified'}</span>
                   </div>
                 </div>
+
+                {/* Training Progress Bar */}
+                {calculateRemainingDays && (
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center text-sm mb-1">
+                      <span className="text-gray-500">Training Progress</span>
+                      <span className="font-medium">
+                        {Math.round((calculateRemainingDays.elapsedDays / calculateRemainingDays.totalDays) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 rounded-full"
+                        style={{
+                          width: `${Math.round((calculateRemainingDays.elapsedDays / calculateRemainingDays.totalDays) * 100)}%`
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>Days elapsed: {calculateRemainingDays.elapsedDays}</span>
+                      <span>Days remaining: {calculateRemainingDays.remainingDays}</span>
+                      <span>Total days: {calculateRemainingDays.totalDays}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Mark Attendance View */}
-              {attendanceView === 'mark' && (
-                <div className="space-y-6">
-                  {/* Total Classes & Attendance */}
-                  <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Award className="w-6 h-6 text-purple-600" />
-                      <h3 className="text-lg font-semibold text-purple-900">Total Classes & Attendance</h3>
+              {/* Monthly Attendance Mark Form */}
+              {attendanceView === 'monthly-mark' && (
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-6 h-6 text-white" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Total No. of Classes</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          id="totalClasses"
-                          placeholder="Enter total number of classes"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Classes Attended</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          id="classesAttended"
-                          placeholder="Enter number of classes attended"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <button
-                          onClick={() => {
-                            const totalClasses = parseInt(document.getElementById('totalClasses').value) || 0;
-                            const classesAttended = parseInt(document.getElementById('classesAttended').value) || 0;
-                            markAttendance(totalClasses, classesAttended);
-                          }}
-                          disabled={loading}
-                          className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all duration-200"
-                        >
-                          <Award className="w-5 h-5" />
-                          Save Class Attendance
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Display saved attendance records below */}
-                  {attendanceData && attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 && (
-                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 mt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Attendance Data</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Total Classes</p>
-                          <p className="font-semibold text-gray-900">{attendanceData.attendanceRecords[0].totalClasses || 0}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Classes Attended</p>
-                          <p className="font-semibold text-gray-900">{attendanceData.attendanceRecords[0].classesAttended || 0}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Attendance Percentage</p>
-                          <p className="font-semibold text-gray-900">
-                            {attendanceData.statistics?.attendancePercentage || 0}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Summary View */}
-              {attendanceView === 'summary' && attendanceStats && (
-                <div className="space-y-6">
-                  {/* Attendance Statistics */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-green-50 rounded-xl p-6 border border-green-200 md:col-span-3">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Award className="w-6 h-6 text-green-600" />
-                        <h3 className="text-lg font-semibold text-green-900">Class Attendance</h3>
-                      </div>
-                      <div className="text-3xl font-bold text-green-600 mb-2">
-                        {attendanceStats.attendancePercentage || 0}%
-                      </div>
-                      <div className="text-sm text-green-700">
-                        {attendanceStats.classesAttended || 0} / {attendanceStats.totalClasses || 0} classes
-                      </div>
-                      <div className={`mt-3 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(attendanceStats.attendancePercentage || 0)}`}>
-                        {(attendanceStats.attendancePercentage || 0) >= 75 ? 'Excellent' :
-                          (attendanceStats.attendancePercentage || 0) >= 60 ? 'Average' : 'Poor'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="space-y-4">
                     <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700">Class Attendance</span>
-                        <span className="text-sm text-gray-600">{attendanceStats.attendancePercentage || 0}%</span>
+                      <h3 className="text-lg font-bold text-gray-900">Mark Monthly Attendance</h3>
+                      <p className="text-gray-600 text-sm">
+                        Record classes for a specific month
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Month Selection */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        Select Month
+                      </label>
+                      <select
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      >
+                        <option value="">Select a month...</option>
+                        {availableMonths.map(month => (
+                          <option key={month} value={month}>
+                            {formatMonth(month)}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Display Current Month's Data */}
+                      {selectedMonth && findMonthlyRecord(selectedMonth) && (
+                        <div className="mt-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                          <h4 className="font-semibold text-blue-800 mb-2">Current Attendance for {formatMonth(selectedMonth)}</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <span className="text-sm text-blue-600">Total Classes</span>
+                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).totalClasses || 0}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm text-blue-600">Classes Attended</span>
+                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).classesAttended || 0}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-sm text-blue-600">Attendance Percentage</span>
+                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).attendancePercentage || 0}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Attendance Input */}
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                          Total Classes in Month
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={monthlyTotalClasses}
+                          onChange={(e) => setMonthlyTotalClasses(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="e.g., 22"
+                        />
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div
-                          className="bg-green-600 h-3 rounded-full transition-all duration-300"
-                          style={{ width: `${attendanceStats.attendancePercentage || 0}%` }}
-                        ></div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                          Classes Attended in Month
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max={monthlyTotalClasses || 999}
+                          value={monthlyClassesAttended}
+                          onChange={(e) => setMonthlyClassesAttended(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="e.g., 20"
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Records View */}
-              {attendanceView === 'records' && attendanceData && (
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-gray-900">Attendance Records</h3>
+                  <div className="flex justify-end mt-6">
                     <button
-                      onClick={handleExportReport}
-                      disabled={exporting}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      onClick={markMonthlyAttendance}
+                      disabled={loading || !selectedMonth || !monthlyTotalClasses || !monthlyClassesAttended}
+                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
-                      {exporting ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <Download className="w-4 h-4" />
+                        <CheckCircle className="w-5 h-5" />
                       )}
-                      {exporting ? 'Exporting...' : 'Export Report'}
+                      Save Monthly Attendance
                     </button>
                   </div>
-
-
-                  {attendanceData.attendanceRecords && attendanceData.attendanceRecords.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse bg-white rounded-xl shadow-sm">
-                        <thead>
-                          <tr className="bg-gray-50">
-                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Total Classes</th>
-                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Classes Attended</th>
-                            <th className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-700">Attendance Percentage</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {attendanceData.attendanceRecords?.map((record, index) => {
-                            const percentage = record.totalClasses > 0 ? Math.round((record.classesAttended / record.totalClasses) * 100) : 0;
-                            return (
-                              <tr key={index} className="hover:bg-gray-50">
-                                <td className="border border-gray-200 px-4 py-3 text-center font-medium text-gray-900">
-                                  {record.totalClasses || 0}
-                                </td>
-                                <td className="border border-gray-200 px-4 py-3 text-center">
-                                  {record.classesAttended || 0}
-                                </td>
-                                <td className="border border-gray-200 px-4 py-3 text-center">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getAttendanceStatusColor(percentage)}`}>
-                                    {percentage}%
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No attendance records found</p>
-                    </div>
-                  )}
                 </div>
               )}
+
+              {/* Monthly Attendance Summary */}
+              {attendanceView === 'monthly-summary' && (
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                        <BarChart3 className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Monthly Attendance Summary</h3>
+                        <p className="text-gray-600 text-sm">
+                          View attendance records by month
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Export Button */}
+                    {monthlyAttendanceData && monthlyAttendanceData.monthlyRecords && monthlyAttendanceData.monthlyRecords.length > 0 && (
+                      <button
+                        onClick={() => {
+                          const csvContent = generateMonthlyCSVContent();
+                          const blob = new Blob([csvContent], { type: 'text/csv' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${traineeData.ticketNo}_monthly_attendance.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Overall Stats */}
+                  {monthlyAttendanceData && (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="text-sm text-gray-500 mb-1">Total Months</div>
+                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.totalMonths || 0}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="text-sm text-gray-500 mb-1">Total Classes</div>
+                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.totalClasses || 0}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="text-sm text-gray-500 mb-1">Classes Attended</div>
+                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.classesAttended || 0}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="text-sm text-gray-500 mb-1">Overall Attendance</div>
+                        <div className="text-2xl font-bold">
+                          {monthlyAttendanceData.statistics?.attendancePercentage || 0}%
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Monthly Records Table */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white rounded-xl overflow-hidden">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Classes</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes Attended</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {monthlyAttendanceData && monthlyAttendanceData.monthlyRecords && monthlyAttendanceData.monthlyRecords.length > 0 ? (
+                          monthlyAttendanceData.monthlyRecords.map((record) => (
+                            <tr key={record.id || record.month} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {formatMonth(record.month)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {record.totalClasses}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {record.classesAttended}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className={`text-sm font-medium rounded-full px-2 py-1 inline-block ${getAttendanceStatusColor(record.attendancePercentage)}`}>
+                                  {record.attendancePercentage}%
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                              No monthly attendance records found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+
             </div>
           )}
 

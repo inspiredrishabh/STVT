@@ -13,6 +13,7 @@ const stcRoutes = require("./routes/stcRoutes");
 const wtcRoutes = require("./routes/wtcRoutes");
 const nonRailwayRoutes = require("./routes/nonRailwayRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const monthlyAttendanceRoutes = require("./routes/monthlyAttendanceRoutes");
 const lineTrainingRoutes = require("./routes/lineTrainingRoutes");
 
 const exportRoutes = require("./routes/exportRoutes");
@@ -53,6 +54,7 @@ app.use("/api/stc", stcRoutes);
 app.use("/api/wtc", wtcRoutes);
 app.use("/api/nonrailway", nonRailwayRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/monthly-attendance", monthlyAttendanceRoutes);
 app.use("/api/export-database", exportRoutes);
 
 // Line‐Training
