@@ -16,7 +16,6 @@ const initialFormData = {
   typeOfDisability: "",
   nationality: "INDIAN",
 
-
   currentAddress: "",
   permanentAddress: "",
   phoneNumber: "",
@@ -52,10 +51,10 @@ const initialFormData = {
   gradeValue: "",
 
   batch: "",
-  customBatch: "",
+  // customBatch: "" ,
   dateOfJoiningStcWtcNonRailway: "",
   dateOfSparing: "",
-}
+};
 
 const WtcMain = () => {
   const [formData, setFormData] = useState(initialFormData);
@@ -71,19 +70,16 @@ const WtcMain = () => {
   );
   const icons = useMemo(() => ["👤", "📞", "💼", "📄"], []);
 
-  const handleChange = useCallback(
-    (field, value) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prevErrors) => {
-        if (prevErrors[field]) {
-          const { [field]: _, ...rest } = prevErrors;
-          return rest;
-        }
-        return prevErrors;
-      });
-    },
-    []
-  );
+  const handleChange = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prevErrors) => {
+      if (prevErrors[field]) {
+        const { [field]: _, ...rest } = prevErrors;
+        return rest;
+      }
+      return prevErrors;
+    });
+  }, []);
 
   const createChangeHandler = useCallback(
     (stepKey) => {
@@ -142,9 +138,9 @@ const WtcMain = () => {
       const formDataToSend = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'picture' && value) {
+        if (key === "picture" && value) {
           // The backend expects the file under the key 'image'
-          formDataToSend.append('image', value);
+          formDataToSend.append("image", value);
         } else if (value !== null && value !== undefined && value !== "") {
           formDataToSend.append(key, value);
         }
@@ -161,7 +157,6 @@ const WtcMain = () => {
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
-
 
       return await response.json();
     } catch (error) {
@@ -197,7 +192,7 @@ const WtcMain = () => {
       console.error("Submission failed:", error);
       alert(`Failed to submit registration: ${error.message}`);
     }
-  }, [isStepValid, submitToAPI, formData,]);
+  }, [isStepValid, submitToAPI, formData]);
 
   const renderForm = useCallback(() => {
     const formComponents = [Personal, Contact, Professional, Course];
@@ -223,18 +218,20 @@ const WtcMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${step === index
+              ${
+                step === index
                   ? "bg-orange-500"
                   : step > index
-                    ? "bg-green-500"
-                    : "bg-gray-500"
-                }`}
+                  ? "bg-green-500"
+                  : "bg-gray-500"
+              }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
-                }`}
+              className={`text-sm font-semibold ${
+                step === index ? "text-white" : "text-gray-300"
+              }`}
             >
               {label} Details
             </p>
@@ -265,16 +262,17 @@ const WtcMain = () => {
             type="button"
             onClick={step === steps.length - 1 ? handleSubmit : handleNext}
             disabled={isSubmitting}
-            className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-orange-500 hover:bg-orange-600"
-              } text-white`}
+            className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${
+              isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-orange-500 hover:bg-orange-600"
+            } text-white`}
           >
             {isSubmitting
               ? "Submitting..."
               : step === steps.length - 1
-                ? "Submit Registration"
-                : "Save and Next →"}
+              ? "Submit Registration"
+              : "Save and Next →"}
           </button>
         </div>
       </div>
