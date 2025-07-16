@@ -120,8 +120,8 @@ const CertificatePreview = () => {
                 <h3 className="text-2xl mt-2 underline">प्रशिक्षण प्रमाण – पत्र</h3>
               </div>
               <div className="w-1/4 flex justify-end">
-                <div className="h-36 w-32 border-4 border-double border-gray-800 flex items-center justify-center text-center text-xs text-gray-500">
-                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} />
+                <div className="h-36 w-32  border-gray-800 flex items-center justify-center text-center text-xs text-gray-500">
+                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} className='border-2 '/>
                 </div>
               </div>
             </div>

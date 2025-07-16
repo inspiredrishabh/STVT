@@ -277,7 +277,7 @@ const Letter = () => {
                             >
                                 <option value="practical-training">Practical Training</option>
                                 <option value="practical-exam">Practical Exam & Interview</option>
-                                <option value="sessional-performance">Result of Sessional Performance</option>
+                                <option value="sessional-performance">ACT APPRENTICE </option>
                             </select>
 
                             <button
