@@ -5,7 +5,6 @@ class MonthlyAttendanceModel {
     constructor() {
         // Define table name explicitly
         this.tableName = 'monthly_attendances';
-        console.log(`Initializing MonthlyAttendanceModel with table name: ${this.tableName}`);
         this.createTable();
     }
 
@@ -160,30 +159,30 @@ class MonthlyAttendanceModel {
 
                             // Calculate statistics
                             const totalRecords = records.length;
-                            
+
                             // Calculate total attendance across all months
                             let totalClassesAll = 0;
                             let classesAttendedAll = 0;
-                            
+
                             // Format the records
                             const formattedRecords = records.map(record => {
                                 totalClassesAll += record.total_classes || 0;
                                 classesAttendedAll += record.classes_attended || 0;
-                                
+
                                 return {
                                     id: record.id,
                                     month: record.month,
                                     totalClasses: record.total_classes || 0,
                                     classesAttended: record.classes_attended || 0,
-                                    attendancePercentage: record.total_classes > 0 
-                                        ? Math.round((record.classes_attended / record.total_classes) * 100) 
+                                    attendancePercentage: record.total_classes > 0
+                                        ? Math.round((record.classes_attended / record.total_classes) * 100)
                                         : 0
                                 };
                             });
 
                             // Calculate overall attendance percentage
-                            const overallAttendancePercentage = totalClassesAll > 0 
-                                ? Math.round((classesAttendedAll / totalClassesAll) * 100) 
+                            const overallAttendancePercentage = totalClassesAll > 0
+                                ? Math.round((classesAttendedAll / totalClassesAll) * 100)
                                 : 0;
 
                             resolve({
@@ -217,7 +216,7 @@ class MonthlyAttendanceModel {
                 (err, candidate) => {
                     if (err) return reject(err);
                     if (!candidate) return reject(new Error('Candidate not found'));
-                    
+
                     // If dates are not set, return empty array
                     if (!candidate.dateOfJoining) {
                         return resolve({
@@ -226,22 +225,22 @@ class MonthlyAttendanceModel {
                             months: []
                         });
                     }
-                    
+
                     // Parse dates
                     const startDate = new Date(candidate.dateOfJoining);
                     // If sparing date is not set, use current date
                     const endDate = candidate.dateOfSparing ? new Date(candidate.dateOfSparing) : new Date();
-                    
+
                     // Generate array of months between dates
                     const months = [];
                     let currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-                    
+
                     while (currentDate <= endDate) {
                         const month = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0');
                         months.push(month);
                         currentDate.setMonth(currentDate.getMonth() + 1);
                     }
-                    
+
                     resolve({
                         candidateId: candidate.id,
                         ticketNo: candidate.ticket_no,
@@ -463,16 +462,16 @@ class MonthlyAttendanceModel {
 
             db.all(candidateQuery, params, async (err, candidates) => {
                 if (err) return reject(err);
-                
+
                 // For each candidate, get their monthly attendance records
                 const candidatesWithAttendance = [];
-                
+
                 // Process each candidate sequentially with Promise.all
                 await Promise.all(candidates.map(async (candidate) => {
                     try {
                         // Get monthly attendance for this candidate
                         const monthlyAttendance = await this.getMonthlyAttendanceByCandidate(candidate.candidateId);
-                        
+
                         candidatesWithAttendance.push({
                             ...candidate,
                             monthlyRecords: monthlyAttendance.monthlyRecords,
@@ -492,7 +491,7 @@ class MonthlyAttendanceModel {
                         });
                     }
                 }));
-                
+
                 // Calculate overall statistics
                 let totalClasses = 0;
                 let totalClassesAttended = 0;
@@ -502,8 +501,8 @@ class MonthlyAttendanceModel {
                     totalClassesAttended += candidate.statistics?.classesAttended || 0;
                 });
 
-                const averageAttendancePercentage = totalClasses > 0 
-                    ? Math.round((totalClassesAttended / totalClasses) * 100) 
+                const averageAttendancePercentage = totalClasses > 0
+                    ? Math.round((totalClassesAttended / totalClasses) * 100)
                     : 0;
 
                 resolve({
