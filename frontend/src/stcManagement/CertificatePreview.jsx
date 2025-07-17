@@ -328,7 +328,11 @@ const CertificatePreview = () => {
             {/* Date and Place */}
             <div
               className="flex flex-col items-start mt-10 mb-15"
-              style={{ fontSize: 19, alignItems: "flex-start", marginBottom:0 }}
+              style={{
+                fontSize: 19,
+                alignItems: "flex-start",
+                marginBottom: 0,
+              }}
             >
               <div style={{ alignSelf: "flex-start" }}>
                 <span style={{ fontWeight: 700 }}>Date:</span>{" "}
@@ -355,13 +359,6 @@ const CertificatePreview = () => {
               style={{ fontSize: 19, marginTop: 30, marginBottom: 40 }}
             >
               <div className="text-center" style={{ width: 240 }}>
-                <div
-                  style={{
-                    borderTop: "1.5px solid #222",
-                    width: "80%",
-                    margin: "0 auto 2px auto",
-                  }}
-                ></div>
                 <span
                   contentEditable={true}
                   suppressContentEditableWarning={true}
@@ -375,9 +372,12 @@ const CertificatePreview = () => {
                   Course Coordinator
                 </div>
               </div>
-              
+
               {/* Institute Seal in the center */}
-              <div className="text-center" style={{ width: 240, marginTop: 20 }}>
+              <div
+                className="text-center"
+                style={{ width: 240, marginTop: 20 }}
+              >
                 <span
                   style={{ fontWeight: 700, color: "#17408B", fontSize: 19 }}
                 >
@@ -394,15 +394,8 @@ const CertificatePreview = () => {
                   The certificate is valid with Institute Seal only.
                 </div>
               </div>
-              
+
               <div className="text-center" style={{ width: 240 }}>
-                <div
-                  style={{
-                    borderTop: "1.5px solid #222",
-                    width: "80%",
-                    margin: "0 auto 2px auto",
-                  }}
-                ></div>
                 <span
                   contentEditable={true}
                   suppressContentEditableWarning={true}
@@ -424,9 +417,7 @@ const CertificatePreview = () => {
   };
 
   return (
-    <div
-      style={{ background: "#e5e7eb", minHeight: "100vh", padding: "0" }}
-    >
+    <div style={{ background: "#e5e7eb", minHeight: "100vh", padding: "0" }}>
       {/* Print Button */}
       <div
         style={{
@@ -464,7 +455,9 @@ const CertificatePreview = () => {
             key={trainee.ticket_no}
             className="certificate-preview-outer"
             style={
-              idx !== trainees.length - 1 ? { pageBreakAfter: "always", margin: "5px auto" } : { margin: "5px auto" }
+              idx !== trainees.length - 1
+                ? { pageBreakAfter: "always", margin: "5px auto" }
+                : { margin: "5px auto" }
             }
           >
             <CertificateTemplate trainee={trainee} />
