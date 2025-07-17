@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import Personal from "./Personal";
 import Contact from "./Contact";
 import Professional from "./Professional";
@@ -16,7 +16,7 @@ const STCMain = () => {
     category: "",
     pwd: "",
     typeOfDisability: "",
-    nationality: "INDIAN",
+    nationality: "Indian", // Default value set to "Indian"
     maritalStatus: "",
 
     // Contact
@@ -76,7 +76,7 @@ const STCMain = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
-        const { [field]: removed, ...rest } = prev;
+        const { [field]: _, ...rest } = prev;
         return rest;
       });
     }
@@ -150,8 +150,7 @@ const STCMain = () => {
       if (!response.ok) {
         const errorData = await response.json(); // Read error message from response
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${
-            errorData.message || response.statusText
+          `HTTP error! status: ${response.status}, message: ${errorData.message || response.statusText
           }`
         );
       }
@@ -292,20 +291,18 @@ const STCMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${
-                step === index
+              ${step === index
                   ? "bg-orange-500"
                   : step > index
-                  ? "bg-green-500"
-                  : "bg-gray-500"
-              }`}
+                    ? "bg-green-500"
+                    : "bg-gray-500"
+                }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${
-                step === index ? "text-white" : "text-gray-300"
-              }`}
+              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
+                }`}
             >
               {label}
             </p>
@@ -340,8 +337,8 @@ const STCMain = () => {
           {isSubmitting
             ? "Submitting..."
             : step === steps.length - 1
-            ? "Submit"
-            : "Save and Next →"}
+              ? "Submit"
+              : "Save and Next →"}
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 const Personal = ({ formData, onChange, errors = {} }) => {
-  const validateField = (fieldName, value) => {
+  const validateField = useCallback((fieldName, value) => {
     const trimmedValue = value?.toString().trim() || "";
 
     switch (fieldName) {
@@ -15,9 +15,8 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       case "name":
       case "fatherName":
         if (!trimmedValue)
-          return `${
-            fieldName === "name" ? "Name" : "Father's name"
-          } is required`;
+          return `${fieldName === "name" ? "Name" : "Father's name"
+            } is required`;
         if (trimmedValue.length < 2)
           return "Must be at least 2 characters long";
         if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
@@ -27,7 +26,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         return !["Male", "Female", "Other"].includes(value)
           ? "Please select a valid gender"
           : "";
-      case "dob":
+      case "dob": {
         if (!value) return "Date of birth is required";
         const dobDate = new Date(value);
         const today = new Date();
@@ -36,6 +35,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         if (age < 16) return "Age must be at least 16 years";
         if (age > 100) return "Please enter a valid date of birth";
         return "";
+      }
       case "category":
         return !["General", "OBC", "SC", "ST", "EWS"].includes(value)
           ? "Please select a valid category"
@@ -47,13 +47,20 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       case "typeOfDisability":
         if (formData.pwd === "Yes" && !trimmedValue)
           return "Type of disability is required when PWD is Yes";
+        if (formData.pwd === "Yes" && trimmedValue.length < 3)
+          return "Please provide more specific details about the disability";
+        return "";
+      case "nationality":
+        if (!trimmedValue) return "Nationality is required";
+        if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
+          return "Should only contain letters and spaces";
         return "";
       default:
         return "";
     }
-  };
+  }, [formData]);
 
-  const validateAllFields = () => {
+  const validateAllFields = useCallback(() => {
     const requiredFields = [
       "picture",
       "name",
@@ -64,6 +71,12 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       "pwd",
       "nationality",
     ];
+
+    // Add conditional required fields
+    if (formData.pwd === "Yes") {
+      requiredFields.push("typeOfDisability");
+    }
+
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -75,13 +88,13 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
     };
-  };
+  }, [formData, validateField]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [formData]);
+  }, [formData, onChange, validateAllFields]);
 
   const handleFieldChange = (fieldName, value) => onChange(fieldName, value);
 
@@ -155,6 +168,30 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             <option value="">Select gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Transgender">Transgender</option>
+            <option value="Gender Fluid">Gender Fluid</option>
+            <option value="Agender">Agender</option>
+            <option value="Gender Queer">Gender Queer</option>
+            <option value="Gender Non-conforming">Gender Non-conforming</option>
+            <option value="androgyne">Androgyne</option>
+            <option value="aromantic">Aromantic</option>
+            <option value="asexual">Asexual</option>
+            <option value="bigender">Bigender</option>
+            <option value="cisgender_female">Cisgender Female</option>
+            <option value="cisgender_male">Cisgender Male</option>
+            <option value="demiboy">Demiboy</option>
+            <option value="demigirl">Demigirl</option>
+            <option value="genderfluid">Genderfluid</option>
+            <option value="genderqueer">Genderqueer</option>
+            <option value="intersex">Intersex</option>
+            <option value="pangender">Pangender</option>
+            <option value="polygender">Polygender</option>
+            <option value="third_gender">Third Gender</option>
+            <option value="transgender_female">Transgender Female</option>
+            <option value="transgender_male">Transgender Male</option>
+            <option value="two_spirit">Two-Spirit (Cultural Identity)</option>
+            <option value="prefer_not_to_say">Prefer not to say</option>
             <option value="Other">Other</option>
           </select>
           {errors.sex && (
@@ -238,7 +275,6 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
-        {/* PWD (Yes/No) */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             PWD (Yes/No) <span className="text-red-500">*</span>
@@ -257,11 +293,10 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
-        {/* Type of Disability */}
         {formData.pwd === "Yes" && (
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              Type of Disability
+              Type of Disability <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -269,7 +304,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               onChange={(e) =>
                 handleFieldChange("typeOfDisability", e.target.value)
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className={`w-full border ${errors.typeOfDisability ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-2`}
               placeholder="Specify disability"
             />
             {errors.typeOfDisability && (
@@ -287,10 +322,10 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           </label>
           <input
             type="text"
-            value={formData.nationality || "Indian"}
+            value={formData.nationality}
             onChange={(e) => handleFieldChange("nationality", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter nationality"
+            className={`w-full border ${errors.nationality ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-2`}
+            placeholder="Please enter nationality "
           />
           {errors.nationality && (
             <span className="text-red-500 text-sm mt-1">

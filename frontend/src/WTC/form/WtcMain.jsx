@@ -51,7 +51,6 @@ const initialFormData = {
   gradeValue: "",
 
   batch: "",
-  // customBatch: "" ,
   dateOfJoiningStcWtcNonRailway: "",
   dateOfSparing: "",
 };
@@ -218,20 +217,18 @@ const WtcMain = () => {
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${
-                step === index
+              ${step === index
                   ? "bg-orange-500"
                   : step > index
-                  ? "bg-green-500"
-                  : "bg-gray-500"
-              }`}
+                    ? "bg-green-500"
+                    : "bg-gray-500"
+                }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${
-                step === index ? "text-white" : "text-gray-300"
-              }`}
+              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
+                }`}
             >
               {label} Details
             </p>
@@ -262,17 +259,16 @@ const WtcMain = () => {
             type="button"
             onClick={step === steps.length - 1 ? handleSubmit : handleNext}
             disabled={isSubmitting}
-            className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${
-              isSubmitting
+            className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-orange-500 hover:bg-orange-600"
-            } text-white`}
+              } text-white`}
           >
             {isSubmitting
               ? "Submitting..."
               : step === steps.length - 1
-              ? "Submit Registration"
-              : "Save and Next →"}
+                ? "Submit Registration"
+                : "Save and Next →"}
           </button>
         </div>
       </div>
