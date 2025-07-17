@@ -317,7 +317,6 @@ const Certificate = () => {
                     <th className="p-4 text-left">Ticket No.</th>
                     <th className="p-4 text-left">Name</th>
                     <th className="p-4 text-left">Batch</th>
-                    <th className="p-4 text-left">Module</th>
                     <th className="p-4 text-left">Training Period</th>
                     <th className="p-4 text-left">Status</th>
                   </tr>
@@ -341,7 +340,6 @@ const Certificate = () => {
                         <td className="p-4 font-medium">{trainee.ticketNo}</td>
                         <td className="p-4">{trainee.name}</td>
                         <td className="p-4">{trainee.batch}</td>
-                        <td className="p-4">{trainee.moduleNo}</td>
                         <td className="p-4">{formatDate(trainee.dateOfJoiningStcWtcNonRailway)} - {formatDate(trainee.dateOfSparing)}</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded-full text-xs ${trainee.dateOfSparing >= today

@@ -113,6 +113,7 @@ const CertificatePreview = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="w-1/4">
                 <img src={BgImage} alt="Logo" className="w-28" />
+                <p className='text-xl font-bold mt-8'>क्रमांक : <span contentEditable={true}> ___________________ </span></p>
               </div>
               <div className="w-1/2 text-center">
                 <h1 className="text-blue-700 text-4xl font-bold uppercase mb-2">पर्यवेक्षक प्रशिक्षण केंद्र</h1>
@@ -121,7 +122,7 @@ const CertificatePreview = () => {
               </div>
               <div className="w-1/4 flex justify-end">
                 <div className="h-36 w-32  border-gray-800 flex items-center justify-center text-center text-xs text-gray-500">
-                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} className='border-2 '/>
+                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} className='border-2 ' />
                 </div>
               </div>
             </div>
@@ -129,13 +130,15 @@ const CertificatePreview = () => {
             <div className="text-justify text-2xl font-mangal mb-16 leading-14">
               <p className=""> प्रमाणित किया जाता है कि श्री
                 <span className="font-bold mr-2 capitalize "> {trainee.name} </span>
-                <span className=" mr-2"> पद </span>
-                <span className="underline mr-2" contentEditable={true} > ___________________ </span>
+                <span className=""> पद </span>
+                <span className="underline mx-2" contentEditable={true} > ___________________ </span>
                 <span className=""> स्टाफ सं. </span>
-                <span className="underline mr-2" contentEditable={true} > _______________________________ </span>
+                <span className="underline mx-2" contentEditable={true} > _________________________ </span>
                 <span className="mr-2"> कार्य स्थल / यूनिट </span>
-                <span className="underline mr-2" contentEditable={true} > ________________________________ </span>
-                <span className=""> ने इस संस्थान में {designationToHindi(trainee.designation)} प्रशिक्षण कार्यक्रम में दिनांक </span>
+                <span className="underline mr-2" contentEditable={true} > ___________________________ </span>
+                <span className=""> ने इस संस्थान में  </span>
+                <span className='font-semibold mx-2' contentEditable={true}> {designationToHindi(trainee.designation)} </span>
+                <span> प्रशिक्षण कार्यक्रम में दिनांक  </span>
                 <span className="italic mr-2">
                   {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} से दिनांक  {formatDate(trainee.dateOfSparing)}
                 </span>
@@ -143,13 +146,21 @@ const CertificatePreview = () => {
               <p className="mt-8 font-semibold text-left text-2xl" contentEditable={true}>दिनांक:</p>
             </div>
 
-            <div className="flex justify-between mt-16">
+            <div className="flex justify-between mt-32">
               <div className="text-center">
                 <div className="w-56 mx-auto">
                   <p className="text-xl my-1" contentEditable={true} >(___________)</p>
                   <p className="font-semibold text-2xl">पाठ्यक्रम समन्वयक </p>
                 </div>
               </div>
+
+              <div className="text-center">
+                <div className="mx-auto">
+                  <p className='text-2xl text-blue-700'>Institute Seal</p>
+                  <p className='italic'>The certificate is valid with Institute Seal only.</p>
+                </div>
+              </div>
+
               <div className="text-center">
                 <div className="w-48 mx-auto">
                   <p className="text-xl my-1" contentEditable={true} >(___________)</p>
