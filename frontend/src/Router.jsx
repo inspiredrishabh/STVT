@@ -32,6 +32,9 @@ const STCCertificate = lazy(() => import("./stcManagement/Cerificate"));
 const STCCertificatePreview = lazy(() =>
   import("./stcManagement/CertificatePreview")
 );
+const STCCertificatePreview2 = lazy(() =>
+  import("./stcManagement/CertificatePreview2")
+);
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredPermission }) => {
@@ -164,18 +167,18 @@ const Router = () => {
         <Route
           path="/stc/certificate"
           element={
-            // <ProtectedLayout requiredPermission={"stc-certificate"}>
+            <ProtectedLayout requiredPermission={"stc-management"}>
               <STCCertificate />
-            // </ProtectedLayout>
+            </ProtectedLayout>
           }
         />
         <Route
           path="/stc/certificate/preview"
-          element={
-            // <ProtectedLayout requiredPermission={"stc-certificate"}>
-              <STCCertificatePreview />
-            // </ProtectedLayout>
-          }
+          element={<STCCertificatePreview />}
+        />
+        <Route
+          path="/stc/certificate/preview2"
+          element={<STCCertificatePreview2 />}
         />
         {/* WTC Management Homepage */}
         <Route

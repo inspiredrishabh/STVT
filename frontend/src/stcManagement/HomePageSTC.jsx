@@ -6,6 +6,7 @@ import {
   FileText,
   ArrowLeft,
   Settings,
+  Award,
 } from "lucide-react";
 
 const HomePageSTC = () => {
@@ -49,6 +50,16 @@ const HomePageSTC = () => {
       color: "bg-orange-500 hover:bg-orange-600",
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
+    },
+    {
+      id: "certificate",
+      title: "Certificate Generation",
+      description: "Generate training certificates",
+      icon: Award,
+      path: "/stc/certificate",
+      color: "bg-indigo-500 hover:bg-indigo-600",
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-600",
     },
   ];
 
@@ -105,27 +116,29 @@ const HomePageSTC = () => {
       {/* Main Content */}
       <div className="w-full px-8 py-12">
         {/* Management Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mb-12">
           {managementOptions.map((option) => {
             const IconComponent = option.icon;
             return (
               <Link key={option.id} to={option.path} className="group">
-                <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border-2 border-orange-100">
+                <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border-2 border-orange-100 h-80 flex flex-col justify-between">
                   {/* Icon */}
-                  <div
-                    className={`w-16 h-16 rounded-full ${option.iconBg} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <IconComponent className={`w-8 h-8 ${option.iconColor}`} />
-                  </div>
+                  <div>
+                    <div
+                      className={`w-16 h-16 rounded-full ${option.iconBg} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <IconComponent className={`w-8 h-8 ${option.iconColor}`} />
+                    </div>
 
-                  {/* Content */}
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-gray-900">
-                      {option.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {option.description}
-                    </p>
+                    {/* Content */}
+                    <div className="text-center">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-gray-900">
+                        {option.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {option.description}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Hover Effect */}

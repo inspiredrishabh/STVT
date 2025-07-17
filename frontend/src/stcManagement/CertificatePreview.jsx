@@ -152,7 +152,7 @@ const CertificatePreview = () => {
           {/* Header */}
           <div
             className="relative z-10 "
-            style={{ padding: "38px 60px 0 60px" }}
+            style={{ padding: "38px 60px 40px 60px" }}
           >
             <div className="flex justify-between items-start">
               <div>
@@ -328,7 +328,7 @@ const CertificatePreview = () => {
             {/* Date and Place */}
             <div
               className="flex flex-col items-start mt-10 mb-15"
-              style={{ fontSize: 19, alignItems: "flex-start" }}
+              style={{ fontSize: 19, alignItems: "flex-start", marginBottom:0 }}
             >
               <div style={{ alignSelf: "flex-start" }}>
                 <span style={{ fontWeight: 700 }}>Date:</span>{" "}
@@ -349,10 +349,10 @@ const CertificatePreview = () => {
                 </span>
               </div>
             </div>
-            {/* Signatures */}
+            {/* Signatures and Institute Seal - All in one line */}
             <div
               className="flex justify-between items-end mt-12"
-              style={{ fontSize: 19, marginTop: 30 }}
+              style={{ fontSize: 19, marginTop: 30, marginBottom: 40 }}
             >
               <div className="text-center" style={{ width: 240 }}>
                 <div
@@ -375,6 +375,26 @@ const CertificatePreview = () => {
                   Course Coordinator
                 </div>
               </div>
+              
+              {/* Institute Seal in the center */}
+              <div className="text-center" style={{ width: 240, marginTop: 20 }}>
+                <span
+                  style={{ fontWeight: 700, color: "#17408B", fontSize: 19 }}
+                >
+                  Institute Seal
+                </span>
+                <div
+                  className="certificate-note"
+                  style={{
+                    fontSize: 14,
+                    fontStyle: "italic",
+                    marginTop: 5,
+                  }}
+                >
+                  The certificate is valid with Institute Seal only.
+                </div>
+              </div>
+              
               <div className="text-center" style={{ width: 240 }}>
                 <div
                   style={{
@@ -397,27 +417,6 @@ const CertificatePreview = () => {
                 </div>
               </div>
             </div>
-            {/* Institute Seal */}
-            <div className="flex justify-center">
-              <div className="text-center">
-                <span
-                  style={{ fontWeight: 700, color: "#17408B", fontSize: 19 }}
-                >
-                  Institute Seal
-                  <br />
-                </span>
-                <div
-                  className="certificate-note"
-                  style={{
-                    fontSize: 14,
-                    fontStyle: "italic",
-                    marginTop: 2,
-                  }}
-                >
-                  The certificate is valid with Institute Seal only.
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -426,7 +425,7 @@ const CertificatePreview = () => {
 
   return (
     <div
-      style={{ background: "#e5e7eb", minHeight: "100vh", padding: "30px 0" }}
+      style={{ background: "#e5e7eb", minHeight: "100vh", padding: "0" }}
     >
       {/* Print Button */}
       <div
@@ -435,8 +434,9 @@ const CertificatePreview = () => {
           justifyContent: "flex-end",
           alignItems: "center",
           maxWidth: "1200px",
-          margin: "0 auto 10px auto",
+          margin: "0 auto 5px auto",
           paddingRight: "30px",
+          paddingTop: "10px",
         }}
       >
         <button
@@ -462,13 +462,9 @@ const CertificatePreview = () => {
         trainees.map((trainee, idx) => (
           <div
             key={trainee.ticket_no}
-            className={
-              trainees.length > 1
-                ? "certificate-preview-outer certificate-preview-outer-margin"
-                : "certificate-preview-outer"
-            }
+            className="certificate-preview-outer"
             style={
-              idx !== trainees.length - 1 ? { pageBreakAfter: "always" } : {}
+              idx !== trainees.length - 1 ? { pageBreakAfter: "always", margin: "5px auto" } : { margin: "5px auto" }
             }
           >
             <CertificateTemplate trainee={trainee} />
@@ -483,10 +479,7 @@ const CertificatePreview = () => {
         @media print {
           @page {
             size: landscape;
-            margin-top: 0mm;
-            margin-bottom: 0mm;
-            margin-left: 0mm;
-            margin-right: 0mm;
+            margin: 0mm !important;
           }
           html,
           body {
@@ -496,20 +489,31 @@ const CertificatePreview = () => {
             height: 100% !important;
             width: 100% !important;
           }
+          body > div {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
           .certificate-preview-outer {
             background: #fff !important;
             box-shadow: none !important;
             padding: 0 !important;
+            margin: 0 !important;
+            page-break-inside: avoid !important;
+          }
+          .certificate-preview-outer:not(:first-child) {
+            margin-top: 10mm !important;
           }
           .certificate {
             width: 270mm !important;
-            min-height: 200mm !important;
-            max-height: 210mm !important;
+            min-height: 190mm !important;
+            max-height: 200mm !important;
             height: auto !important;
             box-shadow: none !important;
             border-radius: 0 !important;
             margin: 0 auto !important;
             padding: 0 !important;
+            transform: scale(0.98) !important;
+            transform-origin: center top !important;
           }
           button {
             display: none !important;
@@ -522,11 +526,9 @@ const CertificatePreview = () => {
             page-break-after: auto;
             break-after: auto;
           }
-          ${trainees.length > 1
-            ? `.certificate-preview-outer.certificate-preview-outer-margin {
-                  margin: 40px !important;
-                }`
-            : ""}
+          .certificate-preview-outer:first-child {
+            margin-top: 0 !important;
+          }
         }
       `}</style>
     </div>

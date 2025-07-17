@@ -9,6 +9,7 @@ import {
   X,
   User,
   Award,
+  Settings,
 } from "lucide-react";
 
 const Certificate = () => {
@@ -23,6 +24,7 @@ const Certificate = () => {
   const [filters, setFilters] = useState({
     batch: "",
   });
+  const [courseType, setCourseType] = useState("induction"); // New state for course type
 
   // Fetch trainees from backend
   useEffect(() => {
@@ -46,20 +48,44 @@ const Certificate = () => {
     }
   };
 
-  // Handle search
+  // Handle search and course type filtering
   useEffect(() => {
+    // Define modules for each course type
+    const inductionModules = [
+      'MSE-C&W', 'MSE-D', 'MSE-W', 
+      'MJR-C&W', 'MJR-D', 'MJR-W',
+      'MJI-C&W', 'MJI-D', 'MJI-W',
+      'MJP-C&W', 'MJP-D', 'MJP-W',
+      'ASE', 'AJE', 'IJE', 'RJE'
+    ];
+
+    const refresherModules = [
+      'RCW', 'RD', 'TS', 'LH-I', 'LH-II', 
+      'FM', 'WT', 'DM', 'WE', 'NDT', 'EA', '3DMP'
+    ];
+
+    // Filter trainees based on course type
+    let courseFilteredTrainees = trainees.filter(trainee => {
+      if (courseType === "induction") {
+        return inductionModules.includes(trainee.module_no);
+      } else {
+        return refresherModules.includes(trainee.module_no);
+      }
+    });
+
+    // Apply search filter
     if (searchTerm.trim() === "") {
-      applyFilters(trainees);
+      applyFilters(courseFilteredTrainees);
     } else {
-      const filtered = trainees.filter(
+      const searchFiltered = courseFilteredTrainees.filter(
         (trainee) =>
           trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          trainee.ticketNo.toLowerCase().includes(searchTerm.toLowerCase())
+          trainee.ticket_no.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      applyFilters(filtered);
+      applyFilters(searchFiltered);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, trainees, filters]);
+  }, [searchTerm, trainees, filters, courseType]);
 
   // Apply filters
   const applyFilters = (traineesToFilter) => {
@@ -125,7 +151,21 @@ const Certificate = () => {
       const traineesParam = encodeURIComponent(
         JSON.stringify(selectedTrainees)
       );
-      navigate(`/stc/certificate/preview?trainees=${traineesParam}`);
+
+      // New logic: Check if ALL selected ticket numbers START with AJE, RJE, ASE, or IJE
+      const allSpecialTicketPattern = selectedTraineeObjects.every(trainee => {
+        const ticketNo = trainee.ticket_no ? trainee.ticket_no.toUpperCase() : "";
+        return ticketNo.startsWith('AJE') || ticketNo.startsWith('RJE') || 
+               ticketNo.startsWith('ASE') || ticketNo.startsWith('IJE');
+      });
+
+      if (allSpecialTicketPattern) {
+        // Use CertificatePreview for tickets starting with AJE, RJE, ASE, IJE
+        navigate(`/stc/certificate/preview?trainees=${traineesParam}`);
+      } else {
+        // Use CertificatePreview2 for all other ticket numbers
+        navigate(`/stc/certificate/preview2?trainees=${traineesParam}`);
+      }
     } catch (error) {
       console.error("Error storing trainee data:", error);
       alert("Error preparing certificate data. Please try again.");
@@ -146,20 +186,98 @@ const Certificate = () => {
   // No certificate template needed in this file as it's moved to CertificatePreview
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/stc"
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Certificate Management
-            </h1>
+    <div className="min-h-screen bg-white">
+      {/* Enhanced Header */}
+      <div className="bg-white shadow-lg border-b border-gray-200 w-full">
+        <div className="w-full px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left side - Back button and Title */}
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/stc"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
+              >
+                <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <Award className="w-5 h-5 text-white" />
+                  </div>
+                  Certificate Management
+                </h1>
+                <p className="text-gray-600 text-sm">
+                  Generate training certificates for trainees
+                </p>
+              </div>
+            </div>
+
+            {/* Right side - Status indicator */}
+            <div className="hidden md:flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-700 font-medium text-xs">
+                  System Active
+                </span>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-gray-500">Current Date</div>
+                <div className="text-xs font-medium text-gray-700">
+                  {new Date().toLocaleDateString("en-IN", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="bg-gray-100 min-h-screen py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+
+        {/* Course Type Toggle */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <div className="flex flex-col items-center space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800">Select Course Type</h2>
+            <div className="relative bg-gray-200 rounded-full p-1 w-80">
+              <div
+                className={`absolute top-1 bottom-1 w-1/2 bg-blue-600 rounded-full transition-transform duration-300 ease-in-out ${
+                  courseType === "refresher" ? "transform translate-x-full" : ""
+                }`}
+              ></div>
+              <div className="relative flex">
+                <button
+                  onClick={() => setCourseType("induction")}
+                  className={`flex-1 py-3 px-6 text-sm font-medium rounded-full transition-colors duration-200 ${
+                    courseType === "induction"
+                      ? "text-white"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  Induction Course
+                </button>
+                <button
+                  onClick={() => setCourseType("refresher")}
+                  className={`flex-1 py-3 px-6 text-sm font-medium rounded-full transition-colors duration-200 ${
+                    courseType === "refresher"
+                      ? "text-white"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  Refresher Course
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 text-center">
+              {courseType === "induction" 
+                ? "Long-duration training modules (Standard Certificate)" 
+                : "Short-duration training modules (Custom Certificate)"
+              }
+            </p>
           </div>
         </div>
         {/* Search and Filter Controls */}
@@ -298,6 +416,7 @@ const Certificate = () => {
                     <th className="p-4 text-left"></th>
                     <th className="p-4 text-left">Ticket No.</th>
                     <th className="p-4 text-left">Name</th>
+                    <th className="p-4 text-left">Designation</th>
                     <th className="p-4 text-left">Batch</th>
                     <th className="p-4 text-left">Module</th>
                     <th className="p-4 text-left">Training Period</th>
@@ -309,6 +428,7 @@ const Certificate = () => {
                     // Format today's date in ISO format (YYYY-MM-DD) to match the trainee.dateOfSparing format
                     const now = new Date();
                     const today = now.toISOString().split("T")[0]; // Get YYYY-MM-DD format
+                    
                     return (
                       <tr key={trainee.ticket_no} className="hover:bg-gray-50">
                         <td className="p-4">
@@ -326,8 +446,25 @@ const Certificate = () => {
                         </td>
                         <td className="p-4 font-medium">{trainee.ticket_no}</td>
                         <td className="p-4">{trainee.name}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            courseType === "induction" 
+                              ? "bg-blue-100 text-blue-800" 
+                              : "bg-purple-100 text-purple-800"
+                          }`}>
+                            {trainee.designation || 'N/A'}
+                          </span>
+                        </td>
                         <td className="p-4">{trainee.batch}</td>
-                        <td className="p-4">{trainee.module_no}</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            courseType === "induction" 
+                              ? "bg-green-100 text-green-800" 
+                              : "bg-orange-100 text-orange-800"
+                          }`}>
+                            {trainee.module_no}
+                          </span>
+                        </td>
                         <td className="p-4">
                           {formatDate(
                             trainee.date_of_joining_stc_wtc_non_railway
@@ -354,6 +491,7 @@ const Certificate = () => {
               </table>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

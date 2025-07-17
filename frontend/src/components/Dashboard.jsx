@@ -440,7 +440,7 @@ function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Form Data Visualization
+                Dashboard - Supervisor Training Centre
               </h1>
               <p className="text-gray-600 mt-2">
                 Overview of training programs and candidate statistics
