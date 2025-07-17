@@ -130,7 +130,7 @@ const Professional = ({ formData, onChange }) => {
   }), []);
 
 
-  const designationUnitPeriodToDurations = {
+  const designationUnitPeriodToDurations = useMemo(() => ({
     // CG Apprentice Technician III (Induction Course)
     "CG Apprentice Technician III|Any|02 Years": ["06 Months", "18 Months"],
     "CG Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
@@ -190,7 +190,7 @@ const Professional = ({ formData, onChange }) => {
     // Summer Vocation Training
     "Summer Vocation training|Any|04 Weeks": ["00 Weeks", "04 Weeks"],
     "Summer Vocation training|Any|06 Weeks": ["00 Weeks", "06 Weeks"],
-  };
+  }), []);
 
 
   const handleChange = useCallback(
@@ -205,9 +205,6 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Clear unit and training fields when designation changes
@@ -216,9 +213,6 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Clear training fields when unit changes
@@ -226,38 +220,27 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Auto-fill theory and practical duration when training period changes
       if (field === "trainingPeriod") {
-        if (value === "Custom") {
+        // Check if the value matches a pre-defined option
+        const exactKey = `${formData.designation}|${formData.unit}|${value}`;
+        const fallbackKey = `${formData.designation}|Any|${value}`;
+        const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
+
+        if (durations) {
+          const [theory, practical] = durations;
+          onChange("theoryDuration", theory);
+          onChange("practicalDuration", practical);
+        } else {
+          // No match found - user is typing a custom value, clear calculated durations
           onChange("theoryDuration", "");
           onChange("practicalDuration", "");
-        } else {
-          const exactKey = `${formData.designation}|${formData.unit}|${value}`;
-          const fallbackKey = `${formData.designation}|Any|${value}`;
-          const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
-
-          if (durations) {
-            const [theory, practical] = durations;
-            onChange("theoryDuration", theory);
-            onChange("practicalDuration", practical);
-            // Clear custom fields
-            onChange("customTrainingPeriod", "");
-            onChange("customTheoryDuration", "");
-            onChange("customPracticalDuration", "");
-          } else {
-            // No match found
-            onChange("theoryDuration", "");
-            onChange("practicalDuration", "");
-          }
         }
       }
     },
-    [onChange, formData]
+    [onChange, formData, designationUnitPeriodToDurations]
   );
 
   // Enhanced validation with comprehensive type checking
@@ -297,29 +280,69 @@ const Professional = ({ formData, onChange }) => {
         }
       }
 
-      // Validate custom duration fields have required time units (Days, Weeks, Months, Years)
-      if (["customTrainingPeriod", "customTheoryDuration", "customPracticalDuration"].includes(field)) {
-        if (stringValue.length < 2) {
-          return "Must be at least 2 characters long";
-        }
-        if (stringValue.length > 100) {
-          return "Must not exceed 100 characters";
-        }
+      // Validate training period has required time units (Days, Weeks, Months, Years)
+      if (field === "trainingPeriod") {
+        // Skip validation for predefined options
+        const exactKey = `${formData.designation}|${formData.unit}|${stringValue}`;
+        const fallbackKey = `${formData.designation}|Any|${stringValue}`;
+        const isPredefinedOption = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
 
-        // Check for valid characters 
-        if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
-          return "Contains invalid characters";
-        }
+        if (!isPredefinedOption) {
+          if (stringValue.length < 2) {
+            return "Must be at least 2 characters long";
+          }
+          if (stringValue.length > 100) {
+            return "Must not exceed 100 characters";
+          }
 
-        // Check if the duration includes proper time units
-        const lowerCaseValue = stringValue.toLowerCase();
-        if (!(
-          lowerCaseValue.includes("day") ||
-          lowerCaseValue.includes("week") ||
-          lowerCaseValue.includes("month") ||
-          lowerCaseValue.includes("year")
-        )) {
-          return "Must include time unit (Days, Weeks, Months, or Years)";
+          // Check for valid characters 
+          if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
+            return "Contains invalid characters";
+          }
+
+          // Check if the duration includes proper time units
+          const lowerCaseValue = stringValue.toLowerCase();
+          if (!(
+            lowerCaseValue.includes("day") ||
+            lowerCaseValue.includes("week") ||
+            lowerCaseValue.includes("month") ||
+            lowerCaseValue.includes("year")
+          )) {
+            return "Must include time unit (Days, Weeks, Months, or Years)";
+          }
+        }
+      }
+
+      // Validate theory and practical durations if filled manually
+      if (["theoryDuration", "practicalDuration"].includes(field)) {
+        // Skip validation for auto-calculated values
+        const trainingPeriodKey = `${formData.designation}|${formData.unit}|${formData.trainingPeriod}`;
+        const fallbackKey = `${formData.designation}|Any|${formData.trainingPeriod}`;
+        const isAutoCalculated = designationUnitPeriodToDurations[trainingPeriodKey] || designationUnitPeriodToDurations[fallbackKey];
+
+        if (!isAutoCalculated) {
+          if (stringValue.length < 2) {
+            return "Must be at least 2 characters long";
+          }
+          if (stringValue.length > 100) {
+            return "Must not exceed 100 characters";
+          }
+
+          // Check for valid characters 
+          if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
+            return "Contains invalid characters";
+          }
+
+          // Check if the duration includes proper time units
+          const lowerCaseValue = stringValue.toLowerCase();
+          if (!(
+            lowerCaseValue.includes("day") ||
+            lowerCaseValue.includes("week") ||
+            lowerCaseValue.includes("month") ||
+            lowerCaseValue.includes("year")
+          )) {
+            return "Must include time unit (Days, Weeks, Months, or Years)";
+          }
         }
       }
 
@@ -388,7 +411,7 @@ const Professional = ({ formData, onChange }) => {
 
       return "";
     },
-    [formData.gradeType]
+    [formData, designationUnitPeriodToDurations]
   );
 
   const requiredFields = useMemo(
@@ -423,16 +446,26 @@ const Professional = ({ formData, onChange }) => {
       }
     }
 
-    // Validate custom training period fields
-    if (formData.trainingPeriod === "Custom") {
-      ["customTrainingPeriod", "customTheoryDuration", "customPracticalDuration"].forEach(field => {
-        if (!formData[field]?.trim()) {
-          newErrors[field] = `Please specify the ${field.replace('custom', '').replace(/([A-Z])/g, ' $1').toLowerCase()}`;
-        } else {
-          const error = validateField(field, formData[field]);
-          if (error) newErrors[field] = error;
-        }
-      });
+    // Check if theory and practical durations are required
+    const trainingPeriodKey = `${formData.designation}|${formData.unit}|${formData.trainingPeriod}`;
+    const fallbackKey = `${formData.designation}|Any|${formData.trainingPeriod}`;
+    const isAutoCalculated = designationUnitPeriodToDurations[trainingPeriodKey] || designationUnitPeriodToDurations[fallbackKey];
+
+    if (!isAutoCalculated && formData.trainingPeriod) {
+      // For custom training periods, theory and practical durations must be manually entered
+      if (!formData.theoryDuration?.trim()) {
+        newErrors.theoryDuration = "Please specify the theory duration";
+      } else {
+        const error = validateField("theoryDuration", formData.theoryDuration);
+        if (error) newErrors.theoryDuration = error;
+      }
+
+      if (!formData.practicalDuration?.trim()) {
+        newErrors.practicalDuration = "Please specify the practical duration";
+      } else {
+        const error = validateField("practicalDuration", formData.practicalDuration);
+        if (error) newErrors.practicalDuration = error;
+      }
     }
 
     setErrors(newErrors);
@@ -440,7 +473,7 @@ const Professional = ({ formData, onChange }) => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
-  }, [formData, requiredFields, validateField]);
+  }, [formData, requiredFields, validateField, designationUnitPeriodToDurations]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
@@ -590,78 +623,42 @@ const Professional = ({ formData, onChange }) => {
 
     const key = `${formData.designation}|${formData.unit}`;
     const periods = designationUnitTrainingMap[key] || [];
-    return ["", ...periods, "Custom"];
+    return ["", ...periods];
   }, [designationUnitTrainingMap, formData.designation, formData.unit]);
 
   const professionalFields = useMemo(
     () => [
-      {
-        label: "Date of Appointment",
-        field: "dateOfAppointmentInRailway",
-        type: "date",
-      },
-      {
-        label: "Mode of Appointment",
-        field: "modeOfAppointment",
-        type: "text",
-        options: appointmentModeOptions,
-      },
-      {
-        label: "Course Type",
-        field: "courseType",
-        type: "text",
-        options: courseTypeOptions,
-      },
-      {
-        label: "Designation",
-        field: "designation",
-        type: "text",
-        options: designationOptions,
-      },
-      {
-        label: "Unit / Custodian / Other Details",
-        field: "unit",
-        type: "text",
-        options: unitOptionsForDesignation,
-      },
+      { label: "Date of Appointment", field: "dateOfAppointmentInRailway", type: "date", },
+      { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", options: appointmentModeOptions, },
+      { label: "Course Type", field: "courseType", type: "text", options: courseTypeOptions, },
+      { label: "Designation", field: "designation", type: "text", options: designationOptions, },
+      { label: "Unit / Custodian / Other Details", field: "unit", type: "text", options: unitOptionsForDesignation, },
       {
         label: "Training Period",
         field: "trainingPeriod",
-        type: "select",
+        type: "text",
         options: trainingPeriodOptionsForDesignationUnit,
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Training Period",
-        field: "customTrainingPeriod",
-        helpText: "Must include Days, Weeks, Months or Years (e.g., 15 Days, 8 Weeks, 3 Months)",
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Theory Duration",
-        field: "customTheoryDuration",
-        helpText: "Must include Days, Weeks, Months or Years (e.g., 10 Days, 4 Weeks)",
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Practical Duration",
-        field: "customPracticalDuration",
-        helpText: "Must include Days, Weeks, Months or Years (e.g., 5 Days, 1 Month)",
+        helpText: "Select from options or enter custom period (e.g., 15 Days, 8 Weeks, 3 Months)"
       },
       {
         label: "Theory Duration",
         field: "theoryDuration",
-        disabled: true,
-        helpText:
-          formData.trainingPeriod === "Custom"
-            ? "Use custom theory duration field above"
-            : "Auto-calculated from training period",
+        disabled: !!designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          !!designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`],
+        helpText: designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`]
+          ? "Auto-calculated from training period"
+          : "Enter theory duration (e.g., 10 Days, 4 Weeks, 2 Months)",
       },
       {
         label: "Practical Duration",
         field: "practicalDuration",
-        disabled: true,
-        helpText:
-          formData.trainingPeriod === "Custom"
-            ? "Use custom practical duration field above"
-            : "Auto-calculated from training period",
+        disabled: !!designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          !!designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`],
+        helpText: designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`]
+          ? "Auto-calculated from training period"
+          : "Enter practical duration (e.g., 5 Days, 4 Weeks, 1 Month)",
       },
       { label: "Working Under", field: "workingUnder", required: false },
       { label: "HRMS ID", field: "hrmsId", required: false },
@@ -669,12 +666,13 @@ const Professional = ({ formData, onChange }) => {
       { label: "Employee Number", field: "employeeNumber", required: false },
     ],
     [
-      formData.trainingPeriod,
+      formData,
       appointmentModeOptions,
       courseTypeOptions,
       designationOptions,
       unitOptionsForDesignation,
       trainingPeriodOptionsForDesignationUnit,
+      designationUnitPeriodToDurations,
     ]
   );
 
@@ -746,16 +744,7 @@ const Professional = ({ formData, onChange }) => {
       fields
         .filter(Boolean)
         .map(
-          ({
-            label,
-            field,
-            type = "text",
-            options = [],
-            disabled = false,
-            required = true,
-            helpText,
-            step,
-          }) => (
+          ({ label, field, type = "text", options = [], disabled = false, required = true, helpText, step, }) => (
             <div key={field}>
               <label className="block text-gray-700 font-medium mb-1">
                 {label} {required && <span className="text-red-500">*</span>}
