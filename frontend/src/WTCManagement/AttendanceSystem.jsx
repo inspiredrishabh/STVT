@@ -209,19 +209,17 @@ const AttendanceSystem = () => {
   const [selectedTrainee, setSelectedTrainee] = useState('');
   const [trainees, setTrainees] = useState([]);
   const [traineeData, setTraineeData] = useState(null);
-  
+
   // Monthly attendance states
   const [monthlyAttendanceData, setMonthlyAttendanceData] = useState(null);
   const [availableMonths, setAvailableMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [monthlyTotalClasses, setMonthlyTotalClasses] = useState('');
   const [monthlyClassesAttended, setMonthlyClassesAttended] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [attendanceView, setAttendanceView] = useState('monthly-mark'); // 'monthly-mark', 'monthly-summary'
-  // Removed batch filter state
-  const [exporting, setExporting] = useState(false);
+  const [attendanceView, setAttendanceView] = useState('monthly-mark');
 
   // Load trainees for dropdown
   const loadTrainees = useCallback(async () => {
@@ -253,11 +251,11 @@ const AttendanceSystem = () => {
       // Load monthly attendance data
       const monthlyAttendance = await attendanceAPI.getMonthlyAttendanceData(trainee.id);
       setMonthlyAttendanceData(monthlyAttendance);
-      
+
       // Load available months for attendance
       const monthsData = await attendanceAPI.getAttendanceMonths(trainee.id);
       setAvailableMonths(monthsData.months || []);
-      
+
       // If there are available months, select the first one
       if (monthsData.months && monthsData.months.length > 0) {
         setSelectedMonth(monthsData.months[0]);
@@ -346,11 +344,11 @@ const AttendanceSystem = () => {
       );
 
       setMonthlyAttendanceData(updatedAttendanceData);
-      setMessage({ 
-        type: 'success', 
-        text: `Monthly attendance marked successfully for ${traineeData.name} (${selectedMonth})` 
+      setMessage({
+        type: 'success',
+        text: `Monthly attendance marked successfully for ${traineeData.name} (${selectedMonth})`
       });
-      
+
       // Clear form fields
       setMonthlyTotalClasses('');
       setMonthlyClassesAttended('');
@@ -376,17 +374,17 @@ const AttendanceSystem = () => {
   // Format month for display
   const formatMonth = useCallback((monthStr) => {
     if (!monthStr) return '';
-    
+
     const [year, month] = monthStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    
+
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   }, []);
 
   // Generate CSV content for export
   const generateMonthlyCSVContent = useCallback(() => {
     if (!traineeData || !monthlyAttendanceData) return '';
-    
+
     const headers = [
       'Trainee Name',
       'Ticket Number',
@@ -396,9 +394,9 @@ const AttendanceSystem = () => {
       'Classes Attended',
       'Attendance Percentage'
     ];
-    
+
     let csvContent = headers.join(',') + '\n';
-    
+
     monthlyAttendanceData.monthlyRecords.forEach(record => {
       const row = [
         `"${traineeData.name}"`,
@@ -409,32 +407,32 @@ const AttendanceSystem = () => {
         record.classesAttended,
         `${record.attendancePercentage}%`
       ];
-      
+
       csvContent += row.join(',') + '\n';
     });
-    
+
     return csvContent;
   }, [traineeData, monthlyAttendanceData, formatMonth]);
 
   // Calculate remaining days between joining and sparing
   const calculateRemainingDays = useMemo(() => {
     if (!traineeData) return null;
-    
+
     const joiningDate = traineeData.dateOfJoiningStcWtcNonRailway;
     const sparingDate = traineeData.dateOfSparing;
-    
+
     if (!joiningDate || !sparingDate) return null;
-    
+
     const start = new Date(joiningDate);
     const end = new Date(sparingDate);
     const today = new Date();
-    
+
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
-    
+
     const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     const elapsedDays = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
     const remainingDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-    
+
     return {
       totalDays: totalDays > 0 ? totalDays : 0,
       elapsedDays: elapsedDays > 0 ? elapsedDays : 0,
@@ -445,7 +443,7 @@ const AttendanceSystem = () => {
   // Find monthly record by month
   const findMonthlyRecord = useCallback((month) => {
     if (!monthlyAttendanceData || !monthlyAttendanceData.monthlyRecords) return null;
-    
+
     return monthlyAttendanceData.monthlyRecords.find(record => record.month === month);
   }, [monthlyAttendanceData]);
 
@@ -523,21 +521,21 @@ const AttendanceSystem = () => {
               <button
                 onClick={() => setSearchMethod('ticket')}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'ticket'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                >
-                  Search by Ticket Number
-                </button>
-                <button
-                  onClick={() => setSearchMethod('dropdown')}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                >
-                  Select from List
-                </button>
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                Search by Ticket Number
+              </button>
+              <button
+                onClick={() => setSearchMethod('dropdown')}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                Select from List
+              </button>
             </div>
 
             {/* Search Controls */}
