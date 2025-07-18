@@ -170,7 +170,6 @@ const WtcMain = () => {
 
     try {
       const result = await submitToAPI(formData);
-      console.log("Submission successful:", result);
       alert(
         `Registration completed successfully! Ticket Number: ${result.ticketNumber}`
       );
