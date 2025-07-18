@@ -236,35 +236,88 @@ class DashboardAPI {
   }
 }
 
-// Update SimpleBarChart to accept onBarClick
-const SimpleBarChart = ({ data, title, onBarClick }) => (
-  <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
-    {!data ||
-    data.length === 0 ||
-    Math.max(...data.map((d) => d.count)) === 0 ? (
-      <div className="text-center text-gray-400 py-8">No data available</div>
-    ) : (
-      <div className="space-y-3">
-        {data.map((item, idx) => (
+// Utility: Export array of objects as CSV
+function exportToCSV(data, filename = "export.csv") {
+  if (!data || !data.length) return;
+  const keys = Object.keys(data[0]);
+  const csvRows = [
+    keys.join(","),
+    ...data.map((row) =>
+      keys
+        .map((k) =>
+          ("" + (row[k] ?? ""))
+            .replace(/"/g, '""')
+            .replace(/\n/g, " ")
+            .replace(/\r/g, " ")
+        )
+        .map((v) => `"${v}"`)
+        .join(",")
+    ),
+  ];
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+// Enhanced SimpleBarChart: supports large data, show top N, scrollable
+const SimpleBarChart = ({
+  data,
+  title,
+  onBarClick,
+  maxBars = 20,
+  showAll: showAllProp,
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!data || data.length === 0)
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 text-center">
+          {title}
+        </h3>
+        <div className="text-center text-gray-400 py-8">No data available</div>
+      </div>
+    );
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const displayData =
+    showAll || showAllProp || sorted.length <= maxBars
+      ? sorted
+      : sorted.slice(0, maxBars);
+  const maxCount = Math.max(...sorted.map((d) => d.count), 1);
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900 text-center">
+        {title}
+      </h3>
+      <div
+        className="space-y-3 overflow-y-auto"
+        style={{
+          maxHeight: displayData.length > 10 ? 400 : "auto",
+        }}
+      >
+        {displayData.map((item, idx) => (
           <div
             key={idx}
-            className={`flex items-center space-x-3 ${
+            className={`flex items-center space-x-3 rounded-lg transition hover:bg-orange-50 ${
               onBarClick ? "cursor-pointer" : ""
             }`}
             onClick={onBarClick ? () => onBarClick(item) : undefined}
+            title={item.category}
           >
-            <div className="w-16 text-sm font-medium text-gray-700 text-right">
+            <div className="w-24 text-sm font-medium text-gray-700 text-right truncate">
               {item.category}
             </div>
             <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
               <div
-                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium transition-all"
                 style={{
                   backgroundColor: item.color,
-                  width: `${
-                    (item.count / Math.max(...data.map((d) => d.count))) * 100
-                  }%`,
+                  width: `${(item.count / maxCount) * 100}%`,
                   minWidth: "40px",
                 }}
               >
@@ -274,19 +327,50 @@ const SimpleBarChart = ({ data, title, onBarClick }) => (
           </div>
         ))}
       </div>
-    )}
-  </div>
-);
+      {sorted.length > maxBars && (
+        <div className="text-center">
+          <button
+            className="text-xs text-orange-600 underline hover:text-orange-800"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show Top 20" : `Show All (${sorted.length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
-// Update SimplePieChart to accept onLegendClick
-const SimplePieChart = ({ data, title, onLegendClick }) => (
-  <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
-    {!data ||
-    data.length === 0 ||
-    data.reduce((sum, item) => sum + item.count, 0) === 0 ? (
-      <div className="text-center text-gray-400 py-8">No data available</div>
-    ) : (
+// Enhanced SimplePieChart: supports large data, scrollable legend
+const SimplePieChart = ({
+  data,
+  title,
+  onLegendClick,
+  maxSlices = 20,
+  showAll: showAllProp,
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!data || data.length === 0)
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 text-center">
+          {title}
+        </h3>
+        <div className="text-center text-gray-400 py-8">No data available</div>
+      </div>
+    );
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const displayData =
+    showAll || showAllProp || sorted.length <= maxSlices
+      ? sorted
+      : sorted.slice(0, maxSlices);
+  const total = displayData.reduce((sum, i) => sum + i.count, 0) || 1;
+  let currentAngle = 0;
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900 text-center">
+        {title}
+      </h3>
       <div className="flex items-center justify-center space-x-8">
         <div className="relative">
           <svg width="200" height="200" className="transform -rotate-90">
@@ -298,53 +382,56 @@ const SimplePieChart = ({ data, title, onLegendClick }) => (
               stroke="#e5e7eb"
               strokeWidth="2"
             />
-            {(() => {
-              let currentAngle = 0;
-              return data.map((item, idx) => {
-                const total = data.reduce((sum, i) => sum + i.count, 0);
-                const angle = (item.count / total) * 360;
-                const startAngle = currentAngle;
-                const endAngle = currentAngle + angle;
-                const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
-                const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
-                const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
-                const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
-                const largeArcFlag = angle > 180 ? 1 : 0;
-                const pathData = [
-                  `M 100 100`,
-                  `L ${x1} ${y1}`,
-                  `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                  `Z`,
-                ].join(" ");
-                currentAngle += angle;
-                return (
-                  <path
-                    key={idx}
-                    d={pathData}
-                    fill={item.color}
-                    stroke="white"
-                    strokeWidth="2"
-                  />
-                );
-              });
-            })()}
+            {displayData.map((item, idx) => {
+              const angle = (item.count / total) * 360;
+              const startAngle = currentAngle;
+              const endAngle = currentAngle + angle;
+              const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
+              const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
+              const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
+              const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
+              const largeArcFlag = angle > 180 ? 1 : 0;
+              const pathData = [
+                `M 100 100`,
+                `L ${x1} ${y1}`,
+                `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                `Z`,
+              ].join(" ");
+              currentAngle += angle;
+              return (
+                <path
+                  key={idx}
+                  d={pathData}
+                  fill={item.color}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              );
+            })}
           </svg>
         </div>
-        <div className="space-y-3">
-          {data.map((item, idx) => (
+        <div
+          className="space-y-3 overflow-y-auto"
+          style={{
+            maxHeight: displayData.length > 10 ? 300 : "auto",
+            minWidth: 180,
+          }}
+        >
+          {displayData.map((item, idx) => (
             <div
               key={idx}
-              className={`flex items-center space-x-3 ${
+              className={`flex items-center space-x-3 rounded transition hover:bg-orange-50 ${
                 onLegendClick ? "cursor-pointer" : ""
               }`}
               onClick={onLegendClick ? () => onLegendClick(item) : undefined}
+              title={item.name}
             >
               <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: item.color }}
               ></div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-orange-900">
+              <div className="flex-1 truncate">
+                <div className="text-sm font-medium text-orange-900 truncate">
                   {item.name}
                 </div>
                 <div className="text-xs text-orange-500">
@@ -355,9 +442,19 @@ const SimplePieChart = ({ data, title, onLegendClick }) => (
           ))}
         </div>
       </div>
-    )}
-  </div>
-);
+      {sorted.length > maxSlices && (
+        <div className="text-center">
+          <button
+            className="text-xs text-orange-600 underline hover:text-orange-800"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show Top 20" : `Show All (${sorted.length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 function StatCard({
   title,
@@ -392,11 +489,16 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lineTrainingStats, setLineTrainingStats] = useState([]);
+  const [selectedLineTraining, setSelectedLineTraining] = useState(null);
+  const [lineTrainingDetails, setLineTrainingDetails] = useState([]);
+  const [lineTrainingDetailsTitle, setLineTrainingDetailsTitle] = useState("");
   const { userRole } = useAuth();
   const dashboardAPI = new DashboardAPI();
 
   useEffect(() => {
     loadDashboardData();
+    loadLineTrainingStats();
   }, []);
 
   const loadDashboardData = async () => {
@@ -419,6 +521,57 @@ function Dashboard() {
       setError("Failed to load dashboard data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch line training stats (robust: handle both activityCentre/activity_centre, ticketNumbers/ticket_no)
+  const loadLineTrainingStats = async () => {
+    try {
+      const res = await fetch("/api/line-trainings");
+      const data = await res.json();
+      console.log("Line Training API response:", data); // DEBUG: log API response
+      if (data.success && Array.isArray(data.data)) {
+        // Defensive: handle both possible keys and fallback
+        const stats = {};
+        data.data.forEach((prog, idx) => {
+          // DEBUG: log each program object
+          console.log("Line Training program", idx, prog);
+          const key =
+            prog.activityCentre ||
+            prog.activity_centre ||
+            prog.activitycenter ||
+            prog.activity_center ||
+            "Unknown";
+          // Accept ticketNumbers, ticket_no, or ticketNos
+          let tickets =
+            prog.ticketNumbers ||
+            prog.ticket_no ||
+            prog.ticketNos ||
+            prog.tickets ||
+            [];
+          if (!Array.isArray(tickets)) {
+            // If single string, wrap as array
+            tickets = [tickets];
+          }
+          if (!stats[key]) {
+            stats[key] = { activityCentre: key, count: 0, programs: [] };
+          }
+          stats[key].count += tickets.length;
+          // Patch program object to always have ticketNumbers and activityCentre for downstream use
+          stats[key].programs.push({
+            ...prog,
+            ticketNumbers: tickets,
+            activityCentre: key,
+          });
+        });
+        console.log("Line Training Stats (grouped):", stats); // DEBUG: log grouped stats
+        setLineTrainingStats(Object.values(stats));
+      } else {
+        setLineTrainingStats([]);
+      }
+    } catch (e) {
+      console.error("Error fetching line training stats:", e); // DEBUG: log error
+      setLineTrainingStats([]);
     }
   };
 
@@ -445,6 +598,26 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
+  // CSV Export handler for modal (move inside Dashboard)
+  // REMOVE this function if not used elsewhere
+  // const handleExportCSV = () => {
+  //   if (statDetailsTitle && statDetails.length) {
+  //     exportToCSV(
+  //       statDetails,
+  //       `${statDetailsTitle.replace(/\s+/g, "_")}_${new Date()
+  //         .toISOString()
+  //         .slice(0, 10)}.csv`
+  //     );
+  //   } else if (lineTrainingDetailsTitle && lineTrainingDetails.length) {
+  //     exportToCSV(
+  //       lineTrainingDetails,
+  //       `${lineTrainingDetailsTitle.replace(/\s+/g, "_")}_${new Date()
+  //         .toISOString()
+  //         .slice(0, 10)}.csv`
+  //     );
+  //   }
+  // };
 
   // Helper to fetch details for a stat
   const fetchStatDetails = async (type, value) => {
@@ -543,6 +716,33 @@ function Dashboard() {
       setStatDetailsTitle(title);
       setStatDetails([]);
     }
+  };
+
+  // Fetch details for a line training activity centre
+  const fetchLineTrainingDetails = (activityCentre) => {
+    setLineTrainingDetails([]);
+    setLineTrainingDetailsTitle("");
+    setIsModalOpen(true);
+    setSelectedLineTraining(activityCentre);
+    // Find all programs for this centre
+    const progs =
+      lineTrainingStats.find((s) => s.activityCentre === activityCentre)
+        ?.programs || [];
+    // Flatten all ticket numbers with program info
+    const details = [];
+    progs.forEach((prog) => {
+      (prog.ticketNumbers || []).forEach((ticket_no) => {
+        details.push({
+          ticket_no,
+          activityCentre: prog.activityCentre,
+          startDate: prog.startDate,
+          endDate: prog.endDate,
+          status: prog.status,
+        });
+      });
+    });
+    setLineTrainingDetailsTitle(`Line Training Candidates - ${activityCentre}`);
+    setLineTrainingDetails(details);
   };
 
   if (loading)
@@ -723,7 +923,12 @@ function Dashboard() {
               title="Distribution (Pie Chart)"
               onLegendClick={(item) => {
                 setSelectedStat(item.name);
-                fetchStatDetails(item.name);
+                // Fix: ensure Non-Railway triggers correct details
+                if (item.name === "Non-Railway") {
+                  fetchStatDetails("Non-Railway Candidates");
+                } else {
+                  fetchStatDetails(item.name);
+                }
               }}
             />
           </div>
@@ -778,8 +983,36 @@ function Dashboard() {
           )}
         </div>
 
+        {/* Line Training Stats (by Activity Centre) */}
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-cyan-100 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Line Training Stats (by Activity Centre)
+          </h2>
+          {lineTrainingStats.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              No data available
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {lineTrainingStats.map((item) => (
+                <StatCard
+                  key={item.activityCentre}
+                  title={item.activityCentre}
+                  value={item.count}
+                  color="bg-cyan-50"
+                  textColor="text-cyan-700"
+                  onClick={() => {
+                    fetchLineTrainingDetails(item.activityCentre);
+                  }}
+                  active={selectedLineTraining === item.activityCentre}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Stat Details Modal/Section */}
-        {isModalOpen && statDetailsTitle && (
+        {isModalOpen && (statDetailsTitle || lineTrainingDetailsTitle) && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-all"
             style={{ backdropFilter: "blur(2px)" }}
@@ -791,56 +1024,155 @@ function Dashboard() {
               }}
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {statDetailsTitle}
+                <h3 className="text-lg font-semibold text-gray-900 truncate max-w-[70vw]">
+                  {statDetailsTitle || lineTrainingDetailsTitle}
                 </h3>
-                <button
-                  className="text-orange-500 hover:text-orange-700 px-3 py-1 rounded transition"
-                  onClick={() => {
-                    setStatDetails([]);
-                    setStatDetailsTitle("");
-                    setSelectedStat(null);
-                    setIsModalOpen(false);
-                  }}
-                >
-                  Close
-                </button>
+                <div className="flex space-x-2">
+                  {/* Removed Export CSV button */}
+                  {/* <button
+                    className="bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1 rounded transition text-xs border border-orange-200"
+                    onClick={handleExportCSV}
+                    disabled={
+                      !(
+                        (statDetailsTitle && statDetails.length) ||
+                        (lineTrainingDetailsTitle && lineTrainingDetails.length)
+                      )
+                    }
+                    title="Export table as CSV"
+                  >
+                    Export CSV
+                  </button> */}
+                  <button
+                    className="text-orange-500 hover:text-orange-700 px-3 py-1 rounded transition"
+                    onClick={() => {
+                      setStatDetails([]);
+                      setStatDetailsTitle("");
+                      setSelectedStat(null);
+                      setLineTrainingDetails([]);
+                      setLineTrainingDetailsTitle("");
+                      setSelectedLineTraining(null);
+                      setIsModalOpen(false);
+                    }}
+                    title="Close"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              {statDetails.length === 0 ? (
+              {/* Show either statDetails or lineTrainingDetails */}
+              {(statDetailsTitle && statDetails.length === 0) ||
+              (lineTrainingDetailsTitle && lineTrainingDetails.length === 0) ? (
                 <div className="text-center text-gray-400 py-8">
                   No details available.
                 </div>
               ) : (
-                <div className="overflow-auto max-h-[70vh]">
+                <div
+                  className="overflow-auto max-h-[70vh] border rounded-xl"
+                  style={{ background: "#fff" }}
+                >
                   <table className="min-w-full text-xs md:text-sm border">
-                    <thead>
-                      <tr className="bg-orange-50">
+                    <thead className="sticky top-0 bg-orange-50 z-10">
+                      <tr>
                         <th className="px-2 py-1 border">Ticket No</th>
-                        <th className="px-2 py-1 border">Name</th>
-                        <th className="px-2 py-1 border">Designation</th>
-                        <th className="px-2 py-1 border">Unit</th>
-                        {statDetails.some((c) => c._source) && (
-                          <th className="px-2 py-1 border">Source</th>
+                        {statDetailsTitle ? (
+                          <>
+                            <th className="px-2 py-1 border">Name</th>
+                            <th className="px-2 py-1 border">Designation</th>
+                            <th className="px-2 py-1 border">Unit</th>
+                            {statDetails.some((c) => c._source) && (
+                              <th className="px-2 py-1 border">Source</th>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <th className="px-2 py-1 border">
+                              Activity Centre
+                            </th>
+                            <th className="px-2 py-1 border">Start Date</th>
+                            <th className="px-2 py-1 border">End Date</th>
+                            <th className="px-2 py-1 border">Status</th>
+                          </>
                         )}
                       </tr>
                     </thead>
                     <tbody>
-                      {statDetails.map((c, i) => (
-                        <tr
-                          key={c.ticket_no || c.ticketNo || c.id || i}
-                          className="hover:bg-orange-50"
-                        >
-                          <td className="px-2 py-1 border">
-                            {c.ticket_no || c.ticketNo || c.id}
-                          </td>
-                          <td className="px-2 py-1 border">{c.name}</td>
-                          <td className="px-2 py-1 border">{c.designation}</td>
-                          <td className="px-2 py-1 border">{c.unit}</td>
-                          {c._source && (
-                            <td className="px-2 py-1 border">{c._source}</td>
-                          )}
-                        </tr>
-                      ))}
+                      {statDetailsTitle
+                        ? statDetails.map((c, i) => (
+                            <tr
+                              key={c.ticket_no || c.ticketNo || c.id || i}
+                              className="hover:bg-orange-50 transition"
+                            >
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.ticket_no || c.ticketNo || c.id}
+                              >
+                                {c.ticket_no || c.ticketNo || c.id}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[160px]"
+                                title={c.name}
+                              >
+                                {c.name}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.designation}
+                              >
+                                {c.designation}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.unit}
+                              >
+                                {c.unit}
+                              </td>
+                              {c._source && (
+                                <td
+                                  className="px-2 py-1 border truncate max-w-[120px]"
+                                  title={c._source}
+                                >
+                                  {c._source}
+                                </td>
+                              )}
+                            </tr>
+                          ))
+                        : lineTrainingDetails.map((c, i) => (
+                            <tr
+                              key={c.ticket_no + i}
+                              className="hover:bg-orange-50 transition"
+                            >
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.ticket_no}
+                              >
+                                {c.ticket_no}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[160px]"
+                                title={c.activityCentre}
+                              >
+                                {c.activityCentre}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.startDate}
+                              >
+                                {c.startDate}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.endDate}
+                              >
+                                {c.endDate}
+                              </td>
+                              <td
+                                className="px-2 py-1 border truncate max-w-[120px]"
+                                title={c.status}
+                              >
+                                {c.status}
+                              </td>
+                            </tr>
+                          ))}
                     </tbody>
                   </table>
                 </div>
