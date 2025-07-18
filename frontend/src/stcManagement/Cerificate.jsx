@@ -68,6 +68,22 @@ const Certificate = () => {
       "AJE",
       "IJE",
       "RJE",
+      "MSE-C&W",
+      "MSE-D",
+      "MSE-W",
+      "MJR-C&W",
+      "MJR-D",
+      "MJR-W",
+      "MJI-C&W",
+      "MJI-D",
+      "MJI-W",
+      "MJP-C&W",
+      "MJP-D",
+      "MJP-W",
+      "ASE",
+      "AJE",
+      "IJE",
+      "RJE",
     ];
 
     const refresherModules = [
@@ -83,9 +99,22 @@ const Certificate = () => {
       "NDT",
       "EA",
       "3DMP",
+      "RCW",
+      "RD",
+      "TS",
+      "LH-I",
+      "LH-II",
+      "FM",
+      "WT",
+      "DM",
+      "WE",
+      "NDT",
+      "EA",
+      "3DMP",
     ];
 
     // Filter trainees based on course type
+    let courseFilteredTrainees = trainees.filter((trainee) => {
     let courseFilteredTrainees = trainees.filter((trainee) => {
       if (courseType === "induction") {
         return inductionModules.includes(trainee.module_no);
@@ -174,6 +203,19 @@ const Certificate = () => {
       );
 
       // New logic: Check if ALL selected ticket numbers START with AJE, RJE, ASE, or IJE
+      const allSpecialTicketPattern = selectedTraineeObjects.every(
+        (trainee) => {
+          const ticketNo = trainee.ticket_no
+            ? trainee.ticket_no.toUpperCase()
+            : "";
+          return (
+            ticketNo.startsWith("AJE") ||
+            ticketNo.startsWith("RJE") ||
+            ticketNo.startsWith("ASE") ||
+            ticketNo.startsWith("IJE")
+          );
+        }
+      );
       const allSpecialTicketPattern = selectedTraineeObjects.every(
         (trainee) => {
           const ticketNo = trainee.ticket_no
@@ -335,6 +377,15 @@ const Certificate = () => {
                   <Filter className="w-4 h-4" />
                   <span>Filter</span>
                 </button>
+              {/* Filter Controls */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setFilterOpen(!filterOpen)}
+                  className="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Filter</span>
+                </button>
 
                 <button
                   onClick={resetFilters}
@@ -344,7 +395,44 @@ const Certificate = () => {
                 </button>
               </div>
             </div>
+                <button
+                  onClick={resetFilters}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
+            {/* Filter Panel */}
+            {filterOpen && (
+              <div className="bg-gray-50 p-4 rounded-lg mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Batch Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Batch
+                    </label>
+                    <select
+                      className="w-full border rounded-md p-2"
+                      value={filters.batch}
+                      onChange={(e) =>
+                        setFilters({ ...filters, batch: e.target.value })
+                      }
+                    >
+                      <option value="">All Batches</option>
+                      {getUniqueFilterOptions("batch").map((batch) => (
+                        <option key={batch} value={batch}>
+                          {batch}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Only batch filter remains */}
+                </div>
+              </div>
+            )}
+          </div>
             {/* Filter Panel */}
             {filterOpen && (
               <div className="bg-gray-50 p-4 rounded-lg mt-2">
@@ -393,7 +481,42 @@ const Certificate = () => {
                   selected
                 </span>
               </div>
+          {/* Bulk Actions Bar */}
+          <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              {/* Selection Counter */}
+              <div className="flex items-center">
+                <button onClick={toggleSelectAll} className="mr-3">
+                  {selectedTrainees.length === filteredTrainees.length &&
+                  filteredTrainees.length > 0 ? (
+                    <CheckSquare className="w-5 h-5 text-blue-600" />
+                  ) : (
+                    <Square className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <span className="font-medium">
+                  {selectedTrainees.length} of {filteredTrainees.length}{" "}
+                  selected
+                </span>
+              </div>
 
+              {/* Bulk Actions */}
+              <div className="flex space-x-3">
+                <button
+                  onClick={generateBulkCertificates}
+                  disabled={selectedTrainees.length === 0}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                    selectedTrainees.length > 0
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  } transition-colors`}
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Generate Certificates</span>
+                </button>
+              </div>
+            </div>
+          </div>
               {/* Bulk Actions */}
               <div className="flex space-x-3">
                 <button
@@ -533,6 +656,127 @@ const Certificate = () => {
               </div>
             )}
           </div>
+          {/* Trainees Table */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            {loading ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading trainees...</p>
+              </div>
+            ) : error ? (
+              <div className="p-8 text-center text-red-500">
+                <p>Error: {error}</p>
+                <button
+                  onClick={fetchTrainees}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : filteredTrainees.length === 0 ? (
+              <div className="p-8 text-center text-gray-600">
+                <User className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p>No trainees found matching your search criteria.</p>
+                <button
+                  onClick={resetFilters}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="p-4 text-left"></th>
+                      <th className="p-4 text-left">Ticket No.</th>
+                      <th className="p-4 text-left">Name</th>
+                      <th className="p-4 text-left">Designation</th>
+                      <th className="p-4 text-left">Batch</th>
+                      <th className="p-4 text-left">Module</th>
+                      <th className="p-4 text-left">Training Period</th>
+                      <th className="p-4 text-left">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredTrainees.map((trainee) => {
+                      // Format today's date in ISO format (YYYY-MM-DD) to match the trainee.dateOfSparing format
+                      const now = new Date();
+                      const today = now.toISOString().split("T")[0]; // Get YYYY-MM-DD format
+
+                      return (
+                        <tr
+                          key={trainee.ticket_no}
+                          className="hover:bg-gray-50"
+                        >
+                          <td className="p-4">
+                            <button
+                              onClick={() =>
+                                toggleTraineeSelection(trainee.ticket_no)
+                              }
+                            >
+                              {selectedTrainees.includes(trainee.ticket_no) ? (
+                                <CheckSquare className="w-5 h-5 text-blue-600" />
+                              ) : (
+                                <Square className="w-5 h-5 text-gray-400" />
+                              )}
+                            </button>
+                          </td>
+                          <td className="p-4 font-medium">
+                            {trainee.ticket_no}
+                          </td>
+                          <td className="p-4">{trainee.name}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                courseType === "induction"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-purple-100 text-purple-800"
+                              }`}
+                            >
+                              {trainee.designation || "N/A"}
+                            </span>
+                          </td>
+                          <td className="p-4">{trainee.batch}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                courseType === "induction"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-orange-100 text-orange-800"
+                              }`}
+                            >
+                              {trainee.module_no}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            {formatDate(
+                              trainee.date_of_joining_stc_wtc_non_railway
+                            )}{" "}
+                            - {formatDate(trainee.date_of_sparing)}
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                trainee.date_of_sparing >= today
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {trainee.date_of_sparing >= today
+                                ? "Active"
+                                : "Inactive"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -540,3 +784,4 @@ const Certificate = () => {
 };
 
 export default Certificate;
+
