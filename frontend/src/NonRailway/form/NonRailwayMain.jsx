@@ -276,7 +276,6 @@ const NonRailwayMain = () => {
       }
 
       const result = await response.json();
-      console.log("Submission result:", result);
 
       // Show success message with ticket number
       const ticketNumber = result.data?.ticket_no || "Generated";

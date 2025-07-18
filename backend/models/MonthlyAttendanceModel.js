@@ -28,7 +28,6 @@ class MonthlyAttendanceModel {
     // Mark attendance for a trainee for a specific month
     async markAttendance(candidateId, month, totalClasses = 0, classesAttended = 0) {
         const tableName = this.tableName; // Store table name in local variable
-        console.log(`Marking monthly attendance in table: ${tableName}`);
 
         return new Promise((resolve, reject) => {
             // First check if the candidate exists in wtc_candidates

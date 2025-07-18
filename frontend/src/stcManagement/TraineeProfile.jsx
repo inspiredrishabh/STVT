@@ -214,7 +214,6 @@ const TraineeProfile = () => {
         }))
         : [];
 
-      console.log("Fetched trainees:", TraineeArray);
 
       setTrainees(TraineeArray);
       setFilteredTrainees(TraineeArray);
