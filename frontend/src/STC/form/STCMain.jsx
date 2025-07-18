@@ -36,27 +36,13 @@ const STCMain = () => {
     pfNoNpsUps: "",
     employeeNumber: "",
 
-    // Education - These are not in your SQL schema directly but might be in `otherQualification` or handled separately
+    // Education - 
     highestQualification: "",
-    otherQualification: "", // This field exists in the frontend but not explicitly in SQL table, need to clarify its use.
     fieldOfStudy: "",
     institution: "",
-    boardType: "", // Not in SQL
-    educationStartYear: "", // Not in SQL
-    eduCourseDuration: "", // Not in SQL
-    yearOfGraduation: "", // Not in SQL
-    modeOfStudy: "", // Not in SQL
     gradeType: "",
     gradeValue: "",
-    division: "", // Not in SQL
-    hasAdditionalQualification: "", // Not in SQL
-    additionalQualificationName: "", // Not in SQL
-    additionalQualificationOrg: "", // Not in SQL
-    additionalQualificationYear: "", // Not in SQL
-    thesisTitle: "", // Not in SQL
 
-    // Course
-    // ticketNo: "",
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
     dateOfSparing: "",

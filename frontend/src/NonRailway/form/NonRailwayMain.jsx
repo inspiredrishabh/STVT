@@ -31,6 +31,8 @@ const NonRailwayMain = () => {
     durationOption: "",
     theoryPeriod: "",
     practicalPeriod: "",
+    dateOfJoiningStcWtcNonRailway: "",
+    dateOfSparing: "",
     workingUnder: "",
     remark: "",
     // Educational fields
@@ -41,6 +43,65 @@ const NonRailwayMain = () => {
     gradeType: "",
     gradeValue: "",
   });
+
+  // --- Start of added code ---
+  const durationMapping = {
+    "RRC Act Apprentice 1961": {
+      theory: "01 W",
+      practical: "51 W",
+      total: "01 Y",
+    },
+    "Act Junior Apprentices": {
+      theory: "04 W",
+      practical: "48 W",
+      total: "01 Y",
+    },
+    "Rail Kaushal Vikas Yojana": {
+      theory: "01 W",
+      practical: "02 W",
+      total: "03 W",
+    },
+    "Summer Vacation training": {
+      "4W": {
+        theory: "00 W",
+        practical: "04 W",
+        total: "04 W",
+      },
+      "6W": {
+        theory: "00 W",
+        practical: "06 W",
+        total: "06 W",
+      },
+    },
+  };
+
+  const getDurationInfo = () => {
+    if (!formData.designation || formData.courseType === "Custom") {
+      return { theory: "", practical: "", total: "" };
+    }
+
+    if (
+      formData.designation === "Summer Vacation training" &&
+      formData.durationOption
+    ) {
+      return (
+        durationMapping[formData.designation]?.[formData.durationOption] || {
+          theory: "",
+          practical: "",
+          total: "",
+        }
+      );
+    }
+
+    return (
+      durationMapping[formData.designation] || {
+        theory: "",
+        practical: "",
+        total: "",
+      }
+    );
+  };
+  // --- End of added code ---
 
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState({});
@@ -115,6 +176,16 @@ const NonRailwayMain = () => {
   const prepareFormDataForSubmission = () => {
     const submissionData = new FormData();
 
+    // --- Start of changed code ---
+    const durationInfo = getDurationInfo();
+    const finalFormData = {
+      ...formData,
+      duration: formData.duration || durationInfo.total,
+      theoryPeriod: formData.theoryPeriod || durationInfo.theory,
+      practicalPeriod: formData.practicalPeriod || durationInfo.practical,
+    };
+    // --- End of changed code ---
+
     // Field mapping from frontend to backend
     const fieldMapping = {
       // Personal fields
@@ -142,6 +213,8 @@ const NonRailwayMain = () => {
       duration: "duration",
       theoryPeriod: "theory",
       practicalPeriod: "practical",
+      dateOfJoiningStcWtcNonRailway: "date_of_joining",
+      dateOfSparing: "date_of_sparing",
       workingUnder: "working_under",
       remark: "remarks",
       // Educational fields
@@ -153,20 +226,20 @@ const NonRailwayMain = () => {
     };
 
     // Add all form fields with proper mapping
-    Object.keys(formData).forEach((key) => {
-      if (key === "picture" && formData[key]) {
-        submissionData.append("image", formData[key]); // Backend expects 'image' field
-      } else if (formData[key] !== null && formData[key] !== "") {
+    Object.keys(finalFormData).forEach((key) => {
+      if (key === "picture" && finalFormData[key]) {
+        submissionData.append("image", finalFormData[key]); // Backend expects 'image' field
+      } else if (finalFormData[key] !== null && finalFormData[key] !== "") {
         const backendKey = fieldMapping[key];
         if (backendKey) {
           // Special handling for course type - use custom if available, otherwise use courseType
-          if (key === "courseType" && formData.customCourseType) {
-            submissionData.append(backendKey, formData.customCourseType);
-          } else if (key === "fieldOfStudy" && formData.customFieldOfStudy) {
+          if (key === "courseType" && finalFormData.customCourseType) {
+            submissionData.append(backendKey, finalFormData.customCourseType);
+          } else if (key === "fieldOfStudy" && finalFormData.customFieldOfStudy) {
             // Use custom field of study if available, otherwise use selected field
-            submissionData.append(backendKey, formData.customFieldOfStudy);
+            submissionData.append(backendKey, finalFormData.customFieldOfStudy);
           } else if (key !== "customCourseType" && key !== "customFieldOfStudy") {
-            submissionData.append(backendKey, formData[key]);
+            submissionData.append(backendKey, finalFormData[key]);
           }
         }
       }
@@ -236,6 +309,8 @@ const NonRailwayMain = () => {
         durationOption: "",
         theoryPeriod: "",
         practicalPeriod: "",
+        dateOfJoiningStcWtcNonRailway: "",
+        dateOfSparing: "",
         workingUnder: "",
         remark: "",
         highestQualification: "",
@@ -256,6 +331,10 @@ const NonRailwayMain = () => {
   };
 
   const renderForm = () => {
+    // --- Start of changed code ---
+    const durationInfo = getDurationInfo();
+    // --- End of changed code ---
+
     switch (step) {
       case 0:
         return (
@@ -279,6 +358,9 @@ const NonRailwayMain = () => {
             formData={formData}
             onChange={professionalChangeHandler}
             errors={errors}
+            // --- Start of changed code ---
+            durationInfo={durationInfo}
+          // --- End of changed code ---
           />
         );
       default:
