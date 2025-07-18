@@ -67,7 +67,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                {['Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
+                {['Candidate', 'Course Info', 'Work Info', 'Actions'].map(header => (
                   <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-black uppercase tracking-wider">
                     {header}
                   </th>
@@ -165,12 +165,6 @@ const CandidateRow = ({
           <span>{candidate.workInfo}</span>
         </div>
         <div className="text-xs text-gray-500 mt-1">Type: {candidate.type}</div>
-      </td>
-      <td className="px-6 py-4">
-        <Badge
-          text={candidate.status}
-          className={candidate.status === 'Active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-        />
       </td>
       <td className="px-6 py-4">
         <div className="flex space-x-2">
@@ -355,7 +349,6 @@ const getCourseFields = (candidate) => {
       ...commonCourseFields,
       { label: "Course Type", field: "courseType", type: "text", value: candidate.courseType },
       { label: "Training Period", field: "trainingPeriod", type: "text", value: candidate.trainingPeriod },
-      { label: "Custom Training Period", field: "customTrainingPeriod", type: "text", value: candidate.customTrainingPeriod },
       { label: "Theory Duration", field: "theoryDuration", type: "text", value: candidate.theoryDuration },
       { label: "Practical Duration", field: "practicalDuration", type: "text", value: candidate.practicalDuration },
       { label: "Course Coordinator", field: "courseCoordinator", type: "text", value: candidate.courseCoordinator }
@@ -517,17 +510,6 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
             onInputChange={onInputChange}
           />
 
-          {/* Status Information */}
-          <EditSection
-            title="Status Information"
-            icon={MapPin}
-            fields={[
-              { label: "Status", field: "status", type: "select", value: candidate.status, options: ["Active", "Inactive", "Completed", "Suspended"] },
-              { label: "Serial No.", field: "serialNo", type: "number", value: candidate.serialNo }
-            ]}
-            candidate={candidate}
-            onInputChange={onInputChange}
-          />
         </div>
       </div>
 

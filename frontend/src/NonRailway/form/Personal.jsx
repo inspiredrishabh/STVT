@@ -1,58 +1,69 @@
-import React, { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 const Personal = ({ formData, onChange, errors = {} }) => {
-  const validateField = (fieldName, value) => {
-    const trimmedValue = value?.toString().trim() || "";
+  const validateField = useCallback(
+    (fieldName, value) => {
+      const trimmedValue = value?.toString().trim() || "";
 
-    switch (fieldName) {
-      case "picture":
-        if (!value) return "Picture is required";
-        if (value && !value.type?.startsWith("image/"))
-          return "Please select a valid image file";
-        if (value && value.size > 1 * 1024 * 1024)
-          return "Image size should be less than 1MB";
-        return "";
-      case "name":
-      case "fatherName":
-        if (!trimmedValue)
-          return `${fieldName === "name" ? "Name" : "Father's name"
-            } is required`;
-        if (trimmedValue.length < 2)
-          return "Must be at least 2 characters long";
-        if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
-          return "Should only contain letters and spaces";
-        return "";
-      case "sex":
-        return !["Male", "Female", "Other"].includes(value)
-          ? "Please select a valid gender"
-          : "";
-      case "dob":
-        if (!value) return "Date of birth is required";
-        const dobDate = new Date(value);
-        const today = new Date();
-        const age = today.getFullYear() - dobDate.getFullYear();
-        if (dobDate > today) return "Date of birth cannot be in the future";
-        if (age < 16) return "Age must be at least 16 years";
-        if (age > 100) return "Please enter a valid date of birth";
-        return "";
-      case "category":
-        return !["General", "OBC", "SC", "ST", "EWS"].includes(value)
-          ? "Please select a valid category"
-          : "";
-      case "pwd":
-        return !["Yes", "No"].includes(value)
-          ? "Please select Yes or No for PWD"
-          : "";
-      case "typeOfDisability":
-        if (formData.pwd === "Yes" && !trimmedValue)
-          return "Type of disability is required when PWD is Yes";
-        return "";
-      default:
-        return "";
-    }
-  };
+      switch (fieldName) {
+        case "picture":
+          if (!value) return "Picture is required";
+          if (value && !value.type?.startsWith("image/"))
+            return "Please select a valid image file";
+          if (value && value.size > 1 * 1024 * 1024)
+            return "Image size should be less than 1MB";
+          return "";
+        case "name":
+        case "fatherName":
+          if (!trimmedValue)
+            return `${fieldName === "name" ? "Name" : "Father's name"
+              } is required`;
+          if (trimmedValue.length < 2)
+            return "Must be at least 2 characters long";
+          if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
+            return "Should only contain letters and spaces";
+          return "";
+        case "sex":
+          return !["Male", "Female", "Other"].includes(value)
+            ? "Please select a valid gender"
+            : "";
+        case "dob": {
+          if (!value) return "Date of birth is required";
+          const dobDate = new Date(value);
+          const today = new Date();
+          const age = today.getFullYear() - dobDate.getFullYear();
+          if (dobDate > today) return "Date of birth cannot be in the future";
+          if (age < 16) return "Age must be at least 16 years";
+          if (age > 100) return "Please enter a valid date of birth";
+          return "";
+        }
+        case "category":
+          return !["General", "OBC", "SC", "ST", "EWS"].includes(value)
+            ? "Please select a valid category"
+            : "";
+        case "pwd":
+          return !["Yes", "No"].includes(value)
+            ? "Please select Yes or No for PWD"
+            : "";
+        case "typeOfDisability":
+          if (formData.pwd === "Yes" && !trimmedValue)
+            return "Type of disability is required when PWD is Yes";
+          if (formData.pwd === "Yes" && trimmedValue.length < 3)
+            return "Please provide more specific details about the disability";
+          return "";
+        case "nationality":
+          if (!trimmedValue) return "Nationality is required";
+          if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
+            return "Should only contain letters and spaces";
+          return "";
+        default:
+          return "";
+      }
+    },
+    [formData.pwd]
+  );
 
-  const validateAllFields = () => {
+  const validateAllFields = useCallback(() => {
     const requiredFields = [
       "picture",
       "name",
@@ -63,6 +74,11 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       "pwd",
       "nationality",
     ];
+
+    if (formData.pwd === "Yes") {
+      requiredFields.push("typeOfDisability");
+    }
+
     const validationErrors = {};
 
     requiredFields.forEach((field) => {
@@ -74,13 +90,13 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
     };
-  };
+  }, [formData, validateField]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [formData]);
+  }, [formData, onChange, validateAllFields]);
 
   const handleFieldChange = (fieldName, value) => onChange(fieldName, value);
 
@@ -260,7 +276,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
         {formData.pwd === "Yes" && (
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              Type of Disability
+              Type of Disability <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -268,7 +284,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               onChange={(e) =>
                 handleFieldChange("typeOfDisability", e.target.value)
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              className={`w-full border ${errors.typeOfDisability ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-2`}
               placeholder="Specify disability"
             />
             {errors.typeOfDisability && (
@@ -286,10 +302,10 @@ const Personal = ({ formData, onChange, errors = {} }) => {
           </label>
           <input
             type="text"
-            value={formData.nationality || "Indian"}
+            value={formData.nationality}
             onChange={(e) => handleFieldChange("nationality", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            placeholder="Enter nationality"
+            placeholder="Please Enter nationality"
           />
           {errors.nationality && (
             <span className="text-red-500 text-sm mt-1">

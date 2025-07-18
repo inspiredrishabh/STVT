@@ -14,7 +14,7 @@ const initialFormData = {
   category: "",
   pwd: "",
   typeOfDisability: "",
-  nationality: "INDIAN",
+  nationality: "Indian",
 
   currentAddress: "",
   permanentAddress: "",
@@ -260,8 +260,8 @@ const WtcMain = () => {
             onClick={step === steps.length - 1 ? handleSubmit : handleNext}
             disabled={isSubmitting}
             className={`px-6 py-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-200 shadow-md ${isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-orange-500 hover:bg-orange-600"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600"
               } text-white`}
           >
             {isSubmitting
