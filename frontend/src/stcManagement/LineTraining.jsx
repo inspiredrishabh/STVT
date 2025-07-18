@@ -948,21 +948,14 @@ const LineTraining = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
                 {stats.totalTraineesInTraining}
               </p>
               <p className="text-sm text-gray-600">Total Training Slots</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <p className="text-2xl font-bold text-gray-900">
-                {Array.isArray(trainings) && trainings.length > 0
-                  ? Math.round(stats.totalTraineesInTraining / trainings.length)
-                  : 0}
-              </p>
-              <p className="text-sm text-gray-600">Avg. Trainees per Program</p>
-            </div>
+
             <div className="text-center p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">
                 {Array.isArray(trainings)
