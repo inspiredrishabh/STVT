@@ -823,10 +823,26 @@ function Dashboard() {
   // Compute active candidates for each section
   const getActiveCandidates = (type) => {
     const arr = allCandidates[type] || [];
+    // Today's date at 00:00:00
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return arr.filter((item) => {
-      const date = getSparingDate(item, type);
+      const dateStr = getSparingDate(item, type);
+      if (!dateStr) return false;
+      // Parse date string (support both yyyy-mm-dd and dd-mm-yyyy)
+      let sparingDate = new Date(dateStr);
+      if (isNaN(sparingDate)) {
+        // Try dd-mm-yyyy
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+          sparingDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      }
+      sparingDate.setHours(0, 0, 0, 0);
+      // Only include if sparing date is today or in the future
       return (
-        date && (!item.resignation_status || item.resignation_status !== "yes")
+        sparingDate >= today &&
+        (!item.resignation_status || item.resignation_status !== "yes")
       );
     });
   };
