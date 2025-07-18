@@ -1,8 +1,46 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0.0",
   "type": "module",
+  "authors": [
+    {
+      "name": "Rishabh Gupta (lead)",
+      "github": "https://github.com/inspiredrishabh"
+    },
+    {
+      "name": "Shivam Yadav",
+      "github": "https://github.com/alvindevil"
+    },
+    {
+      "name": "Priyanshu Kumar",
+      "github": "https://github.com/priyanshu6729"
+    },
+    {
+      "name": "Awanish Yadav",
+      "github": "https://github.com/Awanish-26"
+    },
+    {
+      "name": "Somesh Pratap Singh",
+      "github": "https://github.com/sammy0318"
+    },
+    {
+      "name": "Venkatesh",
+      "github": "https://github.com/mherenow"
+    },
+    {
+      "name": "Pallavi Tripathi",
+      "github": "https://github.com/pallavi625"
+    },
+    {
+      "name": "Pratyush Kumar",
+      "github": "https://github.com/Pratyush344"
+    },
+    {
+      "name": "Shivansh Kumar",
+      "github": "https://github.com/kumar-shivansh"
+    }
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

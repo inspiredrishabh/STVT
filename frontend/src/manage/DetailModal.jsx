@@ -83,7 +83,7 @@ const DetailModal = ({ candidate, onClose }) => {
     if (candidate.type === "STC") {
       courseData.push(
         { label: "Module No.", value: candidate.moduleNo },
-        { label: "Module Name", value: candidate.moduleName },
+        // { label: "Module Name", value: candidate.moduleName },
         { label: "Course Duration", value: candidate.courseDuration },
       );
     } else if (candidate.type === "WTC") {
@@ -176,36 +176,36 @@ const DetailModal = ({ candidate, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border-2 border-orange-100">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
           <div className="flex items-center space-x-4">
             <img
               src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`}
               alt={candidate.name}
-              className="w-16 h-16 rounded-2xl object-cover shadow-lg"
+              className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
             />
             <div>
-              <h3 className="text-xl font-bold text-[#1B2A41]">
+              <h3 className="text-xl font-bold text-gray-800">
                 {candidate.name}
               </h3>
               <p className="text-gray-600">{designation}</p>
-              <p className="text-sm text-black font-medium">
+              <p className="text-sm text-blue-600 font-semibold">
                 {candidate.type} Candidate
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
+            className="p-2 text-gray-500 hover:text-gray-800 rounded-full hover:bg-gray-200 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6 overflow-y-auto">
+        <div className="p-8 space-y-6 overflow-y-auto bg-gray-50/50">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <InfoSection
               icon={User}
@@ -259,9 +259,9 @@ const DetailModal = ({ candidate, onClose }) => {
 };
 
 const InfoSection = ({ title, icon: Icon, data }) => (
-  <div className="bg-white rounded-2xl p-4 h-full border-2 border-orange-100">
-    <h5 className="font-semibold text-[#1B2A41] flex items-center mb-4">
-      {Icon && <Icon className="h-5 w-5 mr-2 text-black" />}
+  <div className="bg-white rounded-lg p-5 h-full border border-gray-200 shadow-sm">
+    <h5 className="font-semibold text-gray-700 flex items-center mb-4 text-base">
+      {Icon && <Icon className="h-5 w-5 mr-3 text-blue-600" />}
       {title}
     </h5>
     <div className="space-y-3 text-sm">
@@ -271,10 +271,10 @@ const InfoSection = ({ title, icon: Icon, data }) => (
           className={`flex ${fullWidth ? "flex-col items-start" : "justify-between items-center"
             }`}
         >
-          <span className="font-medium text-black whitespace-nowrap">
+          <span className="font-medium text-gray-600 whitespace-nowrap">
             {label}:
           </span>
-          <span className={`text-[#1B2A41] ${!fullWidth && "text-right pl-2"}`}>
+          <span className={`text-gray-800 ${!fullWidth && "text-right pl-2"}`}>
             {value || "N/A"}
           </span>
         </div>

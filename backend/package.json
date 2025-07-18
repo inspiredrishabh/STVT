@@ -2,6 +2,7 @@
   "name": "stc-backend",
   "version": "1.0.0",
   "description": "STC Registration Backend API",
+  "authers": "Rishabh Gupta , Awanish Yadav",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

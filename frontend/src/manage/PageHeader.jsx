@@ -35,41 +35,41 @@ const PageHeader = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#1B2A41] mb-1">Manage Candidates</h1>
-          <p className="text-gray-600">View, filter, and manage all candidate records.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">Manage Candidates</h1>
+          <p className="text-gray-500 text-sm">View, filter, and manage all candidate records.</p>
         </div>
 
         {/* Filters are only shown in the list view */}
         {isListView && (
           <div className="flex flex-col gap-2">
             {/* Main Filter Categories */}
-            <div className="flex items-center bg-white rounded-xl p-1 shadow-inner flex-wrap gap-1">
+            <div className="flex items-center bg-gray-100 rounded-lg p-1 flex-wrap gap-1">
               <ToggleButton
                 isActive={areAllSelected()}
                 onClick={toggleAllFilters}
                 text="All"
-                className="bg-[#FF8D21] hover:bg-[#FFA652]"
+                activeClassName="bg-blue-600 text-white"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('STC')}
                 onClick={() => toggleFilter('STC')}
                 text="STC"
-                className="bg-[#008080] hover:bg-[#006666]"
+                activeClassName="bg-blue-500 text-white"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('WTC')}
                 onClick={() => toggleFilter('WTC')}
                 text="WTC"
-                className="bg-[#FFA652] hover:bg-[#FF8D21]"
+                activeClassName="bg-green-500 text-white"
               />
               <ToggleButton
                 isActive={selectedFilters.includes('Non Railway')}
                 onClick={() => toggleFilter('Non Railway')}
                 text="Non Railway"
-                className="bg-purple-500 hover:bg-purple-600"
+                activeClassName="bg-gray-500 text-white"
               />
             </div>
           </div>
@@ -79,12 +79,12 @@ const PageHeader = ({
   );
 };
 
-const ToggleButton = ({ isActive, onClick, text, className }) => (
+const ToggleButton = ({ isActive, onClick, text, activeClassName }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm whitespace-nowrap ${isActive
-      ? `text-white shadow-md ${className}`
-      : 'text-gray-600 hover:text-[#1B2A41] hover:bg-white/80'
+    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm whitespace-nowrap ${isActive
+      ? `${activeClassName} shadow-sm`
+      : 'text-gray-600 hover:bg-gray-200'
       }`}
   >
     {text}
