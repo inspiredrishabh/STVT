@@ -31,6 +31,11 @@ router.get("/filter/dateRange", (req, res) =>
   controller.getCandidatesByDateRange(req, res)
 );
 
+// Fetch all line training records for a ticket number (excluding designation)
+router.get("/by-ticket/:ticketNo", (req, res) =>
+  controller.getAllByTicketNumber(req, res)
+);
+
 // Legacy aliases (optional)
 router.get("/legacy/:id", (req, res) => controller.getCandidateById(req, res));
 router.put("/legacy/:id", (req, res) => controller.updateCandidate(req, res));

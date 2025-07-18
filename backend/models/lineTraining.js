@@ -329,6 +329,21 @@ class lineTrainingModel {
     });
   }
 
+  // Get all line training records for a ticket number (excluding designation)
+  getAllByTicketNumber(ticketNumber) {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT id, ticket_no, name, activity_centre, start_date, end_date, remark, created_at, updated_at
+                   FROM ${this.tableName} WHERE ticket_no = ? ORDER BY created_at DESC`;
+      db.all(sql, [ticketNumber], (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
   // Backward compatibility methods
   update(id, data) {
     return this.updateByTicketNumber(id, data);

@@ -44,9 +44,8 @@ const TraineeProfile = () => {
   });
   const [submittingResignation, setSubmittingResignation] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
-  const [selectedTraineeForSession, setSelectedTraineeForSession] = useState(
-    null
-  );
+  const [selectedTraineeForSession, setSelectedTraineeForSession] =
+    useState(null);
   const [sessionData, setSessionData] = useState({
     session1: { start: null, end: null },
     session2: { start: null, end: null },
@@ -54,6 +53,7 @@ const TraineeProfile = () => {
     session4: { start: null, end: null },
   });
   const [requiredSessions, setRequiredSessions] = useState(4);
+  const [lineTrainingData, setLineTrainingData] = useState({}); // { ticketNo: [lineTrainingObj, ...] }
 
   const courseStructure = {
     "MSE-C&W": {
@@ -204,16 +204,15 @@ const TraineeProfile = () => {
 
       const TraineeArray = Array.isArray(data.data)
         ? data.data.map((trainee) => ({
-          ...trainee,
-          // Map resignation_status to status for UI consistency
-          status:
-            trainee.resignation_status === "yes" ? "Resigned" : "Active",
-          // Keep original data for ticket number consistency
-          ticketNo: trainee.ticket_no,
-          ticketNumber: trainee.ticket_no,
-        }))
+            ...trainee,
+            // Map resignation_status to status for UI consistency
+            status:
+              trainee.resignation_status === "yes" ? "Resigned" : "Active",
+            // Keep original data for ticket number consistency
+            ticketNo: trainee.ticket_no,
+            ticketNumber: trainee.ticket_no,
+          }))
         : [];
-
 
       setTrainees(TraineeArray);
       setFilteredTrainees(TraineeArray);
@@ -224,6 +223,33 @@ const TraineeProfile = () => {
       setLoading(false);
     }
   };
+
+  // Fetch line training info for all trainees
+  useEffect(() => {
+    const fetchAllLineTraining = async () => {
+      if (!trainees || trainees.length === 0) return;
+      const results = {};
+      await Promise.all(
+        trainees.map(async (trainee) => {
+          try {
+            const res = await fetch(
+              `/api/line-trainings/by-ticket/${trainee.ticketNo}`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              results[trainee.ticketNo] = data.data || [];
+            } else {
+              results[trainee.ticketNo] = [];
+            }
+          } catch {
+            results[trainee.ticketNo] = [];
+          }
+        })
+      );
+      setLineTrainingData(results);
+    };
+    fetchAllLineTraining();
+  }, [trainees]);
 
   // Search functionality
   useEffect(() => {
@@ -266,7 +292,8 @@ const TraineeProfile = () => {
     try {
       // Navigate to line training page with trainee data
       navigate(
-        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
+        `/stc/line-training?traineeId=${trainee.id}&ticketNo=${
+          trainee.ticketNo
         }&name=${encodeURIComponent(trainee.name)}`
       );
     } catch (error) {
@@ -292,8 +319,9 @@ const TraineeProfile = () => {
     try {
       // Call resignation API with ticket number
       const response = await fetch(
-        `${API_BASE}/${selectedTraineeForResignation.ticket_no ||
-        selectedTraineeForResignation.ticketNo
+        `${API_BASE}/${
+          selectedTraineeForResignation.ticket_no ||
+          selectedTraineeForResignation.ticketNo
         }/resign`,
         {
           method: "PUT",
@@ -315,10 +343,10 @@ const TraineeProfile = () => {
       const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
-            ...trainee,
-            status: "Resigned",
-            resignation_status: "yes",
-          }
+              ...trainee,
+              status: "Resigned",
+              resignation_status: "yes",
+            }
           : trainee
       );
 
@@ -352,10 +380,10 @@ const TraineeProfile = () => {
       const updatedTrainees = trainees.map((trainee) =>
         trainee.id === selectedTraineeForResignation.id
           ? {
-            ...trainee,
-            status: "Resigned",
-            resignation_status: "yes",
-          }
+              ...trainee,
+              status: "Resigned",
+              resignation_status: "yes",
+            }
           : trainee
       );
 
@@ -398,7 +426,7 @@ const TraineeProfile = () => {
       return {
         designation: moduleNo,
         moduleInfo: courseStructure[moduleNo],
-        sessions: Object.keys(courseStructure[moduleNo].sessions).length
+        sessions: Object.keys(courseStructure[moduleNo].sessions).length,
       };
     }
 
@@ -443,7 +471,9 @@ const TraineeProfile = () => {
     // Get course structure for the designation
     const moduleInfo = courseStructure[designation];
     if (!moduleInfo) {
-      throw new Error(`Course structure not found for designation: ${designation}`);
+      throw new Error(
+        `Course structure not found for designation: ${designation}`
+      );
     }
 
     return {
@@ -545,7 +575,9 @@ const TraineeProfile = () => {
               <div className="flex-shrink-0">
                 {selectedTraineeForSession.picture ? (
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForSession.picture}`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                      selectedTraineeForSession.picture
+                    }`}
                     alt={selectedTraineeForSession.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -740,7 +772,9 @@ const TraineeProfile = () => {
                       </button>
                       {trainee.picture ? (
                         <img
-                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
+                          src={`http://${
+                            import.meta.env.VITE_BACKEND_IP
+                          }:5000/${trainee.picture}`}
                           alt={trainee.name}
                           className="w-10 h-10 rounded-full object-cover"
                         />
@@ -778,11 +812,13 @@ const TraineeProfile = () => {
                           Manage
                         </button>
                         <Link
-                          to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${trainee.ticketNo
-                            }&name=${encodeURIComponent(
-                              trainee.name
-                            )}&courseCode=${trainee.courseCode
-                            }&autoSelect=true`}
+                          to={`/stc/feed-marks?traineeId=${
+                            trainee.id
+                          }&ticketNo=${
+                            trainee.ticketNo
+                          }&name=${encodeURIComponent(
+                            trainee.name
+                          )}&courseCode=${trainee.courseCode}&autoSelect=true`}
                           className="flex items-center justify-center px-2 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-xs font-medium"
                           title="View/Add Marks"
                         >
@@ -808,16 +844,21 @@ const TraineeProfile = () => {
                         <button
                           onClick={() => handleResignation(trainee)}
                           disabled={trainee.status === "Resigned"}
-                          className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors text-xs font-medium ${trainee.status === "Resigned"
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : "bg-red-600 text-white hover:bg-red-700"
-                            }`}
+                          className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors text-xs font-medium ${
+                            trainee.status === "Resigned"
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-red-600 text-white hover:bg-red-700"
+                          }`}
                           title={
-                            trainee.status === "Resigned" ? "Resigned" : "Resign"
+                            trainee.status === "Resigned"
+                              ? "Resigned"
+                              : "Resign"
                           }
                         >
                           <Users className="w-4 h-4 mr-1" />
-                          {trainee.status === "Resigned" ? "Resigned" : "Resign"}
+                          {trainee.status === "Resigned"
+                            ? "Resigned"
+                            : "Resign"}
                         </button>
                       </div>
                     </div>
@@ -914,10 +955,7 @@ const TraineeProfile = () => {
                                 label="Course"
                                 value={trainee.module_no}
                               />
-                              <DetailItem
-                                label="Batch"
-                                value={trainee.batch}
-                              />
+                              <DetailItem label="Batch" value={trainee.batch} />
                               <DetailItem
                                 label="Joining Date"
                                 value={formatDateDDMMYYYY(
@@ -943,7 +981,7 @@ const TraineeProfile = () => {
                           {(() => {
                             const sessionCount =
                               trainee.designation?.startsWith("MJP-") ||
-                                trainee.module_no?.includes("MJP")
+                              trainee.module_no?.includes("MJP")
                                 ? 2
                                 : 4;
 
@@ -961,17 +999,13 @@ const TraineeProfile = () => {
                                 return (
                                   <div
                                     key={sessionNum}
-                                    className="text-xs bg-white rounded-md p-2 border"
+                                    className="text-indigo-700 font-bold"
                                   >
-                                    <p className="text-indigo-700 font-bold mb-1">
-                                      Session {sessionNum}
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2 text-gray-600">
-                                      <p>
-                                        Start: {formatDateDDMMYYYY(startDate)}
-                                      </p>
-                                      <p>End: {formatDateDDMMYYYY(endDate)}</p>
-                                    </div>
+                                    Session {sessionNum}:{" "}
+                                    <span className="text-gray-600">
+                                      {formatDateDDMMYYYY(startDate)} -{" "}
+                                      {formatDateDDMMYYYY(endDate)}
+                                    </span>
                                   </div>
                                 );
                               }
@@ -991,6 +1025,54 @@ const TraineeProfile = () => {
                             );
                           })()}
                         </div>
+                      </div>
+                      {/* Line Training Info */}
+                      <div className="mt-6">
+                        <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                          Line Training Information
+                        </h4>
+                        {lineTrainingData[trainee.ticketNo] &&
+                        lineTrainingData[trainee.ticketNo].length > 0 ? (
+                          <div className="space-y-3">
+                            {lineTrainingData[trainee.ticketNo].map((lt) => (
+                              <div
+                                key={lt.id}
+                                className="bg-white rounded-md p-3 border text-xs"
+                              >
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Activity Centre:
+                                    </span>{" "}
+                                    {lt.activity_centre}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Start Date:
+                                    </span>{" "}
+                                    {formatDateDDMMYYYY(lt.start_date)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      End Date:
+                                    </span>{" "}
+                                    {formatDateDDMMYYYY(lt.end_date)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Remark:
+                                    </span>{" "}
+                                    {lt.remark || "N/A"}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            No line training records found.
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1047,7 +1129,9 @@ const TraineeProfile = () => {
                 <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg border">
                   {selectedTraineeForResignation.picture ? (
                     <img
-                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForResignation.picture}`}
+                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                        selectedTraineeForResignation.picture
+                      }`}
                       alt={selectedTraineeForResignation.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
