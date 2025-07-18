@@ -96,19 +96,58 @@ class DashboardAPI {
         this.getWtcCandidatesCount(),
         this.getNonRailwayCandidatesCount(),
       ]);
-      const total = stc + wtc + nonRailway;
+      // Fetch all STC candidates for more stats
+      const stcRes = await fetch(`${this.baseURL}/stc`);
+      const stcData = await stcRes.json();
+      const stcCandidates =
+        stcData.success && Array.isArray(stcData.data) ? stcData.data : [];
+      // Designation-wise counts
+      const designationCounts = {};
+      const batchSet = new Set();
+      let resignedCount = 0;
+      stcCandidates.forEach((c) => {
+        const desig = (c.designation || "").split("-")[0];
+        designationCounts[desig] = (designationCounts[desig] || 0) + 1;
+        if (c.batch) batchSet.add(c.batch);
+        if (c.resignation_status === "yes") resignedCount++;
+      });
       return {
         success: true,
         data: {
-          totalCandidates: total,
+          totalCandidates: stc + wtc + nonRailway,
           railwayCandidates: stc + wtc,
           nonRailwayCandidates: nonRailway,
           stcCandidates: stc,
           wtcCandidates: wtc,
+          designationCounts,
+          totalBatches: batchSet.size,
+          resignedCount,
         },
       };
     } catch {
       return { success: false, data: null };
+    }
+  }
+  async getAllUnits() {
+    try {
+      const response = await fetch(`${this.baseURL}/stc`);
+      const data = await response.json();
+      if (!data.success || !Array.isArray(data.data)) return [];
+      const unitCounts = {};
+      data.data.forEach((c) => {
+        const unit = c.unit || "Unknown";
+        unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+      });
+      // Sort all units by count desc
+      return Object.entries(unitCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([unit, count], i) => ({
+          unit,
+          count,
+          color: ["#3b82f6", "#10b981", "#8b5cf6", "#f59e42", "#ef4444"][i % 5],
+        }));
+    } catch {
+      return [];
     }
   }
   async getRecentActivities() {
@@ -306,11 +345,28 @@ const SimplePieChart = ({ data, title }) => (
   </div>
 );
 
+function StatCard({
+  title,
+  value,
+  color = "bg-orange-100",
+  textColor = "text-orange-700",
+}) {
+  return (
+    <div
+      className={`rounded-2xl shadow border-2 p-4 ${color} border-orange-100`}
+    >
+      <div className={`text-xs font-medium ${textColor}`}>{title}</div>
+      <div className="text-2xl font-bold text-gray-900">{value}</div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const [categoriesData, setCategoriesData] = useState([]);
   const [distributionData, setDistributionData] = useState([]);
   const [overallStats, setOverallStats] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [allUnits, setAllUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { userRole } = useAuth();
@@ -324,16 +380,18 @@ function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [cat, dist, stats, acts] = await Promise.all([
+      const [cat, dist, stats, acts, units] = await Promise.all([
         dashboardAPI.getCategoriesData(),
         dashboardAPI.getDistributionData(),
         dashboardAPI.getOverallStats(),
         dashboardAPI.getRecentActivities(),
+        dashboardAPI.getAllUnits(),
       ]);
       if (cat.success) setCategoriesData(cat.data);
       if (dist.success) setDistributionData(dist.data);
       if (stats.success) setOverallStats(stats.data);
       if (acts.success) setRecentActivities(acts.data);
+      setAllUnits(units);
     } catch {
       setError("Failed to load dashboard data");
     } finally {
@@ -436,93 +494,63 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Main Stats Cards */}
         {overallStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Candidates
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.totalCandidates}
-                </p>
-              </div>
-            </div>
-            {/* Removed Active Courses, Completed, and Training Capacity cards */}
+            <StatCard
+              title="Total Candidates"
+              value={overallStats.totalCandidates}
+            />
+            <StatCard
+              title="Railway Candidates"
+              value={overallStats.railwayCandidates}
+              color="bg-blue-50"
+              textColor="text-blue-700"
+            />
+            <StatCard
+              title="Non-Railway Candidates"
+              value={overallStats.nonRailwayCandidates}
+              color="bg-purple-50"
+              textColor="text-purple-700"
+            />
+            <StatCard
+              title="Resigned Candidates"
+              value={overallStats.resignedCount}
+              color="bg-red-50"
+              textColor="text-red-700"
+            />
           </div>
         )}
 
+        {/* Designation-wise Stats */}
         {overallStats && (
           <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Training Categories Overview
+              STC Designation-wise Candidates
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-600">
-                  Railway Training
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.railwayCandidates}
-                </p>
-                <div className="mt-3 space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">STC:</span>
-                    <span className="font-medium text-gray-900">
-                      {overallStats.stcCandidates}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">WTC:</span>
-                    <span className="font-medium text-gray-900">
-                      {overallStats.wtcCandidates}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-2xl border-2 border-purple-100">
-                <h3 className="text-lg font-semibold text-purple-600">
-                  Non-Railway Training
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.nonRailwayCandidates}
-                </p>
-                <p className="text-sm text-gray-600 mt-3">
-                  General training for non-railway personnel
-                </p>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-2xl border-2 border-green-100">
-                <h3 className="text-lg font-semibold text-green-600">
-                  Total Candidates
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.totalCandidates}
-                </p>
-                <div className="mt-3">
-                  <div className="text-sm text-gray-600">
-                    Railway:{" "}
-                    {Math.round(
-                      (overallStats.railwayCandidates /
-                        overallStats.totalCandidates) *
-                        100
-                    )}
-                    %
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Non-Railway:{" "}
-                    {Math.round(
-                      (overallStats.nonRailwayCandidates /
-                        overallStats.totalCandidates) *
-                        100
-                    )}
-                    %
-                  </div>
-                </div>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {Object.entries(overallStats.designationCounts || {}).map(
+                ([desig, count]) => (
+                  <StatCard
+                    key={desig}
+                    title={desig}
+                    value={count}
+                    color="bg-orange-50"
+                    textColor="text-orange-700"
+                  />
+                )
+              )}
+              <StatCard
+                title="Total"
+                value={overallStats.totalBatches}
+                color="bg-green-50"
+                textColor="text-green-700"
+              />
             </div>
           </div>
         )}
 
+        {/* Category and Pie Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
             <SimpleBarChart
@@ -537,6 +565,46 @@ function Dashboard() {
             />
           </div>
         </div>
+
+        {/* All Units by Candidate Count */}
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-blue-100 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            All Units by Candidate Count (STC)
+          </h2>
+          {allUnits.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              No data available
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {allUnits.map((item, idx) => (
+                <div key={idx} className="flex items-center space-x-3">
+                  <div className="w-32 text-sm font-medium text-gray-700 text-right">
+                    {item.unit}
+                  </div>
+                  <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                    <div
+                      className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                      style={{
+                        backgroundColor: item.color,
+                        width: `${
+                          (item.count /
+                            Math.max(...allUnits.map((d) => d.count))) *
+                          100
+                        }%`,
+                        minWidth: "40px",
+                      }}
+                    >
+                      {item.count}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activities */}
         <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -607,4 +675,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-                    
