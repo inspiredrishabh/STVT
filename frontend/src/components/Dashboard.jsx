@@ -477,6 +477,36 @@ function StatCard({
   );
 }
 
+// Utility to get sparing date for each type
+function getSparingDate(item, type) {
+  if (type === "stc")
+    return (
+      item.date_of_sparing ||
+      item.dateOfSparing ||
+      item.sparingDate ||
+      item.sparing_date ||
+      item.sparing_on ||
+      ""
+    );
+  if (type === "wtc")
+    return (
+      item.date_of_sparing ||
+      item.dateOfSparing ||
+      item.sparingDate ||
+      item.sparing_on ||
+      ""
+    );
+  if (type === "nonrailway")
+    return (
+      item.date_of_sparing ||
+      item.sparing_on ||
+      item.sparingDate ||
+      item.dateOfSparing ||
+      ""
+    );
+  return "";
+}
+
 function Dashboard() {
   const [categoriesData, setCategoriesData] = useState([]);
   const [distributionData, setDistributionData] = useState([]);
@@ -745,40 +775,61 @@ function Dashboard() {
     setLineTrainingDetails(details);
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
-          <span className="mt-3 text-gray-700 font-semibold">
-            Loading dashboard...
-          </span>
-        </div>
-      </div>
-    );
+  const [allCandidates, setAllCandidates] = useState({
+    stc: [],
+    wtc: [],
+    nonrailway: [],
+  });
+  const [activeSection, setActiveSection] = useState(null);
+  const [activeCandidates, setActiveCandidates] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
 
-  if (error)
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="bg-white border-2 border-orange-100 rounded-3xl p-6 shadow-lg">
-          <div className="flex items-center">
-            <div className="text-orange-400 mr-3">⚠️</div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900">
-                Error Loading Dashboard
-              </h3>
-              <p className="text-gray-600 mt-1">{error}</p>
-              <button
-                onClick={loadDashboardData}
-                className="mt-3 bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl text-sm transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // Fetch all data for STC, WTC, Non-Railway and parse, handle error
+  useEffect(() => {
+    loadDashboardData();
+    loadLineTrainingStats();
+    loadAllCandidates();
+  }, []);
+
+  const loadAllCandidates = async () => {
+    setFetchError(null);
+    try {
+      const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
+        fetch("/api/stc"),
+        fetch("/api/wtc"),
+        fetch("/api/nonrailway"),
+      ]);
+      if (!stcRes.ok || !wtcRes.ok || !nonRailwayRes.ok) {
+        throw new Error("Failed to fetch one or more candidate datasets");
+      }
+      const [stcData, wtcData, nonRailwayData] = await Promise.all([
+        stcRes.json(),
+        wtcRes.json(),
+        nonRailwayRes.json(),
+      ]);
+      setAllCandidates({
+        stc: Array.isArray(stcData.data) ? stcData.data : [],
+        wtc: Array.isArray(wtcData.data) ? wtcData.data : [],
+        nonrailway: Array.isArray(nonRailwayData.data)
+          ? nonRailwayData.data
+          : [],
+      });
+    } catch (err) {
+      setAllCandidates({ stc: [], wtc: [], nonrailway: [] });
+      setFetchError("Failed to fetch candidate data. Please try again.");
+    }
+  };
+
+  // Compute active candidates for each section
+  const getActiveCandidates = (type) => {
+    const arr = allCandidates[type] || [];
+    return arr.filter((item) => {
+      const date = getSparingDate(item, type);
+      return (
+        date && (!item.resignation_status || item.resignation_status !== "yes")
+      );
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -1011,6 +1062,130 @@ function Dashboard() {
           )}
         </div>
 
+        {/* Active Candidates Sections */}
+        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Active Candidates by Category
+          </h2>
+          {fetchError && (
+            <div className="mb-4 text-red-600 font-semibold">
+              {fetchError}
+              <button
+                className="ml-4 px-3 py-1 bg-orange-200 rounded text-orange-900"
+                onClick={loadAllCandidates}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-4 mb-4">
+            <button
+              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
+                activeSection === "stc"
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "bg-blue-50 text-blue-700 border-blue-200"
+              }`}
+              onClick={() => {
+                setActiveSection("stc");
+                setActiveCandidates(getActiveCandidates("stc"));
+              }}
+            >
+              STC Active ({getActiveCandidates("stc").length})
+            </button>
+            <button
+              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
+                activeSection === "wtc"
+                  ? "bg-green-500 text-white border-green-500"
+                  : "bg-green-50 text-green-700 border-green-200"
+              }`}
+              onClick={() => {
+                setActiveSection("wtc");
+                setActiveCandidates(getActiveCandidates("wtc"));
+              }}
+            >
+              WTC Active ({getActiveCandidates("wtc").length})
+            </button>
+            <button
+              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
+                activeSection === "nonrailway"
+                  ? "bg-purple-500 text-white border-purple-500"
+                  : "bg-purple-50 text-purple-700 border-purple-200"
+              }`}
+              onClick={() => {
+                setActiveSection("nonrailway");
+                setActiveCandidates(getActiveCandidates("nonrailway"));
+              }}
+            >
+              Non-Railway Active ({getActiveCandidates("nonrailway").length})
+            </button>
+          </div>
+          {activeSection && (
+            <div className="overflow-auto max-h-[50vh] border rounded-xl bg-white">
+              <table className="min-w-full text-xs md:text-sm border">
+                <thead className="sticky top-0 bg-orange-50 z-10">
+                  <tr>
+                    <th className="px-2 py-1 border">Ticket No</th>
+                    <th className="px-2 py-1 border">Name</th>
+                    <th className="px-2 py-1 border">Designation</th>
+                    <th className="px-2 py-1 border">Unit</th>
+                    <th className="px-2 py-1 border">Date of Sparing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeCandidates.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="text-center text-gray-400 py-8"
+                      >
+                        No active candidates found.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeCandidates.map((c, i) => (
+                      <tr
+                        key={c.ticket_no || c.ticketNo || c.id || i}
+                        className="hover:bg-orange-50 transition"
+                      >
+                        <td
+                          className="px-2 py-1 border truncate max-w-[120px]"
+                          title={c.ticket_no || c.ticketNo || c.id}
+                        >
+                          {c.ticket_no || c.ticketNo || c.id}
+                        </td>
+                        <td
+                          className="px-2 py-1 border truncate max-w-[160px]"
+                          title={c.name}
+                        >
+                          {c.name}
+                        </td>
+                        <td
+                          className="px-2 py-1 border truncate max-w-[120px]"
+                          title={c.designation}
+                        >
+                          {c.designation}
+                        </td>
+                        <td
+                          className="px-2 py-1 border truncate max-w-[120px]"
+                          title={c.unit}
+                        >
+                          {c.unit}
+                        </td>
+                        <td
+                          className="px-2 py-1 border truncate max-w-[120px]"
+                          title={getSparingDate(c, activeSection)}
+                        >
+                          {getSparingDate(c, activeSection)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Stat Details Modal/Section */}
         {isModalOpen && (statDetailsTitle || lineTrainingDetailsTitle) && (
           <div
@@ -1029,19 +1204,6 @@ function Dashboard() {
                 </h3>
                 <div className="flex space-x-2">
                   {/* Removed Export CSV button */}
-                  {/* <button
-                    className="bg-orange-100 hover:bg-orange-200 text-orange-700 px-3 py-1 rounded transition text-xs border border-orange-200"
-                    onClick={handleExportCSV}
-                    disabled={
-                      !(
-                        (statDetailsTitle && statDetails.length) ||
-                        (lineTrainingDetailsTitle && lineTrainingDetails.length)
-                      )
-                    }
-                    title="Export table as CSV"
-                  >
-                    Export CSV
-                  </button> */}
                   <button
                     className="text-orange-500 hover:text-orange-700 px-3 py-1 rounded transition"
                     onClick={() => {
