@@ -460,78 +460,47 @@ const AttendanceSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-lg border-b border-gray-200 w-full">
-        <div className="w-full px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group">
-                <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <UserCheck className="w-5 h-5 text-white" />
-                  </div>
-                  Attendance System
-                </h1>
-                <p className="text-gray-600 text-sm">
-                  Mark and track trainee attendance
-                </p>
-              </div>
-            </div>
-            <div className="hidden md:flex items-center space-x-3">
-              <div className="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700 font-medium text-xs">System Active</span>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-500">Current Date</div>
-                <div className="text-xs font-medium text-gray-700">
-                  {new Date().toLocaleDateString("en-IN", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-100">
 
       {/* Main Content */}
-      <div className="w-full px-8 py-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-9xl mx-auto">
-          {/* Search Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Search className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Search Trainee</h2>
-                <p className="text-gray-600 text-sm">Find trainee to mark attendance</p>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group">
+                  <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
+                </Link>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-700 rounded-md flex items-center justify-center">
+                      <UserCheck className="w-5 h-5 text-white" />
+                    </div>
+                    Attendance System
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    Mark and track trainee attendance
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Search Method Selection */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-6 border-b border-gray-200 pb-6">
               <button
                 onClick={() => setSearchMethod('ticket')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'ticket'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-5 py-2 rounded-md font-medium transition-all duration-200 ${searchMethod === 'ticket'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                   }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod('dropdown')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === 'dropdown'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-5 py-2 rounded-md font-medium transition-all duration-200 ${searchMethod === 'dropdown'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                   }`}
               >
                 Select from List
@@ -542,7 +511,7 @@ const AttendanceSystem = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               {searchMethod === 'ticket' ? (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ticket Number
                   </label>
                   <input
@@ -550,7 +519,7 @@ const AttendanceSystem = () => {
                     value={ticketNumber}
                     onChange={(e) => setTicketNumber(e.target.value)}
                     placeholder="Enter ticket number (e.g., WTC/24/001)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     onKeyPress={(e) => e.key === 'Enter' && handleSearchTrainee()}
                   />
                 </div>
@@ -558,7 +527,7 @@ const AttendanceSystem = () => {
                 <div className="md:col-span-2">
                   {/* Removed batch filter dropdown */}
 
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Trainee
                   </label>
                   <select
@@ -567,7 +536,7 @@ const AttendanceSystem = () => {
                       setSelectedTrainee(e.target.value);
                       handleTraineeSelect(e.target.value);
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     disabled={loading}
                   >
                     <option value="">Select a trainee...</option>
@@ -586,7 +555,7 @@ const AttendanceSystem = () => {
                   <button
                     onClick={handleSearchTrainee}
                     disabled={loading || !ticketNumber.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -598,7 +567,7 @@ const AttendanceSystem = () => {
                 )}
                 <button
                   onClick={resetForm}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200"
+                  className="px-5 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-all duration-200"
                 >
                   Reset
                 </button>
@@ -607,9 +576,9 @@ const AttendanceSystem = () => {
 
             {/* Messages */}
             {message.text && (
-              <div className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === 'success'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
+              <div className={`mt-6 p-4 rounded-md flex items-center gap-3 ${message.type === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-300'
+                : 'bg-red-50 text-red-800 border border-red-300'
                 }`}>
                 {message.type === 'success' ? (
                   <CheckCircle className="w-6 h-6" />
@@ -623,34 +592,34 @@ const AttendanceSystem = () => {
 
           {/* Attendance Management */}
           {traineeData && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-gray-200">
+              <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-700 rounded-md flex items-center justify-center">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Attendance Management</h2>
+                    <h2 className="text-xl font-bold text-gray-800">Attendance Management</h2>
                     <p className="text-gray-600 text-sm">Mark attendance for {traineeData.name}</p>
                   </div>
                 </div>
 
                 {/* View Toggle */}
-                <div className="flex bg-gray-100 rounded-xl p-1">
+                <div className="flex bg-gray-200 rounded-md p-1">
                   <button
                     onClick={() => setAttendanceView('monthly-mark')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-mark'
-                      ? 'bg-white text-blue-600 shadow-md'
-                      : 'text-gray-600 hover:text-gray-800'
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-mark'
+                      ? 'bg-white text-blue-700 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-300'
                       }`}
                   >
                     Mark Monthly Attendance
                   </button>
                   <button
                     onClick={() => setAttendanceView('monthly-summary')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-summary'
-                      ? 'bg-white text-blue-600 shadow-md'
-                      : 'text-gray-600 hover:text-gray-800'
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${attendanceView === 'monthly-summary'
+                      ? 'bg-white text-blue-700 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-300'
                       }`}
                   >
                     Monthly Summary
@@ -659,31 +628,31 @@ const AttendanceSystem = () => {
               </div>
 
               {/* Trainee Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <div className="bg-gray-100 rounded-md p-4 mb-6 border border-gray-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Ticket No</span>
-                    <span className="font-semibold">{traineeData.ticketNo}</span>
+                    <span className="text-sm text-gray-600">Ticket No</span>
+                    <span className="font-semibold text-gray-800">{traineeData.ticketNo}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Name</span>
-                    <span className="font-semibold">{traineeData.name}</span>
+                    <span className="text-sm text-gray-600">Name</span>
+                    <span className="font-semibold text-gray-800">{traineeData.name}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Designation</span>
-                    <span className="font-semibold">{traineeData.designation || 'Not specified'}</span>
+                    <span className="text-sm text-gray-600">Designation</span>
+                    <span className="font-semibold text-gray-800">{traineeData.designation || 'Not specified'}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Date of Joining</span>
-                    <span className="font-semibold">{traineeData.dateOfJoiningStcWtcNonRailway || 'Not specified'}</span>
+                    <span className="text-sm text-gray-600">Date of Joining</span>
+                    <span className="font-semibold text-gray-800">{traineeData.dateOfJoiningStcWtcNonRailway || 'Not specified'}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Date of Sparing</span>
-                    <span className="font-semibold">{traineeData.dateOfSparing || 'Not specified'}</span>
+                    <span className="text-sm text-gray-600">Date of Sparing</span>
+                    <span className="font-semibold text-gray-800">{traineeData.dateOfSparing || 'Not specified'}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm text-gray-500">Training Period</span>
-                    <span className="font-semibold">{traineeData.trainingPeriod || 'Not specified'}</span>
+                    <span className="text-sm text-gray-600">Training Period</span>
+                    <span className="font-semibold text-gray-800">{traineeData.trainingPeriod || 'Not specified'}</span>
                   </div>
                 </div>
 
@@ -715,13 +684,13 @@ const AttendanceSystem = () => {
 
               {/* Monthly Attendance Mark Form */}
               {attendanceView === 'monthly-mark' && (
-                <div className="border border-gray-200 rounded-xl p-6">
+                <div className="border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-green-700 rounded-md flex items-center justify-center">
                       <BookOpen className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">Mark Monthly Attendance</h3>
+                      <h3 className="text-lg font-bold text-gray-800">Mark Monthly Attendance</h3>
                       <p className="text-gray-600 text-sm">
                         Record classes for a specific month
                       </p>
@@ -731,13 +700,13 @@ const AttendanceSystem = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Month Selection */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Select Month
                       </label>
                       <select
                         value={selectedMonth}
                         onChange={(e) => setSelectedMonth(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       >
                         <option value="">Select a month...</option>
                         {availableMonths.map(month => (
@@ -749,20 +718,20 @@ const AttendanceSystem = () => {
 
                       {/* Display Current Month's Data */}
                       {selectedMonth && findMonthlyRecord(selectedMonth) && (
-                        <div className="mt-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <div className="mt-4 bg-blue-50 p-4 rounded-md border border-blue-200">
                           <h4 className="font-semibold text-blue-800 mb-2">Current Attendance for {formatMonth(selectedMonth)}</h4>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <span className="text-sm text-blue-600">Total Classes</span>
-                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).totalClasses || 0}</p>
+                              <span className="text-sm text-blue-700">Total Classes</span>
+                              <p className="font-semibold text-gray-800">{findMonthlyRecord(selectedMonth).totalClasses || 0}</p>
                             </div>
                             <div>
-                              <span className="text-sm text-blue-600">Classes Attended</span>
-                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).classesAttended || 0}</p>
+                              <span className="text-sm text-blue-700">Classes Attended</span>
+                              <p className="font-semibold text-gray-800">{findMonthlyRecord(selectedMonth).classesAttended || 0}</p>
                             </div>
                             <div className="col-span-2">
-                              <span className="text-sm text-blue-600">Attendance Percentage</span>
-                              <p className="font-semibold">{findMonthlyRecord(selectedMonth).attendancePercentage || 0}%</p>
+                              <span className="text-sm text-blue-700">Attendance Percentage</span>
+                              <p className="font-semibold text-gray-800">{findMonthlyRecord(selectedMonth).attendancePercentage || 0}%</p>
                             </div>
                           </div>
                         </div>
@@ -772,7 +741,7 @@ const AttendanceSystem = () => {
                     {/* Attendance Input */}
                     <div className="flex flex-col gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Total Classes in Month
                         </label>
                         <input
@@ -780,12 +749,12 @@ const AttendanceSystem = () => {
                           min="0"
                           value={monthlyTotalClasses}
                           onChange={(e) => setMonthlyTotalClasses(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           placeholder="e.g., 22"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Classes Attended in Month
                         </label>
                         <input
@@ -794,7 +763,7 @@ const AttendanceSystem = () => {
                           max={monthlyTotalClasses || 999}
                           value={monthlyClassesAttended}
                           onChange={(e) => setMonthlyClassesAttended(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           placeholder="e.g., 20"
                         />
                       </div>
@@ -805,7 +774,7 @@ const AttendanceSystem = () => {
                     <button
                       onClick={markMonthlyAttendance}
                       disabled={loading || !selectedMonth || !monthlyTotalClasses || !monthlyClassesAttended}
-                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
                       {loading ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -820,14 +789,14 @@ const AttendanceSystem = () => {
 
               {/* Monthly Attendance Summary */}
               {attendanceView === 'monthly-summary' && (
-                <div className="border border-gray-200 rounded-xl p-6">
+                <div className="border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 bg-indigo-700 rounded-md flex items-center justify-center">
                         <BarChart3 className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">Monthly Attendance Summary</h3>
+                        <h3 className="text-lg font-bold text-gray-800">Monthly Attendance Summary</h3>
                         <p className="text-gray-600 text-sm">
                           View attendance records by month
                         </p>
@@ -848,7 +817,7 @@ const AttendanceSystem = () => {
                           a.click();
                           document.body.removeChild(a);
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all duration-200"
                       >
                         <Download className="w-4 h-4" />
                         Export CSV
@@ -859,21 +828,21 @@ const AttendanceSystem = () => {
                   {/* Overall Stats */}
                   {monthlyAttendanceData && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <div className="text-sm text-gray-500 mb-1">Total Months</div>
-                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.totalMonths || 0}</div>
+                      <div className="bg-gray-100 rounded-md p-4 border border-gray-200">
+                        <div className="text-sm text-gray-600 mb-1">Total Months</div>
+                        <div className="text-2xl font-bold text-gray-800">{monthlyAttendanceData.statistics?.totalMonths || 0}</div>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <div className="text-sm text-gray-500 mb-1">Total Classes</div>
-                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.totalClasses || 0}</div>
+                      <div className="bg-gray-100 rounded-md p-4 border border-gray-200">
+                        <div className="text-sm text-gray-600 mb-1">Total Classes</div>
+                        <div className="text-2xl font-bold text-gray-800">{monthlyAttendanceData.statistics?.totalClasses || 0}</div>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <div className="text-sm text-gray-500 mb-1">Classes Attended</div>
-                        <div className="text-2xl font-bold">{monthlyAttendanceData.statistics?.classesAttended || 0}</div>
+                      <div className="bg-gray-100 rounded-md p-4 border border-gray-200">
+                        <div className="text-sm text-gray-600 mb-1">Classes Attended</div>
+                        <div className="text-2xl font-bold text-gray-800">{monthlyAttendanceData.statistics?.classesAttended || 0}</div>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <div className="text-sm text-gray-500 mb-1">Overall Attendance</div>
-                        <div className="text-2xl font-bold">
+                      <div className="bg-gray-100 rounded-md p-4 border border-gray-200">
+                        <div className="text-sm text-gray-600 mb-1">Overall Attendance</div>
+                        <div className="text-2xl font-bold text-gray-800">
                           {monthlyAttendanceData.statistics?.attendancePercentage || 0}%
                         </div>
                       </div>
@@ -882,13 +851,13 @@ const AttendanceSystem = () => {
 
                   {/* Monthly Records Table */}
                   <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white rounded-xl overflow-hidden">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                    <table className="min-w-full bg-white rounded-lg overflow-hidden border border-gray-200">
+                      <thead className="bg-gray-100 border-b border-gray-200">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Classes</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes Attended</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Month</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Total Classes</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Classes Attended</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Attendance %</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
@@ -905,7 +874,7 @@ const AttendanceSystem = () => {
                                 {record.classesAttended}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className={`text-sm font-medium rounded-full px-2 py-1 inline-block ${getAttendanceStatusColor(record.attendancePercentage)}`}>
+                                <div className={`text-sm font-medium rounded-md px-2 py-1 inline-block ${getAttendanceStatusColor(record.attendancePercentage)}`}>
                                   {record.attendancePercentage}%
                                 </div>
                               </td>
@@ -930,12 +899,12 @@ const AttendanceSystem = () => {
 
           {/* No trainee selected message */}
           {!traineeData && !loading && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
-              <div className="w-20 h-20 bg-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Users className="w-10 h-10 text-white" />
+            <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
+              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-6">
+                <Users className="w-8 h-8 text-gray-500" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">No Trainee Selected</h3>
-              <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No Trainee Selected</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
                 Please search for a trainee using their ticket number or select from the list to manage their attendance.
               </p>
             </div>
