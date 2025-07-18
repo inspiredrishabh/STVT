@@ -16,6 +16,16 @@ const formatDate = (dateString) => {
   });
 };
 
+// Format date for certificate display (DD/MM/YYYY format)
+const formatCertificateDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const CertificatePreview2 = () => {
   const navigate = useNavigate();
   const [trainees, setTrainees] = useState([]);
@@ -109,8 +119,8 @@ const CertificatePreview2 = () => {
     const [editableDesignation, setEditableDesignation] = useState(trainee.designation || "SSE");
     const [editableEmployeeNo, setEditableEmployeeNo] = useState(trainee.employee_id || "50320130857");
     const [editableDivision, setEditableDivision] = useState("DLI DIVISION");
-    const [editableFromDate, setEditableFromDate] = useState("07/07/2025");
-    const [editableToDate, setEditableToDate] = useState("12/07/2025");
+    const [editableFromDate, setEditableFromDate] = useState(formatCertificateDate(trainee.date_of_joining_stc_wtc_non_railway) || "07/07/2025");
+    const [editableToDate, setEditableToDate] = useState(formatCertificateDate(trainee.date_of_sparing) || "12/07/2025");
     const [editableDate, setEditableDate] = useState(formatDate(new Date()));
     const [editablePlace, setEditablePlace] = useState("Lucknow");
     const [editableCoordinator, setEditableCoordinator] = useState("Naveen Jaiswal");
@@ -121,6 +131,8 @@ const CertificatePreview2 = () => {
       setEditableName(trainee.name || "");
       setEditableDesignation(trainee.designation || "SSE");
       setEditableEmployeeNo(trainee.employee_id || "50320130857");
+      setEditableFromDate(formatCertificateDate(trainee.date_of_joining_stc_wtc_non_railway) || "07/07/2025");
+      setEditableToDate(formatCertificateDate(trainee.date_of_sparing) || "12/07/2025");
     }, [trainee, defaultCourse]);
 
     return (

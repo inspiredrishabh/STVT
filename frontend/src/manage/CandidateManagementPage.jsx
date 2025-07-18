@@ -34,8 +34,7 @@ class RealBackendAPI {
     if (!ticketNo) {
       console.error("Ticket number is undefined for candidate:", candidate);
       throw new Error(
-        `Ticket number is undefined for candidate ${
-          candidate.name || candidate.id
+        `Ticket number is undefined for candidate ${candidate.name || candidate.id
         }`
       );
     }
@@ -51,7 +50,7 @@ class RealBackendAPI {
     const endpoint = endpoints[type] || endpoints["STC"];
     return endpoint;
   }
-  
+
   transformFieldsForBackend(candidateData) {
     const transformed = { ...candidateData };
 
@@ -545,11 +544,8 @@ class RealBackendAPI {
             // Course Information (WTC-specific)
             courseType: candidate.courseType,
             trainingPeriod: candidate.trainingPeriod,
-            customTrainingPeriod: candidate.customTrainingPeriod,
             theoryDuration: candidate.theoryDuration,
-            customTheoryDuration: candidate.customTheoryDuration,
             practicalDuration: candidate.practicalDuration,
-            customPracticalDuration: candidate.customPracticalDuration,
             dateOfSparing: candidate.dateOfSparing,
             courseCoordinator: candidate.courseCoordinator,
             // Additional fields
@@ -776,8 +772,8 @@ class RealBackendAPI {
               type === "STC"
                 ? `stc-${data.data.id}`
                 : type === "WTC"
-                ? `wtc-${data.data.id}`
-                : `nonrailway-${data.data.id}`,
+                  ? `wtc-${data.data.id}`
+                  : `nonrailway-${data.data.id}`,
             type,
             category: type === "Non Railway" ? "Non Railway" : "Railway",
             stream: type === "Non Railway" ? "Non Railway" : "Railway",
@@ -854,11 +850,11 @@ class RealBackendAPI {
           ticketNumber:
             candidate.type === "WTC"
               ? data.data.ticketNumber ||
-                data.data.ticket_no ||
-                candidate.ticketNumber
+              data.data.ticket_no ||
+              candidate.ticketNumber
               : data.data.ticket_no ||
-                data.data.ticketNumber ||
-                candidate.ticketNumber,
+              data.data.ticketNumber ||
+              candidate.ticketNumber,
           status: candidate.status,
           // Update timestamps
           updatedAt:
@@ -1370,7 +1366,7 @@ class MockBackendAPI {
         candidateData.picture instanceof File
           ? URL.createObjectURL(candidateData.picture)
           : candidateData.picture ||
-            "https://randomuser.me/api/portraits/lego/1.jpg",
+          "https://randomuser.me/api/portraits/lego/1.jpg",
       status: candidateData.status || "Active",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

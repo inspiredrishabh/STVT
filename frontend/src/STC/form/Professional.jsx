@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 const Professional = ({ formData, onChange, errors = {} }) => {
   // Validate a single field value
-  const validateField = (field, value) => {
+  const validateField = useCallback((field, value) => {
     const trimmed = value?.toString().trim() || "";
 
     // Required
@@ -49,10 +49,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     }
 
     return "";
-  };
+  }, [formData]);
 
-  // Validate all required fields and return an errors object
-  const validateAllFields = () => {
+  const validateAllFields = useCallback(() => {
     const required = [
       "dateOfAppointmentInRailway",
       "modeOfAppointment",
@@ -64,12 +63,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       "gradeType",
       "gradeValue"
     ];
-    if (formData.modeOfAppointment === "Other") {
-      required.push("modeOfAppointmentOther");
-    }
-    if (formData.fieldOfStudy === "Other") {
-      required.push("customFieldOfStudy");
-    }
 
     const errs = {};
     required.forEach((field) => {
@@ -78,14 +71,14 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     });
 
     return { isValid: Object.keys(errs).length === 0, errors: errs };
-  };
+  }, [formData, validateField]);
 
   // Expose the overall validator to parent
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [formData]);
+  }, [formData, onChange, validateAllFields]);
 
   const handleChange = (field, value) => onChange(field, value);
 
@@ -112,8 +105,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Electronics Engineering",
           "Computer Engineering",
           "Automobile Engineering",
-          "Railway Engineering",
-          "Other"
+          "Railway Engineering"
         ];
       case "Bachelor's Degree":
         return [
@@ -130,8 +122,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "B.Sc - Physics",
           "B.Sc - Mathematics",
           "B.Sc - Chemistry",
-          "B.Com - Commerce",
-          "Other"
+          "B.Com - Commerce"
         ];
       case "Master's Degree":
         return [
@@ -149,8 +140,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "M.Sc - Mathematics",
           "M.Sc - Chemistry",
           "MBA - Business Administration",
-          "M.Com - Commerce",
-          "Other"
+          "M.Com - Commerce"
         ];
       case "Ph.D":
         return [
@@ -163,13 +153,101 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Ph.D - Physics",
           "Ph.D - Mathematics",
           "Ph.D - Chemistry",
-          "Ph.D - Management",
-          "Other"
+          "Ph.D - Management"
         ];
       default:
-        return ["Other"];
+        return [];
     }
   };
+
+  const ComboBox = ({ value, onChange, options, placeholder, className }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [inputValue, setInputValue] = useState(value || "");
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+      setInputValue(value || "");
+    }, [value]);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleInputChange = (e) => {
+      setInputValue(e.target.value);
+    };
+
+    const handleOptionClick = (option) => {
+      setInputValue(option);
+      onChange(option);
+      setIsOpen(false);
+    };
+
+    const handleBlur = () => {
+      onChange(inputValue); // Commit input value on blur (if needed)
+    };
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <div className="relative">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => setIsOpen(true)}
+            onBlur={handleBlur}
+            className={className}
+            placeholder={placeholder}
+          />
+          <div
+            className="absolute inset-y-0 right-0 flex items-center px-2 cursor-pointer"
+            onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <svg
+              className="w-4 h-4 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={isOpen ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"}
+              />
+            </svg>
+          </div>
+        </div>
+
+        {isOpen && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+            {options
+              .filter((option) =>
+                option.toLowerCase().includes(inputValue.toLowerCase())
+              )
+              .map((option, index) => (
+                <div
+                  key={index}
+                  className="px-4 py-2 cursor-pointer hover:bg-orange-50"
+                  onMouseDown={() => handleOptionClick(option)}
+                >
+                  {option}
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
@@ -190,19 +268,19 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       {/* Mode of Appointment */}
       <div className="mb-6">
         <RequiredLabel>Mode of Appointment</RequiredLabel>
-        <select
+        <ComboBox
           value={formData.modeOfAppointment || ""}
-          onChange={(e) => handleChange("modeOfAppointment", e.target.value)}
+          onChange={(value) => handleChange("modeOfAppointment", value)}
+          options={[
+            "RRB",
+            "CG",
+            "RRC",
+            "Promotion Through LDCE",
+            "Promotion Through Seniority"
+          ]}
+          placeholder="Select or type mode"
           className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select mode</option>
-          <option value="RRB">RRB</option>
-          <option value="CG">CG</option>
-          <option value="RRC">RRC</option>
-          <option value="Promotion Through LDCE">Promotion Through LDCE</option>
-          <option value="Promotion Through Seniority">Promotion Through Seniority</option>
-          <option value="Other">Other</option>
-        </select>
+        />
         {errors.modeOfAppointment && (
           <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointment}</p>
         )}
@@ -228,20 +306,20 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       {/* Designation */}
       <div className="mb-6">
         <RequiredLabel>Designation</RequiredLabel>
-        <select
+        <ComboBox
           value={formData.designation || ""}
-          onChange={(e) => handleChange("designation", e.target.value)}
+          onChange={(value) => handleChange("designation", value)}
+          options={[
+            "ASE",
+            "AJE",
+            "IJE",
+            "RJE",
+            "SSE",
+            "JE"
+          ]}
+          placeholder="Select or type designation"
           className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select designation</option>
-          <option value="ASE">ASE</option>
-          <option value="AJE">AJE</option>
-          <option value="IJE">IJE</option>
-          <option value="RJE">RJE</option>
-          <option value="SSE">SSE</option>
-          <option value="JE">JE</option>
-          <option value="Other">Other</option>
-        </select>
+        />
         {errors.designation && (
           <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
         )}
@@ -250,28 +328,28 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       {/* Unit/Division */}
       <div className="mb-6">
         <RequiredLabel>Unit / Division</RequiredLabel>
-        <select
+        <ComboBox
           value={formData.unit || ""}
-          onChange={(e) => handleChange("unit", e.target.value)}
+          onChange={(value) => handleChange("unit", value)}
+          options={[
+            "ASRW",
+            "RCNK",
+            "KLKW",
+            "JUDW",
+            "CBW",
+            "AMW",
+            "JAT",
+            "FZR",
+            "DLI",
+            "UMB",
+            "MB",
+            "LKO",
+            "HQ",
+            "Rly. Board"
+          ]}
+          placeholder="Select or type unit"
           className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select unit</option>
-          <option value="ASRW">ASRW</option>
-          <option value="RCNK">RCNK</option>
-          <option value="KLKW">KLKW</option>
-          <option value="JUDW">JUDW</option>
-          <option value="CBW">CBW</option>
-          <option value="AMW">AMW</option>
-          <option value="JAT">JAT</option>
-          <option value="FZR">FZR</option>
-          <option value="DLI">DLI</option>
-          <option value="UMB">UMB</option>
-          <option value="MB">MB</option>
-          <option value="LKO">LKO</option>
-          <option value="HQ">HQ</option>
-          <option value="Rly_Board">Rly. Board</option>
-          <option value="Other">Other</option>
-        </select>
+        />
         {errors.unit && (
           <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
         )}
@@ -337,17 +415,18 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       {/* Educational Qualifications */}
       <div className="mt-10 mb-6">
         <RequiredLabel>Highest Qualification</RequiredLabel>
-        <select
+        <ComboBox
           value={formData.highestQualification || ""}
-          onChange={(e) => handleChange("highestQualification", e.target.value)}
+          onChange={(value) => handleChange("highestQualification", value)}
+          options={[
+            "Diploma",
+            "Bachelor's Degree",
+            "Master's Degree",
+            "Ph.D"
+          ]}
+          placeholder="Select or type qualification"
           className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select qualification</option>
-          <option value="Diploma">Diploma</option>
-          <option value="Bachelor's Degree">Bachelor's Degree</option>
-          <option value="Master's Degree">Master's Degree</option>
-          <option value="Ph.D">Ph.D</option>
-        </select>
+        />
         {errors.highestQualification && (
           <p className="text-sm text-red-500 mt-1">{errors.highestQualification}</p>
         )}
@@ -355,16 +434,13 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
       <div className="mb-6">
         <RequiredLabel>Field of Study</RequiredLabel>
-        <select
+        <ComboBox
           value={formData.fieldOfStudy || ""}
-          onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
+          onChange={(value) => handleChange("fieldOfStudy", value)}
+          options={getFieldOfStudyOptions().filter(opt => opt !== "Other")}
+          placeholder="Select or type field of study"
           className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select field of study</option>
-          {getFieldOfStudyOptions().map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
+        />
         {errors.fieldOfStudy && (
           <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
         )}

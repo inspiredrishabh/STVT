@@ -68,7 +68,7 @@ const DetailModal = ({ candidate, onClose }) => {
   const getCourseInfoData = () => {
     const courseData = [
       {
-        label: "Ticket No.",
+        label: "Ticket No",
         value:
           candidate.ticketNumber ||
           candidate.ticketNo ||
@@ -85,26 +85,13 @@ const DetailModal = ({ candidate, onClose }) => {
         { label: "Module No.", value: candidate.moduleNo },
         { label: "Module Name", value: candidate.moduleName },
         { label: "Course Duration", value: candidate.courseDuration },
-        // { label: "Station Code", value: candidate.stationCode }
       );
     } else if (candidate.type === "WTC") {
       courseData.push(
         { label: "Course Type", value: candidate.courseType },
         { label: "Training Period", value: candidate.trainingPeriod },
-        {
-          label: "Custom Training Period",
-          value: candidate.customTrainingPeriod,
-        },
         { label: "Theory Duration", value: candidate.theoryDuration },
-        {
-          label: "Custom Theory Duration",
-          value: candidate.customTheoryDuration,
-        },
         { label: "Practical Duration", value: candidate.practicalDuration },
-        {
-          label: "Custom Practical Duration",
-          value: candidate.customPracticalDuration,
-        },
         { label: "Course Coordinator", value: candidate.courseCoordinator }
       );
     } else if (candidate.type === "Non Railway") {

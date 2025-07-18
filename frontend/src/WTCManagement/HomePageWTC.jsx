@@ -53,22 +53,22 @@ const HomePageWTC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       {/* Enhanced Header */}
-      <div className="bg-white shadow-lg border-b border-gray-200 w-full">
+      <div className="bg-white shadow-md border-b border-gray-200 w-full">
         <div className="w-full px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Left side - Back button and Title */}
             <div className="flex items-center space-x-4">
               <Link
                 to="/dashboard"
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
+                className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
               >
                 <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-700 rounded-md flex items-center justify-center">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
                   WTC Management
@@ -76,26 +76,6 @@ const HomePageWTC = () => {
                 <p className="text-gray-600 text-sm ">
                   WorkShop Training Center Management System
                 </p>
-              </div>
-            </div>
-
-            {/* Right side - Status indicator */}
-            <div className="hidden md:flex items-center space-x-3">
-              <div className="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700 font-medium text-xs">
-                  System Active
-                </span>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-500">Current Date</div>
-                <div className="text-xs font-medium text-gray-700">
-                  {new Date().toLocaleDateString("en-IN", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </div>
               </div>
             </div>
           </div>
@@ -131,37 +111,28 @@ const HomePageWTC = () => {
       {/* Main Content */}
       <div className="w-full px-8 py-12">
         {/* Management Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {managementOptions.map((option) => {
             const IconComponent = option.icon;
             return (
               <Link key={option.id} to={option.path} className="group">
-                <div className="bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border-2 border-orange-100">
-                  {/* Icon */}
-                  <div
-                    className={`w-16 h-16 rounded-full ${option.iconBg} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <IconComponent className={`w-8 h-8 ${option.iconColor}`} />
+                <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6 border border-gray-200 hover:border-blue-500 h-full flex flex-col">
+                  {/* Icon and Title */}
+                  <div className="flex items-center mb-4">
+                    <div
+                      className={`w-12 h-12 rounded-md ${option.iconBg} flex items-center justify-center mr-4`}
+                    >
+                      <IconComponent className={`w-6 h-6 ${option.iconColor}`} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {option.title}
+                    </h3>
                   </div>
 
                   {/* Content */}
-                  <div className="text-center">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-gray-900">
-                      {option.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {option.description}
-                    </p>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div
-                      className={`w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 text-white text-center rounded-lg font-medium`}
-                    >
-                      Open Module
-                    </div>
-                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed flex-grow">
+                    {option.description}
+                  </p>
                 </div>
               </Link>
             );
