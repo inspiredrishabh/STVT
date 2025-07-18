@@ -168,30 +168,6 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             <option value="">Select gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
-            <option value="Non-binary">Non-binary</option>
-            <option value="Transgender">Transgender</option>
-            <option value="Gender Fluid">Gender Fluid</option>
-            <option value="Agender">Agender</option>
-            <option value="Gender Queer">Gender Queer</option>
-            <option value="Gender Non-conforming">Gender Non-conforming</option>
-            <option value="androgyne">Androgyne</option>
-            <option value="aromantic">Aromantic</option>
-            <option value="asexual">Asexual</option>
-            <option value="bigender">Bigender</option>
-            <option value="cisgender_female">Cisgender Female</option>
-            <option value="cisgender_male">Cisgender Male</option>
-            <option value="demiboy">Demiboy</option>
-            <option value="demigirl">Demigirl</option>
-            <option value="genderfluid">Genderfluid</option>
-            <option value="genderqueer">Genderqueer</option>
-            <option value="intersex">Intersex</option>
-            <option value="pangender">Pangender</option>
-            <option value="polygender">Polygender</option>
-            <option value="third_gender">Third Gender</option>
-            <option value="transgender_female">Transgender Female</option>
-            <option value="transgender_male">Transgender Male</option>
-            <option value="two_spirit">Two-Spirit (Cultural Identity)</option>
-            <option value="prefer_not_to_say">Prefer not to say</option>
             <option value="Other">Other</option>
           </select>
           {errors.sex && (
