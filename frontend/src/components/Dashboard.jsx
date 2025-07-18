@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { RefreshCw, Download } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -236,7 +236,8 @@ class DashboardAPI {
   }
 }
 
-const SimpleBarChart = ({ data, title }) => (
+// Update SimpleBarChart to accept onBarClick
+const SimpleBarChart = ({ data, title, onBarClick }) => (
   <div className="space-y-4">
     <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
     {!data ||
@@ -246,7 +247,13 @@ const SimpleBarChart = ({ data, title }) => (
     ) : (
       <div className="space-y-3">
         {data.map((item, idx) => (
-          <div key={idx} className="flex items-center space-x-3">
+          <div
+            key={idx}
+            className={`flex items-center space-x-3 ${
+              onBarClick ? "cursor-pointer" : ""
+            }`}
+            onClick={onBarClick ? () => onBarClick(item) : undefined}
+          >
             <div className="w-16 text-sm font-medium text-gray-700 text-right">
               {item.category}
             </div>
@@ -271,7 +278,8 @@ const SimpleBarChart = ({ data, title }) => (
   </div>
 );
 
-const SimplePieChart = ({ data, title }) => (
+// Update SimplePieChart to accept onLegendClick
+const SimplePieChart = ({ data, title, onLegendClick }) => (
   <div className="space-y-4">
     <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
     {!data ||
@@ -324,7 +332,13 @@ const SimplePieChart = ({ data, title }) => (
         </div>
         <div className="space-y-3">
           {data.map((item, idx) => (
-            <div key={idx} className="flex items-center space-x-3">
+            <div
+              key={idx}
+              className={`flex items-center space-x-3 ${
+                onLegendClick ? "cursor-pointer" : ""
+              }`}
+              onClick={onLegendClick ? () => onLegendClick(item) : undefined}
+            >
               <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: item.color }}
@@ -350,10 +364,15 @@ function StatCard({
   value,
   color = "bg-orange-100",
   textColor = "text-orange-700",
+  onClick,
+  active,
 }) {
   return (
     <div
-      className={`rounded-2xl shadow border-2 p-4 ${color} border-orange-100`}
+      className={`rounded-2xl shadow border-2 p-4 cursor-pointer transition-all duration-150 ${
+        active ? "ring-2 ring-orange-400 scale-105" : ""
+      } ${color} border-orange-100`}
+      onClick={onClick}
     >
       <div className={`text-xs font-medium ${textColor}`}>{title}</div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
@@ -367,8 +386,12 @@ function Dashboard() {
   const [overallStats, setOverallStats] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
   const [allUnits, setAllUnits] = useState([]);
+  const [selectedStat, setSelectedStat] = useState(null);
+  const [statDetails, setStatDetails] = useState([]);
+  const [statDetailsTitle, setStatDetailsTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { userRole } = useAuth();
   const dashboardAPI = new DashboardAPI();
 
@@ -420,6 +443,105 @@ function Dashboard() {
       alert(`Failed to export database: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper to fetch details for a stat
+  const fetchStatDetails = async (type, value) => {
+    setStatDetails([]);
+    setStatDetailsTitle("");
+    setIsModalOpen(true);
+    let url = "";
+    let title = "";
+    if (type === "Railway Candidates") {
+      // Show all STC + WTC candidates
+      url = "/api/stc";
+      title = "Railway Candidates (STC & WTC)";
+    } else if (type === "Non-Railway Candidates") {
+      url = "/api/nonrailway";
+      title = "Non-Railway Candidates";
+    } else if (type === "STC") {
+      url = "/api/stc";
+      title = "STC Candidates";
+    } else if (type === "WTC") {
+      url = "/api/wtc";
+      title = "WTC Candidates";
+    } else if (type === "Resigned Candidates") {
+      url = "/api/stc";
+      title = "Resigned Candidates (STC)";
+    } else if (type === "Total Candidates") {
+      // Fetch all three and merge
+      title = "All Candidates (STC, WTC, Non-Railway)";
+      try {
+        const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
+          fetch("/api/stc"),
+          fetch("/api/wtc"),
+          fetch("/api/nonrailway"),
+        ]);
+        const [stcData, wtcData, nonRailwayData] = await Promise.all([
+          stcRes.json(),
+          wtcRes.json(),
+          nonRailwayRes.json(),
+        ]);
+        let candidates = [];
+        if (stcData.success && Array.isArray(stcData.data)) {
+          candidates = candidates.concat(
+            stcData.data.map((c) => ({ ...c, _source: "STC" }))
+          );
+        }
+        if (wtcData.success && Array.isArray(wtcData.data)) {
+          candidates = candidates.concat(
+            wtcData.data.map((c) => ({ ...c, _source: "WTC" }))
+          );
+        }
+        if (nonRailwayData.success && Array.isArray(nonRailwayData.data)) {
+          candidates = candidates.concat(
+            nonRailwayData.data.map((c) => ({ ...c, _source: "Non-Railway" }))
+          );
+        }
+        setStatDetailsTitle(title);
+        setStatDetails(candidates);
+        return;
+      } catch {
+        setStatDetailsTitle(title);
+        setStatDetails([]);
+        return;
+      }
+    } else if (type === "unit") {
+      url = "/api/stc/filter/unit/" + encodeURIComponent(value);
+      title = `Candidates in Unit: ${value}`;
+    } else if (type === "designation") {
+      url = "/api/stc/filter/designation/" + encodeURIComponent(value);
+      title = `Candidates with Designation: ${value}`;
+    }
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      let candidates = [];
+      if (data.success && Array.isArray(data.data)) {
+        candidates = data.data;
+        // Filter for resigned if needed
+        if (type === "Resigned Candidates") {
+          candidates = candidates.filter((c) => c.resignation_status === "yes");
+        }
+        // For "Railway Candidates", merge STC and WTC
+        if (type === "Railway Candidates") {
+          const wtcRes = await fetch("/api/wtc");
+          const wtcData = await wtcRes.json();
+          if (wtcData.success && Array.isArray(wtcData.data)) {
+            candidates = [
+              ...candidates.map((c) => ({ ...c, _source: "STC" })),
+              ...wtcData.data.map((c) => ({ ...c, _source: "WTC" })),
+            ];
+          }
+        }
+      }
+      setStatDetailsTitle(title);
+      setStatDetails(candidates);
+    } catch {
+      setStatDetailsTitle(title);
+      setStatDetails([]);
     }
   };
 
@@ -479,8 +601,6 @@ function Dashboard() {
                 <RefreshCw className="mr-2 w-4 h-4" />
                 Refresh
               </button>
-
-              {/* Only show Export button for admin or master */}
               {(userRole === "admin" || userRole === "master") && (
                 <button
                   onClick={handleExportData}
@@ -500,24 +620,44 @@ function Dashboard() {
             <StatCard
               title="Total Candidates"
               value={overallStats.totalCandidates}
+              onClick={() => {
+                setSelectedStat("Total Candidates");
+                fetchStatDetails("Total Candidates");
+              }}
+              active={selectedStat === "Total Candidates"}
             />
             <StatCard
               title="Railway Candidates"
               value={overallStats.railwayCandidates}
               color="bg-blue-50"
               textColor="text-blue-700"
+              onClick={() => {
+                setSelectedStat("Railway Candidates");
+                fetchStatDetails("Railway Candidates");
+              }}
+              active={selectedStat === "Railway Candidates"}
             />
             <StatCard
               title="Non-Railway Candidates"
               value={overallStats.nonRailwayCandidates}
               color="bg-purple-50"
               textColor="text-purple-700"
+              onClick={() => {
+                setSelectedStat("Non-Railway Candidates");
+                fetchStatDetails("Non-Railway Candidates");
+              }}
+              active={selectedStat === "Non-Railway Candidates"}
             />
             <StatCard
               title="Resigned Candidates"
               value={overallStats.resignedCount}
               color="bg-red-50"
               textColor="text-red-700"
+              onClick={() => {
+                setSelectedStat("Resigned Candidates");
+                fetchStatDetails("Resigned Candidates");
+              }}
+              active={selectedStat === "Resigned Candidates"}
             />
           </div>
         )}
@@ -537,14 +677,24 @@ function Dashboard() {
                     value={count}
                     color="bg-orange-50"
                     textColor="text-orange-700"
+                    onClick={() => {
+                      setSelectedStat("designation:" + desig);
+                      fetchStatDetails("designation", desig);
+                    }}
+                    active={selectedStat === "designation:" + desig}
                   />
                 )
               )}
               <StatCard
                 title="Total"
-                value={overallStats.totalBatches}
+                value={overallStats.stcCandidates}
                 color="bg-green-50"
                 textColor="text-green-700"
+                onClick={() => {
+                  setSelectedStat("STC");
+                  fetchStatDetails("STC");
+                }}
+                active={selectedStat === "STC"}
               />
             </div>
           </div>
@@ -556,12 +706,25 @@ function Dashboard() {
             <SimpleBarChart
               data={categoriesData}
               title="STC, WTC & Non-Railway Categories"
+              onBarClick={(item) => {
+                setSelectedStat(item.category);
+                // Map category to fetchStatDetails type
+                if (item.category === "STC" || item.category === "WTC") {
+                  fetchStatDetails(item.category);
+                } else if (item.category === "Non-Railway") {
+                  fetchStatDetails("Non-Railway Candidates");
+                }
+              }}
             />
           </div>
           <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
             <SimplePieChart
               data={distributionData}
               title="Distribution (Pie Chart)"
+              onLegendClick={(item) => {
+                setSelectedStat(item.name);
+                fetchStatDetails(item.name);
+              }}
             />
           </div>
         </div>
@@ -578,7 +741,18 @@ function Dashboard() {
           ) : (
             <div className="space-y-3">
               {allUnits.map((item, idx) => (
-                <div key={idx} className="flex items-center space-x-3">
+                <div
+                  key={idx}
+                  className={`flex items-center space-x-3 cursor-pointer ${
+                    selectedStat === "unit:" + item.unit
+                      ? "ring-2 ring-orange-400 scale-105"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedStat("unit:" + item.unit);
+                    fetchStatDetails("unit", item.unit);
+                  }}
+                >
                   <div className="w-32 text-sm font-medium text-gray-700 text-right">
                     {item.unit}
                   </div>
@@ -603,6 +777,77 @@ function Dashboard() {
             </div>
           )}
         </div>
+
+        {/* Stat Details Modal/Section */}
+        {isModalOpen && statDetailsTitle && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-all"
+            style={{ backdropFilter: "blur(2px)" }}
+          >
+            <div
+              className="relative bg-white bg-opacity-95 rounded-3xl shadow-2xl border-2 border-orange-200 p-6 max-w-5xl w-full max-h-[90vh] overflow-hidden"
+              style={{
+                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+              }}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {statDetailsTitle}
+                </h3>
+                <button
+                  className="text-orange-500 hover:text-orange-700 px-3 py-1 rounded transition"
+                  onClick={() => {
+                    setStatDetails([]);
+                    setStatDetailsTitle("");
+                    setSelectedStat(null);
+                    setIsModalOpen(false);
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+              {statDetails.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  No details available.
+                </div>
+              ) : (
+                <div className="overflow-auto max-h-[70vh]">
+                  <table className="min-w-full text-xs md:text-sm border">
+                    <thead>
+                      <tr className="bg-orange-50">
+                        <th className="px-2 py-1 border">Ticket No</th>
+                        <th className="px-2 py-1 border">Name</th>
+                        <th className="px-2 py-1 border">Designation</th>
+                        <th className="px-2 py-1 border">Unit</th>
+                        {statDetails.some((c) => c._source) && (
+                          <th className="px-2 py-1 border">Source</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statDetails.map((c, i) => (
+                        <tr
+                          key={c.ticket_no || c.ticketNo || c.id || i}
+                          className="hover:bg-orange-50"
+                        >
+                          <td className="px-2 py-1 border">
+                            {c.ticket_no || c.ticketNo || c.id}
+                          </td>
+                          <td className="px-2 py-1 border">{c.name}</td>
+                          <td className="px-2 py-1 border">{c.designation}</td>
+                          <td className="px-2 py-1 border">{c.unit}</td>
+                          {c._source && (
+                            <td className="px-2 py-1 border">{c._source}</td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Recent Activities */}
         <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
