@@ -45,12 +45,11 @@ class DashboardAPI {
         success: true,
         data: [
           { category: "STC", count: stc, color: "#3b82f6" }, // Blue
-          { category: "WTC", count: wtc, color: "#10b981" }, // Green  
+          { category: "WTC", count: wtc, color: "#10b981" }, // Green
           { category: "Non-Railway", count: nonRailway, color: "#8b5cf6" }, // Purple
         ],
       };
     } catch {
-  
       return { success: false, data: [] };
     }
   }
@@ -62,50 +61,33 @@ class DashboardAPI {
         this.getNonRailwayCandidatesCount(),
       ]);
       const total = stc + wtc + nonRailway;
-      if (!total) return { success: true, data: [] };        return {
-          success: true,
-          data: [
-            {
-              name: "STC",
-              value: Math.round((stc / total) * 100),
-              count: stc,
-              color: "#3b82f6", // Blue
-            },
-            {
-              name: "WTC",
-              value: Math.round((wtc / total) * 100),
-              count: wtc,
-              color: "#10b981", // Green
-            },
-            {
-              name: "Non-Railway",
-              value: Math.round((nonRailway / total) * 100),
-              count: nonRailway,
-              color: "#8b5cf6", // Purple
-            },
-          ],
-        };
+      if (!total) return { success: true, data: [] };
+      return {
+        success: true,
+        data: [
+          {
+            name: "STC",
+            value: Math.round((stc / total) * 100),
+            count: stc,
+            color: "#3b82f6", // Blue
+          },
+          {
+            name: "WTC",
+            value: Math.round((wtc / total) * 100),
+            count: wtc,
+            color: "#10b981", // Green
+          },
+          {
+            name: "Non-Railway",
+            value: Math.round((nonRailway / total) * 100),
+            count: nonRailway,
+            color: "#8b5cf6", // Purple
+          },
+        ],
+      };
     } catch {
       return { success: false, data: [] };
     }
-  }
-  calculateWorkingDays(year, month) {
-    const daysInMonth = new Date(year, month, 0).getDate();
-    let workingDays = 0;
-    const holidays = {
-      1: [1, 26],
-      3: [8],
-      4: [14],
-      5: [1],
-      8: [15],
-      10: [2],
-      12: [25],
-    };
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month - 1, day);
-      if (date.getDay() !== 0 && !holidays[month]?.includes(day)) workingDays++;
-    }
-    return workingDays;
   }
   async getOverallStats() {
     try {
@@ -114,12 +96,6 @@ class DashboardAPI {
         this.getWtcCandidatesCount(),
         this.getNonRailwayCandidatesCount(),
       ]);
-      const classroomCapacity = 126;
-      const now = new Date();
-      const workingDays = this.calculateWorkingDays(
-        now.getFullYear(),
-        now.getMonth() + 1
-      );
       const total = stc + wtc + nonRailway;
       return {
         success: true,
@@ -129,11 +105,6 @@ class DashboardAPI {
           nonRailwayCandidates: nonRailway,
           stcCandidates: stc,
           wtcCandidates: wtc,
-          activeCourses: Math.ceil(total / 25),
-          completedCourses: Math.floor(total / 30),
-          trainingCapacity: classroomCapacity * workingDays,
-          classroomCapacity,
-          workingDaysThisMonth: workingDays,
         },
       };
     } catch {
@@ -228,9 +199,7 @@ class DashboardAPI {
 
 const SimpleBarChart = ({ data, title }) => (
   <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">
-      {title}
-    </h3>
+    <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
     {!data ||
     data.length === 0 ||
     Math.max(...data.map((d) => d.count)) === 0 ? (
@@ -265,9 +234,7 @@ const SimpleBarChart = ({ data, title }) => (
 
 const SimplePieChart = ({ data, title }) => (
   <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">
-      {title}
-    </h3>
+    <h3 className="text-lg font-semibold text-gray-900 text-center">{title}</h3>
     {!data ||
     data.length === 0 ||
     data.reduce((sum, item) => sum + item.count, 0) === 0 ? (
@@ -481,38 +448,7 @@ function Dashboard() {
                 </p>
               </div>
             </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Active Courses
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.activeCourses}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.completedCourses}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Training Capacity
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.trainingCapacity}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {overallStats.classroomCapacity} ×{" "}
-                  {overallStats.workingDaysThisMonth} days
-                </p>
-              </div>
-            </div>
+            {/* Removed Active Courses, Completed, and Training Capacity cards */}
           </div>
         )}
 
@@ -601,7 +537,6 @@ function Dashboard() {
             />
           </div>
         </div>
-
         <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -647,9 +582,7 @@ function Dashboard() {
                   <p className="text-sm text-gray-600 truncate">
                     {activity.candidate}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {activity.time}
-                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
                 </div>
               </div>
             ))}
@@ -674,3 +607,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+                    
