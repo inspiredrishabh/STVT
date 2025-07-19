@@ -12,8 +12,20 @@ import {
   FileText,
   Settings,
   Hash,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Home,
+  Briefcase,
 } from "lucide-react";
 // import { calculateOverallMarks, hasMarksData } from '../utils/marksUtils';
+
+const DetailItem = ({ label, value }) => (
+  <div className="text-sm">
+    <span className="text-gray-500">{label}: </span>
+    <span className="font-medium text-gray-800">{value || "N/A"}</span>
+  </div>
+);
 
 const TraineeProfile = () => {
   const navigate = useNavigate();
@@ -22,6 +34,7 @@ const TraineeProfile = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedTraineeId, setExpandedTraineeId] = useState(null);
   const [showResignationModal, setShowResignationModal] = useState(false);
   const [selectedTraineeForResignation, setSelectedTraineeForResignation] =
     useState(null);
@@ -31,9 +44,8 @@ const TraineeProfile = () => {
   });
   const [submittingResignation, setSubmittingResignation] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
-  const [selectedTraineeForSession, setSelectedTraineeForSession] = useState(
-    null
-  );
+  const [selectedTraineeForSession, setSelectedTraineeForSession] =
+    useState(null);
   const [sessionData, setSessionData] = useState({
     session1: { start: null, end: null },
     session2: { start: null, end: null },
@@ -41,6 +53,7 @@ const TraineeProfile = () => {
     session4: { start: null, end: null },
   });
   const [requiredSessions, setRequiredSessions] = useState(4);
+  const [lineTrainingData, setLineTrainingData] = useState({}); // { ticketNo: [lineTrainingObj, ...] }
 
   const courseStructure = {
     "MSE-C&W": {
@@ -181,8 +194,6 @@ const TraineeProfile = () => {
     return await response.json();
   };
 
-
-
   const fetchTrainees = async () => {
     try {
       setLoading(true);
@@ -203,8 +214,6 @@ const TraineeProfile = () => {
           }))
         : [];
 
-      console.log("Fetched trainees:", TraineeArray);
-
       setTrainees(TraineeArray);
       setFilteredTrainees(TraineeArray);
     } catch (err) {
@@ -214,6 +223,33 @@ const TraineeProfile = () => {
       setLoading(false);
     }
   };
+
+  // Fetch line training info for all trainees
+  useEffect(() => {
+    const fetchAllLineTraining = async () => {
+      if (!trainees || trainees.length === 0) return;
+      const results = {};
+      await Promise.all(
+        trainees.map(async (trainee) => {
+          try {
+            const res = await fetch(
+              `/api/line-trainings/by-ticket/${trainee.ticketNo}`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              results[trainee.ticketNo] = data.data || [];
+            } else {
+              results[trainee.ticketNo] = [];
+            }
+          } catch {
+            results[trainee.ticketNo] = [];
+          }
+        })
+      );
+      setLineTrainingData(results);
+    };
+    fetchAllLineTraining();
+  }, [trainees]);
 
   // Search functionality
   useEffect(() => {
@@ -226,6 +262,10 @@ const TraineeProfile = () => {
     );
     setFilteredTrainees(filtered);
   }, [searchTerm, trainees]);
+
+  const handleToggleExpand = (traineeId) => {
+    setExpandedTraineeId(expandedTraineeId === traineeId ? null : traineeId);
+  };
 
   // Handle edit trainee - redirect to manage candidate
   const handleEditTrainee = (trainee) => {
@@ -278,10 +318,26 @@ const TraineeProfile = () => {
 
     try {
       // Call resignation API with ticket number
-      await resignTrainee(
-        selectedTraineeForResignation.ticket_no ||
+      const response = await fetch(
+        `${API_BASE}/${
+          selectedTraineeForResignation.ticket_no ||
           selectedTraineeForResignation.ticketNo
+        }/resign`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            resignation_date: resignationData.date,
+            resignation_reason: resignationData.reason,
+          }),
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       // Update local state
       const updatedTrainees = trainees.map((trainee) =>
@@ -370,7 +426,7 @@ const TraineeProfile = () => {
       return {
         designation: moduleNo,
         moduleInfo: courseStructure[moduleNo],
-        sessions: Object.keys(courseStructure[moduleNo].sessions).length
+        sessions: Object.keys(courseStructure[moduleNo].sessions).length,
       };
     }
 
@@ -415,7 +471,9 @@ const TraineeProfile = () => {
     // Get course structure for the designation
     const moduleInfo = courseStructure[designation];
     if (!moduleInfo) {
-      throw new Error(`Course structure not found for designation: ${designation}`);
+      throw new Error(
+        `Course structure not found for designation: ${designation}`
+      );
     }
 
     return {
@@ -479,8 +537,8 @@ const TraineeProfile = () => {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">
                 Session Management
@@ -517,7 +575,9 @@ const TraineeProfile = () => {
               <div className="flex-shrink-0">
                 {selectedTraineeForSession.picture ? (
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForSession.picture}`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                      selectedTraineeForSession.picture
+                    }`}
                     alt={selectedTraineeForSession.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -599,7 +659,7 @@ const TraineeProfile = () => {
           <div className="flex justify-end gap-4 mt-6 pt-4 border-t">
             <button
               onClick={() => setShowSessionModal(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200"
             >
               Cancel
             </button>
@@ -618,105 +678,108 @@ const TraineeProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading trainees...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading trainees...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Main Content */}
-        <div className="flex items-center space-x-4 mb-8">
-          <Link
-            to="/stc-management"
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200 group"
-          >
-            <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
+        {/* Header */}
+        <div className="bg-white shadow-sm rounded-lg mb-8 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/stc-management"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-all duration-200 group"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-gray-800" />
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Trainee Profiles
+                </h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  View and manage trainee profiles
+                </p>
               </div>
-              Trainee Profile
-            </h1>
-            <p className="text-gray-600 text-sm mt-1">
-              View and manage trainee profiles
-            </p>
-          </div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name, ticket number, designation..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center space-x-2 bg-green-50 px-3 py-1 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700 font-medium text-xs">
-                  {filteredTrainees.length} Trainees
-                </span>
-              </div>
-              <span className="text-sm text-gray-600">
-                Total: {filteredTrainees.length}
+            <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
+              <Users className="w-5 h-5" />
+              <span>
+                {filteredTrainees.length} Trainee
+                {filteredTrainees.length !== 1 && "s"} Found
               </span>
             </div>
           </div>
         </div>
 
-        {/* Trainees Grid */}
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-gray-200">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-grow">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name, ticket number, designation, or unit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Trainees List */}
         {error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">
-              Demo Mode: Using mock data. {error}
-            </p>
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-md">
+            <p className="font-bold">Demo Mode</p>
+            <p>Using mock data. {error}</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTrainees.map((trainee) => (
-            <div
-              key={trainee.id}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
-            >
-              {/* Card Header */}
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    {trainee.picture ? (
-                      <div className="relative">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          {/* Header Row */}
+          <div className="hidden md:grid grid-cols-12 gap-4 p-4 border-b font-semibold text-sm text-gray-600">
+            <div className="col-span-5">TRAINEE</div>
+            <div className="col-span-4">DESIGNATION & UNIT</div>
+            <div className="col-span-3">ACTIONS</div>
+          </div>
+
+          {/* Trainees List */}
+          <div className="divide-y divide-gray-200">
+            {filteredTrainees.map((trainee) => {
+              const isExpanded = expandedTraineeId === trainee.id;
+              return (
+                <div key={trainee.id} className="transition-all duration-300">
+                  {/* Always visible part */}
+                  <div className="grid grid-cols-12 gap-4 p-4 items-center">
+                    <div className="col-span-12 md:col-span-5 flex items-center space-x-4">
+                      <button
+                        className="p-1 rounded-full hover:bg-gray-100"
+                        onClick={() => handleToggleExpand(trainee.id)}
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-gray-600" />
+                        )}
+                      </button>
+                      {trainee.picture ? (
                         <img
-                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
+                          src={`http://${
+                            import.meta.env.VITE_BACKEND_IP
+                          }:5000/${trainee.picture}`}
                           alt={trainee.name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shadow-md"
-                          onError={(e) => {
-                            // Hide the image and show fallback
-                            e.target.style.display = "none";
-                            const fallback =
-                              e.target.parentNode.querySelector(
-                                ".fallback-avatar"
-                              );
-                            if (fallback) fallback.style.display = "flex";
-                          }}
+                          className="w-10 h-10 rounded-full object-cover"
                         />
-                        <div
-                          className="fallback-avatar w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center absolute top-0 left-0"
-                          style={{ display: "none" }}
-                        >
+                      ) : (
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold text-sm">
                             {trainee.name
                               .split(" ")
@@ -724,178 +787,311 @@ const TraineeProfile = () => {
                               .join("")}
                           </span>
                         </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-gray-800">
+                          {trainee.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Ticket: {trainee.ticketNo}
+                        </p>
                       </div>
-                    ) : (
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-                        <span className="text-white font-bold text-sm">
-                          {trainee.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </span>
+                    </div>
+                    <div className="col-span-12 md:col-span-4 text-sm text-gray-700">
+                      <p className="font-medium">{trainee.designation}</p>
+                      <p className="text-gray-500">{trainee.unit}</p>
+                    </div>
+                    <div className="col-span-12 md:col-span-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button
+                          onClick={() => handleEditTrainee(trainee)}
+                          className="flex items-center justify-center px-2 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs font-medium"
+                          title="Manage Profile"
+                        >
+                          <Settings className="w-4 h-4 mr-1" />
+                          Manage
+                        </button>
+                        <Link
+                          to={`/stc/feed-marks?traineeId=${
+                            trainee.id
+                          }&ticketNo=${
+                            trainee.ticketNo
+                          }&name=${encodeURIComponent(
+                            trainee.name
+                          )}&courseCode=${trainee.courseCode}&autoSelect=true`}
+                          className="flex items-center justify-center px-2 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-xs font-medium"
+                          title="View/Add Marks"
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          Marks
+                        </Link>
+                        <button
+                          onClick={() => handleSessionManagement(trainee)}
+                          className="flex items-center justify-center px-2 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-xs font-medium"
+                          title="Manage Sessions"
+                        >
+                          <Calendar className="w-4 h-4 mr-1" />
+                          Sessions
+                        </button>
+                        <button
+                          onClick={() => handleLineTraining(trainee)}
+                          className="flex items-center justify-center px-2 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-xs font-medium"
+                          title="Line Training"
+                        >
+                          <GraduationCap className="w-4 h-4 mr-1" />
+                          Training
+                        </button>
+                        <button
+                          onClick={() => handleResignation(trainee)}
+                          disabled={trainee.status === "Resigned"}
+                          className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors text-xs font-medium ${
+                            trainee.status === "Resigned"
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-red-600 text-white hover:bg-red-700"
+                          }`}
+                          title={
+                            trainee.status === "Resigned"
+                              ? "Resigned"
+                              : "Resign"
+                          }
+                        >
+                          <Users className="w-4 h-4 mr-1" />
+                          {trainee.status === "Resigned"
+                            ? "Resigned"
+                            : "Resign"}
+                        </button>
                       </div>
-                    )}
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {trainee.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {trainee.ticketNo}
-                      </p>
                     </div>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      trainee.status === "Active"
-                        ? "bg-green-100 text-green-800"
-                        : trainee.status === "Resigned"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {trainee.status}
-                  </span>
-                </div>
-                {/* Trainee Details */}
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Hash className="w-4 h-4 mr-2" />
-                    Ticket: {trainee.ticketNo}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Award className="w-4 h-4 mr-2" />
-                    {trainee.designation} - {trainee.unit}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <GraduationCap className="w-4 h-4 mr-2" />
-                    Batch: {trainee.batch}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Phone className="w-4 h-4 mr-2" />
-                    {trainee.phone_number}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="w-4 h-4 mr-2" />
-                    {trainee.email}
-                  </div>
-                </div>
-              </div>
 
-              {/* Course Info */}
-              <div className="p-4 bg-gray-50">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Basic Course Details */}
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Course Details
-                    </h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p>Module: {trainee.module_no}</p>
-                      <p>Duration: {trainee.course_duration}</p>
-                      <p>Working Under: {trainee.working_under || "N/A"}</p>
-                    </div>
-                  </div>
-
-                  {/* Session Details */}
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">
-                      Session Timeline
-                    </h4>
-                    <div className="space-y-2">
-                      {(() => {
-                        const sessionCount = trainee.designation?.startsWith('MJP-') || 
-                                          trainee.module_no?.includes('MJP') ? 2 : 4;
-                        
-                        return Array.from({ length: sessionCount }, (_, i) => {
-                          const sessionNum = i + 1;
-                          const startDate = trainee[`session${sessionNum}start`];
-                          const endDate = trainee[`session${sessionNum}end`];
-                          
-                          if (!startDate && !endDate) return null;
-
-                          return (
-                            <div key={sessionNum} className="text-sm bg-white rounded-lg p-2">
-                              <p className="text-indigo-600 font-medium mb-1">Session {sessionNum}</p>
-                              <div className="grid grid-cols-2 gap-2 text-gray-600">
-                                <p>Start: {formatDateDDMMYYYY(startDate)}</p>
-                                <p>End: {formatDateDDMMYYYY(endDate)}</p>
-                              </div>
+                  {/* Expandable part */}
+                  {isExpanded && (
+                    <div className="bg-gray-50 p-5 border-t border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Column 1 */}
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                              Personal Details
+                            </h4>
+                            <div className="space-y-1">
+                              <DetailItem
+                                label="Father's Name"
+                                value={trainee.father_name}
+                              />
+                              <DetailItem
+                                label="Date of Birth"
+                                value={formatDateDDMMYYYY(trainee.dob)}
+                              />
+                              <DetailItem label="Sex" value={trainee.sex} />
+                              <DetailItem
+                                label="Category"
+                                value={trainee.category}
+                              />
                             </div>
-                          );
-                        }).filter(Boolean)
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                              Railway Details
+                            </h4>
+                            <div className="space-y-1">
+                              <DetailItem
+                                label="Appointment Mode"
+                                value={trainee.mode_of_appointment}
+                              />
+                              <DetailItem
+                                label="Appointment Date"
+                                value={formatDateDDMMYYYY(
+                                  trainee.date_of_appointment_in_railway
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </div>
 
-              {/* Actions */}
-              <div className="p-4 border-t border-gray-100">
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <button
-                    onClick={() => handleEditTrainee(trainee)}
-                    className="flex items-center justify-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                  >
-                    <Settings className="w-4 h-4 mr-1" />
-                    Manage
-                  </button>
-                  <Link
-                    to={`/stc/feed-marks?traineeId=${trainee.id}&ticketNo=${
-                      trainee.ticketNo
-                    }&name=${encodeURIComponent(trainee.name)}&courseCode=${
-                      trainee.courseCode
-                    }&autoSelect=true`}
-                    className={`flex items-center justify-center px-3 py-2 text-white rounded-lg transition-colors text-sm ${
-                      trainee.id
-                        ? "bg-green-500 hover:bg-green-600"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    }`}
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    {trainee.id ? "View Marks" : "Add Marks"}
-                  </Link>
+                        {/* Column 2 */}
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                              Contact Details
+                            </h4>
+                            <div className="space-y-1">
+                              <DetailItem
+                                label="Phone"
+                                value={trainee.phone_number}
+                              />
+                              <DetailItem label="Email" value={trainee.email} />
+                              <DetailItem
+                                label="Address"
+                                value={trainee.permanent_address}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                              Qualification
+                            </h4>
+                            <div className="space-y-1">
+                              <DetailItem
+                                label="Highest Qualification"
+                                value={trainee.highest_qualification}
+                              />
+                              <DetailItem
+                                label="Institution"
+                                value={trainee.institution}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Column 3 */}
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                              Course Details
+                            </h4>
+                            <div className="space-y-1">
+                              <DetailItem
+                                label="Course"
+                                value={trainee.module_no}
+                              />
+                              <DetailItem label="Batch" value={trainee.batch} />
+                              <DetailItem
+                                label="Joining Date"
+                                value={formatDateDDMMYYYY(
+                                  trainee.date_of_joining_stc_wtc_non_railway
+                                )}
+                              />
+                              <DetailItem
+                                label="Sparing Date"
+                                value={formatDateDDMMYYYY(
+                                  trainee.date_of_sparing
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Session Timeline */}
+                      <div className="mt-6">
+                        <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                          Session Timeline
+                        </h4>
+                        <div className="space-y-2">
+                          {(() => {
+                            const sessionCount =
+                              trainee.designation?.startsWith("MJP-") ||
+                              trainee.module_no?.includes("MJP")
+                                ? 2
+                                : 4;
+
+                            const sessions = Array.from(
+                              { length: sessionCount },
+                              (_, i) => {
+                                const sessionNum = i + 1;
+                                const startDate =
+                                  trainee[`session${sessionNum}start`];
+                                const endDate =
+                                  trainee[`session${sessionNum}end`];
+
+                                if (!startDate && !endDate) return null;
+
+                                return (
+                                  <div
+                                    key={sessionNum}
+                                    className="text-indigo-700 font-bold"
+                                  >
+                                    Session {sessionNum}:{" "}
+                                    <span className="text-gray-600">
+                                      {formatDateDDMMYYYY(startDate)} -{" "}
+                                      {formatDateDDMMYYYY(endDate)}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                            ).filter(Boolean);
+
+                            if (sessions.length === 0) {
+                              return (
+                                <p className="text-sm text-gray-500">
+                                  No session dates set.
+                                </p>
+                              );
+                            }
+                            return (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                                {sessions}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                      {/* Line Training Info */}
+                      <div className="mt-6">
+                        <h4 className="font-semibold text-gray-700 mb-2 border-b pb-1">
+                          Line Training Information
+                        </h4>
+                        {lineTrainingData[trainee.ticketNo] &&
+                        lineTrainingData[trainee.ticketNo].length > 0 ? (
+                          <div className="space-y-3">
+                            {lineTrainingData[trainee.ticketNo].map((lt) => (
+                              <div
+                                key={lt.id}
+                                className="bg-white rounded-md p-3 border text-xs"
+                              >
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Activity Centre:
+                                    </span>{" "}
+                                    {lt.activity_centre}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Start Date:
+                                    </span>{" "}
+                                    {formatDateDDMMYYYY(lt.start_date)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      End Date:
+                                    </span>{" "}
+                                    {formatDateDDMMYYYY(lt.end_date)}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold text-gray-700">
+                                      Remark:
+                                    </span>{" "}
+                                    {lt.remark || "N/A"}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            No line training records found.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleLineTraining(trainee)}
-                    className="flex items-center justify-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm"
-                  >
-                    <GraduationCap className="w-4 h-4 mr-1" />
-                    Training
-                  </button>
-                  <button
-                    onClick={() => handleResignation(trainee)}
-                    disabled={trainee.status === "Resigned"}
-                    className={`flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${
-                      trainee.status === "Resigned"
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-red-500 text-white hover:bg-red-600"
-                    }`}
-                  >
-                    <Users className="w-4 h-4 mr-1" />
-                    {trainee.status === "Resigned" ? "Resigned" : "Resign"}
-                  </button>
-                  <button
-                    onClick={() => handleSessionManagement(trainee)}
-                    className="flex items-center justify-center px-3 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm"
-                  >
-                    <Calendar className="w-4 h-4 mr-1" />
-                    Sessions
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
 
         {/* Empty State */}
-        {filteredTrainees.length === 0 && (
-          <div className="text-center py-12">
+        {filteredTrainees.length === 0 && !loading && (
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm border">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No trainees found
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              No Trainees Found
             </h3>
-            <p className="text-gray-500">Try adjusting your search criteria</p>
+            <p className="text-gray-500">
+              Your search did not match any trainee profiles.
+            </p>
           </div>
         )}
       </div>
@@ -903,8 +1099,8 @@ const TraineeProfile = () => {
       {/* Resignation Modal */}
       {showResignationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b">
               <h3 className="text-xl font-semibold text-gray-900">
                 Process Resignation
               </h3>
@@ -930,16 +1126,18 @@ const TraineeProfile = () => {
 
             {selectedTraineeForResignation && (
               <div className="mb-6">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg border">
                   {selectedTraineeForResignation.picture ? (
                     <img
-                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${selectedTraineeForResignation.picture}`}
+                      src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                        selectedTraineeForResignation.picture
+                      }`}
                       alt={selectedTraineeForResignation.name}
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-base">
                         {selectedTraineeForResignation.name
                           .split(" ")
                           .map((n) => n[0])
@@ -948,11 +1146,11 @@ const TraineeProfile = () => {
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-semibold text-gray-800">
                       {selectedTraineeForResignation.name}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {selectedTraineeForResignation.ticketNo}
+                      Ticket No: {selectedTraineeForResignation.ticketNo}
                     </p>
                   </div>
                 </div>
@@ -961,10 +1159,14 @@ const TraineeProfile = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="resignationDate"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Resignation Date <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="resignationDate"
                   type="date"
                   value={resignationData.date}
                   onChange={(e) =>
@@ -979,10 +1181,14 @@ const TraineeProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="resignationReason"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Reason for Resignation <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="resignationReason"
                   value={resignationData.reason}
                   onChange={(e) =>
                     setResignationData((prev) => ({
@@ -997,10 +1203,10 @@ const TraineeProfile = () => {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-8 pt-4 border-t">
               <button
                 onClick={closeResignationModal}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
               >
                 Cancel
               </button>
@@ -1011,7 +1217,7 @@ const TraineeProfile = () => {
                   !resignationData.date ||
                   !resignationData.reason.trim()
                 }
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {submittingResignation
                   ? "Processing..."

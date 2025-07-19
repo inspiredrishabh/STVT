@@ -1,113 +1,119 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
-const Professional = ({ formData, onChange }) => {
+const Professional = ({ formData, onChange, errors, durationInfo }) => {
   const [localErrors, setLocalErrors] = useState({});
+  const [showCourseTypeOptions, setShowCourseTypeOptions] = useState(false);
+  const [showFieldOptions, setShowFieldOptions] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const validateField = (field, value) => {
-    const trimmedValue = value?.toString().trim() || "";
+  const validateField = useCallback(
+    (field, value) => {
+      const trimmedValue = value?.toString().trim() || "";
 
-    if (!trimmedValue) return "This field is required";
+      if (!trimmedValue) return "This field is required";
 
-    if (
-      [
+      if (
+        [
+          "courseType",
+          "workingUnder",
+          "institution",
+          "fieldOfStudy",
+          "designation",
+          "unitCustodian",
+        ].includes(field) &&
+        trimmedValue.length < 2
+      ) {
+        return "Must be at least 2 characters";
+      }
+
+      // Date validation for joining and sparing dates
+      if (field === "dateOfJoiningStcWtcNonRailway" || field === "dateOfSparing") {
+        const selectedDate = new Date(trimmedValue);
+        if (isNaN(selectedDate.getTime())) {
+          return "Please enter a valid date";
+        }
+      }
+
+      if (field === "gradeValue" && formData.gradeType) {
+        const grade = parseFloat(trimmedValue);
+        if (
+          formData.gradeType === "CGPA (out of 10)" &&
+          (isNaN(grade) || grade < 0 || grade > 10)
+        ) {
+          return "CGPA must be between 0-10";
+        }
+        if (
+          formData.gradeType === "CGPA (out of 4)" &&
+          (isNaN(grade) || grade < 0 || grade > 4)
+        ) {
+          return "CGPA must be between 0-4";
+        }
+        if (
+          formData.gradeType === "Percentage" &&
+          (isNaN(grade) || grade < 0 || grade > 100)
+        ) {
+          return "Percentage must be between 0-100";
+        }
+      }
+
+      return "";
+    },
+    [formData.gradeType]
+  );
+
+
+  const validateAllFields = useCallback(
+    (data = formData) => {
+      const requiredFields = [
         "courseType",
-        "workingUnder",
-        "institution",
-        "fieldOfStudy",
-        "customFieldOfStudy",
         "designation",
         "unitCustodian",
-      ].includes(field) &&
-      trimmedValue.length < 2
-    ) {
-      return "Must be at least 2 characters";
-    }
+        // "duration",
+        "workingUnder",
+        "highestQualification",
+        "fieldOfStudy",
+        "institution",
+        // "gradeType",
+      ];
 
-    if (field === "gradeValue" && formData.gradeType) {
-      const grade = parseFloat(trimmedValue);
-      if (
-        formData.gradeType === "CGPA (out of 10)" &&
-        (isNaN(grade) || grade < 0 || grade > 10)
-      ) {
-        return "CGPA must be between 0-10";
+      if (data.designation === "Summer Vacation training") {
+        requiredFields.push("durationOption");
       }
-      if (
-        formData.gradeType === "CGPA (out of 4)" &&
-        (isNaN(grade) || grade < 0 || grade > 4)
-      ) {
-        return "CGPA must be between 0-4";
+
+      // Grade value should be validated if gradeType is selected
+      if (data.gradeType) {
+        requiredFields.push("gradeValue");
       }
-      if (
-        formData.gradeType === "Percentage" &&
-        (isNaN(grade) || grade < 0 || grade > 100)
-      ) {
-        return "Percentage must be between 0-100";
-      }
-    }
 
-    return "";
-  };
+      const validationErrors = {};
+      requiredFields.forEach((field) => {
+        const error = validateField(field, data[field]);
+        if (error) validationErrors[field] = error;
+      });
 
-  const validateAllFields = (data = formData) => {
-    const requiredFields = [
-      "courseType",
-      "designation",
-      "unitCustodian",
-      // "duration",
-      "workingUnder",
-      "highestQualification",
-      "fieldOfStudy",
-      "institution",
-      // "gradeType",
-    ];
+      setLocalErrors(validationErrors); // Set errors when validation runs
 
-    if (data.designation === "Summer Vacation training") {
-      requiredFields.push("durationOption");
-    }
-    if (data.fieldOfStudy === "Other") {
-      requiredFields.push("customFieldOfStudy");
-    }
-
-    // Grade value should be validated if gradeType is selected
-    if (data.gradeType) {
-      requiredFields.push("gradeValue");
-    }
-
-    const validationErrors = {};
-    requiredFields.forEach((field) => {
-      const error = validateField(field, data[field]);
-      if (error) validationErrors[field] = error;
-    });
-
-    return {
-      isValid: Object.keys(validationErrors).length === 0,
-      errors: validationErrors,
-    };
-  };
+      return {
+        isValid: Object.keys(validationErrors).length === 0,
+        errors: validationErrors,
+      };
+    },
+    [formData, validateField]
+  );
 
   // Validate and update errors on every change
   const handleChange = (field, value) => {
     const newFormData = { ...formData, [field]: value };
     onChange(field, value);
-    const { errors } = validateAllFields(newFormData);
-    setLocalErrors(errors);
+    if (submitted) {
+      validateAllFields(newFormData);
+    }
   };
 
   const getFieldOfStudyOptions = () => {
     const qualification = formData.highestQualification;
 
     switch (qualification) {
-      case "Diploma":
-        return [
-          "Mechanical Engineering",
-          "Electrical Engineering",
-          "Civil Engineering",
-          "Electronics Engineering",
-          "Computer Engineering",
-          "Automobile Engineering",
-          "Railway Engineering",
-          "Other",
-        ];
       case "Bachelor's Degree":
         return [
           "B.Tech - Mechanical Engineering",
@@ -124,7 +130,6 @@ const Professional = ({ formData, onChange }) => {
           "B.Sc - Mathematics",
           "B.Sc - Chemistry",
           "B.Com - Commerce",
-          "Other",
         ];
       case "Master's Degree":
         return [
@@ -143,7 +148,6 @@ const Professional = ({ formData, onChange }) => {
           "M.Sc - Chemistry",
           "MBA - Business Administration",
           "M.Com - Commerce",
-          "Other",
         ];
       case "Ph.D":
         return [
@@ -157,21 +161,25 @@ const Professional = ({ formData, onChange }) => {
           "Ph.D - Mathematics",
           "Ph.D - Chemistry",
           "Ph.D - Management",
-          "Other",
         ];
       default:
-        return ["Other"];
+        return [];
     }
+  };
+
+  const triggerValidation = () => {
+    setSubmitted(true);
+    return validateAllFields();
   };
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
-      onChange.setValidationFunction(validateAllFields);
+      onChange.setValidationFunction(triggerValidation);
     }
-  }, [formData]);
+  }, [formData, onChange, triggerValidation]);
 
   // Course type and mapping data
-  const courseTypeOptions = ["Non Railway", "Custom"];
+  const courseTypeOptions = ["Non Railway"];
 
   const designationOptions = [
     "RRC Act Apprentice 1961",
@@ -187,68 +195,11 @@ const Professional = ({ formData, onChange }) => {
     "Summer Vacation training": ["Degree & Diploma Holders"],
   };
 
-  const durationMapping = {
-    "RRC Act Apprentice 1961": {
-      theory: "01 W",
-      practical: "51 W",
-      total: "01 Y",
-    },
-    "Act Junior Apprentices": {
-      theory: "04 W",
-      practical: "48 W",
-      total: "01 Y",
-    },
-    "Rail Kaushal Vikas Yojana": {
-      theory: "01 W",
-      practical: "02 W",
-      total: "03 W",
-    },
-    "Summer Vacation training": {
-      "4W": {
-        theory: "00 W",
-        practical: "04 W",
-        total: "04 W",
-      },
-      "6W": {
-        theory: "00 W",
-        practical: "06 W",
-        total: "06 W",
-      },
-    },
-  };
-
   const getAvailableUnits = () => {
     if (!formData.designation || formData.courseType === "Custom") {
       return [];
     }
     return unitMapping[formData.designation] || [];
-  };
-
-  const getDurationInfo = () => {
-    if (!formData.designation || formData.courseType === "Custom") {
-      return { theory: "", practical: "", total: "" };
-    }
-
-    if (
-      formData.designation === "Summer Vacation training" &&
-      formData.durationOption
-    ) {
-      return (
-        durationMapping[formData.designation][formData.durationOption] || {
-          theory: "",
-          practical: "",
-          total: "",
-        }
-      );
-    }
-
-    return (
-      durationMapping[formData.designation] || {
-        theory: "",
-        practical: "",
-        total: "",
-      }
-    );
   };
 
   const RequiredLabel = ({ children }) => (
@@ -275,47 +226,47 @@ const Professional = ({ formData, onChange }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 mb-10">
         <div>
           <RequiredLabel>Course Type</RequiredLabel>
-          <select
-            value={formData.courseType || ""}
-            onChange={(e) => {
-              handleChange("courseType", e.target.value);
-              // Reset dependent fields when course type changes
-              handleChange("designation", "");
-              handleChange("unitCustodian", "");
-            }}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-          >
-            <option value="">Select course type</option>
-            {courseTypeOptions.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.courseType || ""}
+              onChange={(e) => {
+                handleChange("courseType", e.target.value);
+                // Reset dependent fields when course type changes
+                handleChange("designation", "");
+                handleChange("unitCustodian", "");
+              }}
+              onFocus={() => setShowCourseTypeOptions(true)}
+              onBlur={() => setTimeout(() => setShowCourseTypeOptions(false), 200)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Select or type course type"
+            />
+            {showCourseTypeOptions && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                {courseTypeOptions.map((type) => (
+                  <div
+                    key={type}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // Prevent onBlur from firing before click
+                      handleChange("courseType", type);
+                      handleChange("designation", "");
+                      handleChange("unitCustodian", "");
+                      setShowCourseTypeOptions(false);
+                    }}
+                  >
+                    {type}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {localErrors.courseType && (
             <p className="text-sm text-red-500 mt-1">
               {localErrors.courseType}
             </p>
           )}
         </div>
-
-        {formData.courseType === "Custom" && (
-          <div>
-            <RequiredLabel>Custom Course Type</RequiredLabel>
-            <input
-              type="text"
-              value={formData.customCourseType || ""}
-              onChange={(e) => handleChange("customCourseType", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter custom course type"
-            />
-            {localErrors.customCourseType && (
-              <p className="text-sm text-red-500 mt-1">
-                {localErrors.customCourseType}
-              </p>
-            )}
-          </div>
-        )}
 
         <div>
           <RequiredLabel>Designation</RequiredLabel>
@@ -408,7 +359,7 @@ const Professional = ({ formData, onChange }) => {
           <RequiredLabel>Duration</RequiredLabel>
           <input
             type="text"
-            value={formData.duration || getDurationInfo().total}
+            value={formData.duration || durationInfo.total}
             onChange={(e) => handleChange("duration", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
             placeholder="Enter duration"
@@ -431,7 +382,7 @@ const Professional = ({ formData, onChange }) => {
           </label>
           <input
             type="text"
-            value={formData.theoryPeriod || getDurationInfo().theory}
+            value={formData.theoryPeriod || durationInfo.theory}
             onChange={(e) => handleChange("theoryPeriod", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
@@ -451,7 +402,7 @@ const Professional = ({ formData, onChange }) => {
           </label>
           <input
             type="text"
-            value={formData.practicalPeriod || getDurationInfo().practical}
+            value={formData.practicalPeriod || durationInfo.practical}
             onChange={(e) => handleChange("practicalPeriod", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50"
             placeholder="Auto-filled"
@@ -463,6 +414,36 @@ const Professional = ({ formData, onChange }) => {
                 formData.durationOption)
             }
           />
+        </div>
+
+        <div>
+          <label>Date of Joining</label>
+          <input
+            type="date"
+            value={formData.dateOfJoiningStcWtcNonRailway || ""}
+            onChange={(e) => handleChange("dateOfJoiningStcWtcNonRailway", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          />
+          {localErrors.dateOfJoiningStcWtcNonRailway && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.dateOfJoiningStcWtcNonRailway}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label>Date of Sparing</label>
+          <input
+            type="date"
+            value={formData.dateOfSparing || ""}
+            onChange={(e) => handleChange("dateOfSparing", e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+          />
+          {localErrors.dateOfSparing && (
+            <p className="text-sm text-red-500 mt-1">
+              {localErrors.dateOfSparing}
+            </p>
+          )}
         </div>
 
         <div>
@@ -510,9 +491,11 @@ const Professional = ({ formData, onChange }) => {
           <RequiredLabel>Highest Qualification</RequiredLabel>
           <select
             value={formData.highestQualification || ""}
-            onChange={(e) =>
-              handleChange("highestQualification", e.target.value)
-            }
+            onChange={(e) => {
+              handleChange("highestQualification", e.target.value);
+              // Reset field of study when qualification changes
+              handleChange("fieldOfStudy", "");
+            }}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           >
             <option value="">Select qualification</option>
@@ -530,44 +513,41 @@ const Professional = ({ formData, onChange }) => {
 
         <div>
           <RequiredLabel>Field of Study</RequiredLabel>
-          <select
-            value={formData.fieldOfStudy || ""}
-            onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2"
-          >
-            <option value="">Select field of study</option>
-            {getFieldOfStudyOptions().map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.fieldOfStudy || ""}
+              onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
+              onFocus={() => setShowFieldOptions(true)}
+              onBlur={() => setTimeout(() => setShowFieldOptions(false), 200)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Select or type field of study"
+              disabled={!formData.highestQualification}
+            />
+            {showFieldOptions && formData.highestQualification && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {getFieldOfStudyOptions().map((option) => (
+                  <div
+                    key={option}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleChange("fieldOfStudy", option);
+                      setShowFieldOptions(false);
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {localErrors.fieldOfStudy && (
             <p className="text-sm text-red-500 mt-1">
               {localErrors.fieldOfStudy}
             </p>
           )}
         </div>
-
-        {formData.fieldOfStudy === "Other" && (
-          <div>
-            <RequiredLabel>Custom Field of Study</RequiredLabel>
-            <input
-              type="text"
-              value={formData.customFieldOfStudy || ""}
-              onChange={(e) =>
-                handleChange("customFieldOfStudy", e.target.value)
-              }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Enter custom field of study"
-            />
-            {localErrors.customFieldOfStudy && (
-              <p className="text-sm text-red-500 mt-1">
-                {localErrors.customFieldOfStudy}
-              </p>
-            )}
-          </div>
-        )}
 
         <div>
           <RequiredLabel>Institution</RequiredLabel>

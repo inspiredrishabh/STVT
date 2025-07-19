@@ -156,7 +156,7 @@ const Certificate = () => {
           <div className="flex items-center space-x-4">
             <Link
               to="/wtc"
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-200"
+              className="flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-sm hover:bg-gray-50"
             >
               <ArrowLeft className="w-4 h-4 text-gray-600" />
             </Link>
@@ -166,13 +166,13 @@ const Certificate = () => {
           </div>
         </div>
         {/* Search and Filter Controls */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
             {/* Search Box */}
             <div className="relative flex-1">
               <input
                 type="text"
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Search by name or ticket number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -184,7 +184,7 @@ const Certificate = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => setFilterOpen(!filterOpen)}
-                className="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="flex items-center space-x-2 px-4 py-2 border rounded-md hover:bg-gray-100"
               >
                 <Filter className="w-4 h-4" />
                 <span>Filter</span>
@@ -192,7 +192,7 @@ const Certificate = () => {
 
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border rounded-md hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -201,7 +201,7 @@ const Certificate = () => {
 
           {/* Filter Panel */}
           {filterOpen && (
-            <div className="bg-gray-50 p-4 rounded-lg mt-2">
+            <div className="bg-gray-50 p-4 rounded-md mt-2 border border-gray-200">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Batch Filter */}
                 <div>
@@ -253,7 +253,7 @@ const Certificate = () => {
         </div>
 
         {/* Bulk Actions Bar */}
-        <div className="bg-white shadow rounded-lg p-4 mb-6">
+        <div className="bg-white shadow-md rounded-lg p-4 mb-6 border border-gray-200">
           <div className="flex flex-wrap justify-between items-center gap-4">
             {/* Selection Counter */}
             <div className="flex items-center">
@@ -274,7 +274,7 @@ const Certificate = () => {
               <button
                 onClick={generateBulkCertificates}
                 disabled={selectedTrainees.length === 0}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${selectedTrainees.length > 0
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md ${selectedTrainees.length > 0
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } transition-colors`}
@@ -317,7 +317,6 @@ const Certificate = () => {
                     <th className="p-4 text-left">Ticket No.</th>
                     <th className="p-4 text-left">Name</th>
                     <th className="p-4 text-left">Batch</th>
-                    <th className="p-4 text-left">Module</th>
                     <th className="p-4 text-left">Training Period</th>
                     <th className="p-4 text-left">Status</th>
                   </tr>
@@ -341,7 +340,6 @@ const Certificate = () => {
                         <td className="p-4 font-medium">{trainee.ticketNo}</td>
                         <td className="p-4">{trainee.name}</td>
                         <td className="p-4">{trainee.batch}</td>
-                        <td className="p-4">{trainee.moduleNo}</td>
                         <td className="p-4">{formatDate(trainee.dateOfJoiningStcWtcNonRailway)} - {formatDate(trainee.dateOfSparing)}</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded-full text-xs ${trainee.dateOfSparing >= today

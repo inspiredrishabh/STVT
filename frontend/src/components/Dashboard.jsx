@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { RefreshCw, Download } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -45,12 +45,11 @@ class DashboardAPI {
         success: true,
         data: [
           { category: "STC", count: stc, color: "#3b82f6" }, // Blue
-          { category: "WTC", count: wtc, color: "#10b981" }, // Green  
+          { category: "WTC", count: wtc, color: "#10b981" }, // Green
           { category: "Non-Railway", count: nonRailway, color: "#8b5cf6" }, // Purple
         ],
       };
     } catch {
-  
       return { success: false, data: [] };
     }
   }
@@ -62,50 +61,33 @@ class DashboardAPI {
         this.getNonRailwayCandidatesCount(),
       ]);
       const total = stc + wtc + nonRailway;
-      if (!total) return { success: true, data: [] };        return {
-          success: true,
-          data: [
-            {
-              name: "STC",
-              value: Math.round((stc / total) * 100),
-              count: stc,
-              color: "#3b82f6", // Blue
-            },
-            {
-              name: "WTC",
-              value: Math.round((wtc / total) * 100),
-              count: wtc,
-              color: "#10b981", // Green
-            },
-            {
-              name: "Non-Railway",
-              value: Math.round((nonRailway / total) * 100),
-              count: nonRailway,
-              color: "#8b5cf6", // Purple
-            },
-          ],
-        };
+      if (!total) return { success: true, data: [] };
+      return {
+        success: true,
+        data: [
+          {
+            name: "STC",
+            value: Math.round((stc / total) * 100),
+            count: stc,
+            color: "#3b82f6", // Blue
+          },
+          {
+            name: "WTC",
+            value: Math.round((wtc / total) * 100),
+            count: wtc,
+            color: "#10b981", // Green
+          },
+          {
+            name: "Non-Railway",
+            value: Math.round((nonRailway / total) * 100),
+            count: nonRailway,
+            color: "#8b5cf6", // Purple
+          },
+        ],
+      };
     } catch {
       return { success: false, data: [] };
     }
-  }
-  calculateWorkingDays(year, month) {
-    const daysInMonth = new Date(year, month, 0).getDate();
-    let workingDays = 0;
-    const holidays = {
-      1: [1, 26],
-      3: [8],
-      4: [14],
-      5: [1],
-      8: [15],
-      10: [2],
-      12: [25],
-    };
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month - 1, day);
-      if (date.getDay() !== 0 && !holidays[month]?.includes(day)) workingDays++;
-    }
-    return workingDays;
   }
   async getOverallStats() {
     try {
@@ -114,30 +96,58 @@ class DashboardAPI {
         this.getWtcCandidatesCount(),
         this.getNonRailwayCandidatesCount(),
       ]);
-      const classroomCapacity = 126;
-      const now = new Date();
-      const workingDays = this.calculateWorkingDays(
-        now.getFullYear(),
-        now.getMonth() + 1
-      );
-      const total = stc + wtc + nonRailway;
+      // Fetch all STC candidates for more stats
+      const stcRes = await fetch(`${this.baseURL}/stc`);
+      const stcData = await stcRes.json();
+      const stcCandidates =
+        stcData.success && Array.isArray(stcData.data) ? stcData.data : [];
+      // Designation-wise counts
+      const designationCounts = {};
+      const batchSet = new Set();
+      let resignedCount = 0;
+      stcCandidates.forEach((c) => {
+        const desig = (c.designation || "").split("-")[0];
+        designationCounts[desig] = (designationCounts[desig] || 0) + 1;
+        if (c.batch) batchSet.add(c.batch);
+        if (c.resignation_status === "yes") resignedCount++;
+      });
       return {
         success: true,
         data: {
-          totalCandidates: total,
+          totalCandidates: stc + wtc + nonRailway,
           railwayCandidates: stc + wtc,
           nonRailwayCandidates: nonRailway,
           stcCandidates: stc,
           wtcCandidates: wtc,
-          activeCourses: Math.ceil(total / 25),
-          completedCourses: Math.floor(total / 30),
-          trainingCapacity: classroomCapacity * workingDays,
-          classroomCapacity,
-          workingDaysThisMonth: workingDays,
+          designationCounts,
+          totalBatches: batchSet.size,
+          resignedCount,
         },
       };
     } catch {
       return { success: false, data: null };
+    }
+  }
+  async getAllUnits() {
+    try {
+      const response = await fetch(`${this.baseURL}/stc`);
+      const data = await response.json();
+      if (!data.success || !Array.isArray(data.data)) return [];
+      const unitCounts = {};
+      data.data.forEach((c) => {
+        const unit = c.unit || "Unknown";
+        unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+      });
+      // Sort all units by count desc
+      return Object.entries(unitCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([unit, count], i) => ({
+          unit,
+          count,
+          color: ["#3b82f6", "#10b981", "#8b5cf6", "#f59e42", "#ef4444"][i % 5],
+        }));
+    } catch {
+      return [];
     }
   }
   async getRecentActivities() {
@@ -226,30 +236,87 @@ class DashboardAPI {
   }
 }
 
-const SimpleBarChart = ({ data, title }) => (
-  <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">
-      {title}
-    </h3>
-    {!data ||
-    data.length === 0 ||
-    Math.max(...data.map((d) => d.count)) === 0 ? (
-      <div className="text-center text-gray-400 py-8">No data available</div>
-    ) : (
-      <div className="space-y-3">
-        {data.map((item, idx) => (
-          <div key={idx} className="flex items-center space-x-3">
-            <div className="w-16 text-sm font-medium text-gray-700 text-right">
+// Utility: Export array of objects as CSV
+function exportToCSV(data, filename = "export.csv") {
+  if (!data || !data.length) return;
+  const keys = Object.keys(data[0]);
+  const csvRows = [
+    keys.join(","),
+    ...data.map((row) =>
+      keys
+        .map((k) =>
+          ("" + (row[k] ?? ""))
+            .replace(/"/g, '""')
+            .replace(/\n/g, " ")
+            .replace(/\r/g, " ")
+        )
+        .map((v) => `"${v}"`)
+        .join(",")
+    ),
+  ];
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+// Enhanced SimpleBarChart: supports large data, show top N, scrollable
+const SimpleBarChart = ({
+  data,
+  title,
+  onBarClick,
+  maxBars = 20,
+  showAll: showAllProp,
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!data || data.length === 0)
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 text-center">
+          {title}
+        </h3>
+        <div className="text-center text-gray-400 py-8">No data available</div>
+      </div>
+    );
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const displayData =
+    showAll || showAllProp || sorted.length <= maxBars
+      ? sorted
+      : sorted.slice(0, maxBars);
+  const maxCount = Math.max(...sorted.map((d) => d.count), 1);
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900 text-center">
+        {title}
+      </h3>
+      <div
+        className="space-y-3 overflow-y-auto"
+        style={{
+          maxHeight: displayData.length > 10 ? 400 : "auto",
+        }}
+      >
+        {displayData.map((item, idx) => (
+          <div
+            key={idx}
+            className={`flex items-center space-x-3 rounded-lg transition hover:bg-orange-50 ${onBarClick ? "cursor-pointer" : ""
+              }`}
+            onClick={onBarClick ? () => onBarClick(item) : undefined}
+            title={item.category}
+          >
+            <div className="w-24 text-sm font-medium text-gray-700 text-right truncate">
               {item.category}
             </div>
             <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
               <div
-                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium transition-all"
                 style={{
                   backgroundColor: item.color,
-                  width: `${
-                    (item.count / Math.max(...data.map((d) => d.count))) * 100
-                  }%`,
+                  width: `${(item.count / maxCount) * 100}%`,
                   minWidth: "40px",
                 }}
               >
@@ -259,20 +326,50 @@ const SimpleBarChart = ({ data, title }) => (
           </div>
         ))}
       </div>
-    )}
-  </div>
-);
+      {sorted.length > maxBars && (
+        <div className="text-center">
+          <button
+            className="text-xs text-orange-600 underline hover:text-orange-800"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show Top 20" : `Show All (${sorted.length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
-const SimplePieChart = ({ data, title }) => (
-  <div className="space-y-4">
-    <h3 className="text-lg font-semibold text-gray-900 text-center">
-      {title}
-    </h3>
-    {!data ||
-    data.length === 0 ||
-    data.reduce((sum, item) => sum + item.count, 0) === 0 ? (
-      <div className="text-center text-gray-400 py-8">No data available</div>
-    ) : (
+// Enhanced SimplePieChart: supports large data, scrollable legend
+const SimplePieChart = ({
+  data,
+  title,
+  onLegendClick,
+  maxSlices = 20,
+  showAll: showAllProp,
+}) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!data || data.length === 0)
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 text-center">
+          {title}
+        </h3>
+        <div className="text-center text-gray-400 py-8">No data available</div>
+      </div>
+    );
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const displayData =
+    showAll || showAllProp || sorted.length <= maxSlices
+      ? sorted
+      : sorted.slice(0, maxSlices);
+  const total = displayData.reduce((sum, i) => sum + i.count, 0) || 1;
+  let currentAngle = 0;
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-900 text-center">
+        {title}
+      </h3>
       <div className="flex items-center justify-center space-x-8">
         <div className="relative">
           <svg width="200" height="200" className="transform -rotate-90">
@@ -284,47 +381,55 @@ const SimplePieChart = ({ data, title }) => (
               stroke="#e5e7eb"
               strokeWidth="2"
             />
-            {(() => {
-              let currentAngle = 0;
-              return data.map((item, idx) => {
-                const total = data.reduce((sum, i) => sum + i.count, 0);
-                const angle = (item.count / total) * 360;
-                const startAngle = currentAngle;
-                const endAngle = currentAngle + angle;
-                const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
-                const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
-                const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
-                const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
-                const largeArcFlag = angle > 180 ? 1 : 0;
-                const pathData = [
-                  `M 100 100`,
-                  `L ${x1} ${y1}`,
-                  `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                  `Z`,
-                ].join(" ");
-                currentAngle += angle;
-                return (
-                  <path
-                    key={idx}
-                    d={pathData}
-                    fill={item.color}
-                    stroke="white"
-                    strokeWidth="2"
-                  />
-                );
-              });
-            })()}
+            {displayData.map((item, idx) => {
+              const angle = (item.count / total) * 360;
+              const startAngle = currentAngle;
+              const endAngle = currentAngle + angle;
+              const x1 = 100 + 80 * Math.cos((startAngle * Math.PI) / 180);
+              const y1 = 100 + 80 * Math.sin((startAngle * Math.PI) / 180);
+              const x2 = 100 + 80 * Math.cos((endAngle * Math.PI) / 180);
+              const y2 = 100 + 80 * Math.sin((endAngle * Math.PI) / 180);
+              const largeArcFlag = angle > 180 ? 1 : 0;
+              const pathData = [
+                `M 100 100`,
+                `L ${x1} ${y1}`,
+                `A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                `Z`,
+              ].join(" ");
+              currentAngle += angle;
+              return (
+                <path
+                  key={idx}
+                  d={pathData}
+                  fill={item.color}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              );
+            })}
           </svg>
         </div>
-        <div className="space-y-3">
-          {data.map((item, idx) => (
-            <div key={idx} className="flex items-center space-x-3">
+        <div
+          className="space-y-3 overflow-y-auto"
+          style={{
+            maxHeight: displayData.length > 10 ? 300 : "auto",
+            minWidth: 180,
+          }}
+        >
+          {displayData.map((item, idx) => (
+            <div
+              key={idx}
+              className={`flex items-center space-x-3 rounded transition hover:bg-orange-50 ${onLegendClick ? "cursor-pointer" : ""
+                }`}
+              onClick={onLegendClick ? () => onLegendClick(item) : undefined}
+              title={item.name}
+            >
               <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: item.color }}
               ></div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-orange-900">
+              <div className="flex-1 truncate">
+                <div className="text-sm font-medium text-orange-900 truncate">
                   {item.name}
                 </div>
                 <div className="text-xs text-orange-500">
@@ -335,42 +440,165 @@ const SimplePieChart = ({ data, title }) => (
           ))}
         </div>
       </div>
-    )}
-  </div>
-);
+      {sorted.length > maxSlices && (
+        <div className="text-center">
+          <button
+            className="text-xs text-orange-600 underline hover:text-orange-800"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? "Show Top 20" : `Show All (${sorted.length})`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function StatCard({
+  title,
+  value,
+  color = "border-l-blue-500", // Changed to border color
+  textColor = "text-gray-700",
+  onClick,
+  active,
+}) {
+  return (
+    <div
+      className={`bg-white rounded-md shadow-sm border border-gray-200 p-4 cursor-pointer transition-all duration-150 flex flex-col justify-between ${color} border-l-4 ${active ? "ring-2 ring-blue-500" : ""
+        }`}
+      onClick={onClick}
+    >
+      <div className={`text-sm font-semibold ${textColor}`}>{title}</div>
+      <div className="text-3xl font-bold text-gray-800 mt-2">{value}</div>
+    </div>
+  );
+}
+
+// Utility to get sparing date for each type
+function getSparingDate(item, type) {
+  if (type === "stc")
+    return (
+      item.date_of_sparing ||
+      item.dateOfSparing ||
+      item.sparingDate ||
+      item.sparing_date ||
+      item.sparing_on ||
+      ""
+    );
+  if (type === "wtc")
+    return (
+      item.date_of_sparing ||
+      item.dateOfSparing ||
+      item.sparingDate ||
+      item.sparing_on ||
+      ""
+    );
+  if (type === "nonrailway")
+    return (
+      item.date_of_sparing ||
+      item.sparing_on ||
+      item.sparingDate ||
+      item.dateOfSparing ||
+      ""
+    );
+  return "";
+}
 
 function Dashboard() {
   const [categoriesData, setCategoriesData] = useState([]);
   const [distributionData, setDistributionData] = useState([]);
   const [overallStats, setOverallStats] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [allUnits, setAllUnits] = useState([]);
+  const [selectedStat, setSelectedStat] = useState(null);
+  const [statDetails, setStatDetails] = useState([]);
+  const [statDetailsTitle, setStatDetailsTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lineTrainingStats, setLineTrainingStats] = useState([]);
+  const [selectedLineTraining, setSelectedLineTraining] = useState(null);
+  const [lineTrainingDetails, setLineTrainingDetails] = useState([]);
+  const [lineTrainingDetailsTitle, setLineTrainingDetailsTitle] = useState("");
   const { userRole } = useAuth();
   const dashboardAPI = new DashboardAPI();
 
   useEffect(() => {
     loadDashboardData();
+    loadLineTrainingStats();
   }, []);
 
   const loadDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [cat, dist, stats, acts] = await Promise.all([
+      const [cat, dist, stats, acts, units] = await Promise.all([
         dashboardAPI.getCategoriesData(),
         dashboardAPI.getDistributionData(),
         dashboardAPI.getOverallStats(),
         dashboardAPI.getRecentActivities(),
+        dashboardAPI.getAllUnits(),
       ]);
       if (cat.success) setCategoriesData(cat.data);
       if (dist.success) setDistributionData(dist.data);
       if (stats.success) setOverallStats(stats.data);
       if (acts.success) setRecentActivities(acts.data);
+      setAllUnits(units);
     } catch {
       setError("Failed to load dashboard data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch line training stats (robust: handle both activityCentre/activity_centre, ticketNumbers/ticket_no)
+  const loadLineTrainingStats = async () => {
+    try {
+      const res = await fetch("/api/line-trainings");
+      const data = await res.json();
+      console.log("Line Training API response:", data); // DEBUG: log API response
+      if (data.success && Array.isArray(data.data)) {
+        // Defensive: handle both possible keys and fallback
+        const stats = {};
+        data.data.forEach((prog, idx) => {
+          // DEBUG: log each program object
+          console.log("Line Training program", idx, prog);
+          const key =
+            prog.activityCentre ||
+            prog.activity_centre ||
+            prog.activitycenter ||
+            prog.activity_center ||
+            "Unknown";
+          // Accept ticketNumbers, ticket_no, or ticketNos
+          let tickets =
+            prog.ticketNumbers ||
+            prog.ticket_no ||
+            prog.ticketNos ||
+            prog.tickets ||
+            [];
+          if (!Array.isArray(tickets)) {
+            // If single string, wrap as array
+            tickets = [tickets];
+          }
+          if (!stats[key]) {
+            stats[key] = { activityCentre: key, count: 0, programs: [] };
+          }
+          stats[key].count += tickets.length;
+          // Patch program object to always have ticketNumbers and activityCentre for downstream use
+          stats[key].programs.push({
+            ...prog,
+            ticketNumbers: tickets,
+            activityCentre: key,
+          });
+        });
+        console.log("Line Training Stats (grouped):", stats); // DEBUG: log grouped stats
+        setLineTrainingStats(Object.values(stats));
+      } else {
+        setLineTrainingStats([]);
+      }
+    } catch (e) {
+      console.error("Error fetching line training stats:", e); // DEBUG: log error
+      setLineTrainingStats([]);
     }
   };
 
@@ -398,277 +626,813 @@ function Dashboard() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
-          <span className="mt-3 text-gray-700 font-semibold">
-            Loading dashboard...
-          </span>
-        </div>
-      </div>
-    );
+  // CSV Export handler for modal (move inside Dashboard)
+  // REMOVE this function if not used elsewhere
+  // const handleExportCSV = () => {
+  //   if (statDetailsTitle && statDetails.length) {
+  //     exportToCSV(
+  //       statDetails,
+  //       `${statDetailsTitle.replace(/\s+/g, "_")}_${new Date()
+  //         .toISOString()
+  //         .slice(0, 10)}.csv`
+  //     );
+  //   } else if (lineTrainingDetailsTitle && lineTrainingDetails.length) {
+  //     exportToCSV(
+  //       lineTrainingDetails,
+  //       `${lineTrainingDetailsTitle.replace(/\s+/g, "_")}_${new Date()
+  //         .toISOString()
+  //         .slice(0, 10)}.csv`
+  //     );
+  //   }
+  // };
 
-  if (error)
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="bg-white border-2 border-orange-100 rounded-3xl p-6 shadow-lg">
-          <div className="flex items-center">
-            <div className="text-orange-400 mr-3">⚠️</div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900">
-                Error Loading Dashboard
-              </h3>
-              <p className="text-gray-600 mt-1">{error}</p>
-              <button
-                onClick={loadDashboardData}
-                className="mt-3 bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl text-sm transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  // Helper to fetch details for a stat
+  const fetchStatDetails = async (type, value) => {
+    setStatDetails([]);
+    setStatDetailsTitle("");
+    setIsModalOpen(true);
+    let url = "";
+    let title = "";
+    if (type === "Railway Candidates") {
+      // Show all STC + WTC candidates
+      url = "/api/stc";
+      title = "Railway Candidates (STC & WTC)";
+    } else if (type === "Non-Railway Candidates") {
+      url = "/api/nonrailway";
+      title = "Non-Railway Candidates";
+    } else if (type === "STC") {
+      url = "/api/stc";
+      title = "STC Candidates";
+    } else if (type === "WTC") {
+      url = "/api/wtc";
+      title = "WTC Candidates";
+    } else if (type === "Resigned Candidates") {
+      url = "/api/stc";
+      title = "Resigned Candidates (STC)";
+    } else if (type === "Total Candidates") {
+      // Fetch all three and merge
+      title = "All Candidates (STC, WTC, Non-Railway)";
+      try {
+        const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
+          fetch("/api/stc"),
+          fetch("/api/wtc"),
+          fetch("/api/nonrailway"),
+        ]);
+        const [stcData, wtcData, nonRailwayData] = await Promise.all([
+          stcRes.json(),
+          wtcRes.json(),
+          nonRailwayRes.json(),
+        ]);
+        let candidates = [];
+        if (stcData.success && Array.isArray(stcData.data)) {
+          candidates = candidates.concat(
+            stcData.data.map((c) => ({ ...c, _source: "STC" }))
+          );
+        }
+        if (wtcData.success && Array.isArray(wtcData.data)) {
+          candidates = candidates.concat(
+            wtcData.data.map((c) => ({ ...c, _source: "WTC" }))
+          );
+        }
+        if (nonRailwayData.success && Array.isArray(nonRailwayData.data)) {
+          candidates = candidates.concat(
+            nonRailwayData.data.map((c) => ({ ...c, _source: "Non-Railway" }))
+          );
+        }
+        setStatDetailsTitle(title);
+        setStatDetails(candidates);
+        return;
+      } catch {
+        setStatDetailsTitle(title);
+        setStatDetails([]);
+        return;
+      }
+    } else if (type === "unit") {
+      url = "/api/stc/filter/unit/" + encodeURIComponent(value);
+      title = `Candidates in Unit: ${value}`;
+    } else if (type === "designation") {
+      url = "/api/stc/filter/designation/" + encodeURIComponent(value);
+      title = `Candidates with Designation: ${value}`;
+    }
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      let candidates = [];
+      if (data.success && Array.isArray(data.data)) {
+        candidates = data.data;
+        // Filter for resigned if needed
+        if (type === "Resigned Candidates") {
+          candidates = candidates.filter((c) => c.resignation_status === "yes");
+        }
+        // For "Railway Candidates", merge STC and WTC
+        if (type === "Railway Candidates") {
+          const wtcRes = await fetch("/api/wtc");
+          const wtcData = await wtcRes.json();
+          if (wtcData.success && Array.isArray(wtcData.data)) {
+            candidates = [
+              ...candidates.map((c) => ({ ...c, _source: "STC" })),
+              ...wtcData.data.map((c) => ({ ...c, _source: "WTC" })),
+            ];
+          }
+        }
+      }
+      setStatDetailsTitle(title);
+      setStatDetails(candidates);
+    } catch {
+      setStatDetailsTitle(title);
+      setStatDetails([]);
+    }
+  };
+
+  // Fetch details for a line training activity centre
+  const fetchLineTrainingDetails = (activityCentre) => {
+    setLineTrainingDetails([]);
+    setLineTrainingDetailsTitle("");
+    setIsModalOpen(true);
+    setSelectedLineTraining(activityCentre);
+    // Find all programs for this centre
+    const progs =
+      lineTrainingStats.find((s) => s.activityCentre === activityCentre)
+        ?.programs || [];
+    // Flatten all ticket numbers with program info
+    const details = [];
+    progs.forEach((prog) => {
+      (prog.ticketNumbers || []).forEach((ticket_no) => {
+        details.push({
+          ticket_no,
+          activityCentre: prog.activityCentre,
+          startDate: prog.startDate,
+          endDate: prog.endDate,
+          status: prog.status,
+        });
+      });
+    });
+    setLineTrainingDetailsTitle(`Line Training Candidates - ${activityCentre}`);
+    setLineTrainingDetails(details);
+  };
+
+  const [allCandidates, setAllCandidates] = useState({
+    stc: [],
+    wtc: [],
+    nonrailway: [],
+  });
+  const [activeSection, setActiveSection] = useState(null);
+  const [activeCandidates, setActiveCandidates] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
+
+  // Fetch all data for STC, WTC, Non-Railway and parse, handle error
+  useEffect(() => {
+    loadDashboardData();
+    loadLineTrainingStats();
+    loadAllCandidates();
+  }, []);
+
+  const loadAllCandidates = async () => {
+    setFetchError(null);
+    try {
+      const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
+        fetch("/api/stc"),
+        fetch("/api/wtc"),
+        fetch("/api/nonrailway"),
+      ]);
+      if (!stcRes.ok || !wtcRes.ok || !nonRailwayRes.ok) {
+        throw new Error("Failed to fetch one or more candidate datasets");
+      }
+      const [stcData, wtcData, nonRailwayData] = await Promise.all([
+        stcRes.json(),
+        wtcRes.json(),
+        nonRailwayRes.json(),
+      ]);
+      setAllCandidates({
+        stc: Array.isArray(stcData.data) ? stcData.data : [],
+        wtc: Array.isArray(wtcData.data) ? wtcData.data : [],
+        nonrailway: Array.isArray(nonRailwayData.data)
+          ? nonRailwayData.data
+          : [],
+      });
+    } catch (err) {
+      setAllCandidates({ stc: [], wtc: [], nonrailway: [] });
+      setFetchError("Failed to fetch candidate data. Please try again.");
+    }
+  };
+
+  // Compute active candidates for each section
+  const getActiveCandidates = (type) => {
+    const arr = allCandidates[type] || [];
+    // Today's date at 00:00:00
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return arr.filter((item) => {
+      const dateStr = getSparingDate(item, type);
+      if (!dateStr) return false;
+      // Parse date string (support both yyyy-mm-dd and dd-mm-yyyy)
+      let sparingDate = new Date(dateStr);
+      if (isNaN(sparingDate)) {
+        // Try dd-mm-yyyy
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+          sparingDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      }
+      sparingDate.setHours(0, 0, 0, 0);
+      // Only include if sparing date is today or in the future
+      return (
+        sparingDate >= today &&
+        (!item.resignation_status || item.resignation_status !== "yes")
+      );
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-9xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-6">
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+        <div className="max-w-9xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Form Data Visualization
+              <h1 className="text-2xl font-bold text-gray-800">
+                Dashboard - Supervisor Training Centre
               </h1>
-              <p className="text-gray-600 mt-2">
-                Overview of training programs and candidate statistics
+              <p className="text-gray-500 text-sm mt-1">
+                Ministry of Railways, Government of India
               </p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={loadDashboardData}
-                className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center transition-colors text-sm font-medium"
               >
                 <RefreshCw className="mr-2 w-4 h-4" />
                 Refresh
               </button>
-
-              {/* Only show Export button for admin or master */}
               {(userRole === "admin" || userRole === "master") && (
                 <button
                   onClick={handleExportData}
-                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center transition-colors text-sm font-medium"
                 >
                   <Download className="mr-2 w-4 h-4" />
-                  Export
+                  Export Data
                 </button>
               )}
             </div>
           </div>
         </div>
+      </header>
 
-        {overallStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Candidates
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.totalCandidates}
-                </p>
+      <main className="p-6">
+        <div className="max-w-9xl mx-auto">
+          {/* Main Stats Cards */}
+          {overallStats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <StatCard
+                title="Total Candidates"
+                value={overallStats.totalCandidates}
+                onClick={() => {
+                  setSelectedStat("Total Candidates");
+                  fetchStatDetails("Total Candidates");
+                }}
+                active={selectedStat === "Total Candidates"}
+                color="border-l-blue-500"
+                textColor="text-blue-800"
+              />
+              <StatCard
+                title="Railway Candidates"
+                value={overallStats.railwayCandidates}
+                onClick={() => {
+                  setSelectedStat("Railway Candidates");
+                  fetchStatDetails("Railway Candidates");
+                }}
+                active={selectedStat === "Railway Candidates"}
+                color="border-l-green-500"
+                textColor="text-green-800"
+              />
+              <StatCard
+                title="Non-Railway Candidates"
+                value={overallStats.nonRailwayCandidates}
+                onClick={() => {
+                  setSelectedStat("Non-Railway Candidates");
+                  fetchStatDetails("Non-Railway Candidates");
+                }}
+                active={selectedStat === "Non-Railway Candidates"}
+                color="border-l-purple-500"
+                textColor="text-purple-800"
+              />
+              <StatCard
+                title="Resigned Candidates"
+                value={overallStats.resignedCount}
+                onClick={() => {
+                  setSelectedStat("Resigned Candidates");
+                  fetchStatDetails("Resigned Candidates");
+                }}
+                active={selectedStat === "Resigned Candidates"}
+                color="border-l-red-500"
+                textColor="text-red-800"
+              />
+            </div>
+          )}
+
+          {/* Designation-wise Stats */}
+          {overallStats && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                STC Designation-wise Candidates
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                {Object.entries(overallStats.designationCounts || {}).map(
+                  ([desig, count]) => (
+                    <StatCard
+                      key={desig}
+                      title={desig}
+                      value={count}
+                      color="border-l-gray-400"
+                      textColor="text-gray-700"
+                      onClick={() => {
+                        setSelectedStat("designation:" + desig);
+                        fetchStatDetails("designation", desig);
+                      }}
+                      active={selectedStat === "designation:" + desig}
+                    />
+                  )
+                )}
+                <StatCard
+                  title="Total STC"
+                  value={overallStats.stcCandidates}
+                  color="border-l-teal-500"
+                  textColor="text-teal-800"
+                  onClick={() => {
+                    setSelectedStat("STC");
+                    fetchStatDetails("STC");
+                  }}
+                  active={selectedStat === "STC"}
+                />
               </div>
             </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Active Courses
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.activeCourses}
-                </p>
-              </div>
+          )}
+
+          {/* Category and Pie Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <SimpleBarChart
+                data={categoriesData}
+                title="STC, WTC & Non-Railway Categories"
+                onBarClick={(item) => {
+                  setSelectedStat(item.category);
+                  // Map category to fetchStatDetails type
+                  if (item.category === "STC" || item.category === "WTC") {
+                    fetchStatDetails(item.category);
+                  } else if (item.category === "Non-Railway") {
+                    fetchStatDetails("Non-Railway Candidates");
+                  }
+                }}
+              />
             </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.completedCourses}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Training Capacity
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {overallStats.trainingCapacity}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {overallStats.classroomCapacity} ×{" "}
-                  {overallStats.workingDaysThisMonth} days
-                </p>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <SimplePieChart
+                data={distributionData}
+                title="Distribution (Pie Chart)"
+                onLegendClick={(item) => {
+                  setSelectedStat(item.name);
+                  // Fix: ensure Non-Railway triggers correct details
+                  if (item.name === "Non-Railway") {
+                    fetchStatDetails("Non-Railway Candidates");
+                  } else {
+                    fetchStatDetails(item.name);
+                  }
+                }}
+              />
             </div>
           </div>
-        )}
 
-        {overallStats && (
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Training Categories Overview
+          {/* All Units by Candidate Count */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              All Units by Candidate Count (STC)
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
-                <h3 className="text-lg font-semibold text-blue-600">
-                  Railway Training
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.railwayCandidates}
-                </p>
-                <div className="mt-3 space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">STC:</span>
-                    <span className="font-medium text-gray-900">
-                      {overallStats.stcCandidates}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">WTC:</span>
-                    <span className="font-medium text-gray-900">
-                      {overallStats.wtcCandidates}
-                    </span>
-                  </div>
-                </div>
+            {allUnits.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                No data available
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-2xl border-2 border-purple-100">
-                <h3 className="text-lg font-semibold text-purple-600">
-                  Non-Railway Training
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.nonRailwayCandidates}
-                </p>
-                <p className="text-sm text-gray-600 mt-3">
-                  General training for non-railway personnel
-                </p>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-2xl border-2 border-green-100">
-                <h3 className="text-lg font-semibold text-green-600">
-                  Total Candidates
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {overallStats.totalCandidates}
-                </p>
-                <div className="mt-3">
-                  <div className="text-sm text-gray-600">
-                    Railway:{" "}
-                    {Math.round(
-                      (overallStats.railwayCandidates /
-                        overallStats.totalCandidates) *
-                        100
-                    )}
-                    %
+            ) : (
+              <div className="space-y-3">
+                {allUnits.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center space-x-3 cursor-pointer p-2 rounded-md hover:bg-gray-100 ${selectedStat === "unit:" + item.unit
+                      ? "ring-2 ring-blue-500 bg-blue-50"
+                      : ""
+                      }`}
+                    onClick={() => {
+                      setSelectedStat("unit:" + item.unit);
+                      fetchStatDetails("unit", item.unit);
+                    }}
+                  >
+                    <div className="w-32 text-sm font-medium text-gray-700 text-right">
+                      {item.unit}
+                    </div>
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                      <div
+                        className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                        style={{
+                          backgroundColor: item.color,
+                          width: `${(item.count /
+                            Math.max(...allUnits.map((d) => d.count))) *
+                            100
+                            }%`,
+                          minWidth: "40px",
+                        }}
+                      >
+                        {item.count}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Non-Railway:{" "}
-                    {Math.round(
-                      (overallStats.nonRailwayCandidates /
-                        overallStats.totalCandidates) *
-                        100
-                    )}
-                    %
-                  </div>
-                </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
-        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-            <SimpleBarChart
-              data={categoriesData}
-              title="STC, WTC & Non-Railway Categories"
-            />
+          {/* Line Training Stats (by Activity Centre) */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Line Training Stats (by Activity Centre)
+            </h2>
+            {lineTrainingStats.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                No data available
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                {lineTrainingStats.map((item) => (
+                  <StatCard
+                    key={item.activityCentre}
+                    title={item.activityCentre}
+                    value={item.count}
+                    color="border-l-cyan-500"
+                    textColor="text-cyan-800"
+                    onClick={() => {
+                      fetchLineTrainingDetails(item.activityCentre);
+                    }}
+                    active={selectedLineTraining === item.activityCentre}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-            <SimplePieChart
-              data={distributionData}
-              title="Distribution (Pie Chart)"
-            />
-          </div>
-        </div>
 
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Activities
-            </h3>
-          </div>
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start space-x-3 p-3 rounded-2xl hover:bg-orange-50 transition-colors border-l-4"
-                style={{
-                  borderLeftColor:
-                    activity.category === "STC"
-                      ? "#FF8D21"
-                      : activity.category === "WTC"
-                      ? "#FFA652"
-                      : activity.category === "Non-Railway"
-                      ? "#008080"
-                      : "#6b7280",
+          {/* Active Candidates Sections */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Active Candidates by Category
+            </h2>
+            {fetchError && (
+              <div className="mb-4 text-red-600 font-semibold">
+                {fetchError}
+                <button
+                  className="ml-4 px-3 py-1 bg-orange-200 rounded text-orange-900"
+                  onClick={loadAllCandidates}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-4 mb-4">
+              <button
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "stc"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("stc");
+                  setActiveCandidates(getActiveCandidates("stc"));
                 }}
               >
-                <div className="flex-shrink-0 text-lg">{activity.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {activity.activity}
-                    </p>
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        activity.category === "STC"
-                          ? "bg-orange-100 text-orange-700"
-                          : activity.category === "WTC"
-                          ? "bg-orange-100 text-orange-700"
-                          : activity.category === "Non-Railway"
-                          ? "bg-teal-100 text-teal-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {activity.category}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 truncate">
-                    {activity.candidate}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {activity.time}
-                  </p>
-                </div>
+                STC Active ({getActiveCandidates("stc").length})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "wtc"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-green-700 border-green-300 hover:bg-green-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("wtc");
+                  setActiveCandidates(getActiveCandidates("wtc"));
+                }}
+              >
+                WTC Active ({getActiveCandidates("wtc").length})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "nonrailway"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "bg-white text-purple-700 border-purple-300 hover:bg-purple-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("nonrailway");
+                  setActiveCandidates(getActiveCandidates("nonrailway"));
+                }}
+              >
+                Non-Railway Active ({getActiveCandidates("nonrailway").length})
+              </button>
+            </div>
+            {activeSection && (
+              <div className="overflow-auto max-h-[50vh] border rounded-lg bg-white">
+                <table className="min-w-full text-xs md:text-sm border-collapse">
+                  <thead className="sticky top-0 bg-gray-100 z-10">
+                    <tr>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeCandidates.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="text-center text-gray-400 py-8"
+                        >
+                          No active candidates found.
+                        </td>
+                      </tr>
+                    ) : (
+                      activeCandidates.map((c, i) => (
+                        <tr
+                          key={c.ticket_no || c.ticketNo || c.id || i}
+                          className="hover:bg-gray-50 transition border-b"
+                        >
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.ticket_no || c.ticketNo || c.id}
+                          >
+                            {c.ticket_no || c.ticketNo || c.id}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                            title={c.name}
+                          >
+                            {c.name}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.designation}
+                          >
+                            {c.designation}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.unit}
+                          >
+                            {c.unit}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={getSparingDate(c, activeSection)}
+                          >
+                            {getSparingDate(c, activeSection)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Stat Details Modal/Section */}
+          {isModalOpen && (statDetailsTitle || lineTrainingDetailsTitle) && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-all"
+              style={{ backdropFilter: "blur(3px)" }}
+            >
+              <div
+                className="relative bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              >
+                <div className="flex justify-between items-center mb-4 pb-4 border-b">
+                  <h3 className="text-xl font-semibold text-gray-800 truncate max-w-[70vw]">
+                    {statDetailsTitle || lineTrainingDetailsTitle}
+                  </h3>
+                  <div className="flex space-x-2">
+                    {/* Removed Export CSV button */}
+                    <button
+                      className="text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition text-sm"
+                      onClick={() => {
+                        setStatDetails([]);
+                        setStatDetailsTitle("");
+                        setSelectedStat(null);
+                        setLineTrainingDetails([]);
+                        setLineTrainingDetailsTitle("");
+                        setSelectedLineTraining(null);
+                        setIsModalOpen(false);
+                      }}
+                      title="Close"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+                {/* Show either statDetails or lineTrainingDetails */}
+                {(statDetailsTitle && statDetails.length === 0) ||
+                  (lineTrainingDetailsTitle && lineTrainingDetails.length === 0) ? (
+                  <div className="text-center text-gray-500 py-8">
+                    No details available.
+                  </div>
+                ) : (
+                  <div
+                    className="overflow-auto flex-grow border rounded-lg"
+                    style={{ background: "#fff" }}
+                  >
+                    <table className="min-w-full text-xs md:text-sm border-collapse">
+                      <thead className="sticky top-0 bg-gray-100 z-10">
+                        <tr>
+                          <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                          {statDetailsTitle ? (
+                            <>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                              {statDetails.some((c) => c._source) && (
+                                <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Source</th>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">
+                                Activity Centre
+                              </th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Start Date</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">End Date</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Status</th>
+                            </>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statDetailsTitle
+                          ? statDetails.map((c, i) => (
+                            <tr
+                              key={c.ticket_no || c.ticketNo || c.id || i}
+                              className="hover:bg-gray-50 transition border-b"
+                            >
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.ticket_no || c.ticketNo || c.id}
+                              >
+                                {c.ticket_no || c.ticketNo || c.id}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                                title={c.name}
+                              >
+                                {c.name}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.designation}
+                              >
+                                {c.designation}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.unit}
+                              >
+                                {c.unit}
+                              </td>
+                              {c._source && (
+                                <td
+                                  className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                  title={c._source}
+                                >
+                                  {c._source}
+                                </td>
+                              )}
+                            </tr>
+                          ))
+                          : lineTrainingDetails.map((c, i) => (
+                            <tr
+                              key={c.ticket_no + i}
+                              className="hover:bg-gray-50 transition border-b"
+                            >
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.ticket_no}
+                              >
+                                {c.ticket_no}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                                title={c.activityCentre}
+                              >
+                                {c.activityCentre}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.startDate}
+                              >
+                                {c.startDate}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.endDate}
+                              >
+                                {c.endDate}
+                              </td>
+                              <td
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                                title={c.status}
+                              >
+                                {c.status}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Activities */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800">
+                Recent Activities
+              </h3>
+            </div>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {recentActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
+                  style={{
+                    borderLeftColor:
+                      activity.category === "STC"
+                        ? "#3b82f6" // Blue
+                        : activity.category === "WTC"
+                          ? "#10b981" // Green
+                          : activity.category === "Non-Railway"
+                            ? "#8b5cf6" // Purple
+                            : "#6b7280", // Gray
+                  }}
+                >
+                  <div className="flex-shrink-0 pt-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{
+                        backgroundColor:
+                          activity.category === "STC"
+                            ? "#3b82f6"
+                            : activity.category === "WTC"
+                              ? "#10b981"
+                              : activity.category === "Non-Railway"
+                                ? "#8b5cf6"
+                                : "#6b7280",
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {activity.activity}
+                      </p>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full font-medium ${activity.category === "STC"
+                          ? "bg-blue-100 text-blue-800"
+                          : activity.category === "WTC"
+                            ? "bg-green-100 text-green-800"
+                            : activity.category === "Non-Railway"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                      >
+                        {activity.category}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate">
+                      {activity.candidate}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="bg-cyan-50 text-grey py-8 mt-8 w-full">
-        <div className="container mx-auto px-0">
-          <div className="text-center space-y-4">
-            <p className="text-base font-semibold">
-              © 2025 All Rights Reserved.
+      </main>
+      <footer className="bg-gray-800 text-white py-6 mt-8 w-full">
+        <div className="max-w-9xl mx-auto px-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm font-semibold">
+              © 2025 Supervisor Training Center, Northern Railways. All Rights
+              Reserved.
             </p>
-            <p className="text-sm text-grey leading-relaxed px-8">
-              Supervisor Training Center, Charbagh, Northern Railways, Ministry
-              of Railways, Government of India.
+            <p className="text-xs text-gray-400">
+              Ministry of Railways, Government of India.
             </p>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

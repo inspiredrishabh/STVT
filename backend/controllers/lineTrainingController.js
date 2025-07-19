@@ -339,6 +339,29 @@ class LineTrainingController {
         .json({ success: false, message: "Failed to update status" });
     }
   }
+
+  // Get all line training records for a ticket number (excluding designation)
+  async getAllByTicketNumber(req, res) {
+    try {
+      const { ticketNo } = req.params;
+      const records = await this.lineTrainingModel.getAllByTicketNumber(
+        ticketNo
+      );
+      return res.json({
+        success: true,
+        data: records,
+        count: records.length,
+      });
+    } catch (err) {
+      console.error("Error fetching line training by ticket:", err);
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "Failed to fetch line training info",
+        });
+    }
+  }
 }
 
 module.exports = LineTrainingController;

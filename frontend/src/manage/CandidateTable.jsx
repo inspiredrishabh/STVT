@@ -61,20 +61,20 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
 
   return (
     <>
-      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-orange-100">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
         <TableHeader />
         <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-100 border-b border-gray-200">
               <tr>
-                {['Candidate', 'Course Info', 'Work Info', 'Status', 'Actions'].map(header => (
-                  <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-black uppercase tracking-wider">
+                {['Candidate', 'Course Info', 'Work Info', 'Actions'].map(header => (
+                  <th key={header} className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-orange-200">
+            <tbody className="divide-y divide-gray-200">
               {candidates.map((candidate) => (
                 <CandidateRow
                   key={candidate.id}
@@ -109,12 +109,12 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
 };
 
 const TableHeader = () => (
-  <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
+  <div className="bg-white px-6 py-4 border-b border-gray-200">
     <div className="flex items-center space-x-3">
-      <div className="p-2 bg-[#FF8D21] rounded-xl">
+      <div className="p-2 bg-blue-600 rounded-lg">
         <Users className="h-5 w-5 text-white" />
       </div>
-      <h3 className="text-lg font-bold text-[#1B2A41]">Candidate Directory</h3>
+      <h3 className="text-lg font-semibold text-gray-800">Candidate Directory</h3>
     </div>
   </div>
 );
@@ -143,40 +143,34 @@ const CandidateRow = ({
 
   return (
     <tr className="hover:bg-gray-50 transition-colors duration-200">
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center space-x-4">
-          <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`} alt={candidate.name} className="w-12 h-12 rounded-xl object-cover shadow-md" />
+          <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`} alt={candidate.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
           <div>
-            <div className="text-sm font-bold text-[#1B2A41]">{candidate.name}</div>
+            <div className="text-sm font-bold text-gray-800">{candidate.name}</div>
             <div className="text-xs text-gray-500">Ticket No: {candidate.ticketNumber || candidate.employeeNumber}</div>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2 text-sm text-gray-700 font-medium">
-          <Briefcase className="h-4 w-4 text-green-500" />
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center space-x-2 text-sm text-gray-800 font-medium">
+          <Briefcase className="h-4 w-4 text-green-600" />
           <span>{candidate.stream}</span>
         </div>
         <div className="text-xs text-gray-500 mt-1">Batch: {candidate.batch}</div>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2 text-sm text-gray-700 font-medium">
-          <Zap className="h-4 w-4 text-purple-500" />
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center space-x-2 text-sm text-gray-800 font-medium">
+          <Zap className="h-4 w-4 text-purple-600" />
           <span>{candidate.workInfo}</span>
         </div>
         <div className="text-xs text-gray-500 mt-1">Type: {candidate.type}</div>
       </td>
-      <td className="px-6 py-4">
-        <Badge
-          text={candidate.status}
-          className={candidate.status === 'Active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-        />
-      </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex space-x-2">
-          <ActionButton onClick={() => onViewDetail(candidate)} icon={Eye} className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 border-blue-200" title="View Details" />
-          <ActionButton onClick={() => onEdit(candidate)} icon={Edit} className="text-green-600 hover:text-green-800 hover:bg-green-100 border-green-200" title="Edit All Details" />
-          <ActionButton onClick={() => onDelete(candidate.id, candidate.name)} icon={Trash2} className="text-pink-600 hover:text-pink-800 hover:bg-pink-100 border-pink-200" title="Delete" />
+          <ActionButton onClick={() => onViewDetail(candidate)} icon={Eye} className="text-blue-600 hover:bg-blue-100 border-blue-200" title="View Details" />
+          <ActionButton onClick={() => onEdit(candidate)} icon={Edit} className="text-green-600 hover:bg-green-100 border-green-200" title="Edit All Details" />
+          <ActionButton onClick={() => onDelete(candidate.id, candidate.name)} icon={Trash2} className="text-red-600 hover:bg-red-100 border-red-200" title="Delete" />
         </div>
       </td>
     </tr>
@@ -190,7 +184,7 @@ const EditableCandidateRow = ({
   onSaveEdit,
   onCancelEdit
 }) => (
-  <tr className="bg-blue-50 border-2 border-blue-200">
+  <tr className="bg-blue-50 border-y-2 border-blue-300">
     <td className="px-6 py-4">
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
@@ -199,7 +193,7 @@ const EditableCandidateRow = ({
             type="text"
             value={editFormData.name || ''}
             onChange={(e) => onInputChange('name', e.target.value)}
-            className="text-sm font-semibold bg-white border border-gray-300 rounded px-2 py-1 flex-1"
+            className="text-sm font-semibold bg-white border border-gray-300 rounded-md px-2 py-1 flex-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Full Name"
           />
         </div>
@@ -209,7 +203,7 @@ const EditableCandidateRow = ({
             type="email"
             value={editFormData.email || ''}
             onChange={(e) => onInputChange('email', e.target.value)}
-            className="text-xs bg-white border border-gray-300 rounded px-2 py-1 flex-1"
+            className="text-xs bg-white border border-gray-300 rounded-md px-2 py-1 flex-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Email Address"
           />
         </div>
@@ -221,7 +215,7 @@ const EditableCandidateRow = ({
           type="text"
           value={editFormData.batch || ''}
           onChange={(e) => onInputChange('batch', e.target.value)}
-          className="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1"
+          className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Batch"
         />
       </div>
@@ -231,7 +225,7 @@ const EditableCandidateRow = ({
         <select
           value={editFormData.workInfo || ''}
           onChange={(e) => onInputChange('workInfo', e.target.value)}
-          className="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1"
+          className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Work Info</option>
           <option value="ASE">ASE</option>
@@ -264,7 +258,7 @@ const EditableCandidateRow = ({
               onInputChange('category', 'Non Railway');
             }
           }}
-          className="w-full text-xs bg-white border border-gray-300 rounded px-2 py-1"
+          className="w-full text-xs bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Type</option>
           <option value="STC">STC</option>
@@ -277,7 +271,7 @@ const EditableCandidateRow = ({
       <select
         value={editFormData.status || ''}
         onChange={(e) => onInputChange('status', e.target.value)}
-        className="w-full text-sm bg-white border border-gray-300 rounded px-2 py-1"
+        className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="Active">Active</option>
         <option value="Inactive">Inactive</option>
@@ -290,13 +284,13 @@ const EditableCandidateRow = ({
         <ActionButton
           onClick={onSaveEdit}
           icon={Save}
-          className="text-green-600 hover:text-green-800 hover:bg-green-100 border-green-200"
+          className="text-green-600 hover:bg-green-100 border-green-200"
           title="Save Changes"
         />
         <ActionButton
           onClick={onCancelEdit}
           icon={X}
-          className="text-red-600 hover:text-red-800 hover:bg-red-100 border-red-200"
+          className="text-red-600 hover:bg-red-100 border-red-200"
           title="Cancel Edit"
         />
       </div>
@@ -311,20 +305,20 @@ const Badge = ({ text, className }) => (
 );
 
 const ActionButton = ({ onClick, icon: Icon, className, title }) => (
-  <button onClick={onClick} className={`p-3 rounded-xl transition-all duration-200 shadow-sm border ${className}`} title={title}>
+  <button onClick={onClick} className={`p-2 rounded-lg transition-all duration-200 border ${className}`} title={title}>
     <Icon className="h-5 w-5" />
   </button>
 );
 
 const EmptyState = () => (
-  <div className="bg-white rounded-3xl shadow-xl border border-gray-200">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200">
     <TableHeader />
-    <div className="text-center py-16">
-      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Users className="h-10 w-10 text-gray-400" />
+    <div className="text-center py-16 px-6">
+      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Users className="h-8 w-8 text-gray-400" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-700 mb-2">No candidates found</h3>
-      <p className="text-gray-500">Try adjusting your search criteria or changing the student type.</p>
+      <h3 className="text-lg font-semibold text-gray-700 mb-2">No candidates found</h3>
+      <p className="text-gray-500 text-sm">Try adjusting your search criteria or changing the candidate type.</p>
     </div>
   </div>
 );
@@ -355,7 +349,6 @@ const getCourseFields = (candidate) => {
       ...commonCourseFields,
       { label: "Course Type", field: "courseType", type: "text", value: candidate.courseType },
       { label: "Training Period", field: "trainingPeriod", type: "text", value: candidate.trainingPeriod },
-      { label: "Custom Training Period", field: "customTrainingPeriod", type: "text", value: candidate.customTrainingPeriod },
       { label: "Theory Duration", field: "theoryDuration", type: "text", value: candidate.theoryDuration },
       { label: "Practical Duration", field: "practicalDuration", type: "text", value: candidate.practicalDuration },
       { label: "Course Coordinator", field: "courseCoordinator", type: "text", value: candidate.courseCoordinator }
@@ -435,26 +428,26 @@ const getEducationalFields = (candidate) => {
 // Comprehensive Edit Modal Component
 const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+      <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
         <div className="flex items-center space-x-4">
-          <Edit className="h-6 w-6 text-green-600" />
+          <Edit className="h-6 w-6 text-blue-600" />
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Edit Candidate Details</h3>
-            <p className="text-gray-600">Update all candidate information</p>
+            <h3 className="text-xl font-bold text-gray-800">Edit Candidate Details</h3>
+            <p className="text-gray-500 text-sm">Update all candidate information</p>
           </div>
         </div>
         <button
           onClick={onCancel}
-          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+          className="p-2 text-gray-500 hover:text-gray-800 rounded-full hover:bg-gray-200 transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-8 space-y-8 overflow-y-auto flex-1">
+      <div className="p-8 space-y-8 overflow-y-auto flex-1 bg-gray-50/50">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Personal Information */}
           <EditSection
@@ -517,31 +510,20 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
             onInputChange={onInputChange}
           />
 
-          {/* Status Information */}
-          <EditSection
-            title="Status Information"
-            icon={MapPin}
-            fields={[
-              { label: "Status", field: "status", type: "select", value: candidate.status, options: ["Active", "Inactive", "Completed", "Suspended"] },
-              { label: "Serial No.", field: "serialNo", type: "number", value: candidate.serialNo }
-            ]}
-            candidate={candidate}
-            onInputChange={onInputChange}
-          />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-6 border-t border-gray-200 flex justify-end space-x-4 flex-shrink-0">
+      <div className="p-6 bg-white border-t border-gray-200 flex justify-end space-x-4 flex-shrink-0">
         <button
           onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors font-medium"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
-          className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center space-x-2"
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 font-medium"
         >
           <Save className="h-4 w-4" />
           <span>Save Changes</span>
@@ -553,22 +535,22 @@ const EditCandidateModal = ({ candidate, onSave, onCancel, onInputChange }) => (
 
 // Edit Section Component
 const EditSection = ({ title, icon: Icon, fields, candidate, onInputChange }) => (
-  <div className="bg-gray-50 rounded-2xl p-6">
-    <h5 className="font-semibold text-gray-800 flex items-center mb-6">
-      <Icon className="h-5 w-5 mr-2 text-blue-500" />
+  <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+    <h5 className="font-semibold text-gray-700 flex items-center mb-6 text-base">
+      <Icon className="h-5 w-5 mr-3 text-blue-600" />
       {title}
     </h5>
     <div className="space-y-4">
       {fields.map(({ label, field, type, value, options }) => (
         <div key={field}>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
             {label}
           </label>
           {type === 'select' ? (
             <select
               value={value || ''}
               onChange={(e) => onInputChange(field, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
               <option value="">Select {label}</option>
               {options.map(option => (
@@ -580,7 +562,7 @@ const EditSection = ({ title, icon: Icon, fields, candidate, onInputChange }) =>
               value={value || ''}
               onChange={(e) => onInputChange(field, e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder={`Enter ${label.toLowerCase()}`}
             />
           ) : (
@@ -588,7 +570,7 @@ const EditSection = ({ title, icon: Icon, fields, candidate, onInputChange }) =>
               type={type}
               value={value || ''}
               onChange={(e) => onInputChange(field, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder={`Enter ${label.toLowerCase()}`}
             />
           )}

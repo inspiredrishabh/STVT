@@ -377,7 +377,6 @@ const realAPI = {
   // Get existing marks for a candidate
   getExistingMarks: async (ticketNo, courseCode) => {
     try {
-      console.log("Fetching marks for:", { ticketNo, courseCode }); // Debug log
       if (!ticketNo || !courseCode) {
         throw new Error(
           `Missing parameters: ticketNo=${ticketNo}, courseCode=${courseCode}`
@@ -482,8 +481,7 @@ const realAPI = {
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${
-            errData.message || response.statusText
+          `HTTP error! status: ${response.status}, message: ${errData.message || response.statusText
           }`
         );
       }
@@ -528,8 +526,7 @@ const realAPI = {
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${
-            errData.message || response.statusText
+          `HTTP error! status: ${response.status}, message: ${errData.message || response.statusText
           }`
         );
       }
@@ -1093,21 +1090,19 @@ const FeedMark = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "ticket"
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "dropdown"
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "dropdown"
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 Select from Dropdown
               </button>
@@ -1188,13 +1183,12 @@ const FeedMark = () => {
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
-                  message.type === "success"
+                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success"
                     ? "bg-green-50 text-green-800 border border-green-200"
                     : message.type === "info"
-                    ? "bg-blue-50 text-blue-800 border border-blue-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
+                      ? "bg-blue-50 text-blue-800 border border-blue-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
               >
                 {message.type === "success" ? (
                   <CheckCircle className="w-6 h-6" />
@@ -1251,55 +1245,52 @@ const FeedMark = () => {
                   </p>
                 </div>
                 <div
-                  className={`p-4 rounded-xl border ${
-                    hasExistingMarks && !isEditMode && !showMarksPanel
+                  className={`p-4 rounded-xl border ${hasExistingMarks && !isEditMode && !showMarksPanel
                       ? "bg-gray-50 border-gray-200"
                       : hasExistingMarks && !isEditMode && showMarksPanel
-                      ? "bg-blue-50 border-blue-200"
-                      : isEditMode
-                      ? "bg-orange-50 border-orange-200"
-                      : showMarksPanel && !hasExistingMarks
-                      ? "bg-green-50 border-green-200"
-                      : "bg-yellow-50 border-yellow-200"
-                  }`}
+                        ? "bg-blue-50 border-blue-200"
+                        : isEditMode
+                          ? "bg-orange-50 border-orange-200"
+                          : showMarksPanel && !hasExistingMarks
+                            ? "bg-green-50 border-green-200"
+                            : "bg-yellow-50 border-yellow-200"
+                    }`}
                 >
                   <label
-                    className={`block text-sm font-semibold mb-1 ${
-                      hasExistingMarks && !isEditMode && !showMarksPanel
+                    className={`block text-sm font-semibold mb-1 ${hasExistingMarks && !isEditMode && !showMarksPanel
                         ? "text-gray-700"
                         : hasExistingMarks && !isEditMode && showMarksPanel
-                        ? "text-blue-700"
-                        : isEditMode
-                        ? "text-orange-700"
-                        : showMarksPanel && !hasExistingMarks
-                        ? "text-green-700"
-                        : "text-yellow-700"
-                    }`}
+                          ? "text-blue-700"
+                          : isEditMode
+                            ? "text-orange-700"
+                            : showMarksPanel && !hasExistingMarks
+                              ? "text-green-700"
+                              : "text-yellow-700"
+                      }`}
                   >
                     Status
                   </label>
                   <p
-                    className={`text-lg font-bold ${
-                      hasExistingMarks && !isEditMode && !showMarksPanel
+                    className={`text-lg font-bold ${hasExistingMarks && !isEditMode && !showMarksPanel
                         ? "text-gray-900"
                         : hasExistingMarks && !isEditMode && showMarksPanel
-                        ? "text-blue-900"
-                        : isEditMode
-                        ? "text-orange-900"
-                        : showMarksPanel && !hasExistingMarks
-                        ? "text-green-900"
-                        : "text-yellow-900"
-                    }`}
+                          ? "text-blue-900"
+                          : isEditMode
+                            ? "text-orange-900"
+                            : showMarksPanel && !hasExistingMarks
+                              ? "text-green-900"
+                              : "text-yellow-900"
+                      }`}
                   >
                     {hasExistingMarks && !isEditMode && showMarksPanel
                       ? "View Mode"
                       : isEditMode
-                      ? "Edit Mode"
-                      : showMarksPanel && !hasExistingMarks
-                      ? "Entry Mode"
-                      : hasExistingMarks
-                      ? "Marks Available"
-                      : "No Marks"}
+                        ? "Edit Mode"
+                        : showMarksPanel && !hasExistingMarks
+                          ? "Entry Mode"
+                          : hasExistingMarks
+                            ? "Marks Available"
+                            : "No Marks"}
                   </p>
                 </div>
               </div>
@@ -1343,16 +1334,16 @@ const FeedMark = () => {
                       {hasExistingMarks && !isEditMode
                         ? "View Marks"
                         : isEditMode
-                        ? "Edit Marks"
-                        : "Add Marks"}{" "}
+                          ? "Edit Marks"
+                          : "Add Marks"}{" "}
                       - {courseCode}
                     </h2>
                     <p className="text-gray-600 text-sm">
                       {hasExistingMarks && !isEditMode
                         ? 'Viewing existing marks - Click "Edit Marks" to modify'
                         : isEditMode
-                        ? 'Editing examination marks - Click "Update Marks" to save changes'
-                        : 'Adding new examination marks - Fill in all sessions and click "Save Marks"'}
+                          ? 'Editing examination marks - Click "Update Marks" to save changes'
+                          : 'Adding new examination marks - Fill in all sessions and click "Save Marks"'}
                     </p>
                   </div>
                 </div>
@@ -1392,8 +1383,8 @@ const FeedMark = () => {
                         {saving
                           ? "Saving..."
                           : isEditMode
-                          ? "Update Marks"
-                          : "Save Marks"}
+                            ? "Update Marks"
+                            : "Save Marks"}
                       </button>
                     </>
                   )}
@@ -1440,13 +1431,12 @@ const FeedMark = () => {
                           return (
                             <div
                               key={paper}
-                              className={`p-4 rounded-xl border space-y-3 ${
-                                isFailingGrade
+                              className={`p-4 rounded-xl border space-y-3 ${isFailingGrade
                                   ? "bg-red-50 border-red-300"
                                   : isCleared && isBelowPassing
-                                  ? "bg-yellow-50 border-yellow-300"
-                                  : "bg-white border-gray-200"
-                              }`}
+                                    ? "bg-yellow-50 border-yellow-300"
+                                    : "bg-white border-gray-200"
+                                }`}
                             >
                               <div className="flex items-center justify-between">
                                 <label className="block text-sm font-semibold text-gray-800">
@@ -1493,17 +1483,16 @@ const FeedMark = () => {
                                 }
                                 placeholder={`Enter marks (0-${config.maxMarks})`}
                                 readOnly={hasExistingMarks && !isEditMode}
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                                  hasExistingMarks && !isEditMode
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${hasExistingMarks && !isEditMode
                                     ? "bg-gray-100 cursor-not-allowed text-gray-600"
                                     : isOverMaxMarks
-                                    ? "border-red-300 bg-red-50"
-                                    : isFailingGrade
-                                    ? "border-red-400 bg-red-50"
-                                    : isCleared && isBelowPassing
-                                    ? "border-yellow-400 bg-yellow-50"
-                                    : "border-gray-300"
-                                }`}
+                                      ? "border-red-300 bg-red-50"
+                                      : isFailingGrade
+                                        ? "border-red-400 bg-red-50"
+                                        : isCleared && isBelowPassing
+                                          ? "border-yellow-400 bg-yellow-50"
+                                          : "border-gray-300"
+                                  }`}
                               />
 
                               {/* Show supplementary marks if present */}
@@ -1542,15 +1531,14 @@ const FeedMark = () => {
                                   </p>
                                   {hasSupplementaryMarks(session, paper) && (
                                     <div
-                                      className={`text-xs p-2 rounded-lg ${
-                                        isSupplementaryPassing(
-                                          session,
-                                          paper,
-                                          config.maxMarks
-                                        )
+                                      className={`text-xs p-2 rounded-lg ${isSupplementaryPassing(
+                                        session,
+                                        paper,
+                                        config.maxMarks
+                                      )
                                           ? "bg-green-50 text-green-700 border border-green-200"
                                           : "bg-red-50 text-red-700 border border-red-200"
-                                      }`}
+                                        }`}
                                     >
                                       Supplementary:{" "}
                                       {supplementaryMarks[session][paper]}/
@@ -1580,26 +1568,25 @@ const FeedMark = () => {
                                         config.maxMarks
                                       )
                                     }
-                                    className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded-lg transition-all duration-200 ${
-                                      hasSupplementaryMarks(session, paper) &&
-                                      isSupplementaryPassing(
-                                        session,
-                                        paper,
-                                        config.maxMarks
-                                      )
+                                    className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded-lg transition-all duration-200 ${hasSupplementaryMarks(session, paper) &&
+                                        isSupplementaryPassing(
+                                          session,
+                                          paper,
+                                          config.maxMarks
+                                        )
                                         ? "bg-green-600 hover:bg-green-700"
                                         : "bg-gray-400 cursor-not-allowed"
-                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     title={
                                       !hasSupplementaryMarks(session, paper)
                                         ? "Enter supplementary marks first"
                                         : !isSupplementaryPassing(
-                                            session,
-                                            paper,
-                                            config.maxMarks
-                                          )
-                                        ? "Supplementary marks must be passing to clear status"
-                                        : `Clear supplementary status for ${session} - ${paper}`
+                                          session,
+                                          paper,
+                                          config.maxMarks
+                                        )
+                                          ? "Supplementary marks must be passing to clear status"
+                                          : `Clear supplementary status for ${session} - ${paper}`
                                     }
                                   >
                                     {saving ? (
@@ -1608,11 +1595,11 @@ const FeedMark = () => {
                                       <RefreshCw className="w-3 h-3" />
                                     )}
                                     {hasSupplementaryMarks(session, paper) &&
-                                    isSupplementaryPassing(
-                                      session,
-                                      paper,
-                                      config.maxMarks
-                                    )
+                                      isSupplementaryPassing(
+                                        session,
+                                        paper,
+                                        config.maxMarks
+                                      )
                                       ? "Clear Supplementary ✓"
                                       : "Clear Supplementary"}
                                   </button>
@@ -1736,7 +1723,7 @@ const FeedMark = () => {
                                   max={subject.maxMarks}
                                   value={
                                     supplementaryMarks[subject.session]?.[
-                                      subject.paper
+                                    subject.paper
                                     ] || ""
                                   }
                                   onChange={(e) =>
@@ -1747,11 +1734,10 @@ const FeedMark = () => {
                                     )
                                   }
                                   readOnly={hasExistingMarks && !isEditMode}
-                                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                    hasExistingMarks && !isEditMode
+                                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${hasExistingMarks && !isEditMode
                                       ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
                                       : "border-blue-300"
-                                  }`}
+                                    }`}
                                   placeholder={`0-${subject.maxMarks}`}
                                 />
                               </div>

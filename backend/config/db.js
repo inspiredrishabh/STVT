@@ -34,10 +34,18 @@ const initializeDatabase = () => {
             if (err) {
                 console.error('Error creating users table:', err.message);
             } else {
-                console.log('Users table checked/created successfully.');
+                console.log('Users table checked/created successfully. Initialized with default passwords');
             }
         });
-        // You can add more `db.run()` calls here for other tables if needed
+
+        db.run(`
+            INSERT OR IGNORE INTO users (role, password)
+            VALUES
+                ('admin', '1234'),
+                ('master', '5678'),
+                ('operator', '9012')
+        `);
+
     });
 };
 

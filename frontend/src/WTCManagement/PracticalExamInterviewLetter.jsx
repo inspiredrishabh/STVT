@@ -85,7 +85,7 @@ const PracticalExamInterviewLetter = ({ trainee }) => {
                         <p><span className="font-bold">DEPARTMENT: </span><span contentEditable={true}>SSE/STC/CB/LKO</span></p>
                         <p><span className="font-bold">STATION TESTED: </span><span contentEditable={true}>SSE/xxxxxx/LKO</span></p>
                         <p><span className="font-bold">DISTINGUTING NO. </span><span contentEditable={true}>CG-xxxx</span></p>
-                        <p><span className="font-bold">DESIGNATION:</span></p>
+                        <p className='mt-10'><span className="font-bold">DESIGNATION:</span></p>
                         <p><span contentEditable={true}>xxxxxxxxxxx</span></p>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ const PracticalExamInterviewLetter = ({ trainee }) => {
                         <p className="font-bold">60-MARKS (PASS MARKS=36)</p>
                         <p className="font-bold">(3/4*60= 36)</p>
                     </div>
-                    <div className="w-1/2 pl-2">
+                    <div className="w-1/2 pl-28">
                         <p className="font-bold">RESULT OF ORAL TEST (B)</p>
                         <p className="font-bold">40-MARKS (PASS MARKS=15)</p>
                     </div>
@@ -111,51 +111,51 @@ const PracticalExamInterviewLetter = ({ trainee }) => {
                         <p className="font-bold">PARTICULAR OF TRADE TEST</p>
                         <p className="font-bold">TRADE TEST MARKS (A) <span contentEditable={true}>xxxx</span></p>
                     </div>
-                    <div className="w-1/2 pl-2">
+                    <div className="w-1/2 pl-28">
                         <p className="font-bold">TOTAL MARK(A+B)</p>
                         <p className="font-bold">(Total marks for passing : 60% min.)</p>
                         <p className="font-bold">RESULT: (<span contentEditable={true}>PASS/FAIL</span>)</p>
                     </div>
                 </div>
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between mt-8">
                     <div className="w-1/2 pr-2">
-                        <p className="font-bold">SIGNATURE OF SHOP SUPDT./</p>
-                        <p className="font-bold">INSPECTOR</p>
+                        <p className="font-bold text-sm">SIGNATURE OF SHOP SUPDT./</p>
+                        <p className="font-bold text-sm">INSPECTOR</p>
                     </div>
-                    <div className="w-1/2 pl-2">
-                        <p className="font-bold text-center">SIGNATURE TRADE TESTING</p>
-                        <p className="font-bold text-center">OFFICER</p>
+                    <div className="w-1/2 pl-26">
+                        <p className="font-bold text-center text-sm">SIGNATURE TRADE TESTING</p>
+                        <p className="font-bold text-center text-sm">OFFICER</p>
                     </div>
                 </div>
 
                 <div className="mt-4">
-                    <p className="font-bold">SUPERVISOR PRACTICAL TEST</p>
-                    <p className="font-bold">MEMO NO. <span contentEditable={true}>CG-xxxx</span></p>
+                    <p className="font-bold text-sm">SUPERVISOR PRACTICAL TEST</p>
+                    <p className="font-bold text-sm">MEMO NO. <span contentEditable={true}>CG-xxxx</span></p>
                 </div>
 
-                <p className="font-bold mt-4">SCRUTINISED & FORWARDED IN ORIGINAL TO CHAIRMAN TRADE TEST PANEL FOR APPROVAL</p>
+                <p className="font-bold mt-4 text-sm">SCRUTINISED & FORWARDED IN ORIGINAL TO CHAIRMAN TRADE TEST PANEL FOR APPROVAL</p>
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between mt-8">
                     <div className="w-1/2 pr-2">
-                        <p className="font-bold">STATION:- LUCKNOW</p>
+                        <p className="font-bold text-sm">STATION:- LUCKNOW</p>
                     </div>
-                    <div className="w-1/2 pl-2">
-                        <p className="font-bold">SIGNATURE & DESIGNATION</p>
-                        <p className="font-bold">OF DISTRICT OFFICER</p>
+                    <div className="w-1/2 pl-28">
+                        <p className="font-bold text-sm">SIGNATURE & DESIGNATION</p>
+                        <p className="font-bold text-sm">OF DISTRICT OFFICER</p>
                     </div>
                 </div>
 
-                <p className="font-bold text-center mt-4">REMARKS OF THE TRADE TEST PANEL</p>
+                <p className="font-bold text-center mt-4 text-sm">REMARKS OF THE TRADE TEST PANEL</p>
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-between mt-8">
                     <div className="w-1/2 pr-2">
-                        <p className="font-bold">STATION:- LUCKNOW</p>
-                        <p className="font-bold mt-2">DATED <span contentEditable={true}>xxxx</span></p>
+                        <p className="font-bold text-sm">STATION:- LUCKNOW</p>
+                        <p className="font-bold mt-2 text-sm">DATED <span contentEditable={true}>xxxx</span></p>
                     </div>
-                    <div className="w-1/2 pl-2">
-                        <p className="font-bold text-center">CHAIRMAN MEMBER TRADE</p>
-                        <p className="font-bold text-center">TEST PANEL</p>
+                    <div className="w-1/2 pl-28">
+                        <p className="font-bold text-center text-sm">CHAIRMAN MEMBER TRADE</p>
+                        <p className="font-bold text-center text-sm">TEST PANEL</p>
                     </div>
                 </div>
 

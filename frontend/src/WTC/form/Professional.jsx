@@ -130,7 +130,7 @@ const Professional = ({ formData, onChange }) => {
   }), []);
 
 
-  const designationUnitPeriodToDurations = {
+  const designationUnitPeriodToDurations = useMemo(() => ({
     // CG Apprentice Technician III (Induction Course)
     "CG Apprentice Technician III|Any|02 Years": ["06 Months", "18 Months"],
     "CG Apprentice Technician III|Any|01 Year": ["03 Months", "09 Months"],
@@ -190,7 +190,7 @@ const Professional = ({ formData, onChange }) => {
     // Summer Vocation Training
     "Summer Vocation training|Any|04 Weeks": ["00 Weeks", "04 Weeks"],
     "Summer Vocation training|Any|06 Weeks": ["00 Weeks", "06 Weeks"],
-  };
+  }), []);
 
 
   const handleChange = useCallback(
@@ -205,9 +205,6 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Clear unit and training fields when designation changes
@@ -216,9 +213,6 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Clear training fields when unit changes
@@ -226,38 +220,27 @@ const Professional = ({ formData, onChange }) => {
         onChange("trainingPeriod", "");
         onChange("theoryDuration", "");
         onChange("practicalDuration", "");
-        onChange("customTrainingPeriod", "");
-        onChange("customTheoryDuration", "");
-        onChange("customPracticalDuration", "");
       }
 
       // Auto-fill theory and practical duration when training period changes
       if (field === "trainingPeriod") {
-        if (value === "Custom") {
+        // Check if the value matches a pre-defined option
+        const exactKey = `${formData.designation}|${formData.unit}|${value}`;
+        const fallbackKey = `${formData.designation}|Any|${value}`;
+        const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
+
+        if (durations) {
+          const [theory, practical] = durations;
+          onChange("theoryDuration", theory);
+          onChange("practicalDuration", practical);
+        } else {
+          // No match found - user is typing a custom value, clear calculated durations
           onChange("theoryDuration", "");
           onChange("practicalDuration", "");
-        } else {
-          const exactKey = `${formData.designation}|${formData.unit}|${value}`;
-          const fallbackKey = `${formData.designation}|Any|${value}`;
-          const durations = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
-
-          if (durations) {
-            const [theory, practical] = durations;
-            onChange("theoryDuration", theory);
-            onChange("practicalDuration", practical);
-            // Clear custom fields
-            onChange("customTrainingPeriod", "");
-            onChange("customTheoryDuration", "");
-            onChange("customPracticalDuration", "");
-          } else {
-            // No match found
-            onChange("theoryDuration", "");
-            onChange("practicalDuration", "");
-          }
         }
       }
     },
-    [onChange, formData]
+    [onChange, formData, designationUnitPeriodToDurations]
   );
 
   // Enhanced validation with comprehensive type checking
@@ -283,9 +266,6 @@ const Professional = ({ formData, onChange }) => {
           "hrmsId",
           "pfNoNpsUps",
           "employeeNumber",
-          "customTrainingPeriod",
-          "customTheoryDuration",
-          "customPracticalDuration",
         ].includes(field)
       ) {
         if (stringValue.length < 2) {
@@ -297,6 +277,72 @@ const Professional = ({ formData, onChange }) => {
         // Check for valid characters (letters, numbers, spaces, common punctuation)
         if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
           return "Contains invalid characters";
+        }
+      }
+
+      // Validate training period has required time units (Days, Weeks, Months, Years)
+      if (field === "trainingPeriod") {
+        // Skip validation for predefined options
+        const exactKey = `${formData.designation}|${formData.unit}|${stringValue}`;
+        const fallbackKey = `${formData.designation}|Any|${stringValue}`;
+        const isPredefinedOption = designationUnitPeriodToDurations[exactKey] || designationUnitPeriodToDurations[fallbackKey];
+
+        if (!isPredefinedOption) {
+          if (stringValue.length < 2) {
+            return "Must be at least 2 characters long";
+          }
+          if (stringValue.length > 100) {
+            return "Must not exceed 100 characters";
+          }
+
+          // Check for valid characters 
+          if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
+            return "Contains invalid characters";
+          }
+
+          // Check if the duration includes proper time units
+          const lowerCaseValue = stringValue.toLowerCase();
+          if (!(
+            lowerCaseValue.includes("day") ||
+            lowerCaseValue.includes("week") ||
+            lowerCaseValue.includes("month") ||
+            lowerCaseValue.includes("year")
+          )) {
+            return "Must include time unit (Days, Weeks, Months, or Years)";
+          }
+        }
+      }
+
+      // Validate theory and practical durations if filled manually
+      if (["theoryDuration", "practicalDuration"].includes(field)) {
+        // Skip validation for auto-calculated values
+        const trainingPeriodKey = `${formData.designation}|${formData.unit}|${formData.trainingPeriod}`;
+        const fallbackKey = `${formData.designation}|Any|${formData.trainingPeriod}`;
+        const isAutoCalculated = designationUnitPeriodToDurations[trainingPeriodKey] || designationUnitPeriodToDurations[fallbackKey];
+
+        if (!isAutoCalculated) {
+          if (stringValue.length < 2) {
+            return "Must be at least 2 characters long";
+          }
+          if (stringValue.length > 100) {
+            return "Must not exceed 100 characters";
+          }
+
+          // Check for valid characters 
+          if (!/^[a-zA-Z0-9\s.,'-/()&]+$/.test(stringValue)) {
+            return "Contains invalid characters";
+          }
+
+          // Check if the duration includes proper time units
+          const lowerCaseValue = stringValue.toLowerCase();
+          if (!(
+            lowerCaseValue.includes("day") ||
+            lowerCaseValue.includes("week") ||
+            lowerCaseValue.includes("month") ||
+            lowerCaseValue.includes("year")
+          )) {
+            return "Must include time unit (Days, Weeks, Months, or Years)";
+          }
         }
       }
 
@@ -365,7 +411,7 @@ const Professional = ({ formData, onChange }) => {
 
       return "";
     },
-    [formData.gradeType]
+    [formData, designationUnitPeriodToDurations]
   );
 
   const requiredFields = useMemo(
@@ -400,57 +446,25 @@ const Professional = ({ formData, onChange }) => {
       }
     }
 
-    // Validate conditional fields for "Other" selections
-    if (
-      formData.modeOfAppointment === "Other" &&
-      !formData.modeOfAppointmentOther?.trim()
-    ) {
-      newErrors.modeOfAppointmentOther =
-        "Please specify the mode of appointment";
-    }
+    // Check if theory and practical durations are required
+    const trainingPeriodKey = `${formData.designation}|${formData.unit}|${formData.trainingPeriod}`;
+    const fallbackKey = `${formData.designation}|Any|${formData.trainingPeriod}`;
+    const isAutoCalculated = designationUnitPeriodToDurations[trainingPeriodKey] || designationUnitPeriodToDurations[fallbackKey];
 
-    if (formData.courseType === "Other" && !formData.courseTypeOther?.trim()) {
-      newErrors.courseTypeOther = "Please specify the course type";
-    }
-
-    if (
-      formData.designation === "Other" &&
-      !formData.designationOther?.trim()
-    ) {
-      newErrors.designationOther = "Please specify the designation";
-    }
-
-    if (formData.unit === "Other" && !formData.unitOther?.trim()) {
-      newErrors.unitOther = "Please specify the unit/division";
-    }
-
-    if (
-      formData.highestQualification === "Other" &&
-      !formData.otherQualification?.trim()
-    ) {
-      newErrors.otherQualification = "Please specify the qualification";
-    }
-
-    if (
-      formData.fieldOfStudy === "Other" &&
-      !formData.customFieldOfStudy?.trim()
-    ) {
-      newErrors.customFieldOfStudy = "Please specify the field of study";
-    }
-
-    // Validate custom training period fields
-    if (formData.trainingPeriod === "Custom") {
-      if (!formData.customTrainingPeriod?.trim()) {
-        newErrors.customTrainingPeriod =
-          "Please specify the custom training period";
+    if (!isAutoCalculated && formData.trainingPeriod) {
+      // For custom training periods, theory and practical durations must be manually entered
+      if (!formData.theoryDuration?.trim()) {
+        newErrors.theoryDuration = "Please specify the theory duration";
+      } else {
+        const error = validateField("theoryDuration", formData.theoryDuration);
+        if (error) newErrors.theoryDuration = error;
       }
-      if (!formData.customTheoryDuration?.trim()) {
-        newErrors.customTheoryDuration =
-          "Please specify the custom theory duration";
-      }
-      if (!formData.customPracticalDuration?.trim()) {
-        newErrors.customPracticalDuration =
-          "Please specify the custom practical duration";
+
+      if (!formData.practicalDuration?.trim()) {
+        newErrors.practicalDuration = "Please specify the practical duration";
+      } else {
+        const error = validateField("practicalDuration", formData.practicalDuration);
+        if (error) newErrors.practicalDuration = error;
       }
     }
 
@@ -459,7 +473,7 @@ const Professional = ({ formData, onChange }) => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
-  }, [formData, requiredFields, validateField]);
+  }, [formData, requiredFields, validateField, designationUnitPeriodToDurations]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
@@ -609,97 +623,42 @@ const Professional = ({ formData, onChange }) => {
 
     const key = `${formData.designation}|${formData.unit}`;
     const periods = designationUnitTrainingMap[key] || [];
-    return ["", ...periods, "Custom"];
+    return ["", ...periods];
   }, [designationUnitTrainingMap, formData.designation, formData.unit]);
 
   const professionalFields = useMemo(
     () => [
-      {
-        label: "Date of Appointment",
-        field: "dateOfAppointmentInRailway",
-        type: "date",
-      },
-      {
-        label: "Mode of Appointment",
-        field: "modeOfAppointment",
-        type: "select",
-        options: appointmentModeOptions,
-      },
-      formData.modeOfAppointment === "Other" && {
-        label: "Specify Mode",
-        field: "modeOfAppointmentOther",
-      },
-      {
-        label: "Course Type",
-        field: "courseType",
-        type: "select",
-        options: courseTypeOptions,
-      },
-      formData.courseType === "Other" && {
-        label: "Specify Course Type",
-        field: "courseTypeOther",
-      },
-      {
-        label: "Designation",
-        field: "designation",
-        type: "select",
-        options: designationOptions,
-        disabled: !formData.courseType || formData.courseType === "Other",
-      },
-      formData.designation === "Other" && {
-        label: "Specify Designation",
-        field: "designationOther",
-      },
-      {
-        label: "Unit / Custodian / Other Details",
-        field: "unit",
-        type: "select",
-        options: unitOptionsForDesignation,
-        disabled: !formData.designation || formData.designation === "Other",
-      },
-      formData.unit === "Other" && {
-        label: "Specify Unit / Division",
-        field: "unitOther",
-      },
+      { label: "Date of Appointment", field: "dateOfAppointmentInRailway", type: "date", },
+      { label: "Mode of Appointment", field: "modeOfAppointment", type: "text", options: appointmentModeOptions, },
+      { label: "Course Type", field: "courseType", type: "text", options: courseTypeOptions, },
+      { label: "Designation", field: "designation", type: "text", options: designationOptions, },
+      { label: "Unit / Custodian / Other Details", field: "unit", type: "text", options: unitOptionsForDesignation, },
       {
         label: "Training Period",
         field: "trainingPeriod",
-        type: "select",
+        type: "text",
         options: trainingPeriodOptionsForDesignationUnit,
-        disabled: !formData.unit || formData.unit === "Other",
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Training Period",
-        field: "customTrainingPeriod",
-        helpText: "e.g., 15 Days, 8 Weeks, 3 Months, etc.",
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Theory Duration",
-        field: "customTheoryDuration",
-        helpText: "e.g., 10 Days, 4 Weeks, 2 Months, etc.",
-      },
-      formData.trainingPeriod === "Custom" && {
-        label: "Custom Practical Duration",
-        field: "customPracticalDuration",
-        helpText: "e.g., 5 Days, 4 Weeks, 1 Month, etc.",
+        helpText: "Select from options or enter custom period (e.g., 15 Days, 8 Weeks, 3 Months)"
       },
       {
         label: "Theory Duration",
         field: "theoryDuration",
-        disabled: true,
-        helpText:
-          formData.trainingPeriod === "Custom"
-            ? "Use custom theory duration field above"
-            : "Auto-calculated from training period",
+        disabled: !!designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          !!designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`],
+        helpText: designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`]
+          ? "Auto-calculated from training period"
+          : "Enter theory duration (e.g., 10 Days, 4 Weeks, 2 Months)",
       },
       {
         label: "Practical Duration",
         field: "practicalDuration",
-        disabled: true,
-        helpText:
-          formData.trainingPeriod === "Custom"
-            ? "Use custom practical duration field above"
-            : "Auto-calculated from training period",
+        disabled: !!designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          !!designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`],
+        helpText: designationUnitPeriodToDurations[`${formData.designation}|${formData.unit}|${formData.trainingPeriod}`] ||
+          designationUnitPeriodToDurations[`${formData.designation}|Any|${formData.trainingPeriod}`]
+          ? "Auto-calculated from training period"
+          : "Enter practical duration (e.g., 5 Days, 4 Weeks, 1 Month)",
       },
       { label: "Working Under", field: "workingUnder", required: false },
       { label: "HRMS ID", field: "hrmsId", required: false },
@@ -707,16 +666,13 @@ const Professional = ({ formData, onChange }) => {
       { label: "Employee Number", field: "employeeNumber", required: false },
     ],
     [
-      formData.modeOfAppointment,
-      formData.courseType,
-      formData.designation,
-      formData.unit,
-      formData.trainingPeriod,
+      formData,
       appointmentModeOptions,
       courseTypeOptions,
       designationOptions,
       unitOptionsForDesignation,
       trainingPeriodOptionsForDesignationUnit,
+      designationUnitPeriodToDurations,
     ]
   );
 
@@ -725,22 +681,14 @@ const Professional = ({ formData, onChange }) => {
       {
         label: "Highest Qualification",
         field: "highestQualification",
-        type: "select",
+        type: "text",
         options: qualificationOptions,
-      },
-      formData.highestQualification === "Other" && {
-        label: "Specify Qualification",
-        field: "otherQualification",
       },
       {
         label: "Field of Study",
         field: "fieldOfStudy",
-        type: "select",
+        type: "text",
         options: fieldOfStudyOptions,
-      },
-      formData.fieldOfStudy === "Other" && {
-        label: "Custom Field of Study",
-        field: "customFieldOfStudy",
       },
       { label: "Institution", field: "institution" },
       {
@@ -767,8 +715,6 @@ const Professional = ({ formData, onChange }) => {
       },
     ],
     [
-      formData.highestQualification,
-      formData.fieldOfStudy,
       formData.gradeType,
       qualificationOptions,
       fieldOfStudyOptions,
@@ -776,21 +722,29 @@ const Professional = ({ formData, onChange }) => {
     ]
   );
 
+  // State to track which field's dropdown is visible
+  const [visibleDropdown, setVisibleDropdown] = useState(null);
+
+  // Handler for clicking outside the dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (visibleDropdown && !event.target.closest('.combobox-container')) {
+        setVisibleDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [visibleDropdown]);
+
   const renderFields = useCallback(
     (fields) =>
       fields
         .filter(Boolean)
         .map(
-          ({
-            label,
-            field,
-            type = "text",
-            options = [],
-            disabled = false,
-            required = true,
-            helpText,
-            step,
-          }) => (
+          ({ label, field, type = "text", options = [], disabled = false, required = true, helpText, step, }) => (
             <div key={field}>
               <label className="block text-gray-700 font-medium mb-1">
                 {label} {required && <span className="text-red-500">*</span>}
@@ -809,6 +763,38 @@ const Professional = ({ formData, onChange }) => {
                     </option>
                   ))}
                 </select>
+              ) : options && options.length > 0 ? (
+                <div className="relative combobox-container">
+                  <input
+                    type={type}
+                    value={formData[field] || ""}
+                    onChange={(e) => handleChange(field, e.target.value)}
+                    onFocus={() => setVisibleDropdown(field)}
+                    className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${errors[field] ? "border-red-500" : "border-gray-300"
+                      } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                    placeholder={`Enter or select ${label.toLowerCase()}`}
+                    disabled={disabled}
+                    step={step}
+                  />
+                  {visibleDropdown === field && options.filter(opt => opt).length > 0 && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                      {options
+                        .filter(opt => opt && (!formData[field] || opt.toLowerCase().includes(formData[field].toLowerCase())))
+                        .map((opt) => (
+                          <div
+                            key={opt}
+                            className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                            onClick={() => {
+                              handleChange(field, opt);
+                              setVisibleDropdown(null);
+                            }}
+                          >
+                            {opt}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <input
                   type={type}
@@ -830,7 +816,7 @@ const Professional = ({ formData, onChange }) => {
             </div>
           )
         ),
-    [formData, errors, handleChange]
+    [formData, errors, handleChange, visibleDropdown]
   );
 
   return (

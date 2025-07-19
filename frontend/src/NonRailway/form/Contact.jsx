@@ -75,7 +75,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
     }
   };
 
-  const validateAllFields = () => {
+  const validateAllFields = React.useCallback(() => {
     const requiredFields = ["permanentAddress", "currentAddress", "phoneNumber", "emergencyContactNumber", "email"];
     const validationErrors = {};
 
@@ -88,13 +88,13 @@ const Contact = ({ formData, onChange, errors = {} }) => {
       isValid: Object.keys(validationErrors).length === 0,
       errors: validationErrors,
     };
-  };
+  }, [formData]);
 
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
     }
-  }, [formData]);
+  }, [formData, onChange, validateAllFields]);
 
   const handleFieldChange = (field, value) => onChange(field, value);
   const handleCopyAddress = () => handleFieldChange("currentAddress", formData.permanentAddress || "");

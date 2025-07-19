@@ -174,7 +174,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       {
         label: "Nationality",
         field: "nationality",
-        defaultValue: "Indian",
+        defaultValue: "",
         required: true,
       },
     ],

@@ -104,7 +104,7 @@ const Login2 = () => {
                             <div className="text-center">
                                 <h1 className="text-sm font-bold text-black leading-tight">Indian Railways</h1>
                                 <h2 className="text-sm font-semibold text-black leading-tight">Northern Railway</h2>
-                                <p className="text-xs text-black leading-tight">Trainee Management System</p>
+                                <p className="text-xs text-black leading-tight">Supervisor Training Centre</p>
                                 <p className="text-xs text-black leading-tight">Digital Platform</p>
                             </div>
                         </div>

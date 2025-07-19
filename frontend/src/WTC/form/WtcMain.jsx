@@ -14,8 +14,7 @@ const initialFormData = {
   category: "",
   pwd: "",
   typeOfDisability: "",
-  nationality: "INDIAN",
-
+  nationality: "Indian",
 
   currentAddress: "",
   permanentAddress: "",
@@ -25,37 +24,27 @@ const initialFormData = {
 
   dateOfAppointmentInRailway: "",
   modeOfAppointment: "",
-  modeOfAppointmentOther: "",
   courseType: "",
-  courseTypeOther: "",
   designation: "",
-  designationOther: "",
   unit: "",
-  unitOther: "",
   trainingPeriod: "",
-  customTrainingPeriod: "",
   theoryDuration: "",
-  customTheoryDuration: "",
   practicalDuration: "",
-  customPracticalDuration: "",
   workingUnder: "",
   hrmsId: "",
   pfNoNpsUps: "",
   employeeNumber: "",
 
   highestQualification: "",
-  otherQualification: "",
   fieldOfStudy: "",
-  customFieldOfStudy: "",
   institution: "",
   gradeType: "",
   gradeValue: "",
 
   batch: "",
-  customBatch: "",
   dateOfJoiningStcWtcNonRailway: "",
   dateOfSparing: "",
-}
+};
 
 const WtcMain = () => {
   const [formData, setFormData] = useState(initialFormData);
@@ -71,19 +60,16 @@ const WtcMain = () => {
   );
   const icons = useMemo(() => ["👤", "📞", "💼", "📄"], []);
 
-  const handleChange = useCallback(
-    (field, value) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prevErrors) => {
-        if (prevErrors[field]) {
-          const { [field]: _, ...rest } = prevErrors;
-          return rest;
-        }
-        return prevErrors;
-      });
-    },
-    []
-  );
+  const handleChange = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prevErrors) => {
+      if (prevErrors[field]) {
+        const { [field]: _, ...rest } = prevErrors;
+        return rest;
+      }
+      return prevErrors;
+    });
+  }, []);
 
   const createChangeHandler = useCallback(
     (stepKey) => {
@@ -142,9 +128,9 @@ const WtcMain = () => {
       const formDataToSend = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'picture' && value) {
+        if (key === "picture" && value) {
           // The backend expects the file under the key 'image'
-          formDataToSend.append('image', value);
+          formDataToSend.append("image", value);
         } else if (value !== null && value !== undefined && value !== "") {
           formDataToSend.append(key, value);
         }
@@ -161,7 +147,6 @@ const WtcMain = () => {
           errorData.message || `HTTP error! status: ${response.status}`
         );
       }
-
 
       return await response.json();
     } catch (error) {
@@ -185,7 +170,6 @@ const WtcMain = () => {
 
     try {
       const result = await submitToAPI(formData);
-      console.log("Submission successful:", result);
       alert(
         `Registration completed successfully! Ticket Number: ${result.ticketNumber}`
       );
@@ -197,7 +181,7 @@ const WtcMain = () => {
       console.error("Submission failed:", error);
       alert(`Failed to submit registration: ${error.message}`);
     }
-  }, [isStepValid, submitToAPI, formData,]);
+  }, [isStepValid, submitToAPI, formData]);
 
   const renderForm = useCallback(() => {
     const formComponents = [Personal, Contact, Professional, Course];

@@ -104,11 +104,6 @@ class WtcController {
                 ...filteredData
             } = updatedData;
 
-            // Debug logging
-            console.log('WTC Update - Original data keys:', Object.keys(updatedData));
-            console.log('WTC Update - Filtered data keys:', Object.keys(filteredData));
-            console.log('WTC Update - Filtered data values:', filteredData);
-
             // Check if candidate exists
             const existingCandidate = await this.wtcModel.getByTicketNumber(ticketNumber);
             if (!existingCandidate) {
