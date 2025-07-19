@@ -505,7 +505,30 @@ const CertificatePreview2 = () => {
 
   return (
     <div style={{ background: "#e5e7eb", minHeight: "100vh", padding: "20px 0" }}>
-      
+      {/* Back Button (hidden on print) */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          position: "fixed",
+          top: 20,
+          left: 20,
+          zIndex: 1000,
+          background: "#fff",
+          color: "#2563eb",
+          border: "1px solid #2563eb",
+          borderRadius: "6px",
+          padding: "8px 18px",
+          fontWeight: 600,
+          fontSize: "16px",
+          cursor: "pointer",
+          boxShadow: "0 2px 8px #0001",
+          transition: "background 0.2s",
+          display: "block"
+        }}
+        className="no-print"
+      >
+        ← Back
+      </button>
       {/* Print Button */}
       <div style={{
         display: "flex",
@@ -598,6 +621,9 @@ const CertificatePreview2 = () => {
             padding: 0 !important;
           }
           button {
+            display: none !important;
+          }
+          .no-print {
             display: none !important;
           }
           ${trainees.length > 1
