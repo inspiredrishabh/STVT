@@ -128,20 +128,21 @@ const Certificate = () => {
       const traineesParam = encodeURIComponent(
         JSON.stringify(selectedTrainees)
       );
-      // All selected ticket numbers START with AJE, RJE, ASE, or IJE?
-      const allSpecialTicketPattern = selectedTraineeObjects.every((trainee) => {
-        const ticketNo = trainee.ticket_no
-          ? trainee.ticket_no.toUpperCase()
-          : "";
+      // If ANY selected trainee has module_no 'Other' or 'Custom', or ticket_no not starting with ASE, AJE, IJE, RSE, use CertificatePreview2
+      const isRegular = selectedTraineeObjects.every((trainee) => {
+        const ticketNo = trainee.ticket_no ? trainee.ticket_no.toUpperCase() : "";
+        const moduleNo = trainee.module_no ? trainee.module_no.toLowerCase() : "";
         return (
-          ticketNo.startsWith("AJE") ||
-          ticketNo.startsWith("RJE") ||
-          ticketNo.startsWith("ASE") ||
-          ticketNo.startsWith("IJE")
+          (ticketNo.startsWith("ASE") ||
+            ticketNo.startsWith("AJE") ||
+            ticketNo.startsWith("IJE") ||
+            ticketNo.startsWith("RSE")) &&
+          moduleNo !== "other" &&
+          moduleNo !== "custom"
         );
       });
 
-      if (allSpecialTicketPattern) {
+      if (isRegular) {
         navigate(`/stc/certificate/preview?trainees=${traineesParam}`);
       } else {
         navigate(`/stc/certificate/preview2?trainees=${traineesParam}`);
