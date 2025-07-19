@@ -113,7 +113,7 @@ const CertificatePreview = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="w-1/4">
                 <img src={BgImage} alt="Logo" className="w-28" />
-                <p className='text-xl font-bold mt-8'>क्रमांक : <span contentEditable={true}> ___________________ </span></p>
+                <p className='text-xl font-bold mt-8'>क्रमांक : <span contentEditable={true}> ______________ </span></p>
               </div>
               <div className="w-1/2 text-center">
                 <h1 className="text-blue-700 text-4xl font-bold uppercase mb-2">पर्यवेक्षक प्रशिक्षण केंद्र</h1>
@@ -143,10 +143,10 @@ const CertificatePreview = () => {
                   {formatDate(trainee.dateOfJoiningStcWtcNonRailway)} से दिनांक  {formatDate(trainee.dateOfSparing)}
                 </span>
                 तक सफलतापूर्वक भाग लिया है। </p>
-              <p className="mt-8 font-semibold text-left text-2xl" contentEditable={true}>दिनांक:</p>
+              <p className="font-semibold text-left text-2xl" contentEditable={true}>दिनांक:</p>
             </div>
 
-            <div className="flex justify-between mt-32">
+            <div className="flex justify-between">
               <div className="text-center">
                 <div className="w-56 mx-auto">
                   <p className="text-xl my-1" contentEditable={true} >(___________)</p>

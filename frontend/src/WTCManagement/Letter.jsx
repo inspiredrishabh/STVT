@@ -333,7 +333,6 @@ const Letter = () => {
                                         <th className="p-4 text-left">Name</th>
                                         <th className="p-4 text-left">Designation</th>
                                         <th className="p-4 text-left">Batch</th>
-                                        <th className="p-4 text-left">Module No</th>
                                         <th className="p-4 text-left">Training Period</th>
                                         <th className="p-4 text-left">Status</th>
                                     </tr>
@@ -357,7 +356,6 @@ const Letter = () => {
                                                 <td className="p-4">{trainee.name}</td>
                                                 <td className="p-4">{trainee.designation}</td>
                                                 <td className="p-4">{trainee.batch}</td>
-                                                <td className="p-4">{trainee.moduleNo}</td>
                                                 <td className="p-4">
                                                     {formatDateDDMMYY(trainee.dateOfJoiningStcWtcNonRailway)} - {formatDateDDMMYY(trainee.dateOfSparing)}
                                                 </td>

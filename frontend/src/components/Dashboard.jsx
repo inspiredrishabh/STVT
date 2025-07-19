@@ -303,9 +303,8 @@ const SimpleBarChart = ({
         {displayData.map((item, idx) => (
           <div
             key={idx}
-            className={`flex items-center space-x-3 rounded-lg transition hover:bg-orange-50 ${
-              onBarClick ? "cursor-pointer" : ""
-            }`}
+            className={`flex items-center space-x-3 rounded-lg transition hover:bg-orange-50 ${onBarClick ? "cursor-pointer" : ""
+              }`}
             onClick={onBarClick ? () => onBarClick(item) : undefined}
             title={item.category}
           >
@@ -420,9 +419,8 @@ const SimplePieChart = ({
           {displayData.map((item, idx) => (
             <div
               key={idx}
-              className={`flex items-center space-x-3 rounded transition hover:bg-orange-50 ${
-                onLegendClick ? "cursor-pointer" : ""
-              }`}
+              className={`flex items-center space-x-3 rounded transition hover:bg-orange-50 ${onLegendClick ? "cursor-pointer" : ""
+                }`}
               onClick={onLegendClick ? () => onLegendClick(item) : undefined}
               title={item.name}
             >
@@ -459,20 +457,19 @@ const SimplePieChart = ({
 function StatCard({
   title,
   value,
-  color = "bg-orange-100",
-  textColor = "text-orange-700",
+  color = "border-l-blue-500", // Changed to border color
+  textColor = "text-gray-700",
   onClick,
   active,
 }) {
   return (
     <div
-      className={`rounded-2xl shadow border-2 p-4 cursor-pointer transition-all duration-150 ${
-        active ? "ring-2 ring-orange-400 scale-105" : ""
-      } ${color} border-orange-100`}
+      className={`bg-white rounded-md shadow-sm border border-gray-200 p-4 cursor-pointer transition-all duration-150 flex flex-col justify-between ${color} border-l-4 ${active ? "ring-2 ring-blue-500" : ""
+        }`}
       onClick={onClick}
     >
-      <div className={`text-xs font-medium ${textColor}`}>{title}</div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
+      <div className={`text-sm font-semibold ${textColor}`}>{title}</div>
+      <div className="text-3xl font-bold text-gray-800 mt-2">{value}</div>
     </div>
   );
 }
@@ -848,22 +845,22 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-9xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-6">
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
+        <div className="max-w-9xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-800">
                 Dashboard - Supervisor Training Centre
               </h1>
-              <p className="text-gray-600 mt-2">
-                Overview of training programs and candidate statistics
+              <p className="text-gray-500 text-sm mt-1">
+                Ministry of Railways, Government of India
               </p>
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={loadDashboardData}
-                className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center transition-colors text-sm font-medium"
               >
                 <RefreshCw className="mr-2 w-4 h-4" />
                 Refresh
@@ -871,442 +868,439 @@ function Dashboard() {
               {(userRole === "admin" || userRole === "master") && (
                 <button
                   onClick={handleExportData}
-                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl flex items-center transition-colors"
+                  className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center transition-colors text-sm font-medium"
                 >
                   <Download className="mr-2 w-4 h-4" />
-                  Export
+                  Export Data
                 </button>
               )}
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Main Stats Cards */}
-        {overallStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              title="Total Candidates"
-              value={overallStats.totalCandidates}
-              onClick={() => {
-                setSelectedStat("Total Candidates");
-                fetchStatDetails("Total Candidates");
-              }}
-              active={selectedStat === "Total Candidates"}
-            />
-            <StatCard
-              title="Railway Candidates"
-              value={overallStats.railwayCandidates}
-              color="bg-blue-50"
-              textColor="text-blue-700"
-              onClick={() => {
-                setSelectedStat("Railway Candidates");
-                fetchStatDetails("Railway Candidates");
-              }}
-              active={selectedStat === "Railway Candidates"}
-            />
-            <StatCard
-              title="Non-Railway Candidates"
-              value={overallStats.nonRailwayCandidates}
-              color="bg-purple-50"
-              textColor="text-purple-700"
-              onClick={() => {
-                setSelectedStat("Non-Railway Candidates");
-                fetchStatDetails("Non-Railway Candidates");
-              }}
-              active={selectedStat === "Non-Railway Candidates"}
-            />
-            <StatCard
-              title="Resigned Candidates"
-              value={overallStats.resignedCount}
-              color="bg-red-50"
-              textColor="text-red-700"
-              onClick={() => {
-                setSelectedStat("Resigned Candidates");
-                fetchStatDetails("Resigned Candidates");
-              }}
-              active={selectedStat === "Resigned Candidates"}
-            />
-          </div>
-        )}
-
-        {/* Designation-wise Stats */}
-        {overallStats && (
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              STC Designation-wise Candidates
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {Object.entries(overallStats.designationCounts || {}).map(
-                ([desig, count]) => (
-                  <StatCard
-                    key={desig}
-                    title={desig}
-                    value={count}
-                    color="bg-orange-50"
-                    textColor="text-orange-700"
-                    onClick={() => {
-                      setSelectedStat("designation:" + desig);
-                      fetchStatDetails("designation", desig);
-                    }}
-                    active={selectedStat === "designation:" + desig}
-                  />
-                )
-              )}
+      <main className="p-6">
+        <div className="max-w-9xl mx-auto">
+          {/* Main Stats Cards */}
+          {overallStats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <StatCard
-                title="Total"
-                value={overallStats.stcCandidates}
-                color="bg-green-50"
-                textColor="text-green-700"
+                title="Total Candidates"
+                value={overallStats.totalCandidates}
                 onClick={() => {
-                  setSelectedStat("STC");
-                  fetchStatDetails("STC");
+                  setSelectedStat("Total Candidates");
+                  fetchStatDetails("Total Candidates");
                 }}
-                active={selectedStat === "STC"}
+                active={selectedStat === "Total Candidates"}
+                color="border-l-blue-500"
+                textColor="text-blue-800"
+              />
+              <StatCard
+                title="Railway Candidates"
+                value={overallStats.railwayCandidates}
+                onClick={() => {
+                  setSelectedStat("Railway Candidates");
+                  fetchStatDetails("Railway Candidates");
+                }}
+                active={selectedStat === "Railway Candidates"}
+                color="border-l-green-500"
+                textColor="text-green-800"
+              />
+              <StatCard
+                title="Non-Railway Candidates"
+                value={overallStats.nonRailwayCandidates}
+                onClick={() => {
+                  setSelectedStat("Non-Railway Candidates");
+                  fetchStatDetails("Non-Railway Candidates");
+                }}
+                active={selectedStat === "Non-Railway Candidates"}
+                color="border-l-purple-500"
+                textColor="text-purple-800"
+              />
+              <StatCard
+                title="Resigned Candidates"
+                value={overallStats.resignedCount}
+                onClick={() => {
+                  setSelectedStat("Resigned Candidates");
+                  fetchStatDetails("Resigned Candidates");
+                }}
+                active={selectedStat === "Resigned Candidates"}
+                color="border-l-red-500"
+                textColor="text-red-800"
+              />
+            </div>
+          )}
+
+          {/* Designation-wise Stats */}
+          {overallStats && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                STC Designation-wise Candidates
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                {Object.entries(overallStats.designationCounts || {}).map(
+                  ([desig, count]) => (
+                    <StatCard
+                      key={desig}
+                      title={desig}
+                      value={count}
+                      color="border-l-gray-400"
+                      textColor="text-gray-700"
+                      onClick={() => {
+                        setSelectedStat("designation:" + desig);
+                        fetchStatDetails("designation", desig);
+                      }}
+                      active={selectedStat === "designation:" + desig}
+                    />
+                  )
+                )}
+                <StatCard
+                  title="Total STC"
+                  value={overallStats.stcCandidates}
+                  color="border-l-teal-500"
+                  textColor="text-teal-800"
+                  onClick={() => {
+                    setSelectedStat("STC");
+                    fetchStatDetails("STC");
+                  }}
+                  active={selectedStat === "STC"}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Category and Pie Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <SimpleBarChart
+                data={categoriesData}
+                title="STC, WTC & Non-Railway Categories"
+                onBarClick={(item) => {
+                  setSelectedStat(item.category);
+                  // Map category to fetchStatDetails type
+                  if (item.category === "STC" || item.category === "WTC") {
+                    fetchStatDetails(item.category);
+                  } else if (item.category === "Non-Railway") {
+                    fetchStatDetails("Non-Railway Candidates");
+                  }
+                }}
+              />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <SimplePieChart
+                data={distributionData}
+                title="Distribution (Pie Chart)"
+                onLegendClick={(item) => {
+                  setSelectedStat(item.name);
+                  // Fix: ensure Non-Railway triggers correct details
+                  if (item.name === "Non-Railway") {
+                    fetchStatDetails("Non-Railway Candidates");
+                  } else {
+                    fetchStatDetails(item.name);
+                  }
+                }}
               />
             </div>
           </div>
-        )}
 
-        {/* Category and Pie Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-            <SimpleBarChart
-              data={categoriesData}
-              title="STC, WTC & Non-Railway Categories"
-              onBarClick={(item) => {
-                setSelectedStat(item.category);
-                // Map category to fetchStatDetails type
-                if (item.category === "STC" || item.category === "WTC") {
-                  fetchStatDetails(item.category);
-                } else if (item.category === "Non-Railway") {
-                  fetchStatDetails("Non-Railway Candidates");
-                }
-              }}
-            />
-          </div>
-          <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-            <SimplePieChart
-              data={distributionData}
-              title="Distribution (Pie Chart)"
-              onLegendClick={(item) => {
-                setSelectedStat(item.name);
-                // Fix: ensure Non-Railway triggers correct details
-                if (item.name === "Non-Railway") {
-                  fetchStatDetails("Non-Railway Candidates");
-                } else {
-                  fetchStatDetails(item.name);
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        {/* All Units by Candidate Count */}
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-blue-100 p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            All Units by Candidate Count (STC)
-          </h2>
-          {allUnits.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              No data available
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {allUnits.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center space-x-3 cursor-pointer ${
-                    selectedStat === "unit:" + item.unit
-                      ? "ring-2 ring-orange-400 scale-105"
+          {/* All Units by Candidate Count */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              All Units by Candidate Count (STC)
+            </h2>
+            {allUnits.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                No data available
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {allUnits.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center space-x-3 cursor-pointer p-2 rounded-md hover:bg-gray-100 ${selectedStat === "unit:" + item.unit
+                      ? "ring-2 ring-blue-500 bg-blue-50"
                       : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedStat("unit:" + item.unit);
-                    fetchStatDetails("unit", item.unit);
-                  }}
-                >
-                  <div className="w-32 text-sm font-medium text-gray-700 text-right">
-                    {item.unit}
-                  </div>
-                  <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
-                    <div
-                      className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
-                      style={{
-                        backgroundColor: item.color,
-                        width: `${
-                          (item.count /
+                      }`}
+                    onClick={() => {
+                      setSelectedStat("unit:" + item.unit);
+                      fetchStatDetails("unit", item.unit);
+                    }}
+                  >
+                    <div className="w-32 text-sm font-medium text-gray-700 text-right">
+                      {item.unit}
+                    </div>
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                      <div
+                        className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
+                        style={{
+                          backgroundColor: item.color,
+                          width: `${(item.count /
                             Math.max(...allUnits.map((d) => d.count))) *
-                          100
-                        }%`,
-                        minWidth: "40px",
-                      }}
-                    >
-                      {item.count}
+                            100
+                            }%`,
+                          minWidth: "40px",
+                        }}
+                      >
+                        {item.count}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Line Training Stats (by Activity Centre) */}
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-cyan-100 p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Line Training Stats (by Activity Centre)
-          </h2>
-          {lineTrainingStats.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              No data available
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {lineTrainingStats.map((item) => (
-                <StatCard
-                  key={item.activityCentre}
-                  title={item.activityCentre}
-                  value={item.count}
-                  color="bg-cyan-50"
-                  textColor="text-cyan-700"
-                  onClick={() => {
-                    fetchLineTrainingDetails(item.activityCentre);
-                  }}
-                  active={selectedLineTraining === item.activityCentre}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Line Training Stats (by Activity Centre) */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Line Training Stats (by Activity Centre)
+            </h2>
+            {lineTrainingStats.length === 0 ? (
+              <div className="text-center text-gray-400 py-8">
+                No data available
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                {lineTrainingStats.map((item) => (
+                  <StatCard
+                    key={item.activityCentre}
+                    title={item.activityCentre}
+                    value={item.count}
+                    color="border-l-cyan-500"
+                    textColor="text-cyan-800"
+                    onClick={() => {
+                      fetchLineTrainingDetails(item.activityCentre);
+                    }}
+                    active={selectedLineTraining === item.activityCentre}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Active Candidates Sections */}
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Active Candidates by Category
-          </h2>
-          {fetchError && (
-            <div className="mb-4 text-red-600 font-semibold">
-              {fetchError}
+          {/* Active Candidates Sections */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Active Candidates by Category
+            </h2>
+            {fetchError && (
+              <div className="mb-4 text-red-600 font-semibold">
+                {fetchError}
+                <button
+                  className="ml-4 px-3 py-1 bg-orange-200 rounded text-orange-900"
+                  onClick={loadAllCandidates}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-4 mb-4">
               <button
-                className="ml-4 px-3 py-1 bg-orange-200 rounded text-orange-900"
-                onClick={loadAllCandidates}
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "stc"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("stc");
+                  setActiveCandidates(getActiveCandidates("stc"));
+                }}
               >
-                Retry
+                STC Active ({getActiveCandidates("stc").length})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "wtc"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-green-700 border-green-300 hover:bg-green-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("wtc");
+                  setActiveCandidates(getActiveCandidates("wtc"));
+                }}
+              >
+                WTC Active ({getActiveCandidates("wtc").length})
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "nonrailway"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "bg-white text-purple-700 border-purple-300 hover:bg-purple-50"
+                  }`}
+                onClick={() => {
+                  setActiveSection("nonrailway");
+                  setActiveCandidates(getActiveCandidates("nonrailway"));
+                }}
+              >
+                Non-Railway Active ({getActiveCandidates("nonrailway").length})
               </button>
             </div>
-          )}
-          <div className="flex flex-wrap gap-4 mb-4">
-            <button
-              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
-                activeSection === "stc"
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-blue-50 text-blue-700 border-blue-200"
-              }`}
-              onClick={() => {
-                setActiveSection("stc");
-                setActiveCandidates(getActiveCandidates("stc"));
-              }}
-            >
-              STC Active ({getActiveCandidates("stc").length})
-            </button>
-            <button
-              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
-                activeSection === "wtc"
-                  ? "bg-green-500 text-white border-green-500"
-                  : "bg-green-50 text-green-700 border-green-200"
-              }`}
-              onClick={() => {
-                setActiveSection("wtc");
-                setActiveCandidates(getActiveCandidates("wtc"));
-              }}
-            >
-              WTC Active ({getActiveCandidates("wtc").length})
-            </button>
-            <button
-              className={`px-4 py-2 rounded-xl font-semibold border-2 transition ${
-                activeSection === "nonrailway"
-                  ? "bg-purple-500 text-white border-purple-500"
-                  : "bg-purple-50 text-purple-700 border-purple-200"
-              }`}
-              onClick={() => {
-                setActiveSection("nonrailway");
-                setActiveCandidates(getActiveCandidates("nonrailway"));
-              }}
-            >
-              Non-Railway Active ({getActiveCandidates("nonrailway").length})
-            </button>
-          </div>
-          {activeSection && (
-            <div className="overflow-auto max-h-[50vh] border rounded-xl bg-white">
-              <table className="min-w-full text-xs md:text-sm border">
-                <thead className="sticky top-0 bg-orange-50 z-10">
-                  <tr>
-                    <th className="px-2 py-1 border">Ticket No</th>
-                    <th className="px-2 py-1 border">Name</th>
-                    <th className="px-2 py-1 border">Designation</th>
-                    <th className="px-2 py-1 border">Unit</th>
-                    <th className="px-2 py-1 border">Date of Sparing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeCandidates.length === 0 ? (
+            {activeSection && (
+              <div className="overflow-auto max-h-[50vh] border rounded-lg bg-white">
+                <table className="min-w-full text-xs md:text-sm border-collapse">
+                  <thead className="sticky top-0 bg-gray-100 z-10">
                     <tr>
-                      <td
-                        colSpan={5}
-                        className="text-center text-gray-400 py-8"
-                      >
-                        No active candidates found.
-                      </td>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
                     </tr>
-                  ) : (
-                    activeCandidates.map((c, i) => (
-                      <tr
-                        key={c.ticket_no || c.ticketNo || c.id || i}
-                        className="hover:bg-orange-50 transition"
-                      >
-                        <td
-                          className="px-2 py-1 border truncate max-w-[120px]"
-                          title={c.ticket_no || c.ticketNo || c.id}
-                        >
-                          {c.ticket_no || c.ticketNo || c.id}
-                        </td>
-                        <td
-                          className="px-2 py-1 border truncate max-w-[160px]"
-                          title={c.name}
-                        >
-                          {c.name}
-                        </td>
-                        <td
-                          className="px-2 py-1 border truncate max-w-[120px]"
-                          title={c.designation}
-                        >
-                          {c.designation}
-                        </td>
-                        <td
-                          className="px-2 py-1 border truncate max-w-[120px]"
-                          title={c.unit}
-                        >
-                          {c.unit}
-                        </td>
-                        <td
-                          className="px-2 py-1 border truncate max-w-[120px]"
-                          title={getSparingDate(c, activeSection)}
-                        >
-                          {getSparingDate(c, activeSection)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Stat Details Modal/Section */}
-        {isModalOpen && (statDetailsTitle || lineTrainingDetailsTitle) && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-all"
-            style={{ backdropFilter: "blur(2px)" }}
-          >
-            <div
-              className="relative bg-white bg-opacity-95 rounded-3xl shadow-2xl border-2 border-orange-200 p-6 max-w-5xl w-full max-h-[90vh] overflow-hidden"
-              style={{
-                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-              }}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 truncate max-w-[70vw]">
-                  {statDetailsTitle || lineTrainingDetailsTitle}
-                </h3>
-                <div className="flex space-x-2">
-                  {/* Removed Export CSV button */}
-                  <button
-                    className="text-orange-500 hover:text-orange-700 px-3 py-1 rounded transition"
-                    onClick={() => {
-                      setStatDetails([]);
-                      setStatDetailsTitle("");
-                      setSelectedStat(null);
-                      setLineTrainingDetails([]);
-                      setLineTrainingDetailsTitle("");
-                      setSelectedLineTraining(null);
-                      setIsModalOpen(false);
-                    }}
-                    title="Close"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-              {/* Show either statDetails or lineTrainingDetails */}
-              {(statDetailsTitle && statDetails.length === 0) ||
-              (lineTrainingDetailsTitle && lineTrainingDetails.length === 0) ? (
-                <div className="text-center text-gray-400 py-8">
-                  No details available.
-                </div>
-              ) : (
-                <div
-                  className="overflow-auto max-h-[70vh] border rounded-xl"
-                  style={{ background: "#fff" }}
-                >
-                  <table className="min-w-full text-xs md:text-sm border">
-                    <thead className="sticky top-0 bg-orange-50 z-10">
+                  </thead>
+                  <tbody>
+                    {activeCandidates.length === 0 ? (
                       <tr>
-                        <th className="px-2 py-1 border">Ticket No</th>
-                        {statDetailsTitle ? (
-                          <>
-                            <th className="px-2 py-1 border">Name</th>
-                            <th className="px-2 py-1 border">Designation</th>
-                            <th className="px-2 py-1 border">Unit</th>
-                            {statDetails.some((c) => c._source) && (
-                              <th className="px-2 py-1 border">Source</th>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <th className="px-2 py-1 border">
-                              Activity Centre
-                            </th>
-                            <th className="px-2 py-1 border">Start Date</th>
-                            <th className="px-2 py-1 border">End Date</th>
-                            <th className="px-2 py-1 border">Status</th>
-                          </>
-                        )}
+                        <td
+                          colSpan={5}
+                          className="text-center text-gray-400 py-8"
+                        >
+                          No active candidates found.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {statDetailsTitle
-                        ? statDetails.map((c, i) => (
+                    ) : (
+                      activeCandidates.map((c, i) => (
+                        <tr
+                          key={c.ticket_no || c.ticketNo || c.id || i}
+                          className="hover:bg-gray-50 transition border-b"
+                        >
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.ticket_no || c.ticketNo || c.id}
+                          >
+                            {c.ticket_no || c.ticketNo || c.id}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                            title={c.name}
+                          >
+                            {c.name}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.designation}
+                          >
+                            {c.designation}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.unit}
+                          >
+                            {c.unit}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={getSparingDate(c, activeSection)}
+                          >
+                            {getSparingDate(c, activeSection)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Stat Details Modal/Section */}
+          {isModalOpen && (statDetailsTitle || lineTrainingDetailsTitle) && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-all"
+              style={{ backdropFilter: "blur(3px)" }}
+            >
+              <div
+                className="relative bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              >
+                <div className="flex justify-between items-center mb-4 pb-4 border-b">
+                  <h3 className="text-xl font-semibold text-gray-800 truncate max-w-[70vw]">
+                    {statDetailsTitle || lineTrainingDetailsTitle}
+                  </h3>
+                  <div className="flex space-x-2">
+                    {/* Removed Export CSV button */}
+                    <button
+                      className="text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition text-sm"
+                      onClick={() => {
+                        setStatDetails([]);
+                        setStatDetailsTitle("");
+                        setSelectedStat(null);
+                        setLineTrainingDetails([]);
+                        setLineTrainingDetailsTitle("");
+                        setSelectedLineTraining(null);
+                        setIsModalOpen(false);
+                      }}
+                      title="Close"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+                {/* Show either statDetails or lineTrainingDetails */}
+                {(statDetailsTitle && statDetails.length === 0) ||
+                  (lineTrainingDetailsTitle && lineTrainingDetails.length === 0) ? (
+                  <div className="text-center text-gray-500 py-8">
+                    No details available.
+                  </div>
+                ) : (
+                  <div
+                    className="overflow-auto flex-grow border rounded-lg"
+                    style={{ background: "#fff" }}
+                  >
+                    <table className="min-w-full text-xs md:text-sm border-collapse">
+                      <thead className="sticky top-0 bg-gray-100 z-10">
+                        <tr>
+                          <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                          {statDetailsTitle ? (
+                            <>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                              {statDetails.some((c) => c._source) && (
+                                <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Source</th>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">
+                                Activity Centre
+                              </th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Start Date</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">End Date</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Status</th>
+                            </>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statDetailsTitle
+                          ? statDetails.map((c, i) => (
                             <tr
                               key={c.ticket_no || c.ticketNo || c.id || i}
-                              className="hover:bg-orange-50 transition"
+                              className="hover:bg-gray-50 transition border-b"
                             >
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.ticket_no || c.ticketNo || c.id}
                               >
                                 {c.ticket_no || c.ticketNo || c.id}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[160px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
                                 title={c.name}
                               >
                                 {c.name}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.designation}
                               >
                                 {c.designation}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.unit}
                               >
                                 {c.unit}
                               </td>
                               {c._source && (
                                 <td
-                                  className="px-2 py-1 border truncate max-w-[120px]"
+                                  className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                   title={c._source}
                                 >
                                   {c._source}
@@ -1314,117 +1308,131 @@ function Dashboard() {
                               )}
                             </tr>
                           ))
-                        : lineTrainingDetails.map((c, i) => (
+                          : lineTrainingDetails.map((c, i) => (
                             <tr
                               key={c.ticket_no + i}
-                              className="hover:bg-orange-50 transition"
+                              className="hover:bg-gray-50 transition border-b"
                             >
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.ticket_no}
                               >
                                 {c.ticket_no}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[160px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
                                 title={c.activityCentre}
                               >
                                 {c.activityCentre}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.startDate}
                               >
                                 {c.startDate}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.endDate}
                               >
                                 {c.endDate}
                               </td>
                               <td
-                                className="px-2 py-1 border truncate max-w-[120px]"
+                                className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                                 title={c.status}
                               >
                                 {c.status}
                               </td>
                             </tr>
                           ))}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Activities */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-gray-800">
+                Recent Activities
+              </h3>
+            </div>
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {recentActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
+                  style={{
+                    borderLeftColor:
+                      activity.category === "STC"
+                        ? "#3b82f6" // Blue
+                        : activity.category === "WTC"
+                          ? "#10b981" // Green
+                          : activity.category === "Non-Railway"
+                            ? "#8b5cf6" // Purple
+                            : "#6b7280", // Gray
+                  }}
+                >
+                  <div className="flex-shrink-0 pt-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{
+                        backgroundColor:
+                          activity.category === "STC"
+                            ? "#3b82f6"
+                            : activity.category === "WTC"
+                              ? "#10b981"
+                              : activity.category === "Non-Railway"
+                                ? "#8b5cf6"
+                                : "#6b7280",
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <p className="text-sm font-medium text-gray-800 truncate">
+                        {activity.activity}
+                      </p>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full font-medium ${activity.category === "STC"
+                          ? "bg-blue-100 text-blue-800"
+                          : activity.category === "WTC"
+                            ? "bg-green-100 text-green-800"
+                            : activity.category === "Non-Railway"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                      >
+                        {activity.category}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate">
+                      {activity.candidate}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
-        )}
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-3xl shadow-lg border-2 border-orange-100 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Activities
-            </h3>
-          </div>
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start space-x-3 p-3 rounded-2xl hover:bg-orange-50 transition-colors border-l-4"
-                style={{
-                  borderLeftColor:
-                    activity.category === "STC"
-                      ? "#FF8D21"
-                      : activity.category === "WTC"
-                      ? "#FFA652"
-                      : activity.category === "Non-Railway"
-                      ? "#008080"
-                      : "#6b7280",
-                }}
-              >
-                <div className="flex-shrink-0 text-lg">{activity.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {activity.activity}
-                    </p>
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        activity.category === "STC"
-                          ? "bg-orange-100 text-orange-700"
-                          : activity.category === "WTC"
-                          ? "bg-orange-100 text-orange-700"
-                          : activity.category === "Non-Railway"
-                          ? "bg-teal-100 text-teal-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {activity.category}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 truncate">
-                    {activity.candidate}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      </div>
-      <div className="bg-cyan-50 text-grey py-8 mt-8 w-full">
-        <div className="container mx-auto px-0">
-          <div className="text-center space-y-4">
-            <p className="text-base font-semibold">
-              © 2025 All Rights Reserved.
+      </main>
+      <footer className="bg-gray-800 text-white py-6 mt-8 w-full">
+        <div className="max-w-9xl mx-auto px-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm font-semibold">
+              © 2025 Supervisor Training Center, Northern Railways. All Rights
+              Reserved.
             </p>
-            <p className="text-sm text-grey leading-relaxed px-8">
-              Supervisor Training Center, Charbagh, Northern Railways, Ministry
-              of Railways, Government of India.
+            <p className="text-xs text-gray-400">
+              Ministry of Railways, Government of India.
             </p>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

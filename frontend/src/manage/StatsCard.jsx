@@ -136,7 +136,7 @@ const StatCard = ({ title, value, icon: Icon, iconBgColor, iconTextColor }) => (
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs font-medium text-gray-600 mb-1">{title}</p>
-      <p className="text-2xl font-bold text-[#1B2A41]">{value}</p>
+      <p className="text-2xl font-bold text-[#1B2A41] overflow-hidden">{value}</p>
     </div>
   </div>
 );
