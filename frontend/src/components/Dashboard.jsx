@@ -1364,7 +1364,7 @@ function Dashboard() {
               {recentActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors border-l-4"
+                  className="flex items-start space-x-4 p-3 rounded hover:bg-gray-50 transition-colors border-l-4"
                   style={{
                     borderLeftColor:
                       activity.category === "STC"
