@@ -45,7 +45,7 @@ This system aims to automate and simplify the management of training activities 
 ### 1. Clone the Repository
 Open **Command Prompt** or **PowerShell** and run:
 ```bat
- git clone <repository-url>
+ git clone https://github.com/inspiredrishabh/STVT
  cd STVT
 ```
 
