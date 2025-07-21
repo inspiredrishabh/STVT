@@ -28,10 +28,10 @@ This system aims to automate and simplify the management of training activities 
 - Responsive design for use on various devices
 
 ## Tech Stack
-- **Frontend:** React, Vite, JavaScript, CSS
+- **Frontend:** React, Vite, JavaScript, CSS, TailwindCSS
 - **Backend:** Node.js, Express
-- **Database:** (Please specify, e.g., MongoDB, MySQL, etc. if applicable)
-- **Other:** RESTful APIs, JWT Authentication
+- **Database:** SQLite3
+- **Other:** RESTful APIs
 
 ## Setup Instructions (Windows Only)
 
