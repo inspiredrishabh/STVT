@@ -27,7 +27,10 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
       }
 
       // Date validation for joining and sparing dates
-      if (field === "dateOfJoiningStcWtcNonRailway" || field === "dateOfSparing") {
+      if (
+        field === "dateOfJoiningStcWtcNonRailway" ||
+        field === "dateOfSparing"
+      ) {
         const selectedDate = new Date(trimmedValue);
         if (isNaN(selectedDate.getTime())) {
           return "Please enter a valid date";
@@ -60,7 +63,6 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
     },
     [formData.gradeType]
   );
-
 
   const validateAllFields = useCallback(
     (data = formData) => {
@@ -212,6 +214,47 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
     <label className="block text-gray-700 font-medium mb-1">{children}</label>
   );
 
+  // Helper to parse duration string like "01 Y", "03 W"
+  const parseDuration = (durationStr) => {
+    if (!durationStr) return { years: 0, weeks: 0 };
+    const match = durationStr.match(/(\d+)\s*([YyWw])/);
+    if (!match) return { years: 0, weeks: 0 };
+    const value = parseInt(match[1], 10);
+    const unit = match[2].toUpperCase();
+    if (unit === "Y") return { years: value, weeks: 0 };
+    if (unit === "W") return { years: 0, weeks: value };
+    return { years: 0, weeks: 0 };
+  };
+
+  // Calculate sparing date based on joining date and duration
+  useEffect(() => {
+    const joiningDate = formData.dateOfJoiningStcWtcNonRailway;
+    // Prefer formData.duration, fallback to durationInfo.total
+    const durationStr = formData.duration || durationInfo.total;
+    if (joiningDate && durationStr) {
+      const { years, weeks } = parseDuration(durationStr);
+      const date = new Date(joiningDate);
+      if (!isNaN(date.getTime())) {
+        if (years) date.setFullYear(date.getFullYear() + years);
+        if (weeks) date.setDate(date.getDate() + weeks * 7);
+        // Format as yyyy-mm-dd
+        const pad = (n) => n.toString().padStart(2, "0");
+        const sparingDate = `${date.getFullYear()}-${pad(
+          date.getMonth() + 1
+        )}-${pad(date.getDate())}`;
+        if (formData.dateOfSparing !== sparingDate) {
+          onChange("dateOfSparing", sparingDate);
+        }
+      }
+    }
+    // Only auto-update if user hasn't manually set sparing date
+    // eslint-disable-next-line
+  }, [
+    formData.dateOfJoiningStcWtcNonRailway,
+    formData.duration,
+    durationInfo.total,
+  ]);
+
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
@@ -237,7 +280,9 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
                 handleChange("unitCustodian", "");
               }}
               onFocus={() => setShowCourseTypeOptions(true)}
-              onBlur={() => setTimeout(() => setShowCourseTypeOptions(false), 200)}
+              onBlur={() =>
+                setTimeout(() => setShowCourseTypeOptions(false), 200)
+              }
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
               placeholder="Select or type course type"
             />
@@ -421,7 +466,9 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
           <input
             type="date"
             value={formData.dateOfJoiningStcWtcNonRailway || ""}
-            onChange={(e) => handleChange("dateOfJoiningStcWtcNonRailway", e.target.value)}
+            onChange={(e) =>
+              handleChange("dateOfJoiningStcWtcNonRailway", e.target.value)
+            }
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
           />
           {localErrors.dateOfJoiningStcWtcNonRailway && (
@@ -438,6 +485,13 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
             value={formData.dateOfSparing || ""}
             onChange={(e) => handleChange("dateOfSparing", e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2"
+            // --- Start of changed code ---
+            // Make sparing date read-only if auto-calculated
+            readOnly={Boolean(
+              formData.dateOfJoiningStcWtcNonRailway &&
+                (formData.duration || durationInfo.total)
+            )}
+            // --- End of changed code ---
           />
           {localErrors.dateOfSparing && (
             <p className="text-sm text-red-500 mt-1">
