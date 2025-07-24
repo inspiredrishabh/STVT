@@ -77,7 +77,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
           ? "Emergency contact must be 10 digits"
           : "",
       email: (v) =>
-        !v || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v.trim())
+        v && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v.trim())
           ? "Please enter a valid email address"
           : "",
     };
@@ -90,7 +90,6 @@ const Contact = ({ formData, onChange, errors = {} }) => {
       "currentAddress",
       "phoneNumber",
       "emergencyContactNumber",
-      "email",
     ];
     const validationErrors = {};
 
@@ -143,7 +142,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
     ({ label, field, type = "text", colSpan = 1, copyButton = false }) => (
       <div key={field} className={colSpan === 2 ? "sm:col-span-2" : ""}>
         <label className="block text-gray-700 font-medium mb-1">
-          {label} <span className="text-red-500">*</span>
+          {label} {field !== "email" && <span className="text-red-500">*</span>}
         </label>
         {copyButton && (
           <button
