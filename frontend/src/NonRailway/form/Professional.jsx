@@ -10,6 +10,11 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
     (field, value) => {
       const trimmedValue = value?.toString().trim() || "";
 
+      // For optional fields (gradeType, gradeValue), allow empty values
+      if ((field === "gradeType" || field === "gradeValue") && !trimmedValue) {
+        return "";
+      }
+
       if (!trimmedValue) return "This field is required";
 
       if (
@@ -37,7 +42,7 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
         }
       }
 
-      if (field === "gradeValue" && formData.gradeType) {
+      if (field === "gradeValue" && formData.gradeType && trimmedValue) {
         const grade = parseFloat(trimmedValue);
         if (
           formData.gradeType === "CGPA (out of 10)" &&
@@ -80,11 +85,6 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
 
       if (data.designation === "Summer Vacation training") {
         requiredFields.push("durationOption");
-      }
-
-      // Grade value should be validated if gradeType is selected
-      if (data.gradeType) {
-        requiredFields.push("gradeValue");
       }
 
       const validationErrors = {};
