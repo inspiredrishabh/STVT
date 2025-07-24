@@ -173,6 +173,7 @@ class StcModel {
           date_of_sparing = ?, course_duration = ?, resignation_status = ?,
           session1start = ?, session1end = ?, session2start = ?, session2end = ?,
           session3start = ?, session3end = ?, session4start = ?, session4end = ?, 
+          ticket_no = ?,  -- allow ticket_no to be updated
           updated_at = CURRENT_TIMESTAMP 
           WHERE ticket_no = ?`;
 
@@ -221,15 +222,20 @@ class StcModel {
           candidateData.session3end,
           candidateData.session4start,
           candidateData.session4end,
-          ticketNumber,
+          candidateData.ticket_no || candidateData.ticketNumber, // new ticket_no value
+          ticketNumber // old ticket_no for WHERE clause
         ],
         function (err) {
           if (err) {
-            reject(err);
+            if (err.message.includes("UNIQUE constraint failed")) {
+              reject(new Error("Ticket number already exists"));
+            } else {
+              reject(err);
+            }
           } else {
             resolve(
               this.changes > 0
-                ? { ticket_no: ticketNumber, ...candidateData }
+                ? { ticket_no: candidateData.ticket_no || candidateData.ticketNumber, ...candidateData }
                 : null
             );
           }
