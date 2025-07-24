@@ -213,7 +213,7 @@ const NonRailwayMain = () => {
       duration: "duration",
       theoryPeriod: "theory",
       practicalPeriod: "practical",
-      dateOfJoiningStcWtcNonRailway: "date_of_joining",
+      dateOfJoiningStcWtcNonRailway: "date_of_joining_stc_wtc_non_railway",
       dateOfSparing: "date_of_sparing",
       workingUnder: "working_under",
       remark: "remarks",
