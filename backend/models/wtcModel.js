@@ -133,8 +133,9 @@ class WtcModel {
     updateByTicketNumber(ticketNumber, candidateData) {
         const snakeCaseData = convertToSnakeCase(candidateData);
         return new Promise((resolve, reject) => {
+            // Ensure ticket_no is included in update fields if present in candidateData
             const updateFields = Object.keys(snakeCaseData)
-                .filter(key => key !== 'id' && key !== 'ticket_no')
+                .filter(key => key !== 'id')
                 .map(key => `${key} = ?`)
                 .join(', ');
 
@@ -142,7 +143,10 @@ class WtcModel {
                 return resolve(null); // No fields to update
             }
 
-            const values = [...Object.values(snakeCaseData).filter((v, k) => Object.keys(snakeCaseData)[k] !== 'id' && Object.keys(snakeCaseData)[k] !== 'ticket_no'), ticketNumber];
+            const values = Object.keys(snakeCaseData)
+                .filter(key => key !== 'id')
+                .map(key => snakeCaseData[key]);
+            values.push(ticketNumber); // old ticket_no for WHERE clause
 
             const sql = `UPDATE ${this.tableName} SET 
                 ${updateFields}, 
@@ -151,9 +155,13 @@ class WtcModel {
 
             db.run(sql, values, function (err) {
                 if (err) {
-                    reject(err);
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        reject(new Error('Ticket number already exists'));
+                    } else {
+                        reject(err);
+                    }
                 } else {
-                    resolve(this.changes > 0 ? convertToCamelCase({ ticket_no: ticketNumber, ...snakeCaseData }) : null);
+                    resolve(this.changes > 0 ? convertToCamelCase({ ticket_no: snakeCaseData.ticket_no || snakeCaseData.ticketNumber, ...snakeCaseData }) : null);
                 }
             });
         });
@@ -225,7 +233,6 @@ class WtcModel {
             });
         });
     }
-
     // Get candidates by batch
     getByBatch(batch) {
         return new Promise((resolve, reject) => {
