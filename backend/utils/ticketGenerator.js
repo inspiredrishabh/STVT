@@ -86,7 +86,7 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
     if (traineeType === "wtc" || traineeType === "nonrailway") {
       // Handle specific cases
       switch (designation) {
-        case "CG Apprentice":
+        case "CG Apprentice Technician III":
           prefix = "CG";
           break;
         case "RRB Apprentice Technician III":
@@ -95,7 +95,7 @@ const generateTicketNumberInternal = async (designation, traineeType) => {
           break;
         case "RRC Act Apprentice 1961":
           prefix = "ATR";
-          break;  //it is of non railway
+          break; //it is of non railway
         case "RRC Assistant Workshop":
         case "CG Assistant Workshop":
           prefix = "HK";
