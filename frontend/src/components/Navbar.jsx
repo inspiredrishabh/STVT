@@ -295,6 +295,7 @@ const Navbar = () => {
               >
                 <div className="relative flex-1 md:flex-none">
                   <input
+                    id="search"
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
