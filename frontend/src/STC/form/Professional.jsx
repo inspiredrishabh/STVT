@@ -251,261 +251,281 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
-      {/* Date of Appointment */}
-      <div className="mb-6">
-        <RequiredLabel>Date of Appointment</RequiredLabel>
-        <input
-          type="date"
-          value={formData.dateOfAppointmentInRailway || ""}
-          onChange={(e) => handleChange("dateOfAppointmentInRailway", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.dateOfAppointmentInRailway && (
-          <p className="text-sm text-red-500 mt-1">{errors.dateOfAppointmentInRailway}</p>
-        )}
-      </div>
-
-      {/* Mode of Appointment */}
-      <div className="mb-6">
-        <RequiredLabel>Mode of Appointment</RequiredLabel>
-        <ComboBox
-          value={formData.modeOfAppointment || ""}
-          onChange={(value) => handleChange("modeOfAppointment", value)}
-          options={[
-            "RRB",
-            "CG",
-            "RRC",
-            "Promotion Through LDCE",
-            "Promotion Through Seniority"
-          ]}
-          placeholder="Select or type mode"
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.modeOfAppointment && (
-          <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointment}</p>
-        )}
-      </div>
-
-      {/* Specify Other Mode */}
-      {formData.modeOfAppointment === "Other" && (
-        <div className="mb-6">
-          <RequiredLabel>Specify Mode of Appointment</RequiredLabel>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+        {/* Date of Appointment */}
+        <div>
+          <RequiredLabel>Date of Appointment</RequiredLabel>
           <input
-            type="text"
-            value={formData.modeOfAppointmentOther || ""}
-            onChange={(e) => handleChange("modeOfAppointmentOther", e.target.value)}
+            type="date"
+            value={formData.dateOfAppointmentInRailway || ""}
+            onChange={(e) => handleChange("dateOfAppointmentInRailway", e.target.value)}
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-            placeholder="Enter mode"
           />
-          {errors.modeOfAppointmentOther && (
-            <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointmentOther}</p>
+          {errors.dateOfAppointmentInRailway && (
+            <p className="text-sm text-red-500 mt-1">{errors.dateOfAppointmentInRailway}</p>
           )}
         </div>
-      )}
 
-      {/* Designation */}
-      <div className="mb-6">
-        <RequiredLabel>Designation</RequiredLabel>
-        <ComboBox
-          value={formData.designation || ""}
-          onChange={(value) => handleChange("designation", value)}
-          options={[
-            "ASE",
-            "AJE",
-            "IJE",
-            "RJE",
-            "SSE",
-            "JE"
-          ]}
-          placeholder="Select or type designation"
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.designation && (
-          <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
-        )}
-      </div>
+        {/* Mode of Appointment */}
+        <div>
+          <RequiredLabel>Mode of Appointment</RequiredLabel>
+          <ComboBox
+            value={formData.modeOfAppointment || ""}
+            onChange={(value) => handleChange("modeOfAppointment", value)}
+            options={[
+              "RRB",
+              "CG",
+              "RRC",
+              "Promotion Through LDCE",
+              "Promotion Through Seniority"
+            ]}
+            placeholder="Select or type mode"
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+          />
+          {errors.modeOfAppointment && (
+            <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointment}</p>
+          )}
+        </div>
 
-      {/* Unit/Division */}
-      <div className="mb-6">
-        <RequiredLabel>Unit / Division</RequiredLabel>
-        <ComboBox
-          value={formData.unit || ""}
-          onChange={(value) => handleChange("unit", value)}
-          options={[
-            "ASRW",
-            "RCNK",
-            "KLKW",
-            "JUDW",
-            "CBW",
-            "AMW",
-            "JAT",
-            "FZR",
-            "DLI",
-            "UMB",
-            "MB",
-            "LKO",
-            "HQ",
-            "Rly. Board"
-          ]}
-          placeholder="Select or type unit"
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.unit && (
-          <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
+        {/* Specify Other Mode */}
+        {formData.modeOfAppointment === "Other" && (
+          <div>
+            <RequiredLabel>Specify Mode of Appointment</RequiredLabel>
+            <input
+              type="text"
+              value={formData.modeOfAppointmentOther || ""}
+              onChange={(e) => handleChange("modeOfAppointmentOther", e.target.value)}
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+              placeholder="Enter mode"
+            />
+            {errors.modeOfAppointmentOther && (
+              <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointmentOther}</p>
+            )}
+          </div>
         )}
-      </div>
 
-      {/* Optional Text Inputs */}
-      <div className="mb-6">
-        <OptionalLabel>Working Under</OptionalLabel>
-        <input
-          type="text"
-          value={formData.workingUnder || ""}
-          onChange={(e) => handleChange("workingUnder", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter working under"
-        />
-        {errors.workingUnder && (
-          <p className="text-sm text-red-500 mt-1">{errors.workingUnder}</p>
-        )}
-      </div>
+        {/* Designation */}
+        <div>
+          <RequiredLabel>Designation</RequiredLabel>
+          <ComboBox
+            value={formData.designation || ""}
+            onChange={(value) => handleChange("designation", value)}
+            options={[
+              "ASE",
+              "AJE",
+              "IJE",
+              "RJE",
+              "SSE",
+              "JE"
+            ]}
+            placeholder="Select or type designation"
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+          />
+          {errors.designation && (
+            <p className="text-sm text-red-500 mt-1">{errors.designation}</p>
+          )}
+        </div>
 
-      <div className="mb-6">
-        <OptionalLabel>HRMS ID</OptionalLabel>
-        <input
-          type="text"
-          value={formData.hrmsId || ""}
-          onChange={(e) => handleChange("hrmsId", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter HRMS ID"
-        />
-        {errors.hrmsId && (
-          <p className="text-sm text-red-500 mt-1">{errors.hrmsId}</p>
-        )}
-      </div>
+        {/* Unit/Division */}
+        <div>
+          <RequiredLabel>Unit / Division</RequiredLabel>
+          <ComboBox
+            value={formData.unit || ""}
+            onChange={(value) => handleChange("unit", value)}
+            options={[
+              "ASRW",
+              "RCNK",
+              "KLKW",
+              "JUDW",
+              "CBW",
+              "AMW",
+              "JAT",
+              "FZR",
+              "DLI",
+              "UMB",
+              "MB",
+              "LKO",
+              "HQ",
+              "Rly. Board"
+            ]}
+            placeholder="Select or type unit"
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+          />
+          {errors.unit && (
+            <p className="text-sm text-red-500 mt-1">{errors.unit}</p>
+          )}
+        </div>
 
-      <div className="mb-6">
-        <OptionalLabel>PF/NPS/UPS No.</OptionalLabel>
-        <input
-          type="text"
-          value={formData.pfNoNpsUps || ""}
-          onChange={(e) => handleChange("pfNoNpsUps", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter PF/NPS/UPS number"
-        />
-        {errors.pfNoNpsUps && (
-          <p className="text-sm text-red-500 mt-1">{errors.pfNoNpsUps}</p>
-        )}
-      </div>
+        {/* Optional Text Inputs */}
+        <div>
+          <OptionalLabel>Working Under</OptionalLabel>
+          <input
+            type="text"
+            value={formData.workingUnder || ""}
+            onChange={(e) => handleChange("workingUnder", e.target.value)}
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            placeholder="Enter working under"
+          />
+          {errors.workingUnder && (
+            <p className="text-sm text-red-500 mt-1">{errors.workingUnder}</p>
+          )}
+        </div>
 
-      <div className="mb-6">
-        <OptionalLabel>Employee Number</OptionalLabel>
-        <input
-          type="text"
-          value={formData.employeeNumber || ""}
-          onChange={(e) => handleChange("employeeNumber", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter employee number"
-        />
-        {errors.employeeNumber && (
-          <p className="text-sm text-red-500 mt-1">{errors.employeeNumber}</p>
-        )}
+        <div>
+          <OptionalLabel>HRMS ID</OptionalLabel>
+          <input
+            type="text"
+            value={formData.hrmsId || ""}
+            onChange={(e) => handleChange("hrmsId", e.target.value)}
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            placeholder="Enter HRMS ID"
+          />
+          {errors.hrmsId && (
+            <p className="text-sm text-red-500 mt-1">{errors.hrmsId}</p>
+          )}
+        </div>
+
+        <div>
+          <OptionalLabel>PF/NPS/UPS No.</OptionalLabel>
+          <input
+            type="text"
+            value={formData.pfNoNpsUps || ""}
+            onChange={(e) => handleChange("pfNoNpsUps", e.target.value)}
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            placeholder="Enter PF/NPS/UPS number"
+          />
+          {errors.pfNoNpsUps && (
+            <p className="text-sm text-red-500 mt-1">{errors.pfNoNpsUps}</p>
+          )}
+        </div>
+
+        <div>
+          <OptionalLabel>Employee Number</OptionalLabel>
+          <input
+            type="text"
+            value={formData.employeeNumber || ""}
+            onChange={(e) => handleChange("employeeNumber", e.target.value)}
+            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            placeholder="Enter employee number"
+          />
+          {errors.employeeNumber && (
+            <p className="text-sm text-red-500 mt-1">{errors.employeeNumber}</p>
+          )}
+        </div>
       </div>
 
       {/* Educational Qualifications */}
-      <div className="mt-10 mb-6">
-        <RequiredLabel>Highest Qualification</RequiredLabel>
-        <ComboBox
-          value={formData.highestQualification || ""}
-          onChange={(value) => handleChange("highestQualification", value)}
-          options={[
-            "Diploma",
-            "Bachelor's Degree",
-            "Master's Degree",
-            "Ph.D"
-          ]}
-          placeholder="Select or type qualification"
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.highestQualification && (
-          <p className="text-sm text-red-500 mt-1">{errors.highestQualification}</p>
-        )}
-      </div>
-
-      <div className="mb-6">
-        <RequiredLabel>Field of Study</RequiredLabel>
-        <ComboBox
-          value={formData.fieldOfStudy || ""}
-          onChange={(value) => handleChange("fieldOfStudy", value)}
-          options={getFieldOfStudyOptions().filter(opt => opt !== "Other")}
-          placeholder="Select or type field of study"
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        />
-        {errors.fieldOfStudy && (
-          <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
-        )}
-      </div>
-
-      {formData.fieldOfStudy === "Other" && (
-        <div className="mb-6">
-          <RequiredLabel>Custom Field of Study</RequiredLabel>
-          <input
-            type="text"
-            value={formData.customFieldOfStudy || ""}
-            onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
-            className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-            placeholder="Enter custom field of study"
-          />
-          {errors.customFieldOfStudy && (
-            <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
-          )}
+      <div className="mt-10">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
+            🎓
+          </div>
+          <h3 className="text-xl font-semibold text-black">
+            Educational Qualifications
+          </h3>
         </div>
-      )}
 
-      <div className="mb-6">
-        <RequiredLabel>Institution</RequiredLabel>
-        <input
-          type="text"
-          value={formData.institution || ""}
-          onChange={(e) => handleChange("institution", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter institution"
-        />
-        {errors.institution && (
-          <p className="text-sm text-red-500 mt-1">{errors.institution}</p>
-        )}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+          {/* Highest Qualification */}
+          <div>
+            <RequiredLabel>Highest Qualification</RequiredLabel>
+            <ComboBox
+              value={formData.highestQualification || ""}
+              onChange={(value) => handleChange("highestQualification", value)}
+              options={[
+                "Diploma",
+                "Bachelor's Degree",
+                "Master's Degree",
+                "Ph.D"
+              ]}
+              placeholder="Select or type qualification"
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            />
+            {errors.highestQualification && (
+              <p className="text-sm text-red-500 mt-1">{errors.highestQualification}</p>
+            )}
+          </div>
 
-      {/* Grade Type & Value */}
-      <div className="mb-6">
-        <RequiredLabel>Grade Type</RequiredLabel>
-        <select
-          value={formData.gradeType || ""}
-          onChange={(e) => handleChange("gradeType", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-        >
-          <option value="">Select grade type</option>
-          <option value="Percentage">Percentage</option>
-          <option value="CGPA (out of 10)">CGPA (out of 10)</option>
-          <option value="CGPA (out of 4)">CGPA (out of 4)</option>
-        </select>
-        {errors.gradeType && (
-          <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
-        )}
-      </div>
+          {/* Field of Study */}
+          <div>
+            <RequiredLabel>Field of Study</RequiredLabel>
+            <ComboBox
+              value={formData.fieldOfStudy || ""}
+              onChange={(value) => handleChange("fieldOfStudy", value)}
+              options={getFieldOfStudyOptions().filter(opt => opt !== "Other")}
+              placeholder="Select or type field of study"
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            />
+            {errors.fieldOfStudy && (
+              <p className="text-sm text-red-500 mt-1">{errors.fieldOfStudy}</p>
+            )}
+          </div>
 
-      <div>
-        <RequiredLabel>Grade Value</RequiredLabel>
-        <input
-          type="number"
-          value={formData.gradeValue || ""}
-          onChange={(e) => handleChange("gradeValue", e.target.value)}
-          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-          placeholder="Enter grade value"
-        />
-        {errors.gradeValue && (
-          <p className="text-sm text-red-500 mt-1">{errors.gradeValue}</p>
-        )}
+          {/* Custom Field of Study */}
+          {formData.fieldOfStudy === "Other" && (
+            <div>
+              <RequiredLabel>Custom Field of Study</RequiredLabel>
+              <input
+                type="text"
+                value={formData.customFieldOfStudy || ""}
+                onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
+                className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+                placeholder="Enter custom field of study"
+              />
+              {errors.customFieldOfStudy && (
+                <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
+              )}
+            </div>
+          )}
+
+          {/* Institution */}
+          <div>
+            <RequiredLabel>Institution</RequiredLabel>
+            <input
+              type="text"
+              value={formData.institution || ""}
+              onChange={(e) => handleChange("institution", e.target.value)}
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+              placeholder="Enter institution"
+            />
+            {errors.institution && (
+              <p className="text-sm text-red-500 mt-1">{errors.institution}</p>
+            )}
+          </div>
+
+          {/* Grade Type */}
+          <div>
+            <RequiredLabel>Grade Type</RequiredLabel>
+            <select
+              value={formData.gradeType || ""}
+              onChange={(e) => handleChange("gradeType", e.target.value)}
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            >
+              <option value="">Select grade type</option>
+              <option value="Percentage">Percentage</option>
+              <option value="CGPA (out of 10)">CGPA (out of 10)</option>
+              <option value="CGPA (out of 4)">CGPA (out of 4)</option>
+            </select>
+            {errors.gradeType && (
+              <p className="text-sm text-red-500 mt-1">{errors.gradeType}</p>
+            )}
+          </div>
+
+          {/* Grade Value */}
+          <div>
+            <RequiredLabel>Grade Value</RequiredLabel>
+            <input
+              type="number"
+              value={formData.gradeValue || ""}
+              onChange={(e) => handleChange("gradeValue", e.target.value)}
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+              placeholder="Enter grade value"
+            />
+            {errors.gradeValue && (
+              <p className="text-sm text-red-500 mt-1">{errors.gradeValue}</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
