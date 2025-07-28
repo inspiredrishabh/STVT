@@ -250,7 +250,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
         {/* Date of Appointment */}
         <div>

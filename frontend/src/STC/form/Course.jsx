@@ -180,7 +180,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   }, [formData]);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full shadow text-lg">
           🎓
@@ -242,14 +242,14 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           </select>
           {(formData.batch === "" ||
             !batchOptions.includes(formData.batch)) && (
-            <input
-              type="text"
-              placeholder="Enter custom batch"
-              value={formData.batch}
-              onChange={(e) => onChange("batch", e.target.value)}
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
-            />
-          )}
+              <input
+                type="text"
+                placeholder="Enter custom batch"
+                value={formData.batch}
+                onChange={(e) => onChange("batch", e.target.value)}
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2"
+              />
+            )}
           {errors.batch && (
             <p className="text-sm text-red-500 mt-1">{errors.batch}</p>
           )}
@@ -314,9 +314,8 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             type="date"
             value={formData.dateOfSparing || ""}
             onChange={(e) => onChange("dateOfSparing", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
-              formData.moduleNo !== "Other" ? "bg-gray-50" : ""
-            }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
             readOnly={formData.moduleNo !== "Other"}
           />
           {errors.dateOfSparing && (
@@ -338,9 +337,8 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
             type="text"
             value={formData.courseDuration || ""}
             onChange={(e) => onChange("courseDuration", e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
-              formData.moduleNo !== "Other" ? "bg-gray-50" : ""
-            }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${formData.moduleNo !== "Other" ? "bg-gray-50" : ""
+              }`}
             placeholder={
               formData.moduleNo === "Other"
                 ? "Enter course duration"

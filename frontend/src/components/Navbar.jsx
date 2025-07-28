@@ -1,13 +1,4 @@
-import {
-  LogOut,
-  UserCircle,
-  Plus,
-  Users,
-  Settings,
-  ChevronDown,
-  Menu,
-  X,
-} from "lucide-react";
+import { LogOut, UserCircle, Plus, Users, Settings, ChevronDown, Menu, X, LayoutDashboard, } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
@@ -197,7 +188,7 @@ const Navbar = () => {
     <>
       {/* Top Header Bar - Government Style */}
       <div className="bg-orange-50 border-b border-orange-300">
-        <div className="max-w-9xl mx-auto px-4 py-1">
+        <div className="max-w-9xl mx-auto px-6 py-1">
           <div className="flex flex-wrap justify-between items-center text-xs h-auto md:h-8">
             <div className="flex items-center w-full md:w-auto mb-1 md:mb-0">
               <span
@@ -257,7 +248,7 @@ const Navbar = () => {
 
       {/* Main Header */}
       <div className="bg-white">
-        <div className="max-w-9xl mx-auto px-4 py-4">
+        <div className="max-w-9xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Left - National Emblem, Logo and Title */}
             <div className="flex items-center space-x-4">
@@ -366,11 +357,8 @@ const Navbar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav
-        className="bg-orange-600 shadow-md sticky top-0 z-40"
-        aria-label="Main Navigation"
-      >
-        <div className="max-w-9xl mx-auto px-4">
+      <nav className="bg-orange-600 shadow-md sticky top-0 z-40" aria-label="Main Navigation">
+        <div className="max-w-9xl mx-auto px-6">
           <div className="flex items-center justify-between h-12">
             {/* Mobile Menu Toggle Button */}
             <button
@@ -389,6 +377,19 @@ const Navbar = () => {
 
             {/* Desktop Navigation Items */}
             <div className="hidden md:flex items-center space-x-0 flex-1">
+
+              {/* Dashboard Link */}
+              <Link to="/dashboard" className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12">
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </Link>
+
+              {/* Manage Candidate */}
+              <Link to="/manage-candidate" className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12">
+                <Users className="w-4 h-4" />
+                <span>Manage Candidate</span>
+              </Link>
+
               {/* Add Candidate Dropdown */}
               <div className="relative" ref={addDropdownRef}>
                 <button
@@ -435,14 +436,6 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Manage Candidate */}
-              <Link
-                to="/manage-candidate"
-                className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12"
-              >
-                <Users className="w-4 h-4" />
-                <span>Manage Candidate</span>
-              </Link>
 
               {/* Management Systems Dropdown */}
               <div className="relative" ref={managementDropdownRef}>
