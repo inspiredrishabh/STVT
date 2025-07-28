@@ -110,9 +110,9 @@ class NonRailwayController {
         });
       }
 
-      // Handle image upload with backup/versioning
+      // Handle image upload (no backup)
       if (req.file) {
-        // Backup old image if exists
+        // Delete old image if exists
         if (existingCandidate.picture) {
           const oldImagePath = path.join(
             __dirname,
@@ -120,21 +120,7 @@ class NonRailwayController {
             existingCandidate.picture
           );
           if (fs.existsSync(oldImagePath)) {
-            // Move to backup folder with timestamp
-            const backupDir = path.join(
-              __dirname,
-              "../uploads/nonrailway/backup"
-            );
-            if (!fs.existsSync(backupDir)) {
-              fs.mkdirSync(backupDir, { recursive: true });
-            }
-            const ext = path.extname(oldImagePath);
-            const ts = Date.now();
-            const backupPath = path.join(
-              backupDir,
-              `${ticketNumber}_${ts}${ext}`
-            );
-            fs.renameSync(oldImagePath, backupPath);
+            fs.unlinkSync(oldImagePath);
           }
         }
 
@@ -420,3 +406,4 @@ class NonRailwayController {
 }
 
 module.exports = NonRailwayController;
+  
