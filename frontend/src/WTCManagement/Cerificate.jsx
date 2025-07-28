@@ -152,24 +152,35 @@ const Certificate = () => {
     <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/wtc"
-              className="flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-sm hover:bg-gray-50"
-            >
-              <ArrowLeft className="w-4 h-4 text-gray-600" />
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Certificate Management
-            </h1>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-gray-200">
+          <div className="flex items-center justify-between">
+            {/* Back Button and Title */}
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/wtc"
+                className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors duration-200 group"
+              >
+                <ArrowLeft className="w-4 h-4 text-gray-600 group-hover:text-gray-800" />
+              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-700 rounded-md flex items-center justify-center">
+                    <Award className="w-5 h-5 text-white" />
+                  </div>
+                  Certificate Management
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Manage and generate trainee certificates
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-        {/* Search and Filter Controls */}
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
-          <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+
+          {/* Search and Filter Controls */}
+          <div className="flex flex-col md:flex-row justify-between gap-4 mt-6">
             {/* Search Box */}
             <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -177,7 +188,6 @@ const Certificate = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             </div>
 
             {/* Filter Controls */}

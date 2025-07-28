@@ -106,7 +106,7 @@ const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-3xl p-6 shadow-lg border-2 border-orange-100 animate-pulse">
+          <div key={i} className="bg-white rounded-xl p-6 shadow-lg border-2 border-orange-100 animate-pulse">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-[#FFA652] rounded-2xl"></div>
               <div className="flex-1">
@@ -130,13 +130,13 @@ const StatsCards = ({ candidates = [], filterType = 'All', filterCategory = 'All
 };
 
 const StatCard = ({ title, value, icon: Icon, iconBgColor, iconTextColor }) => (
-  <div className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200 border-2 border-orange-100 flex items-center space-x-4">
+  <div className="bg-white rounded-lg h-24 p-6 shadow-lg hover:shadow-xl transition-shadow duration-200 border-2 border-orange-200 flex items-center space-x-4 text-ellipsis">
     <div className={`flex-shrink-0 p-4 ${iconBgColor} rounded-2xl shadow-sm`}>
       {Icon && <Icon className={`h-6 w-6 ${iconTextColor}`} />}
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs font-medium text-gray-600 mb-1">{title}</p>
-      <p className="text-2xl font-bold text-[#1B2A41] overflow-hidden">{value}</p>
+      <p className="text-2xl font-bold text-[#1B2A41]  overflow-x-auto whitespace-nowrap">{value}</p>
     </div>
   </div>
 );
