@@ -110,9 +110,9 @@ class NonRailwayController {
         });
       }
 
-      // Handle image upload
+      // Handle image upload with backup/versioning
       if (req.file) {
-        // Delete old image if exists
+        // Backup old image if exists
         if (existingCandidate.picture) {
           const oldImagePath = path.join(
             __dirname,
@@ -120,7 +120,21 @@ class NonRailwayController {
             existingCandidate.picture
           );
           if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
+            // Move to backup folder with timestamp
+            const backupDir = path.join(
+              __dirname,
+              "../uploads/nonrailway/backup"
+            );
+            if (!fs.existsSync(backupDir)) {
+              fs.mkdirSync(backupDir, { recursive: true });
+            }
+            const ext = path.extname(oldImagePath);
+            const ts = Date.now();
+            const backupPath = path.join(
+              backupDir,
+              `${ticketNumber}_${ts}${ext}`
+            );
+            fs.renameSync(oldImagePath, backupPath);
           }
         }
 
@@ -139,7 +153,9 @@ class NonRailwayController {
 
       res.status(200).json({
         success: true,
-        message: "NonRailway Candidate updated successfully",
+        message: req.file
+          ? "NonRailway Candidate and image updated successfully"
+          : "NonRailway Candidate updated successfully",
         data: updatedCandidate,
       });
     } catch (error) {
