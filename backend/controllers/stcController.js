@@ -119,7 +119,7 @@ class StcController {
         });
       }
 
-      // Handle image upload
+      // Handle image upload (no backup)
       if (req.file) {
         // Delete old image if exists
         if (existingCandidate.picture) {
@@ -148,7 +148,9 @@ class StcController {
 
       res.status(200).json({
         success: true,
-        message: "STC Candidate updated successfully",
+        message: req.file
+          ? "STC Candidate and image updated successfully"
+          : "STC Candidate updated successfully",
         data: updatedCandidate,
       });
     } catch (error) {
@@ -589,3 +591,4 @@ class StcController {
 }
 
 module.exports = StcController;
+    

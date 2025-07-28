@@ -126,7 +126,7 @@ class WtcController {
         });
       }
 
-      // Handle image upload
+      // Handle image upload (no backup)
       if (req.file) {
         // Delete old image if exists
         if (existingCandidate.picture) {
@@ -155,7 +155,9 @@ class WtcController {
 
       res.status(200).json({
         success: true,
-        message: "WTC Candidate updated successfully",
+        message: req.file
+          ? "WTC Candidate and image updated successfully"
+          : "WTC Candidate updated successfully",
         data: updatedCandidate,
       });
     } catch (error) {
@@ -369,3 +371,4 @@ class WtcController {
 }
 
 module.exports = WtcController;
+  

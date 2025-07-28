@@ -110,7 +110,7 @@ class NonRailwayController {
         });
       }
 
-      // Handle image upload
+      // Handle image upload (no backup)
       if (req.file) {
         // Delete old image if exists
         if (existingCandidate.picture) {
@@ -139,7 +139,9 @@ class NonRailwayController {
 
       res.status(200).json({
         success: true,
-        message: "NonRailway Candidate updated successfully",
+        message: req.file
+          ? "NonRailway Candidate and image updated successfully"
+          : "NonRailway Candidate updated successfully",
         data: updatedCandidate,
       });
     } catch (error) {
@@ -404,3 +406,4 @@ class NonRailwayController {
 }
 
 module.exports = NonRailwayController;
+  
