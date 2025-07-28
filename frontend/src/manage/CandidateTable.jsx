@@ -727,15 +727,63 @@ const EditCandidateModal = ({
                 value: candidate.picture,
                 onFileChange: onImageChange,
               },
-              { label: "Full Name", field: "name", type: "text", value: candidate.name },
-              { label: "Father's Name", field: "fatherName", type: "text", value: candidate.fatherName },
-              { label: "Mother's Name", field: "motherName", type: "text", value: candidate.motherName },
-              { label: "Gender", field: "sex", type: "select", value: candidate.sex, options: ["Male", "Female", "Other"] },
-              { label: "Date of Birth", field: "dob", type: "date", value: candidate.dob },
-              { label: "Category", field: "category", type: "select", value: candidate.category, options: ["General", "OBC", "SC", "ST", "EWS"] },
-              { label: "Nationality", field: "nationality", type: "text", value: candidate.nationality },
-              { label: "PWD", field: "pwd", type: "select", value: candidate.pwd, options: ["Yes", "No"] },
-              { label: "Type of Disability", field: "typeOfDisability", type: "text", value: candidate.typeOfDisability },
+              {
+                label: "Full Name",
+                field: "name",
+                type: "text",
+                value: candidate.name,
+              },
+              {
+                label: "Father's Name",
+                field: "fatherName",
+                type: "text",
+                value: candidate.fatherName,
+              },
+              {
+                label: "Mother's Name",
+                field: "motherName",
+                type: "text",
+                value: candidate.motherName,
+              },
+              {
+                label: "Gender",
+                field: "sex",
+                type: "select",
+                value: candidate.sex,
+                options: ["Male", "Female", "Other"],
+              },
+              {
+                label: "Date of Birth",
+                field: "dob",
+                type: "date",
+                value: candidate.dob,
+              },
+              {
+                label: "Category",
+                field: "category",
+                type: "select",
+                value: candidate.category,
+                options: ["General", "OBC", "SC", "ST", "EWS"],
+              },
+              {
+                label: "Nationality",
+                field: "nationality",
+                type: "text",
+                value: candidate.nationality,
+              },
+              {
+                label: "PWD",
+                field: "pwd",
+                type: "select",
+                value: candidate.pwd,
+                options: ["Yes", "No"],
+              },
+              {
+                label: "Type of Disability",
+                field: "typeOfDisability",
+                type: "text",
+                value: candidate.typeOfDisability,
+              },
             ]}
             candidate={candidate}
             onInputChange={onInputChange}
@@ -837,69 +885,99 @@ const EditSection = ({
   fields,
   candidate,
   onInputChange,
-}) => (
-  <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-    <h5 className="font-semibold text-gray-700 flex items-center mb-6 text-base">
-      <Icon className="h-5 w-5 mr-3 text-blue-600" />
-      {title}
-    </h5>
-    <div className="space-y-4">
-      {fields.map(({ label, field, type, value, options, onFileChange }) => (
-        <div key={field}>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            {label}
-          </label>
-          {type === "file" ? (
-            <>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={e => onFileChange && onFileChange(e.target.files[0])}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+}) => {
+  // --- Add local state for image file name ---
+  const [selectedFileName, setSelectedFileName] = useState("");
+
+  return (
+    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+      <h5 className="font-semibold text-gray-700 flex items-center mb-6 text-base">
+        <Icon className="h-5 w-5 mr-3 text-blue-600" />
+        {title}
+      </h5>
+      <div className="space-y-4">
+        {fields.map(({ label, field, type, value, options, onFileChange }) => (
+          <div key={field}>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              {label}
+            </label>
+            {type === "file" ? (
+              <div>
+                <label
+                  htmlFor={`profile-image-input-${field}`}
+                  className="block w-full"
+                >
+                  <span
+                    className="block w-full px-3 py-2 rounded-md border border-gray-300 bg-gray-100 text-gray-700 text-sm cursor-pointer transition hover:bg-gray-200"
+                    style={{
+                      fontFamily: "inherit",
+                      fontWeight: 400,
+                      textAlign: "left",
+                    }}
+                  >
+                    <span id={`profile-image-input-label-${field}`}>
+                      Choose File
+                      <span className="ml-2 text-gray-500">
+                        {selectedFileName ? selectedFileName : "No file chosen"}
+                      </span>
+                    </span>
+                    <input
+                      id={`profile-image-input-${field}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (onFileChange) onFileChange(e.target.files[0]);
+                        setSelectedFileName(e.target.files[0]?.name || "");
+                      }}
+                      className="hidden"
+                    />
+                  </span>
+                </label>
+                {value && typeof value === "string" && (
+                  <img
+                    src={`http://${
+                      import.meta.env.VITE_BACKEND_IP
+                    }:5000/${value}`}
+                    alt="Current"
+                    className="mt-2 w-16 h-16 rounded object-cover border"
+                  />
+                )}
+              </div>
+            ) : type === "select" ? (
+              <select
+                value={value || ""}
+                onChange={(e) => onInputChange(field, e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              >
+                <option value="">Select {label}</option>
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : type === "textarea" ? (
+              <textarea
+                value={value || ""}
+                onChange={(e) => onInputChange(field, e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder={`Enter ${label.toLowerCase()}`}
               />
-              {value && typeof value === "string" && (
-                <img
-                  src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${value}`}
-                  alt="Current"
-                  className="mt-2 w-16 h-16 rounded object-cover border"
-                />
-              )}
-            </>
-          ) : type === "select" ? (
-            <select
-              value={value || ""}
-              onChange={(e) => onInputChange(field, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            >
-              <option value="">Select {label}</option>
-              {options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          ) : type === "textarea" ? (
-            <textarea
-              value={value || ""}
-              onChange={(e) => onInputChange(field, e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder={`Enter ${label.toLowerCase()}`}
-            />
-          ) : (
-            <input
-              type={type}
-              value={value || ""}
-              onChange={(e) => onInputChange(field, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder={`Enter ${label.toLowerCase()}`}
-            />
-          )}
-        </div>
-      ))}
+            ) : (
+              <input
+                type={type}
+                value={value || ""}
+                onChange={(e) => onInputChange(field, e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder={`Enter ${label.toLowerCase()}`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default CandidateTable;
-                    
