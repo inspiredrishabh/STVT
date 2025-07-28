@@ -775,7 +775,7 @@ class RealBackendAPI {
                   ? `wtc-${data.data.id}`
                   : `nonrailway-${data.data.id}`,
             type,
-           // category: type === "Non Railway" ? "Non Railway" : "Railway",
+            // category: type === "Non Railway" ? "Non Railway" : "Railway",
             stream: type === "Non Railway" ? "Non Railway" : "Railway",
             workInfo: data.data.designation || "N/A",
             ticketNumber: data.data.ticket_no,
@@ -796,58 +796,80 @@ class RealBackendAPI {
 
   async updateCandidate(candidateId, candidateData) {
     try {
-      // If candidateData contains an image file, use FormData
-      let response;
-      if (candidateData.image instanceof File) {
+      // Find candidate to determine type and endpoint
+      const candidates = await this.getAllCandidates();
+      const candidate = candidates.find((c) => c.id === candidateId);
+
+      if (!candidate) {
+        return { success: false, message: "Candidate not found" };
+      }
+
+      const endpoint = this.getCandidateEndpoint(candidate);
+
+      // Transform frontend camelCase fields to backend snake_case fields
+      const transformedData = this.transformFieldsForBackend(candidateData);
+
+      // Determine if we need to use FormData or JSON
+      let body;
+      let headers = {};
+
+      if (candidateData.picture instanceof File || candidateData.image instanceof File) {
+        // Use FormData for file uploads
         const formData = new FormData();
-        Object.entries(candidateData).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            formData.append(key, value);
+        Object.keys(transformedData).forEach((key) => {
+          if (transformedData[key] !== null && transformedData[key] !== undefined) {
+            formData.append(key, transformedData[key]);
           }
         });
-        // Use the API endpoint directly for file upload
-        const candidates = await api.getAllCandidates();
-        const candidate = candidates.find((c) => c.id === candidateId);
-        if (!candidate) throw new Error("Candidate not found");
-        const endpoint = api.getCandidateEndpoint(candidate);
-        const res = await fetch(endpoint, {
-          method: "PUT",
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.success) {
-          response = {
-            success: true,
-            data: {
-              ...candidate,
-              ...candidateData,
-              picture: data.data.picture || candidate.picture,
-              updatedAt: data.data.updated_at || new Date().toISOString(),
-            },
-          };
-        } else {
-          response = { success: false, message: data.message };
-        }
+        body = formData;
+        // Don't set Content-Type header for FormData - browser will set it with boundary
       } else {
-        // Fallback to normal update
-        response = await api.updateCandidate(candidateId, candidateData);
+        // Use JSON for regular updates
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify(transformedData);
       }
-      if (response.success) {
-        setCandidates((prev) =>
-          prev.map((c) => (c.id === candidateId ? response.data : c))
+
+      const response = await fetch(endpoint, {
+        method: "PUT",
+        headers,
+        body,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Transform the response to match our expected format
+        const transformedResponse = this.transformBackendResponseToFrontend(
+          data.data,
+          candidate.type
         );
-        const candidateName =
-          response.data.name || candidateData.name || "Candidate";
-        showSuccessNotification(`${candidateName} updated successfully!`);
-      } else {
-        throw new Error(response.message || "Failed to update candidate");
+
+        return {
+          success: true,
+          data: {
+            ...candidate,
+            ...transformedResponse,
+            id: candidateId, // Preserve the frontend ID format
+            type: candidate.type,
+            updatedAt: data.data.updated_at || new Date().toISOString(),
+          },
+        };
       }
-    } catch (err) {
-      const errorMessage = `Failed to update candidate: ${err.message}`;
-      setError(errorMessage);
-      showNotification(errorMessage, "error");
-      console.error("Error updating candidate:", err);
-      throw err;
+
+      return {
+        success: false,
+        message: data.message || "Failed to update candidate",
+      };
+    } catch (error) {
+      console.error("Error updating candidate:", error);
+      return {
+        success: false,
+        message: error.message || "Failed to update candidate"
+      };
     }
   }
 
