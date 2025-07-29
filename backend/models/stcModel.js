@@ -271,6 +271,19 @@ class StcModel {
     });
   }
 
+  getByModule(module) {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT * FROM ${this.tableName} WHERE module_no = ? ORDER BY name ASC`;
+      db.all(sql, [module], (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
   getByDesignation(designation) {
     return new Promise((resolve, reject) => {
       const sql = `SELECT * FROM ${this.tableName} WHERE designation = ?`;

@@ -56,10 +56,22 @@ class StcController {
 
   async getCandidates(req, res) {
     try {
-      const candidates = await this.stcModel.getAll();
+      const { module } = req.query;
+      let candidates;
+      
+      if (module) {
+        // Filter candidates by module
+        candidates = await this.stcModel.getByModule(module);
+      } else {
+        // Get all candidates
+        candidates = await this.stcModel.getAll();
+      }
+      
       res.status(200).json({
         success: true,
-        message: "STC Candidates retrieved successfully",
+        message: module 
+          ? `STC Candidates for module ${module} retrieved successfully`
+          : "STC Candidates retrieved successfully",
         data: candidates,
         count: candidates.length,
       });

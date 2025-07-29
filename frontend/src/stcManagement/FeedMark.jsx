@@ -546,21 +546,34 @@ const realAPI = {
 
 const FeedMark = () => {
   const [searchParams] = useSearchParams();
-  const [ticketNo, setTicketNo] = useState("");
-  const [searchMethod, setSearchMethod] = useState("ticket");
-  const [selectedCandidate, setSelectedCandidate] = useState("");
+  
+  // New paper-centric approach states
+  const [selectedModule, setSelectedModule] = useState("");
+  const [selectedSession, setSelectedSession] = useState("");
+  const [selectedPaper, setSelectedPaper] = useState("");
   const [candidates, setCandidates] = useState([]);
-  const [candidateData, setCandidateData] = useState(null);
-  const [courseCode, setCourseCode] = useState("");
-  const [marks, setMarks] = useState({});
-  const [supplementaryMarks, setSupplementaryMarks] = useState({});
+  const [paperMarks, setPaperMarks] = useState({}); // { candidateId: marks }
+  const [existingMarks, setExistingMarks] = useState({}); // { candidateId: marks }
+  const [paperSupplementaryMarks, setPaperSupplementaryMarks] = useState({}); // { candidateId: suppMarks }
+  
+  // UI states
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [showMarksPanel, setShowMarksPanel] = useState(false);
+  const [isEditingPaperMarks, setIsEditingPaperMarks] = useState(false);
+  
+  // Legacy states for backward compatibility (can be removed later)
+  const [ticketNo, setTicketNo] = useState("");
+  const [searchMethod, setSearchMethod] = useState("paper"); // Default to new method
+  const [selectedCandidate, setSelectedCandidate] = useState("");
+  const [candidateData, setCandidateData] = useState(null);
+  const [courseCode, setCourseCode] = useState("");
+  const [marks, setMarks] = useState({});
+  const [supplementaryMarks, setSupplementaryMarks] = useState({});
   const [hasExistingMarks, setHasExistingMarks] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [showMarksPanel, setShowMarksPanel] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [clearedSupplementary, setClearedSupplementary] = useState({});
 
@@ -626,6 +639,180 @@ const FeedMark = () => {
     }
   };
 
+  // New paper-centric functions
+  const loadCandidatesForPaper = async () => {
+    if (!selectedModule || !selectedSession || !selectedPaper) return;
+
+    setCandidatesLoading(true);
+    setMessage({ type: "info", text: "Loading candidates..." });
+
+    try {
+      // Fetch all candidates for the selected module
+      const response = await fetch(`/api/stc?module=${selectedModule}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+
+      if (result.success) {
+        const moduleCandidates = result.data;
+        setCandidates(moduleCandidates);
+
+        // Load existing marks for this specific paper for all candidates
+        const existingMarksData = {};
+        const paperMarksData = {};
+
+        for (const candidate of moduleCandidates) {
+          try {
+            const marksData = await realAPI.getExistingMarks(
+              candidate.ticket_no,
+              selectedModule
+            );
+            const paperMark = marksData.mainMarks[selectedSession]?.[selectedPaper];
+            existingMarksData[candidate.id] = paperMark || "";
+            paperMarksData[candidate.id] = paperMark || "";
+          } catch (error) {
+            existingMarksData[candidate.id] = "";
+            paperMarksData[candidate.id] = "";
+          }
+        }
+
+        setExistingMarks(existingMarksData);
+        setPaperMarks(paperMarksData);
+        setShowMarksPanel(true);
+        setIsEditingPaperMarks(true); // Enable editing for new candidates
+
+        setMessage({
+          type: "success",
+          text: `Loaded ${moduleCandidates.length} candidates for ${selectedModule} - ${selectedSession} - ${selectedPaper}`,
+        });
+      } else {
+        throw new Error(result.message || "Failed to load candidates");
+      }
+    } catch (error) {
+      console.error("Failed to load candidates:", error);
+      setMessage({ type: "error", text: error.message });
+      setCandidates([]);
+      setExistingMarks({});
+      setPaperMarks({});
+      setShowMarksPanel(false);
+    } finally {
+      setCandidatesLoading(false);
+    }
+  };
+
+  // Helper function to extract main marks from combined format (e.g., "88C70" -> 88)
+  const getMainMarksOnly = (marks) => {
+    if (typeof marks === 'string' && marks.includes('C')) {
+      return parseInt(marks.split('C')[0]);
+    }
+    return marks;
+  };
+
+  const handlePaperMarksChange = (candidateId, value) => {
+    const numValue = value === "" ? "" : parseInt(value);
+    setPaperMarks((prev) => ({
+      ...prev,
+      [candidateId]: numValue,
+    }));
+  };
+
+  const handlePaperSupplementaryMarksChange = (candidateId, value) => {
+    const numValue = value === "" ? "" : parseInt(value);
+    setPaperSupplementaryMarks((prev) => ({
+      ...prev,
+      [candidateId]: numValue,
+    }));
+  };
+
+  const savePaperMarks = async () => {
+    if (!selectedModule || !selectedSession || !selectedPaper) {
+      setMessage({ type: "error", text: "Please select module, session, and paper" });
+      return;
+    }
+
+    setSaving(true);
+    setMessage({ type: "info", text: "Saving marks..." });
+
+    try {
+      const savePromises = [];
+
+      for (const candidate of candidates) {
+        const newMark = paperMarks[candidate.id];
+        if (newMark !== undefined && newMark !== existingMarks[candidate.id]) {
+          // Load existing marks for this candidate
+          const existingData = await realAPI.getExistingMarks(
+            candidate.ticket_no,
+            selectedModule
+          );
+
+          // Update only the specific paper mark
+          const updatedMarks = {
+            ...existingData.mainMarks,
+            [selectedSession]: {
+              ...existingData.mainMarks[selectedSession],
+              [selectedPaper]: newMark,
+            },
+          };
+
+          // Determine if this is an update or new entry
+          const isUpdate = existingData.hasExistingMarks;
+
+          savePromises.push(
+            realAPI.saveMarks(
+              candidate.ticket_no,
+              updatedMarks,
+              selectedModule,
+              existingData.supplementaryMarks,
+              {},
+              isUpdate
+            )
+          );
+        }
+      }
+
+      await Promise.all(savePromises);
+
+      // Update existing marks state and disable editing
+      setExistingMarks({ ...paperMarks });
+      setIsEditingPaperMarks(false);
+
+      setMessage({
+        type: "success",
+        text: `Successfully saved marks for ${savePromises.length} candidates`,
+      });
+    } catch (error) {
+      console.error("Error saving paper marks:", error);
+      setMessage({
+        type: "error",
+        text: `Failed to save marks: ${error.message}`,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const enableEditingPaperMarks = () => {
+    setIsEditingPaperMarks(true);
+    setMessage({
+      type: "info",
+      text: "Edit mode enabled. Make changes and click 'Save All Marks' when done.",
+    });
+  };
+
+  const resetPaperForm = () => {
+    setSelectedModule("");
+    setSelectedSession("");
+    setSelectedPaper("");
+    setCandidates([]);
+    setPaperMarks({});
+    setExistingMarks({});
+    setPaperSupplementaryMarks({});
+    setShowMarksPanel(false);
+    setIsEditingPaperMarks(false);
+    setMessage({ type: "", text: "" });
+  };
+
   // Handle URL parameters for auto-selection from TraineeProfile
   useEffect(() => {
     const traineeId = searchParams.get("traineeId");
@@ -633,9 +820,9 @@ const FeedMark = () => {
     const autoSelect = searchParams.get("autoSelect");
 
     if (autoSelect === "true" && urlTicketNo) {
-      // Set the form state immediately
-      setTicketNo(urlTicketNo);
+      // Set the form state immediately for individual candidate view
       setSearchMethod("ticket");
+      setTicketNo(urlTicketNo);
 
       // Clear any existing messages
       setMessage({ type: "", text: "" });
@@ -1027,10 +1214,10 @@ const FeedMark = () => {
                   <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                     <ClipboardList className="w-5 h-5 text-white" />
                   </div>
-                  Feed Marks
+                  Feed Marks - Enhanced
                 </h1>
                 <p className="text-gray-600 text-sm">
-                  Input and manage trainee examination marks
+                  Paper-wise bulk entry & individual candidate mark management
                 </p>
               </div>
             </div>
@@ -1078,10 +1265,10 @@ const FeedMark = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Search Candidate
+                  Select Entry Method
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  Find trainee by ticket number or select from list
+                  Choose how you want to enter marks - paper-wise for multiple students or individual candidate
                 </p>
               </div>
             </div>
@@ -1089,13 +1276,25 @@ const FeedMark = () => {
             {/* Search Method Selection */}
             <div className="flex gap-4 mb-6">
               <button
+                onClick={() => {
+                  setSearchMethod("paper");
+                  resetPaperForm();
+                }}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "paper"
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+              >
+                📝 Paper-wise Entry (Recommended)
+              </button>
+              <button
                 onClick={() => setSearchMethod("ticket")}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
-                Search by Ticket Number
+                🎫 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
@@ -1104,12 +1303,123 @@ const FeedMark = () => {
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
-                Select from Dropdown
+                📋 Select from Dropdown
               </button>
             </div>
 
-            {/* Search Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            {/* Paper Selection UI */}
+            {searchMethod === "paper" && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  Paper-wise Mark Entry
+                </h3>
+                <p className="text-blue-700 text-sm mb-6">
+                  Select a specific module, session, and paper to enter marks for all candidates at once.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* Module Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Module/Course
+                    </label>
+                    <select
+                      value={selectedModule}
+                      onChange={(e) => {
+                        setSelectedModule(e.target.value);
+                        setSelectedSession("");
+                        setSelectedPaper("");
+                        setShowMarksPanel(false);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Module...</option>
+                      {Object.keys(courseStructure).map((module) => (
+                        <option key={module} value={module}>
+                          {module}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Session Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Session
+                    </label>
+                    <select
+                      value={selectedSession}
+                      onChange={(e) => {
+                        setSelectedSession(e.target.value);
+                        setSelectedPaper("");
+                        setShowMarksPanel(false);
+                      }}
+                      disabled={!selectedModule}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Session...</option>
+                      {selectedModule &&
+                        Object.keys(courseStructure[selectedModule]).map((session) => (
+                          <option key={session} value={session}>
+                            {session}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Paper Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Paper
+                    </label>
+                    <select
+                      value={selectedPaper}
+                      onChange={(e) => {
+                        setSelectedPaper(e.target.value);
+                        setShowMarksPanel(false);
+                      }}
+                      disabled={!selectedSession}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Paper...</option>
+                      {selectedModule &&
+                        selectedSession &&
+                        Object.keys(courseStructure[selectedModule][selectedSession]).map((paper) => (
+                          <option key={paper} value={paper}>
+                            {paper} (Max: {courseStructure[selectedModule][selectedSession][paper].maxMarks})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={loadCandidatesForPaper}
+                    disabled={!selectedModule || !selectedSession || !selectedPaper || candidatesLoading}
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {candidatesLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <UserCheck className="w-5 h-5" />
+                    )}
+                    Load Candidates
+                  </button>
+                  <button
+                    onClick={resetPaperForm}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Search Controls - Only for individual candidate methods */}
+            {searchMethod !== "paper" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
               {searchMethod === "ticket" ? (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -1179,6 +1489,7 @@ const FeedMark = () => {
                 </button>
               </div>
             </div>
+            )}
 
             {/* Messages */}
             {message.text && (
@@ -1202,8 +1513,411 @@ const FeedMark = () => {
             )}
           </div>
 
+          {/* Paper-wise Marks Entry Table */}
+          {searchMethod === "paper" && showMarksPanel && candidates.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Paper Marks Entry
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      {selectedModule} - {selectedSession} - {selectedPaper}
+                      {selectedModule && selectedSession && selectedPaper && (
+                        <span className="font-semibold text-blue-600 ml-2">
+                          (Max Marks: {courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks})
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Clear Supplementary Button - shows if any supplementary marks exist */}
+                  {Object.keys(paperSupplementaryMarks).length > 0 && (
+                    <button
+                      onClick={() => {
+                        // Clear all passing supplementary marks
+                        const passingCandidates = Object.keys(paperSupplementaryMarks).filter(candidateId => {
+                          const suppMark = paperSupplementaryMarks[candidateId];
+                          const maxMarks = selectedModule && selectedSession && selectedPaper 
+                            ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                            : 0;
+                          const passingMarks = Math.ceil(maxMarks * 0.6);
+                          return suppMark >= passingMarks;
+                        });
+                        
+                        if (passingCandidates.length === 0) {
+                          setMessage({ type: "error", text: "No passing supplementary marks to clear" });
+                          return;
+                        }
+                        
+                        if (confirm(`Clear supplementary status for ${passingCandidates.length} students with passing marks?`)) {
+                          passingCandidates.forEach(candidateId => {
+                            const mainMark = paperMarks[candidateId];
+                            const suppMark = paperSupplementaryMarks[candidateId];
+                            const newMark = `${mainMark}C${suppMark}`;
+                            setPaperMarks(prev => ({ ...prev, [candidateId]: newMark }));
+                          });
+                          
+                          setPaperSupplementaryMarks(prev => {
+                            const updated = { ...prev };
+                            passingCandidates.forEach(id => delete updated[id]);
+                            return updated;
+                          });
+                          
+                          setMessage({ 
+                            type: "success", 
+                            text: `✓ Cleared supplementary for ${passingCandidates.length} students` 
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all duration-200"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Clear Supplementary
+                    </button>
+                  )}
+                  
+                  {/* Edit/Save Button */}
+                  {isEditingPaperMarks ? (
+                    <button
+                      onClick={savePaperMarks}
+                      disabled={saving}
+                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      {saving ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      {saving ? "Saving..." : "Save All Marks"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={enableEditingPaperMarks}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      <ClipboardList className="w-5 h-5" />
+                      Edit Marks
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Marks Entry Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        S.No
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Ticket No
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Name
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">
+                        Marks
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidates.map((candidate, index) => {
+                      const currentMark = paperMarks[candidate.id];
+                      const displayMark = getMainMarksOnly(currentMark); // Show only main marks in input
+                      const maxMarks = selectedModule && selectedSession && selectedPaper 
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                        : 0;
+                      const passingMarks = Math.ceil(maxMarks * 0.6);
+                      const isOverMax = displayMark > maxMarks;
+                      const isPassing = displayMark >= passingMarks;
+                      const isFailing = displayMark && displayMark < passingMarks;
+
+                      return (
+                        <tr key={candidate.id} className="bg-white hover:bg-gray-50">
+                          <td className="border border-gray-300 px-4 py-3 text-center">
+                            {index + 1}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-3 font-medium">
+                            {candidate.ticket_no}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-3">
+                            {candidate.name}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              max={maxMarks}
+                              value={displayMark || ""}
+                              onChange={(e) => handlePaperMarksChange(candidate.id, e.target.value)}
+                              disabled={!isEditingPaperMarks}
+                              className={`w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                !isEditingPaperMarks 
+                                  ? 'bg-gray-100 cursor-not-allowed'
+                                  : isOverMax 
+                                    ? 'border-red-500 bg-red-50' 
+                                    : isPassing 
+                                      ? 'border-green-500 bg-green-50'
+                                      : isFailing
+                                        ? 'border-red-500 bg-red-50'
+                                        : 'border-gray-300'
+                              }`}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-4 py-3 text-center">
+                            {(() => {
+                              const markValue = paperMarks[candidate.id];
+                              
+                              // Check if student has cleared supplementary (combined format)
+                              if (typeof markValue === 'string' && markValue.includes('C')) {
+                                const [mainMark, suppMark] = markValue.split('C');
+                                return (
+                                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                    Passed Supplementary with {suppMark} marks
+                                  </span>
+                                );
+                              }
+                              
+                              // Regular status logic
+                              if (isOverMax) {
+                                return <span className="text-red-600 text-xs font-medium">Over Max!</span>;
+                              } else if (displayMark) {
+                                return (
+                                  <span className={`text-xs font-medium px-2 py-1 rounded ${
+                                    isPassing ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {isPassing ? 'Pass' : 'Fail'}
+                                  </span>
+                                );
+                              } else {
+                                return <span className="text-gray-400 text-xs">-</span>;
+                              }
+                            })()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Summary Information */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="text-sm font-semibold text-blue-700">Total Candidates</div>
+                  <div className="text-2xl font-bold text-blue-900">{candidates.length}</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="text-sm font-semibold text-green-700">Marks Entered</div>
+                  <div className="text-2xl font-bold text-green-900">
+                    {Object.values(paperMarks).filter(mark => mark !== "").length}
+                  </div>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <div className="text-sm font-semibold text-red-700">Failed Students</div>
+                  <div className="text-2xl font-bold text-red-900">
+                    {candidates.filter(c => {
+                      const markValue = paperMarks[c.id];
+                      
+                      // If mark is in combined format, student has been cleared - don't count as failed
+                      if (typeof markValue === 'string' && markValue.includes('C')) {
+                        return false;
+                      }
+                      
+                      // Check if main marks are below passing
+                      const mark = getMainMarksOnly(markValue);
+                      const maxMarks = selectedModule && selectedSession && selectedPaper 
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                        : 0;
+                      const passingMarks = Math.ceil(maxMarks * 0.6);
+                      return mark && mark < passingMarks;
+                    }).length}
+                  </div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <div className="text-sm font-semibold text-purple-700">Max Marks</div>
+                  <div className="text-2xl font-bold text-purple-900">
+                    {selectedModule && selectedSession && selectedPaper 
+                      ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                      : '-'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Supplementary Exam Eligibility Section - Same as dropdown method */}
+              {(() => {
+                const failedCandidates = candidates.filter(c => {
+                  const markValue = paperMarks[c.id];
+                  
+                  // If mark is in combined format (e.g., "55C70"), student has been cleared - don't show
+                  if (typeof markValue === 'string' && markValue.includes('C')) {
+                    return false;
+                  }
+                  
+                  // Check if main marks are below passing
+                  const mark = getMainMarksOnly(markValue);
+                  const maxMarks = selectedModule && selectedSession && selectedPaper 
+                    ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                    : 0;
+                  const passingMarks = Math.ceil(maxMarks * 0.6);
+                  return mark && mark < passingMarks;
+                });
+
+                if (failedCandidates.length === 0) return null;
+
+                return (
+                  <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-center gap-3 mb-4">
+                      <AlertCircle className="w-6 h-6 text-red-600" />
+                      <h3 className="text-lg font-bold text-red-800">
+                        Supplementary Exam Eligibility
+                      </h3>
+                    </div>
+                    <p className="text-red-700 mb-4 font-medium">
+                      The following candidates have scored below 60% in {selectedSession} - {selectedPaper} and are eligible for supplementary examination:
+                    </p>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                      <div className="flex items-start gap-2">
+                        <RefreshCw className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                        <div className="text-orange-800 text-sm">
+                          <p className="font-semibold mb-2">
+                            Process for Clearing Supplementary Status:
+                          </p>
+                          <ol className="list-decimal list-inside space-y-1 text-xs">
+                            <li>
+                              Enter supplementary exam marks in the "Record Only" fields below
+                            </li>
+                            <li>
+                              If supplementary marks are ≥60% (passing), the "Clear Supplementary" button will be enabled
+                            </li>
+                            <li>
+                              Click "Clear Supplementary" to use main exam marks for marksheet generation
+                            </li>
+                            <li>
+                              If supplementary marks are still below 60%, student remains in supplementary status
+                            </li>
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {failedCandidates.map((candidate) => {
+                        const mainMark = getMainMarksOnly(paperMarks[candidate.id]); // Get main marks only
+                        const suppMark = paperSupplementaryMarks[candidate.id];
+                        const maxMarks = selectedModule && selectedSession && selectedPaper 
+                          ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                          : 0;
+                        const passingMarks = Math.ceil(maxMarks * 0.6);
+                        const shortfall = passingMarks - mainMark;
+                        const isSuppPassing = suppMark >= passingMarks;
+
+                        return (
+                          <div key={candidate.id} className="border border-red-300 rounded-lg p-4 bg-white">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="font-semibold text-gray-900">
+                                  {candidate.name} ({candidate.ticket_no})
+                                </h4>
+                                <p className="text-sm text-red-600">
+                                  {selectedSession} - {selectedPaper}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-2xl font-bold text-red-600">{mainMark}/{maxMarks}</span>
+                                <p className="text-xs text-red-500">Main Exam</p>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">Required: {passingMarks} (60% of {maxMarks})</span>
+                                <span className="text-red-600 font-medium">Shortfall: {shortfall} marks</span>
+                              </div>
+                            </div>
+
+                            <div className="border-t pt-3">
+                              <label className="block text-sm font-medium text-blue-700 mb-2">
+                                Supplementary Exam Marks (Record Only)
+                              </label>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max={maxMarks}
+                                    value={suppMark || ""}
+                                    onChange={(e) => handlePaperSupplementaryMarksChange(candidate.id, e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                      suppMark && isSuppPassing 
+                                        ? 'border-green-500 bg-green-50' 
+                                        : suppMark 
+                                          ? 'border-orange-500 bg-orange-50'
+                                          : 'border-gray-300'
+                                    }`}
+                                    placeholder={`0-${maxMarks}`}
+                                  />
+                                </div>
+                                <div className="text-right min-w-[100px]">
+                                  {suppMark ? (
+                                    <span className={`text-sm font-medium ${
+                                      isSuppPassing ? 'text-green-600' : 'text-orange-600'
+                                    }`}>
+                                      {isSuppPassing ? '✓ Passing' : '✗ Still Failing'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-500">/100</span>
+                                  )}
+                                </div>
+                                {suppMark && isSuppPassing && (
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Clear supplementary for ${candidate.name}? This will combine main and supplementary marks.`)) {
+                                        const newMark = `${mainMark}C${suppMark}`;
+                                        setPaperMarks(prev => ({ ...prev, [candidate.id]: newMark }));
+                                        setPaperSupplementaryMarks(prev => {
+                                          const updated = { ...prev };
+                                          delete updated[candidate.id];
+                                          return updated;
+                                        });
+                                        setMessage({
+                                          type: "success",
+                                          text: `✓ Cleared supplementary for ${candidate.name} - Combined as ${newMark}`,
+                                        });
+                                      }
+                                    }}
+                                    className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                                  >
+                                    Clear Supp
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-blue-600 mt-1">
+                                💡 These marks are for record keeping only. Main exam marks will be used in marksheet generation.
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Candidate Information */}
-          {candidateData && (
+          {candidateData && searchMethod !== "paper" && (
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -1321,8 +2035,8 @@ const FeedMark = () => {
             </div>
           )}
 
-          {/* Marks Entry Form */}
-          {currentCourseStructure && showMarksPanel && (
+          {/* Marks Entry Form - Only for individual candidate methods */}
+          {currentCourseStructure && showMarksPanel && searchMethod !== "paper" && (
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -1760,17 +2474,20 @@ const FeedMark = () => {
           )}
 
           {/* No candidate selected message */}
-          {!candidateData && !loading && (
+          {/* No Data Selected */}
+          {!candidateData && !showMarksPanel && !loading && (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
               <div className="w-20 h-20 bg-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                No Candidate Selected
+                {searchMethod === "paper" ? "Ready for Paper-wise Entry" : "No Candidate Selected"}
               </h3>
               <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
-                Please search for a candidate using their ticket number or
-                select from the dropdown to begin entering marks.
+                {searchMethod === "paper" 
+                  ? "Select a module, session, and paper above to load all candidates and enter marks efficiently."
+                  : "Please search for a candidate using their ticket number or select from the dropdown to begin entering marks."
+                }
               </p>
             </div>
           )}
