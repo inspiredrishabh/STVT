@@ -1521,9 +1521,9 @@ function Dashboard() {
                           // Dynamic height calculation for better visibility
                           const getDynamicHeight = (count) => {
                             if (count === 0) return "8px";
-                            if (maxCount <= 3) return `${Math.max(count * 45, 30)}px`; // Small data: 45px per unit
-                            if (maxCount <= 10) return `${Math.max((count / maxCount) * 240 + 30, 30)}px`; // Medium data
-                            return `${Math.max((count / maxCount) * 260 + 20, 30)}px`; // Large data
+                            if (maxCount <= 3) return `${Math.max(count * 80, 60)}px`; // Small data: 80px per unit, min 60px
+                            if (maxCount <= 10) return `${Math.max((count / maxCount) * 280 + 40, 60)}px`; // Medium data
+                            return `${Math.max((count / maxCount) * 300 + 30, 60)}px`; // Large data
                           };
                           
                           return (
@@ -1706,9 +1706,9 @@ function Dashboard() {
                       // Dynamic height calculation for better visibility
                       const getDynamicHeight = (count) => {
                         if (count === 0) return "8px";
-                        if (maxCount <= 3) return `${Math.max(count * 45, 30)}px`; // Small data: 45px per unit
-                        if (maxCount <= 10) return `${Math.max((count / maxCount) * 240 + 30, 30)}px`; // Medium data
-                        return `${Math.max((count / maxCount) * 260 + 20, 30)}px`; // Large data
+                        if (maxCount <= 3) return `${Math.max(count * 80, 60)}px`; // Small data: 80px per unit, min 60px
+                        if (maxCount <= 10) return `${Math.max((count / maxCount) * 280 + 40, 60)}px`; // Medium data
+                        return `${Math.max((count / maxCount) * 300 + 30, 60)}px`; // Large data
                       };
                       
                       return (
