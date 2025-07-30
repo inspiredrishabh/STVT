@@ -174,7 +174,7 @@ class DashboardAPI {
           (c, i) =>
             activities.push({
               id: `stc-${c.id || i}`,
-              activity: "STC candidate registered",
+              activity: "STC trainee registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(c.created_at),
               icon: "�", // Blue circle
@@ -187,7 +187,7 @@ class DashboardAPI {
           (c, i) =>
             activities.push({
               id: `wtc-${c.id || i}`,
-              activity: "WTC candidate registered",
+              activity: "WTC trainee registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(c.created_at),
               icon: "�", // Green circle
@@ -564,12 +564,65 @@ function getSparingDate(item, type) {
   return "";
 }
 
+// Utility to get joining date for each type
+function getJoiningDate(item, type) {
+  if (type === "stc" || type === "wtc")
+    return (
+      item.date_of_joining ||
+      item.dateOfJoining ||
+      item.joining_date ||
+      item.joiningDate ||
+      ""
+    );
+  if (type === "nonrailway")
+    return (
+      item.date_of_joining ||
+      item.joining_date ||
+      item.dateOfJoining ||
+      item.joiningDate ||
+      ""
+    );
+  return "";
+}
+
+
+
+// Utility to check if a trainee is active (consistent filtering logic)
+function isActiveTrainee(trainee, type) {
+  // Check resignation status
+  if (trainee.resignation_status === "yes") {
+    return false;
+  }
+  
+  // Get sparing date for this trainee type
+  const dateStr = getSparingDate(trainee, type);
+  if (!dateStr) return false;
+  
+  // Parse date string (support both yyyy-mm-dd and dd-mm-yyyy)
+  let sparingDate = new Date(dateStr);
+  if (isNaN(sparingDate)) {
+    // Try dd-mm-yyyy format
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      sparingDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+  }
+  
+  if (isNaN(sparingDate)) return false;
+  
+  sparingDate.setHours(0, 0, 0, 0);
+  
+  // Today's date at 00:00:00
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Only include if sparing date is today or in the future (not expired)
+  return sparingDate >= today;
+}
+
 function Dashboard() {
-  const [categoriesData, setCategoriesData] = useState([]);
-  const [distributionData, setDistributionData] = useState([]);
   const [overallStats, setOverallStats] = useState(null);
   const [recentActivities, setRecentActivities] = useState([]);
-  const [allUnits, setAllUnits] = useState([]);
   const [selectedStat, setSelectedStat] = useState(null);
   const [statDetails, setStatDetails] = useState([]);
   const [statDetailsTitle, setStatDetailsTitle] = useState("");
@@ -587,18 +640,12 @@ function Dashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [cat, dist, stats, acts, units] = await Promise.all([
-        dashboardAPI.getCategoriesData(),
-        dashboardAPI.getDistributionData(),
+      const [stats, acts] = await Promise.all([
         dashboardAPI.getOverallStats(),
         dashboardAPI.getRecentActivities(),
-        dashboardAPI.getAllUnits(),
       ]);
-      if (cat.success) setCategoriesData(cat.data);
-      if (dist.success) setDistributionData(dist.data);
       if (stats.success) setOverallStats(stats.data);
       if (acts.success) setRecentActivities(acts.data);
-      setAllUnits(units);
     } catch {
       setError("Failed to load dashboard data");
     } finally {
@@ -705,31 +752,61 @@ function Dashboard() {
   // };
 
   // Helper to fetch details for a stat
-  const fetchStatDetails = async (type, value) => {
+  const fetchStatDetails = async (type, value, activeOnly = false) => {
     setStatDetails([]);
     setStatDetailsTitle("");
     setIsModalOpen(true);
     let url = "";
     let title = "";
-    if (type === "Railway Candidates") {
+    if (type === "Railway Trainees") {
       // Show all STC + WTC candidates
       url = "/api/stc";
-      title = "Railway Candidates (STC & WTC)";
-    } else if (type === "Non-Railway Candidates") {
+      title = activeOnly ? "Railway Trainees (STC & WTC) - Active Only" : "Railway Trainees (STC & WTC)";
+    } else if (type === "Non-Railway Trainees") {
       url = "/api/nonrailway";
-      title = "Non-Railway Candidates";
+      title = activeOnly ? "Non-Railway Trainees - Active Only" : "Non-Railway Trainees";
     } else if (type === "STC") {
       url = "/api/stc";
-      title = "STC Candidates";
+      title = activeOnly ? "STC Trainees - Active Only" : "STC Trainees";
     } else if (type === "WTC") {
       url = "/api/wtc";
-      title = "WTC Candidates";
-    } else if (type === "Resigned Candidates") {
-      url = "/api/stc";
-      title = "Resigned Candidates (STC)";
-    } else if (type === "Total Candidates") {
+      title = activeOnly ? "WTC Trainees - Active Only" : "WTC Trainees";
+    } else if (type === "Resigned Trainees") {
+      // Fetch both STC and WTC resigned trainees
+      title = "Resigned Trainees (STC & WTC)";
+      try {
+        const [stcRes, wtcRes] = await Promise.all([
+          fetch("/api/stc"),
+          fetch("/api/wtc"),
+        ]);
+        const [stcData, wtcData] = await Promise.all([
+          stcRes.json(),
+          wtcRes.json(),
+        ]);
+        let candidates = [];
+        if (stcData.success && Array.isArray(stcData.data)) {
+          const stcResigned = stcData.data
+            .filter((c) => c.resignation_status === "yes")
+            .map((c) => ({ ...c, _source: "STC" }));
+          candidates = candidates.concat(stcResigned);
+        }
+        if (wtcData.success && Array.isArray(wtcData.data)) {
+          const wtcResigned = wtcData.data
+            .filter((c) => c.resignation_status === "yes")
+            .map((c) => ({ ...c, _source: "WTC" }));
+          candidates = candidates.concat(wtcResigned);
+        }
+        setStatDetailsTitle(title);
+        setStatDetails(candidates);
+        return;
+      } catch {
+        setStatDetailsTitle(title);
+        setStatDetails([]);
+        return;
+      }
+    } else if (type === "Total Trainees") {
       // Fetch all three and merge
-      title = "All Candidates (STC, WTC, Non-Railway)";
+      title = activeOnly ? "All Trainees (STC, WTC, Non-Railway) - Active Only" : "All Trainees (STC, WTC, Non-Railway)";
       try {
         const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
           fetch("/api/stc"),
@@ -743,19 +820,25 @@ function Dashboard() {
         ]);
         let candidates = [];
         if (stcData.success && Array.isArray(stcData.data)) {
-          candidates = candidates.concat(
-            stcData.data.map((c) => ({ ...c, _source: "STC" }))
-          );
+          let stcCandidates = stcData.data.map((c) => ({ ...c, _source: "STC" }));
+          if (activeOnly) {
+            stcCandidates = stcCandidates.filter(c => isActiveTrainee(c, "stc"));
+          }
+          candidates = candidates.concat(stcCandidates);
         }
         if (wtcData.success && Array.isArray(wtcData.data)) {
-          candidates = candidates.concat(
-            wtcData.data.map((c) => ({ ...c, _source: "WTC" }))
-          );
+          let wtcCandidates = wtcData.data.map((c) => ({ ...c, _source: "WTC" }));
+          if (activeOnly) {
+            wtcCandidates = wtcCandidates.filter(c => isActiveTrainee(c, "wtc"));
+          }
+          candidates = candidates.concat(wtcCandidates);
         }
         if (nonRailwayData.success && Array.isArray(nonRailwayData.data)) {
-          candidates = candidates.concat(
-            nonRailwayData.data.map((c) => ({ ...c, _source: "Non-Railway" }))
-          );
+          let nonRailwayCandidates = nonRailwayData.data.map((c) => ({ ...c, _source: "Non-Railway" }));
+          if (activeOnly) {
+            nonRailwayCandidates = nonRailwayCandidates.filter(c => isActiveTrainee(c, "nonrailway"));
+          }
+          candidates = candidates.concat(nonRailwayCandidates);
         }
         setStatDetailsTitle(title);
         setStatDetails(candidates);
@@ -767,10 +850,10 @@ function Dashboard() {
       }
     } else if (type === "unit") {
       url = "/api/stc/filter/unit/" + encodeURIComponent(value);
-      title = `Candidates in Unit: ${value}`;
+      title = activeOnly ? `Candidates in Unit: ${value} - Active Only` : `Candidates in Unit: ${value}`;
     } else if (type === "designation") {
       url = "/api/stc/filter/designation/" + encodeURIComponent(value);
-      title = `Candidates with Designation: ${value}`;
+      title = activeOnly ? `Candidates with Designation: ${value} - Active Only` : `Candidates with Designation: ${value}`;
     }
     if (!url) return;
     try {
@@ -779,18 +862,25 @@ function Dashboard() {
       let candidates = [];
       if (data.success && Array.isArray(data.data)) {
         candidates = data.data;
-        // Filter for resigned if needed
-        if (type === "Resigned Candidates") {
-          candidates = candidates.filter((c) => c.resignation_status === "yes");
+        
+        // Apply active filter if needed
+        if (activeOnly) {
+          // For STC candidates, use "stc" type for filtering
+          candidates = candidates.filter(c => isActiveTrainee(c, "stc"));
         }
-        // For "Railway Candidates", merge STC and WTC
-        if (type === "Railway Candidates") {
+        
+        // For "Railway Trainees", merge STC and WTC
+        if (type === "Railway Trainees") {
           const wtcRes = await fetch("/api/wtc");
           const wtcData = await wtcRes.json();
           if (wtcData.success && Array.isArray(wtcData.data)) {
+            let wtcCandidates = wtcData.data.map((c) => ({ ...c, _source: "WTC" }));
+            if (activeOnly) {
+              wtcCandidates = wtcCandidates.filter(c => isActiveTrainee(c, "wtc"));
+            }
             candidates = [
               ...candidates.map((c) => ({ ...c, _source: "STC" })),
-              ...wtcData.data.map((c) => ({ ...c, _source: "WTC" })),
+              ...wtcCandidates,
             ];
           }
         }
@@ -830,23 +920,23 @@ function Dashboard() {
     setLineTrainingDetails(details);
   };
 
-  const [allCandidates, setAllCandidates] = useState({
+  const [allTrainees, setAllTrainees] = useState({
     stc: [],
     wtc: [],
     nonrailway: [],
   });
   const [activeSection, setActiveSection] = useState(null);
-  const [activeCandidates, setActiveCandidates] = useState([]);
+  const [activeTrainees, setActiveTrainees] = useState([]);
   const [fetchError, setFetchError] = useState(null);
 
   // Fetch all data for STC, WTC, Non-Railway and parse, handle error
   useEffect(() => {
     loadDashboardData();
     loadLineTrainingStats();
-    loadAllCandidates();
+    loadAllTrainees();
   }, [loadDashboardData]);
 
-  const loadAllCandidates = async () => {
+  const loadAllTrainees = async () => {
     setFetchError(null);
     try {
       const [stcRes, wtcRes, nonRailwayRes] = await Promise.all([
@@ -862,7 +952,7 @@ function Dashboard() {
         wtcRes.json(),
         nonRailwayRes.json(),
       ]);
-      setAllCandidates({
+      setAllTrainees({
         stc: Array.isArray(stcData.data) ? stcData.data : [],
         wtc: Array.isArray(wtcData.data) ? wtcData.data : [],
         nonrailway: Array.isArray(nonRailwayData.data)
@@ -870,36 +960,83 @@ function Dashboard() {
           : [],
       });
     } catch (err) {
-      setAllCandidates({ stc: [], wtc: [], nonrailway: [] });
-      setFetchError("Failed to fetch candidate data. Please try again." + err);
+      setAllTrainees({ stc: [], wtc: [], nonrailway: [] });
+      setFetchError("Failed to fetch trainee data. Please try again." + err);
     }
   };
 
-  // Compute active candidates for each section
-  const getActiveCandidates = (type) => {
-    const arr = allCandidates[type] || [];
-    // Today's date at 00:00:00
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return arr.filter((item) => {
-      const dateStr = getSparingDate(item, type);
-      if (!dateStr) return false;
-      // Parse date string (support both yyyy-mm-dd and dd-mm-yyyy)
-      let sparingDate = new Date(dateStr);
-      if (isNaN(sparingDate)) {
-        // Try dd-mm-yyyy
-        const parts = dateStr.split("-");
-        if (parts.length === 3) {
-          sparingDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-        }
-      }
-      sparingDate.setHours(0, 0, 0, 0);
-      // Only include if sparing date is today or in the future
-      return (
-        sparingDate >= today &&
-        (!item.resignation_status || item.resignation_status !== "yes")
-      );
+  // Compute active trainees for each section
+  const getActiveTrainees = (type) => {
+    const arr = allTrainees[type] || [];
+    return arr.filter((item) => isActiveTrainee(item, type));
+  };
+
+  // Get ALL trainees (including resigned and expired) for Overall Statistics
+  const getAllTrainees = (type) => {
+    return allTrainees[type] || [];
+  };
+
+  // Get active designation counts for STC trainees only
+  const getActiveDesignationCounts = () => {
+    const activeSTC = getActiveTrainees("stc");
+    const counts = {};
+    activeSTC.forEach(trainee => {
+      const designation = trainee.designation || "Unknown";
+      counts[designation] = (counts[designation] || 0) + 1;
     });
+    return counts;
+  };
+
+  // Get active distribution data (active trainees only)
+  const getActiveDistributionData = () => {
+    const stcCount = getActiveTrainees("stc").length;
+    const wtcCount = getActiveTrainees("wtc").length;
+    const nonRailwayCount = getActiveTrainees("nonrailway").length;
+    const total = stcCount + wtcCount + nonRailwayCount;
+    
+    if (total === 0) return [];
+    
+    return [
+      {
+        name: "STC",
+        count: stcCount,
+        value: Math.round((stcCount / total) * 100),
+        color: "#e11d48"
+      },
+      {
+        name: "WTC", 
+        count: wtcCount,
+        value: Math.round((wtcCount / total) * 100),
+        color: "#059669"
+      },
+      {
+        name: "Non-Railway",
+        count: nonRailwayCount,
+        value: Math.round((nonRailwayCount / total) * 100),
+        color: "#7c3aed"
+      }
+    ];
+  };
+
+  // Get active unit data (active STC trainees only)
+  const getActiveUnitsData = () => {
+    const activeStcTrainees = getActiveTrainees("stc");
+    const unitCounts = {};
+    
+    activeStcTrainees.forEach(trainee => {
+      const unit = trainee.unit || "Unknown";
+      unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+    });
+    
+    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"];
+    
+    return Object.entries(unitCounts)
+      .map(([unit, count], idx) => ({
+        unit,
+        count,
+        color: colors[idx % colors.length]
+      }))
+      .sort((a, b) => b.count - a.count);
   };
 
   return (
@@ -941,254 +1078,120 @@ function Dashboard() {
 
       <main className="p-6">
         <div className="max-w-9xl mx-auto">
-          {/* Main Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 min-h-[120px]">
-            {loading ? (
-              <>
-                <SkeletonLoader type="card" count={4} />
-              </>
-            ) : overallStats ? (
-              <>
-                <StatCard
-                  title="Total Candidates"
-                  value={overallStats.totalCandidates}
-                  onClick={() => {
-                    setSelectedStat("Total Candidates");
-                    fetchStatDetails("Total Candidates");
-                  }}
-                  active={selectedStat === "Total Candidates"}
-                  color="border-l-blue-500"
-                  textColor="text-blue-800"
-                />
-                <StatCard
-                  title="Railway Candidates"
-                  value={overallStats.railwayCandidates}
-                  onClick={() => {
-                    setSelectedStat("Railway Candidates");
-                    fetchStatDetails("Railway Candidates");
-                  }}
-                  active={selectedStat === "Railway Candidates"}
-                  color="border-l-green-500"
-                  textColor="text-green-800"
-                />
-                <StatCard
-                  title="Non-Railway Candidates"
-                  value={overallStats.nonRailwayCandidates}
-                  onClick={() => {
-                    setSelectedStat("Non-Railway Candidates");
-                    fetchStatDetails("Non-Railway Candidates");
-                  }}
-                  active={selectedStat === "Non-Railway Candidates"}
-                  color="border-l-purple-500"
-                  textColor="text-purple-800"
-                />
-                <StatCard
-                  title="Resigned Candidates"
-                  value={overallStats.resignedCount}
-                  onClick={() => {
-                    setSelectedStat("Resigned Candidates");
-                    fetchStatDetails("Resigned Candidates");
-                  }}
-                  active={selectedStat === "Resigned Candidates"}
-                  color="border-l-red-500"
-                  textColor="text-red-800"
-                />
-              </>
-            ) : (
-              <div className="col-span-4 text-center py-8 text-gray-500">
-                No stats available
-              </div>
-            )}
-          </div>
-
-          {/* Designation-wise Stats */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              STC Designation-wise Candidates
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 min-h-[100px]">
-              {loading ? (
-                <SkeletonLoader type="card" count={8} />
-              ) : overallStats ? (
-                <>
-                  {Object.entries(overallStats.designationCounts || {}).map(
-                    ([desig, count]) => (
-                      <StatCard
-                        key={desig}
-                        title={desig}
-                        value={count}
-                        color="border-l-gray-400"
-                        textColor="text-gray-700"
-                        onClick={() => {
-                          setSelectedStat("designation:" + desig);
-                          fetchStatDetails("designation", desig);
-                        }}
-                        active={selectedStat === "designation:" + desig}
-                      />
-                    )
-                  )}
-                  <StatCard
-                    title="Total STC"
-                    value={overallStats.stcCandidates}
-                    color="border-l-teal-500"
-                    textColor="text-teal-800"
-                    onClick={() => {
-                      setSelectedStat("STC");
-                      fetchStatDetails("STC");
-                    }}
-                    active={selectedStat === "STC"}
-                  />
-                </>
-              ) : (
-                <div className="col-span-8 text-center py-8 text-gray-500">
-                  No designation stats available
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Category and Pie Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[400px]">
-              <SimpleBarChart
-                data={categoriesData}
-                title="STC, WTC & Non-Railway Categories"
-                onBarClick={(item) => {
-                  setSelectedStat(item.category);
-                  if (item.category === "STC" || item.category === "WTC") {
-                    fetchStatDetails(item.category);
-                  } else if (item.category === "Non-Railway") {
-                    fetchStatDetails("Non-Railway Candidates");
-                  }
-                }}
-                isLoading={loading}
-              />
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[400px]">
-              <SimplePieChart
-                data={distributionData}
-                title="Distribution (Pie Chart)"
-                onLegendClick={(item) => {
-                  setSelectedStat(item.name);
-                  if (item.name === "Non-Railway") {
-                    fetchStatDetails("Non-Railway Candidates");
-                  } else {
-                    fetchStatDetails(item.name);
-                  }
-                }}
-                isLoading={loading}
-              />
-            </div>
-          </div>
-
-          {/* All Units by Candidate Count */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              All Units by Candidate Count (STC)
-            </h2>
-            <div className="min-h-[200px]">
-              {loading ? (
-                <div className="space-y-3">
-                  {Array(5).fill(0).map((_, idx) => (
-                    <div key={idx} className="flex items-center space-x-3 p-2">
-                      <div className="w-32 h-5 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="flex-1 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : allUnits.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
-                  No data available
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {allUnits.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex items-center space-x-3 cursor-pointer p-2 rounded-md hover:bg-gray-100 ${selectedStat === "unit:" + item.unit
-                        ? "ring-2 ring-blue-500 bg-blue-50"
-                        : ""
-                        }`}
-                      onClick={() => {
-                        setSelectedStat("unit:" + item.unit);
-                        fetchStatDetails("unit", item.unit);
-                      }}
-                    >
-                      <div className="w-32 text-sm font-medium text-gray-700 text-right">
-                        {item.unit}
-                      </div>
-                      <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
-                        <div
-                          className="h-6 rounded-full flex items-center justify-end pr-2 text-white text-xs font-medium"
-                          style={{
-                            backgroundColor: item.color,
-                            width: `${(item.count /
-                              Math.max(...allUnits.map((d) => d.count))) *
-                              100
-                              }%`,
-                            minWidth: "40px",
-                          }}
-                        >
-                          {item.count}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Line Training Stats (by Activity Centre) */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Line Training Stats (by Activity Centre)
-            </h2>
-            <div className="min-h-[100px]">
-              {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                  <SkeletonLoader type="card" count={8} />
-                </div>
-              ) : lineTrainingStats.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
-                  No data available
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                  {lineTrainingStats.map((item) => (
-                    <StatCard
-                      key={item.activityCentre}
-                      title={item.activityCentre}
-                      value={item.count}
-                      color="border-l-cyan-500"
-                      textColor="text-cyan-800"
-                      onClick={() => {
-                        fetchLineTrainingDetails(item.activityCentre);
-                      }}
-                      active={selectedLineTraining === item.activityCentre}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Active Candidates Sections */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Active Candidates by Category
+              Trainees Currently Under Training
             </h2>
             {fetchError && (
               <div className="mb-4 text-red-600 font-semibold">
                 {fetchError}
                 <button
                   className="ml-4 px-3 py-1 bg-orange-200 rounded text-orange-900"
-                  onClick={loadAllCandidates}
+                  onClick={loadAllTrainees}
                 >
                   Retry
                 </button>
               </div>
             )}
+            
+            {/* Vertical Bar Chart for Active Candidates */}
+            <div className="mb-6">
+              <div className="flex items-end justify-center space-x-8 h-48 mb-4">
+                {(() => {
+                  const stcCount = getActiveTrainees("stc").length;
+                  const wtcCount = getActiveTrainees("wtc").length;
+                  const nonRailwayCount = getActiveTrainees("nonrailway").length;
+                  const maxCount = Math.max(stcCount, wtcCount, nonRailwayCount, 1);
+                  
+                  return (
+                    <>
+                      <div
+                        className={`flex flex-col items-center cursor-pointer group ${activeSection === "stc"
+                          ? "transform scale-105"
+                          : ""
+                          }`}
+                        onClick={() => {
+                          setActiveSection("stc");
+                          setActiveTrainees(getActiveTrainees("stc"));
+                        }}
+                        style={{ minWidth: "100px" }}
+                      >
+                        <div className="relative w-full mb-2 h-40">
+                          <div
+                            className="w-full bg-blue-600 rounded-t-md transition-all duration-300 hover:bg-blue-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            style={{
+                              height: `${Math.max((stcCount / maxCount) * 100, 15)}%`,
+                              minHeight: "30px",
+                            }}
+                          >
+                            {stcCount}
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium text-blue-700 text-center leading-tight">
+                          STC Active
+                        </div>
+                      </div>
+
+                      <div
+                        className={`flex flex-col items-center cursor-pointer group ${activeSection === "wtc"
+                          ? "transform scale-105"
+                          : ""
+                          }`}
+                        onClick={() => {
+                          setActiveSection("wtc");
+                          setActiveTrainees(getActiveTrainees("wtc"));
+                        }}
+                        style={{ minWidth: "100px" }}
+                      >
+                        <div className="relative w-full mb-2 h-40">
+                          <div
+                            className="w-full bg-green-600 rounded-t-md transition-all duration-300 hover:bg-green-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            style={{
+                              height: `${Math.max((wtcCount / maxCount) * 100, 15)}%`,
+                              minHeight: "30px",
+                            }}
+                          >
+                            {wtcCount}
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium text-green-700 text-center leading-tight">
+                          WTC Active
+                        </div>
+                      </div>
+
+                      <div
+                        className={`flex flex-col items-center cursor-pointer group ${activeSection === "nonrailway"
+                          ? "transform scale-105"
+                          : ""
+                          }`}
+                        onClick={() => {
+                          setActiveSection("nonrailway");
+                          setActiveTrainees(getActiveTrainees("nonrailway"));
+                        }}
+                        style={{ minWidth: "100px" }}
+                      >
+                        <div className="relative w-full mb-2 h-40">
+                          <div
+                            className="w-full bg-purple-600 rounded-t-md transition-all duration-300 hover:bg-purple-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            style={{
+                              height: `${Math.max((nonRailwayCount / maxCount) * 100, 15)}%`,
+                              minHeight: "30px",
+                            }}
+                          >
+                            {nonRailwayCount}
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium text-purple-700 text-center leading-tight">
+                          Non-Railway Active
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
             <div className="flex flex-wrap gap-4 mb-4">
               <button
                 className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "stc"
@@ -1197,10 +1200,10 @@ function Dashboard() {
                   }`}
                 onClick={() => {
                   setActiveSection("stc");
-                  setActiveCandidates(getActiveCandidates("stc"));
+                  setActiveTrainees(getActiveTrainees("stc"));
                 }}
               >
-                STC Active ({getActiveCandidates("stc").length})
+                STC Active ({getActiveTrainees("stc").length})
               </button>
               <button
                 className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "wtc"
@@ -1209,10 +1212,10 @@ function Dashboard() {
                   }`}
                 onClick={() => {
                   setActiveSection("wtc");
-                  setActiveCandidates(getActiveCandidates("wtc"));
+                  setActiveTrainees(getActiveTrainees("wtc"));
                 }}
               >
-                WTC Active ({getActiveCandidates("wtc").length})
+                WTC Active ({getActiveTrainees("wtc").length})
               </button>
               <button
                 className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "nonrailway"
@@ -1221,10 +1224,10 @@ function Dashboard() {
                   }`}
                 onClick={() => {
                   setActiveSection("nonrailway");
-                  setActiveCandidates(getActiveCandidates("nonrailway"));
+                  setActiveTrainees(getActiveTrainees("nonrailway"));
                 }}
               >
-                Non-Railway Active ({getActiveCandidates("nonrailway").length})
+                Non-Railway Active ({getActiveTrainees("nonrailway").length})
               </button>
             </div>
             <div className="overflow-auto border rounded-lg bg-white min-h-[200px]" style={{ maxHeight: "50vh" }}>
@@ -1235,24 +1238,25 @@ function Dashboard() {
                     <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
                     <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
                     <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
                     <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
                   </tr>
                 </thead>
                 <tbody>
                   {!activeSection ? (
                     <tr>
-                      <td colSpan={5} className="text-center text-gray-400 py-8">
-                        Select a category to view active candidates.
+                      <td colSpan={6} className="text-center text-gray-400 py-8">
+                        Select a category to view active trainees.
                       </td>
                     </tr>
-                  ) : activeCandidates.length === 0 ? (
+                  ) : activeTrainees.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center text-gray-400 py-8">
-                        No active candidates found.
+                      <td colSpan={6} className="text-center text-gray-400 py-8">
+                        No active trainees found.
                       </td>
                     </tr>
                   ) : (
-                    activeCandidates.map((c, i) => (
+                    activeTrainees.map((c, i) => (
                       <tr
                         key={c.ticket_no || c.ticketNo || c.id || i}
                         className="hover:bg-gray-50 transition border-b"
@@ -1283,6 +1287,12 @@ function Dashboard() {
                         </td>
                         <td
                           className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                          title={getJoiningDate(c, activeSection)}
+                        >
+                          {getJoiningDate(c, activeSection)}
+                        </td>
+                        <td
+                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
                           title={getSparingDate(c, activeSection)}
                         >
                           {getSparingDate(c, activeSection)}
@@ -1292,6 +1302,676 @@ function Dashboard() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Distribution by Percentage - Bar Chart and Pie Chart */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Distribution by Percentage
+            </h2>
+            <div className="min-h-[400px]">
+              {loading ? (
+                <SkeletonLoader type="bar" count={3} />
+              ) : (() => {
+                const activeDistData = getActiveDistributionData();
+                return activeDistData.length === 0 ? (
+                  <div className="text-center text-gray-400 py-8">No active candidates available</div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Vertical Bar Chart */}
+                    <div>
+                      <div className="flex items-end justify-center space-x-8 h-80">
+                        {activeDistData.map((item, idx) => {
+                          // Different colors for bar chart
+                          const barColors = ["#e11d48", "#059669", "#7c3aed"];
+                          return (
+                            <div
+                              key={idx}
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === item.name
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat(item.name);
+                                if (item.name === "Non-Railway") {
+                                  fetchStatDetails("Non-Railway Trainees", null, true);
+                                } else {
+                                  fetchStatDetails(item.name, null, true);
+                                }
+                              }}
+                              style={{ minWidth: "80px", maxWidth: "100px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex flex-col items-center justify-end text-white text-xs font-medium pb-2 absolute bottom-0"
+                                  style={{
+                                    backgroundColor: barColors[idx],
+                                    height: `${Math.max(item.value, 8)}%`,
+                                    minHeight: "35px",
+                                  }}
+                                >
+                                  <div className="font-bold text-sm">{item.value}%</div>
+                                  <div className="text-xs">({item.count})</div>
+                                </div>
+                              </div>
+                              <div className="text-sm font-medium text-gray-700 text-center leading-tight">
+                                {item.name}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                  {/* Pie Chart */}
+                  <div>
+                    <div className="flex items-center justify-center h-80">
+                      {(() => {
+                        const total = activeDistData.reduce((sum, item) => sum + item.count, 0);
+                        const pieColors = ["#f97316", "#06b6d4", "#84cc16"]; // Orange, Cyan, Lime
+                        let currentAngle = 0;
+                        
+                        return (
+                          <div className="flex flex-col items-center">
+                            <svg width="200" height="200" className="mb-4">
+                              {activeDistData.map((item, idx) => {
+                                const angle = (item.count / total) * 360;
+                                const startAngle = currentAngle;
+                                const endAngle = currentAngle + angle;
+                                currentAngle += angle;
+                                
+                                const startX = 100 + 80 * Math.cos((startAngle - 90) * Math.PI / 180);
+                                const startY = 100 + 80 * Math.sin((startAngle - 90) * Math.PI / 180);
+                                const endX = 100 + 80 * Math.cos((endAngle - 90) * Math.PI / 180);
+                                const endY = 100 + 80 * Math.sin((endAngle - 90) * Math.PI / 180);
+                                
+                                const largeArcFlag = angle > 180 ? 1 : 0;
+                                
+                                const pathData = [
+                                  `M 100 100`,
+                                  `L ${startX} ${startY}`,
+                                  `A 80 80 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                                  `Z`
+                                ].join(' ');
+                                
+                                return (
+                                  <path
+                                    key={idx}
+                                    d={pathData}
+                                    fill={pieColors[idx]}
+                                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => {
+                                      setSelectedStat(item.name);
+                                      if (item.name === "Non-Railway") {
+                                        fetchStatDetails("Non-Railway Trainees", null, true);
+                                      } else {
+                                        fetchStatDetails(item.name, null, true);
+                                      }
+                                    }}
+                                  />
+                                );
+                              })}
+                            </svg>
+                            
+                            {/* Legend */}
+                            <div className="space-y-2">
+                              {activeDistData.map((item, idx) => (
+                                <div key={idx} className="flex items-center space-x-2">
+                                  <div 
+                                    className="w-4 h-4 rounded"
+                                    style={{ backgroundColor: pieColors[idx] }}
+                                  ></div>
+                                  <span className="text-sm text-gray-700">
+                                    {item.name}: {item.value}% ({item.count})
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              );
+              })()}
+            </div>
+          </div>
+
+          {/* Designation-wise Stats */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              STC Designation-wise Trainees
+            </h2>
+            <div className="min-h-[300px]">
+              {loading ? (
+                <SkeletonLoader type="bar" count={5} />
+              ) : allTrainees.stc.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Vertical Bar Chart */}
+                  <div>
+                    <div className="flex items-end justify-center space-x-4 h-80">
+                      {(() => {
+                        const activeDesignationCounts = getActiveDesignationCounts();
+                        const colors = [
+                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", 
+                          "#06b6d4", "#84cc16", "#f97316", "#ec4899", "#6b7280"
+                        ];
+                        
+                        return Object.entries(activeDesignationCounts).map(([desig, count], idx) => {
+                          const maxCount = Math.max(...Object.values(activeDesignationCounts));
+                          const heightPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                          return (
+                            <div
+                              key={desig}
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "designation:" + desig
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat("designation:" + desig);
+                                fetchStatDetails("designation", desig, true);
+                              }}
+                              style={{ minWidth: "60px", maxWidth: "80px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1 absolute bottom-0"
+                                  style={{
+                                    backgroundColor: colors[idx % colors.length],
+                                    height: `${Math.max(heightPercent, 8)}%`,
+                                    minHeight: "25px",
+                                  }}
+                                >
+                                  {count}
+                                </div>
+                              </div>
+                              <div className="text-xs font-medium text-gray-700 text-center leading-tight">
+                                {desig}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Pie Chart */}
+                  <div>
+                    <div className="flex items-center justify-center h-80">
+                      {(() => {
+                        const activeDesignationCounts = getActiveDesignationCounts();
+                        const designationData = Object.entries(activeDesignationCounts);
+                        const total = Object.values(activeDesignationCounts).reduce((sum, count) => sum + count, 0);
+                        const colors = [
+                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", 
+                          "#06b6d4", "#84cc16", "#f97316", "#ec4899", "#6b7280"
+                        ];
+                        
+                        if (total === 0) {
+                          return (
+                            <div className="text-center text-gray-400 py-8">
+                              No active STC candidates found
+                            </div>
+                          );
+                        }
+                        
+                        let currentAngle = 0;
+                        
+                        return (
+                          <div className="flex items-center space-x-8">
+                            {/* Pie Chart SVG */}
+                            <div className="relative">
+                              <svg width="240" height="240" className="transform -rotate-90">
+                                <circle
+                                  cx="120"
+                                  cy="120"
+                                  r="100"
+                                  fill="none"
+                                  stroke="#e5e7eb"
+                                  strokeWidth="2"
+                                />
+                                {designationData.map(([desig, count], idx) => {
+                                  const angle = (count / total) * 360;
+                                  const x1 = 120 + 100 * Math.cos((currentAngle * Math.PI) / 180);
+                                  const y1 = 120 + 100 * Math.sin((currentAngle * Math.PI) / 180);
+                                  const x2 = 120 + 100 * Math.cos(((currentAngle + angle) * Math.PI) / 180);
+                                  const y2 = 120 + 100 * Math.sin(((currentAngle + angle) * Math.PI) / 180);
+                                  const largeArc = angle > 180 ? 1 : 0;
+                                  
+                                  const pathData = [
+                                    "M", 120, 120,
+                                    "L", x1, y1,
+                                    "A", 100, 100, 0, largeArc, 1, x2, y2,
+                                    "Z"
+                                  ].join(" ");
+                                  
+                                  currentAngle += angle;
+                                  
+                                  return (
+                                    <path
+                                      key={desig}
+                                      d={pathData}
+                                      fill={colors[idx % colors.length]}
+                                      stroke="white"
+                                      strokeWidth="2"
+                                      className={`cursor-pointer transition-opacity hover:opacity-80 ${
+                                        selectedStat === "designation:" + desig ? "opacity-90 stroke-4" : ""
+                                      }`}
+                                      onClick={() => {
+                                        setSelectedStat("designation:" + desig);
+                                        fetchStatDetails("designation", desig, true);
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </svg>
+                            </div>
+                            
+                            {/* Legend */}
+                            <div className="space-y-2 max-h-80 overflow-y-auto">
+                              {designationData.map(([desig, count], idx) => {
+                                const percentage = ((count / total) * 100).toFixed(1);
+                                return (
+                                  <div
+                                    key={desig}
+                                    className={`flex items-center space-x-3 cursor-pointer p-2 rounded transition hover:bg-gray-50 ${
+                                      selectedStat === "designation:" + desig ? "bg-blue-50 ring-2 ring-blue-500" : ""
+                                    }`}
+                                    onClick={() => {
+                                      setSelectedStat("designation:" + desig);
+                                      fetchStatDetails("designation", desig, true);
+                                    }}
+                                  >
+                                    <div
+                                      className="w-4 h-4 rounded"
+                                      style={{ backgroundColor: colors[idx % colors.length] }}
+                                    ></div>
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-gray-800 truncate">
+                                        {desig}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {percentage}% ({count})
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  No active STC trainees available
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* All Units by Trainee Count */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Unitwise Trainees
+            </h2>
+            <div className="min-h-[300px] overflow-x-auto">
+              {loading ? (
+                <div className="flex items-end justify-center space-x-2 h-80">
+                  {Array(8).fill(0).map((_, idx) => (
+                    <div key={idx} className="flex flex-col items-center" style={{ minWidth: "60px" }}>
+                      <div className="w-full bg-gray-200 rounded-t-md animate-pulse mb-2" style={{ height: `${Math.random() * 60 + 20}%`, minHeight: "40px" }}></div>
+                      <div className="h-4 bg-gray-200 rounded w-12 animate-pulse"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (() => {
+                const activeUnitsData = getActiveUnitsData();
+                return activeUnitsData.length === 0 ? (
+                  <div className="text-center text-gray-400 py-8">
+                    No active STC candidates available
+                  </div>
+                ) : (
+                  <div className="flex items-end justify-center space-x-4 h-80 overflow-x-auto pb-4">
+                    {activeUnitsData.map((item, idx) => {
+                      const maxCount = Math.max(...activeUnitsData.map(d => d.count));
+                      const heightPercent = (item.count / maxCount) * 100;
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex flex-col items-center cursor-pointer group flex-shrink-0 ${selectedStat === "unit:" + item.unit
+                            ? "transform scale-105"
+                            : ""
+                            }`}
+                          onClick={() => {
+                            setSelectedStat("unit:" + item.unit);
+                            fetchStatDetails("unit", item.unit, true); // true for activeOnly
+                          }}
+                          style={{ minWidth: "60px", maxWidth: "80px" }}
+                        >
+                          <div className="relative w-full mb-2 h-72">
+                            <div
+                              className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1 absolute bottom-0"
+                              style={{
+                                backgroundColor: item.color,
+                                height: `${Math.max(heightPercent, 8)}%`,
+                                minHeight: "25px",
+                              }}
+                            >
+                              {item.count}
+                            </div>
+                          </div>
+                          <div className="text-xs font-medium text-gray-700 text-center leading-tight">
+                            {item.unit}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Line Training Stats (by Activity Centre) */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Line training data (unitwise)
+            </h2>
+            <div className="min-h-[300px] overflow-x-auto">
+              {loading ? (
+                <SkeletonLoader type="bar" count={5} />
+              ) : lineTrainingStats.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  No data available
+                </div>
+              ) : (
+                <div className="flex items-end justify-center space-x-4 h-80 overflow-x-auto pb-4">
+                  {lineTrainingStats.map((item, idx) => {
+                    const maxCount = Math.max(...lineTrainingStats.map(d => d.count));
+                    const heightPercent = (item.count / maxCount) * 100;
+                    // Different colors for each bar
+                    const colors = [
+                      "#e11d48", // Rose/Pink
+                      "#059669", // Emerald
+                      "#7c3aed", // Violet
+                      "#dc2626", // Red
+                      "#0891b2", // Cyan
+                      "#ea580c", // Orange
+                      "#65a30d", // Lime
+                      "#be185d", // Pink
+                      "#0d9488", // Teal
+                      "#7c2d12"  // Amber/Brown
+                    ];
+                    const barColor = colors[idx % colors.length];
+                    
+                    return (
+                      <div
+                        key={item.activityCentre}
+                        className={`flex flex-col items-center cursor-pointer group flex-shrink-0 ${selectedLineTraining === item.activityCentre
+                          ? "transform scale-105"
+                          : ""
+                          }`}
+                        onClick={() => {
+                          fetchLineTrainingDetails(item.activityCentre);
+                        }}
+                        style={{ minWidth: "80px", maxWidth: "100px" }}
+                      >
+                        <div className="relative w-full mb-2 h-72">
+                          <div
+                            className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1 absolute bottom-0"
+                            style={{
+                              backgroundColor: barColor,
+                              height: `${Math.max(heightPercent, 8)}%`,
+                              minHeight: "25px",
+                            }}
+                          >
+                            {item.count}
+                          </div>
+                        </div>
+                        <div className="text-xs font-medium text-gray-700 text-center leading-tight">
+                          {item.activityCentre}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main Stats - Vertical Bar Charts and Pie Chart */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Overall Statistics (All Trainees)
+            </h2>
+            <div className="min-h-[400px]">
+              {loading ? (
+                <SkeletonLoader type="bar" count={4} />
+              ) : overallStats ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Vertical Bar Chart */}
+                  <div>
+                    <div className="flex items-end justify-center space-x-8 h-80">
+                      {(() => {
+                        const totalAllCount = getAllTrainees("stc").length + getAllTrainees("wtc").length + getAllTrainees("nonrailway").length;
+                        const railwayAllCount = getAllTrainees("stc").length + getAllTrainees("wtc").length;
+                        const nonRailwayAllCount = getAllTrainees("nonrailway").length;
+                        const resignedCount = overallStats.resignedCount || 0;
+                        
+                        const maxCount = Math.max(totalAllCount, railwayAllCount, nonRailwayAllCount, resignedCount, 1);
+                        
+                        return (
+                          <>
+                            <div
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Total Trainees"
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat("Total Trainees");
+                                fetchStatDetails("Total Trainees");
+                              }}
+                              style={{ minWidth: "80px", maxWidth: "120px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full bg-blue-600 rounded-t-md transition-all duration-300 hover:bg-blue-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                                  style={{
+                                    height: `${Math.max((totalAllCount / maxCount) * 100, 10)}%`,
+                                    minHeight: "40px",
+                                  }}
+                                >
+                                  {totalAllCount}
+                                </div>
+                              </div>
+                              <div className="text-sm font-medium text-blue-700 text-center leading-tight">
+                                Total All
+                              </div>
+                            </div>
+                            
+                            <div
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Railway Trainees"
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat("Railway Trainees");
+                                fetchStatDetails("Railway Trainees");
+                              }}
+                              style={{ minWidth: "80px", maxWidth: "120px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full bg-green-600 rounded-t-md transition-all duration-300 hover:bg-green-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                                  style={{
+                                    height: `${Math.max((railwayAllCount / maxCount) * 100, 10)}%`,
+                                    minHeight: "40px",
+                                  }}
+                                >
+                                  {railwayAllCount}
+                                </div>
+                              </div>
+                              <div className="text-sm font-medium text-green-700 text-center leading-tight">
+                                Railway All
+                              </div>
+                            </div>
+                            
+                            <div
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Non-Railway Trainees"
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat("Non-Railway Trainees");
+                                fetchStatDetails("Non-Railway Trainees");
+                              }}
+                              style={{ minWidth: "80px", maxWidth: "120px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full bg-purple-600 rounded-t-md transition-all duration-300 hover:bg-purple-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                                  style={{
+                                    height: `${Math.max((nonRailwayAllCount / maxCount) * 100, 10)}%`,
+                                    minHeight: "40px",
+                                  }}
+                                >
+                                  {nonRailwayAllCount}
+                                </div>
+                              </div>
+                              <div className="text-sm font-medium text-purple-700 text-center leading-tight">
+                                Non-Railway All
+                              </div>
+                            </div>
+
+                            <div
+                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Resigned Trainees"
+                                ? "transform scale-105"
+                                : ""
+                                }`}
+                              onClick={() => {
+                                setSelectedStat("Resigned Trainees");
+                                fetchStatDetails("Resigned Trainees");
+                              }}
+                              style={{ minWidth: "80px", maxWidth: "120px" }}
+                            >
+                              <div className="relative w-full mb-2 h-72">
+                                <div
+                                  className="w-full bg-red-500 rounded-t-md transition-all duration-300 hover:bg-red-600 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                                  style={{
+                                    height: `${Math.max((resignedCount / maxCount) * 100, 10)}%`,
+                                    minHeight: "40px",
+                                  }}
+                                >
+                                  {resignedCount}
+                                </div>
+                              </div>
+                              <div className="text-sm font-medium text-gray-700 text-center leading-tight">
+                                Resigned Trainees
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Pie Chart */}
+                  <div>
+                    <div className="flex items-center justify-center h-80">
+                      {(() => {
+                        const railwayAllCount = getAllTrainees("stc").length + getAllTrainees("wtc").length;
+                        const nonRailwayAllCount = getAllTrainees("nonrailway").length;
+                        
+                        const pieData = [
+                          { name: "Railway", count: railwayAllCount, color: "#16a34a" },
+                          { name: "Non-Railway", count: nonRailwayAllCount, color: "#9333ea" },
+                        ];
+                        
+                        const total = railwayAllCount + nonRailwayAllCount;
+                        let currentAngle = 0;
+                        
+                        return (
+                          <div className="flex flex-col items-center">
+                            <svg width="200" height="200" className="mb-4">
+                              {pieData.map((item, idx) => {
+                                if (item.count === 0) return null;
+                                const angle = (item.count / total) * 360;
+                                const startAngle = currentAngle;
+                                const endAngle = currentAngle + angle;
+                                currentAngle += angle;
+                                
+                                const startX = 100 + 80 * Math.cos((startAngle - 90) * Math.PI / 180);
+                                const startY = 100 + 80 * Math.sin((startAngle - 90) * Math.PI / 180);
+                                const endX = 100 + 80 * Math.cos((endAngle - 90) * Math.PI / 180);
+                                const endY = 100 + 80 * Math.sin((endAngle - 90) * Math.PI / 180);
+                                
+                                const largeArcFlag = angle > 180 ? 1 : 0;
+                                
+                                const pathData = [
+                                  `M 100 100`,
+                                  `L ${startX} ${startY}`,
+                                  `A 80 80 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                                  `Z`
+                                ].join(' ');
+                                
+                                return (
+                                  <path
+                                    key={idx}
+                                    d={pathData}
+                                    fill={item.color}
+                                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => {
+                                      if (item.name === "Railway") {
+                                        setSelectedStat("Railway Trainees");
+                                        fetchStatDetails("Railway Trainees");
+                                      } else {
+                                        setSelectedStat("Non-Railway Trainees");
+                                        fetchStatDetails("Non-Railway Trainees");
+                                      }
+                                    }}
+                                  />
+                                );
+                              })}
+                            </svg>
+                            
+                            {/* Legend */}
+                            <div className="space-y-2">
+                              {pieData.map((item, idx) => {
+                                const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
+                                return (
+                                  <div key={idx} className="flex items-center space-x-2">
+                                    <div 
+                                      className="w-4 h-4 rounded"
+                                      style={{ backgroundColor: item.color }}
+                                    ></div>
+                                    <span className="text-sm text-gray-700">
+                                      {item.name}: {percentage}% ({item.count})
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                              <div className="mt-2 pt-2 border-t border-gray-200">
+                                <span className="text-sm font-semibold text-gray-800">
+                                  Total: {total} candidates
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  No stats available
+                </div>
+              )}
             </div>
           </div>
 
@@ -1340,8 +2020,10 @@ function Dashboard() {
                             <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
                             <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
                             <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                            <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
+                            <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
                             {statDetails.some((c) => c._source) && (
-                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Source</th>
+                              <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Type</th>
                             )}
                           </>
                         ) : (
@@ -1393,6 +2075,18 @@ function Dashboard() {
                               title={c.unit}
                             >
                               {c.unit}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={getJoiningDate(c, c._source ? c._source.toLowerCase() : "stc")}
+                            >
+                              {getJoiningDate(c, c._source ? c._source.toLowerCase() : "stc")}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={getSparingDate(c, c._source ? c._source.toLowerCase() : "stc")}
+                            >
+                              {getSparingDate(c, c._source ? c._source.toLowerCase() : "stc")}
                             </td>
                             {c._source && (
                               <td

@@ -94,7 +94,6 @@ const Login2 = () => {
                             <img src={nationalEmblem} alt="National Emblem" className="h-11 w-auto" />
                             <div className="border-l border-orange-300 pl-2">
                                 <h1 className="text-sm font-bold text-black leading-tight">Government of India</h1>
-                                <h2 className="text-xs text-black leading-tight">Republic of India</h2>
                             </div>
                         </div>
 
