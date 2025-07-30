@@ -543,6 +543,7 @@ function getSparingDate(item, type) {
       item.sparingDate ||
       item.sparing_date ||
       item.sparing_on ||
+      item.sparingOn ||
       ""
     );
   if (type === "wtc")
@@ -550,7 +551,9 @@ function getSparingDate(item, type) {
       item.date_of_sparing ||
       item.dateOfSparing ||
       item.sparingDate ||
+      item.sparing_date ||
       item.sparing_on ||
+      item.sparingOn ||
       ""
     );
   if (type === "nonrailway")
@@ -559,6 +562,8 @@ function getSparingDate(item, type) {
       item.sparing_on ||
       item.sparingDate ||
       item.dateOfSparing ||
+      item.sparing_date ||
+      item.sparingOn ||
       ""
     );
   return "";
@@ -568,6 +573,8 @@ function getSparingDate(item, type) {
 function getJoiningDate(item, type) {
   if (type === "stc" || type === "wtc")
     return (
+      item.date_of_joining_stc_wtc_non_railway ||
+      item.dateOfJoiningStcWtcNonRailway ||
       item.date_of_joining ||
       item.dateOfJoining ||
       item.joining_date ||
@@ -576,6 +583,8 @@ function getJoiningDate(item, type) {
     );
   if (type === "nonrailway")
     return (
+      item.date_of_joining_stc_wtc_non_railway ||
+      item.dateOfJoiningStcWtcNonRailway ||
       item.date_of_joining ||
       item.joining_date ||
       item.dateOfJoining ||
@@ -1104,6 +1113,14 @@ function Dashboard() {
                   const nonRailwayCount = getActiveTrainees("nonrailway").length;
                   const maxCount = Math.max(stcCount, wtcCount, nonRailwayCount, 1);
                   
+                  // Dynamic height calculation for better visibility with small data
+                  const getBarHeight = (count) => {
+                    if (count === 0) return "8px";
+                    if (maxCount <= 3) return `${Math.max(count * 40, 30)}px`; // Small data: 40px per unit
+                    if (maxCount <= 10) return `${Math.max((count / maxCount) * 120 + 30, 30)}px`; // Medium data
+                    return `${Math.max((count / maxCount) * 140 + 20, 30)}px`; // Large data
+                  };
+                  
                   return (
                     <>
                       <div
@@ -1117,19 +1134,18 @@ function Dashboard() {
                         }}
                         style={{ minWidth: "100px" }}
                       >
-                        <div className="relative w-full mb-2 h-40">
+                        <div className="relative w-full mb-2 h-40 flex items-end">
                           <div
-                            className="w-full bg-blue-600 rounded-t-md transition-all duration-300 hover:bg-blue-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            className="w-full bg-blue-600 rounded-t-md transition-all duration-300 hover:bg-blue-700 flex items-end justify-center text-white text-sm font-bold pb-2"
                             style={{
-                              height: `${Math.max((stcCount / maxCount) * 100, 15)}%`,
-                              minHeight: "30px",
+                              height: getBarHeight(stcCount),
                             }}
                           >
                             {stcCount}
                           </div>
                         </div>
                         <div className="text-sm font-medium text-blue-700 text-center leading-tight">
-                          STC Active
+                          STC 
                         </div>
                       </div>
 
@@ -1144,19 +1160,18 @@ function Dashboard() {
                         }}
                         style={{ minWidth: "100px" }}
                       >
-                        <div className="relative w-full mb-2 h-40">
+                        <div className="relative w-full mb-2 h-40 flex items-end">
                           <div
-                            className="w-full bg-green-600 rounded-t-md transition-all duration-300 hover:bg-green-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            className="w-full bg-green-600 rounded-t-md transition-all duration-300 hover:bg-green-700 flex items-end justify-center text-white text-sm font-bold pb-2"
                             style={{
-                              height: `${Math.max((wtcCount / maxCount) * 100, 15)}%`,
-                              minHeight: "30px",
+                              height: getBarHeight(wtcCount),
                             }}
                           >
                             {wtcCount}
                           </div>
                         </div>
                         <div className="text-sm font-medium text-green-700 text-center leading-tight">
-                          WTC Active
+                          WTC 
                         </div>
                       </div>
 
@@ -1171,19 +1186,18 @@ function Dashboard() {
                         }}
                         style={{ minWidth: "100px" }}
                       >
-                        <div className="relative w-full mb-2 h-40">
+                        <div className="relative w-full mb-2 h-40 flex items-end">
                           <div
-                            className="w-full bg-purple-600 rounded-t-md transition-all duration-300 hover:bg-purple-700 flex items-end justify-center text-white text-sm font-bold pb-2 absolute bottom-0"
+                            className="w-full bg-purple-600 rounded-t-md transition-all duration-300 hover:bg-purple-700 flex items-end justify-center text-white text-sm font-bold pb-2"
                             style={{
-                              height: `${Math.max((nonRailwayCount / maxCount) * 100, 15)}%`,
-                              minHeight: "30px",
+                              height: getBarHeight(nonRailwayCount),
                             }}
                           >
                             {nonRailwayCount}
                           </div>
                         </div>
                         <div className="text-sm font-medium text-purple-700 text-center leading-tight">
-                          Non-Railway Active
+                          Non-Railway 
                         </div>
                       </div>
                     </>
@@ -1199,11 +1213,16 @@ function Dashboard() {
                   : "bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
                   }`}
                 onClick={() => {
-                  setActiveSection("stc");
-                  setActiveTrainees(getActiveTrainees("stc"));
+                  if (activeSection === "stc") {
+                    setActiveSection(null);
+                    setActiveTrainees([]);
+                  } else {
+                    setActiveSection("stc");
+                    setActiveTrainees(getActiveTrainees("stc"));
+                  }
                 }}
               >
-                STC Active ({getActiveTrainees("stc").length})
+                STC  ({getActiveTrainees("stc").length})
               </button>
               <button
                 className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "wtc"
@@ -1211,11 +1230,16 @@ function Dashboard() {
                   : "bg-white text-green-700 border-green-300 hover:bg-green-50"
                   }`}
                 onClick={() => {
-                  setActiveSection("wtc");
-                  setActiveTrainees(getActiveTrainees("wtc"));
+                  if (activeSection === "wtc") {
+                    setActiveSection(null);
+                    setActiveTrainees([]);
+                  } else {
+                    setActiveSection("wtc");
+                    setActiveTrainees(getActiveTrainees("wtc"));
+                  }
                 }}
               >
-                WTC Active ({getActiveTrainees("wtc").length})
+                WTC  ({getActiveTrainees("wtc").length})
               </button>
               <button
                 className={`px-4 py-2 rounded-md font-semibold border-2 transition text-sm ${activeSection === "nonrailway"
@@ -1223,86 +1247,109 @@ function Dashboard() {
                   : "bg-white text-purple-700 border-purple-300 hover:bg-purple-50"
                   }`}
                 onClick={() => {
-                  setActiveSection("nonrailway");
-                  setActiveTrainees(getActiveTrainees("nonrailway"));
+                  if (activeSection === "nonrailway") {
+                    setActiveSection(null);
+                    setActiveTrainees([]);
+                  } else {
+                    setActiveSection("nonrailway");
+                    setActiveTrainees(getActiveTrainees("nonrailway"));
+                  }
+
+
+
                 }}
               >
-                Non-Railway Active ({getActiveTrainees("nonrailway").length})
+                Non-Railway  ({getActiveTrainees("nonrailway").length})
               </button>
             </div>
-            <div className="overflow-auto border rounded-lg bg-white min-h-[200px]" style={{ maxHeight: "50vh" }}>
-              <table className="min-w-full text-xs md:text-sm border-collapse">
-                <thead className="sticky top-0 bg-gray-100 z-10">
-                  <tr>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
-                    <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {!activeSection ? (
+            {activeSection && (
+              <div className="relative">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {activeSection === "stc" ? "STC Active Trainees" : 
+                     activeSection === "wtc" ? "WTC Active Trainees" : 
+                     "Non-Railway Active Trainees"}
+                  </h3>
+                  <button
+                    className="text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition text-sm"
+                    onClick={() => {
+                      setActiveSection(null);
+                      setActiveTrainees([]);
+                    }}
+                    title="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="overflow-auto border rounded-lg bg-white min-h-[200px]" style={{ maxHeight: "50vh" }}>
+                <table className="min-w-full text-xs md:text-sm border-collapse">
+                  <thead className="sticky top-0 bg-gray-100 z-10">
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-400 py-8">
-                        Select a category to view active trainees.
-                      </td>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
+                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
                     </tr>
-                  ) : activeTrainees.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center text-gray-400 py-8">
-                        No active trainees found.
-                      </td>
-                    </tr>
-                  ) : (
-                    activeTrainees.map((c, i) => (
-                      <tr
-                        key={c.ticket_no || c.ticketNo || c.id || i}
-                        className="hover:bg-gray-50 transition border-b"
-                      >
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                          title={c.ticket_no || c.ticketNo || c.id}
-                        >
-                          {c.ticket_no || c.ticketNo || c.id}
-                        </td>
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
-                          title={c.name}
-                        >
-                          {c.name}
-                        </td>
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                          title={c.designation}
-                        >
-                          {c.designation}
-                        </td>
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                          title={c.unit}
-                        >
-                          {c.unit}
-                        </td>
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                          title={getJoiningDate(c, activeSection)}
-                        >
-                          {getJoiningDate(c, activeSection)}
-                        </td>
-                        <td
-                          className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                          title={getSparingDate(c, activeSection)}
-                        >
-                          {getSparingDate(c, activeSection)}
+                  </thead>
+                  <tbody>
+                    {activeTrainees.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center text-gray-400 py-8">
+                          No active trainees found.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      activeTrainees.map((c, i) => (
+                        <tr
+                          key={c.ticket_no || c.ticketNo || c.id || i}
+                          className="hover:bg-gray-50 transition border-b"
+                        >
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.ticket_no || c.ticketNo || c.id}
+                          >
+                            {c.ticket_no || c.ticketNo || c.id}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                            title={c.name}
+                          >
+                            {c.name}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.designation}
+                          >
+                            {c.designation}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={c.unit}
+                          >
+                            {c.unit}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={getJoiningDate(c, activeSection)}
+                          >
+                            {getJoiningDate(c, activeSection)}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                            title={getSparingDate(c, activeSection)}
+                          >
+                            {getSparingDate(c, activeSection)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              </div>
+            )}
           </div>
 
           {/* Distribution by Percentage - Bar Chart and Pie Chart */}
@@ -1325,6 +1372,16 @@ function Dashboard() {
                         {activeDistData.map((item, idx) => {
                           // Different colors for bar chart
                           const barColors = ["#e11d48", "#059669", "#7c3aed"];
+                          const maxCount = Math.max(...activeDistData.map(d => d.count));
+                          
+                          // Dynamic height calculation for better visibility
+                          const getDynamicHeight = (count) => {
+                            if (count === 0) return "8px";
+                            if (maxCount <= 3) return `${Math.max(count * 50, 40)}px`; // Small data: 50px per unit
+                            if (maxCount <= 10) return `${Math.max((count / maxCount) * 220 + 40, 40)}px`; // Medium data
+                            return `${Math.max((count / maxCount) * 260 + 30, 40)}px`; // Large data
+                          };
+                          
                           return (
                             <div
                               key={idx}
@@ -1342,13 +1399,12 @@ function Dashboard() {
                               }}
                               style={{ minWidth: "80px", maxWidth: "100px" }}
                             >
-                              <div className="relative w-full mb-2 h-72">
+                              <div className="relative w-full mb-2 h-80 flex items-end">
                                 <div
-                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex flex-col items-center justify-end text-white text-xs font-medium pb-2 absolute bottom-0"
+                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex flex-col items-center justify-end text-white text-xs font-medium pb-2"
                                   style={{
                                     backgroundColor: barColors[idx],
-                                    height: `${Math.max(item.value, 8)}%`,
-                                    minHeight: "35px",
+                                    height: getDynamicHeight(item.count),
                                   }}
                                 >
                                   <div className="font-bold text-sm">{item.value}%</div>
@@ -1461,7 +1517,15 @@ function Dashboard() {
                         
                         return Object.entries(activeDesignationCounts).map(([desig, count], idx) => {
                           const maxCount = Math.max(...Object.values(activeDesignationCounts));
-                          const heightPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                          
+                          // Dynamic height calculation for better visibility
+                          const getDynamicHeight = (count) => {
+                            if (count === 0) return "8px";
+                            if (maxCount <= 3) return `${Math.max(count * 45, 30)}px`; // Small data: 45px per unit
+                            if (maxCount <= 10) return `${Math.max((count / maxCount) * 240 + 30, 30)}px`; // Medium data
+                            return `${Math.max((count / maxCount) * 260 + 20, 30)}px`; // Large data
+                          };
+                          
                           return (
                             <div
                               key={desig}
@@ -1475,13 +1539,12 @@ function Dashboard() {
                               }}
                               style={{ minWidth: "60px", maxWidth: "80px" }}
                             >
-                              <div className="relative w-full mb-2 h-72">
+                              <div className="relative w-full mb-2 h-80 flex items-end">
                                 <div
-                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1 absolute bottom-0"
+                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1"
                                   style={{
                                     backgroundColor: colors[idx % colors.length],
-                                    height: `${Math.max(heightPercent, 8)}%`,
-                                    minHeight: "25px",
+                                    height: getDynamicHeight(count),
                                   }}
                                 >
                                   {count}
@@ -1639,7 +1702,15 @@ function Dashboard() {
                   <div className="flex items-end justify-center space-x-4 h-80 overflow-x-auto pb-4">
                     {activeUnitsData.map((item, idx) => {
                       const maxCount = Math.max(...activeUnitsData.map(d => d.count));
-                      const heightPercent = (item.count / maxCount) * 100;
+                      
+                      // Dynamic height calculation for better visibility
+                      const getDynamicHeight = (count) => {
+                        if (count === 0) return "8px";
+                        if (maxCount <= 3) return `${Math.max(count * 45, 30)}px`; // Small data: 45px per unit
+                        if (maxCount <= 10) return `${Math.max((count / maxCount) * 240 + 30, 30)}px`; // Medium data
+                        return `${Math.max((count / maxCount) * 260 + 20, 30)}px`; // Large data
+                      };
+                      
                       return (
                         <div
                           key={idx}
@@ -1653,13 +1724,12 @@ function Dashboard() {
                           }}
                           style={{ minWidth: "60px", maxWidth: "80px" }}
                         >
-                          <div className="relative w-full mb-2 h-72">
+                          <div className="relative w-full mb-2 h-80 flex items-end">
                             <div
-                              className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1 absolute bottom-0"
+                              className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1"
                               style={{
                                 backgroundColor: item.color,
-                                height: `${Math.max(heightPercent, 8)}%`,
-                                minHeight: "25px",
+                                height: getDynamicHeight(item.count),
                               }}
                             >
                               {item.count}
