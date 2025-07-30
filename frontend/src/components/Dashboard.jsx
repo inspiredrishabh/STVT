@@ -169,6 +169,18 @@ class DashboardAPI {
         nonRailwayRes.json(),
       ]);
       const activities = [];
+      
+      // Helper function to get the best available date from multiple fields
+      const getBestDate = (candidate) => {
+        return candidate.created_at || 
+               candidate.createdAt || 
+               candidate.date_of_joining_stc_wtc_non_railway ||
+               candidate.dateOfJoiningStcWtcNonRailway ||
+               candidate.updated_at ||
+               candidate.updatedAt ||
+               null;
+      };
+      
       if (stcData.success && stcData.data) {
         (Array.isArray(stcData.data) ? stcData.data.slice(0, 3) : []).forEach(
           (c, i) =>
@@ -176,8 +188,8 @@ class DashboardAPI {
               id: `stc-${c.id || i}`,
               activity: "STC trainee registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
-              time: this.getTimeAgo(c.created_at),
-              icon: "�", // Blue circle
+              time: this.getTimeAgo(getBestDate(c)),
+              icon: "🔵", // Blue circle
               category: "STC",
             })
         );
@@ -189,8 +201,8 @@ class DashboardAPI {
               id: `wtc-${c.id || i}`,
               activity: "WTC trainee registered",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
-              time: this.getTimeAgo(c.created_at),
-              icon: "�", // Green circle
+              time: this.getTimeAgo(getBestDate(c)),
+              icon: "🟢", // Green circle
               category: "WTC",
             })
         );
@@ -204,35 +216,99 @@ class DashboardAPI {
             id: `nonrailway-${c.id || i}`,
             activity: "Non-Railway application submitted",
             candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
-            time: this.getTimeAgo(c.created_at),
-            icon: "�", // Purple circle
+            time: this.getTimeAgo(getBestDate(c)),
+            icon: "🟣", // Purple circle
             category: "Non-Railway",
           })
         );
       }
+      
+      // Sort activities by most recent first (try to parse dates for proper sorting)
+      activities.sort((a, b) => {
+        // If both have "ago" in them, keep current order
+        if (a.time.includes('ago') && b.time.includes('ago')) return 0;
+        // If one has "ago", it's more recent
+        if (a.time.includes('ago')) return -1;
+        if (b.time.includes('ago')) return 1;
+        // Otherwise keep current order
+        return 0;
+      });
+      
       return { success: true, data: activities.slice(0, 8) };
     } catch {
       return { success: false, data: [] };
     }
   }
   getTimeAgo(dateString) {
-    if (!dateString) return "Recently";
+    if (!dateString) {
+      // If no date provided, show current date and time
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const time = now.toLocaleString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+      });
+      return `${day}/${month}/${year} at ${time}`;
+    }
+    
     let date;
-    if (
-      typeof dateString === "string" &&
-      dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)
-    ) {
-      date = new Date(dateString.replace(" ", "T") + "Z");
+    
+    // Handle various date formats
+    if (typeof dateString === "string") {
+      // Handle SQL datetime format: 2025-07-30 14:30:00
+      if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+        date = new Date(dateString.replace(" ", "T"));
+      }
+      // Handle ISO format: 2025-07-30T14:30:00.000Z
+      else if (dateString.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+        date = new Date(dateString);
+      }
+      // Handle timestamp strings
+      else if (dateString.match(/^\d+$/)) {
+        date = new Date(parseInt(dateString));
+      }
+      // Try direct parsing
+      else {
+        date = new Date(dateString);
+      }
+    } else if (typeof dateString === "number") {
+      // Handle timestamp numbers
+      date = new Date(dateString);
     } else {
       date = new Date(dateString);
     }
-    if (isNaN(date.getTime())) return "Recently";
-    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60) return "Just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
-    if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
-    return date.toLocaleDateString();
+    
+    // If date parsing failed, show current date and time
+    if (isNaN(date.getTime())) {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const time = now.toLocaleString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+      });
+      return `${day}/${month}/${year} at ${time}`;
+    }
+    
+    // Always show full date and time in DD/MM/YYYY at HH:MM AM/PM format
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const time = date.toLocaleString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    });
+    
+    return `${day}/${month}/${year} at ${time}`;
   }
 }
 
@@ -1680,7 +1756,7 @@ function Dashboard() {
           {/* All Units by Trainee Count */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Unitwise Trainees
+              Unit-wise Trainees
             </h2>
             <div className="min-h-[300px] overflow-x-auto">
               {loading ? (
@@ -1750,7 +1826,7 @@ function Dashboard() {
           {/* Line Training Stats (by Activity Centre) */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Line training data (unitwise)
+              Line training data (Unit-wise)
             </h2>
             <div className="min-h-[300px] overflow-x-auto">
               {loading ? (
@@ -1860,7 +1936,7 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-blue-700 text-center leading-tight">
-                                Total All
+                                Total 
                               </div>
                             </div>
                             
@@ -1887,7 +1963,7 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-green-700 text-center leading-tight">
-                                Railway All
+                                Railway 
                               </div>
                             </div>
                             
@@ -1914,7 +1990,7 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-purple-700 text-center leading-tight">
-                                Non-Railway All
+                                Non-Railway 
                               </div>
                             </div>
 
