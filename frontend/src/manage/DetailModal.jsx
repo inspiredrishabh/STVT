@@ -39,7 +39,7 @@ const DetailModal = ({ candidate, onClose }) => {
       { label: "Mother's Name", value: candidate.motherName },
       { label: "DOB", value: formatDate(candidate.dob) },
       {
-        label: "Employee No.",
+        label: "Ticket No.",
         value: candidate.ticketNumber || candidate.employeeNumber,
       },
       { label: "Category", value: candidate.category },
