@@ -186,7 +186,7 @@ class DashboardAPI {
           (c, i) =>
             activities.push({
               id: `stc-${c.id || i}`,
-              activity: "STC trainee registered",
+              activity: "STC Trainee updated",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(getBestDate(c)),
               icon: "🔵", // Blue circle
@@ -199,7 +199,7 @@ class DashboardAPI {
           (c, i) =>
             activities.push({
               id: `wtc-${c.id || i}`,
-              activity: "WTC trainee registered",
+              activity: "WTC Trainee updated",
               candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
               time: this.getTimeAgo(getBestDate(c)),
               icon: "🟢", // Green circle
@@ -214,7 +214,7 @@ class DashboardAPI {
         ).forEach((c, i) =>
           activities.push({
             id: `nonrailway-${c.id || i}`,
-            activity: "Non-Railway Trainee registered",
+            activity: "Non-Railway Trainee updated",
             candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
             time: this.getTimeAgo(getBestDate(c)),
             icon: "🟣", // Purple circle
