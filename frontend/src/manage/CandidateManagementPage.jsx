@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useAuth } from "../auth/AuthContext";
 import PageHeader from "./PageHeader";
 import StatsCards from "./StatsCard";
 import SearchFilters from "./SearchAndFilter";
@@ -1614,6 +1615,7 @@ const ToastNotification = ({ message, type = "success", onClose }) => {
 };
 
 const CandidateManagementPage = () => {
+  const { userRole } = useAuth();
   const [candidates, setCandidates] = useState([]);
   const [dropdownData, setDropdownData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1639,6 +1641,9 @@ const CandidateManagementPage = () => {
   // State to control view ('list' or 'form') and the candidate being edited
   const [view, setView] = useState("list");
   const [candidateToEdit, setCandidateToEdit] = useState(null);
+
+  // Check if user has edit/delete permissions
+  const canEditDelete = userRole === 'admin' || userRole === 'master';
 
   // API functions using the real backend
   const fetchCandidates = async () => {
@@ -1693,6 +1698,12 @@ const CandidateManagementPage = () => {
   };
 
   const updateCandidate = async (candidateId, candidateData) => {
+    // Check permissions before allowing update
+    if (!canEditDelete) {
+      showNotification("You don't have permission to edit candidates", "error");
+      return;
+    }
+
     try {
       // If candidateData contains an image file, use FormData
       let response;
@@ -1750,6 +1761,12 @@ const CandidateManagementPage = () => {
   };
 
   const deleteCandidate = async (candidateId) => {
+    // Check permissions before allowing delete
+    if (!canEditDelete) {
+      showNotification("You don't have permission to delete candidates", "error");
+      return;
+    }
+
     try {
       // Get candidate name before deletion for the success message
       const candidateToDelete = candidates.find((c) => c.id === candidateId);
@@ -1874,6 +1891,11 @@ const CandidateManagementPage = () => {
 
   // Handler to open the form for editing a specific candidate
   const handleEdit = (candidate) => {
+    // Check permissions before allowing edit
+    if (!canEditDelete) {
+      showNotification("You don't have permission to edit candidates", "error");
+      return;
+    }
     setCandidateToEdit(candidate);
     setView("form");
   };
@@ -1902,6 +1924,13 @@ const CandidateManagementPage = () => {
   };
 
   const handleDelete = async () => {
+    // Check permissions before allowing delete
+    if (!canEditDelete) {
+      showNotification("You don't have permission to delete candidates", "error");
+      setDeleteModal({ isOpen: false, candidateId: null, candidateName: "" });
+      return;
+    }
+
     try {
       await deleteCandidate(deleteModal.candidateId);
       setDeleteModal({ isOpen: false, candidateId: null, candidateName: "" });
@@ -2091,6 +2120,7 @@ const CandidateManagementPage = () => {
                   }
                   onEdit={handleEdit} // Pass the edit handler
                   onUpdate={handleInlineUpdate} // Pass the inline update handler
+                  canEditDelete={canEditDelete} // Pass permission flag
                 />
               </div>
               <div className="lg:col-span-1">

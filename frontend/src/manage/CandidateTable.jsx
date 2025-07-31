@@ -16,7 +16,7 @@ import {
   Building,
 } from "lucide-react";
 
-const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
+const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditDelete = true }) => {
   const [editingCandidate, setEditingCandidate] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
@@ -27,12 +27,20 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
   }
 
   const handleEditClick = (candidate) => {
+    // Check permissions before allowing comprehensive edit
+    if (!canEditDelete) {
+      return; // Do nothing if user doesn't have edit permissions
+    }
     // For comprehensive editing, open modal
     setEditFormData({ ...candidate });
     setShowEditModal(true);
   };
 
   const handleInlineEditClick = (candidate) => {
+    // Check permissions before allowing inline edit
+    if (!canEditDelete) {
+      return; // Do nothing if user doesn't have edit permissions
+    }
     // For quick inline editing
     setEditingCandidate(candidate.id);
     setEditFormData({ ...candidate });
@@ -114,6 +122,7 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
                   onInputChange={handleInputChange}
                   onSaveEdit={handleSaveEdit}
                   onCancelEdit={handleCancelEdit}
+                  canEditDelete={canEditDelete}
                 />
               ))}
             </tbody>
@@ -122,13 +131,14 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate }) => {
       </div>
 
       {/* Comprehensive Edit Modal */}
-      {showEditModal && (
+      {showEditModal && canEditDelete && (
         <EditCandidateModal
           candidate={editFormData}
           onSave={handleModalSave}
           onCancel={handleModalCancel}
           onInputChange={handleInputChange}
           onImageChange={setEditImageFile}
+          canEditDelete={canEditDelete}
         />
       )}
     </>
@@ -159,6 +169,7 @@ const CandidateRow = ({
   onInputChange,
   onSaveEdit,
   onCancelEdit,
+  canEditDelete = true,
 }) => {
   if (isEditing) {
     return (
@@ -168,6 +179,7 @@ const CandidateRow = ({
         onInputChange={onInputChange}
         onSaveEdit={onSaveEdit}
         onCancelEdit={onCancelEdit}
+        canEditDelete={canEditDelete}
       />
     );
   }
@@ -217,18 +229,22 @@ const CandidateRow = ({
             className="text-blue-600 hover:bg-blue-100 border-blue-200"
             title="View Details"
           />
-          <ActionButton
-            onClick={() => onEdit(candidate)}
-            icon={Edit}
-            className="text-green-600 hover:bg-green-100 border-green-200"
-            title="Edit All Details"
-          />
-          <ActionButton
-            onClick={() => onDelete(candidate.id, candidate.name)}
-            icon={Trash2}
-            className="text-red-600 hover:bg-red-100 border-red-200"
-            title="Delete"
-          />
+          {canEditDelete && (
+            <>
+              <ActionButton
+                onClick={() => onEdit(candidate)}
+                icon={Edit}
+                className="text-green-600 hover:bg-green-100 border-green-200"
+                title="Edit All Details"
+              />
+              <ActionButton
+                onClick={() => onDelete(candidate.id, candidate.name)}
+                icon={Trash2}
+                className="text-red-600 hover:bg-red-100 border-red-200"
+                title="Delete"
+              />
+            </>
+          )}
         </div>
       </td>
     </tr>
@@ -241,6 +257,7 @@ const EditableCandidateRow = ({
   onInputChange,
   onSaveEdit,
   onCancelEdit,
+  canEditDelete = true,
 }) => (
   <tr className="bg-blue-50 border-y-2 border-blue-300">
     <td className="px-6 py-4">
@@ -253,6 +270,7 @@ const EditableCandidateRow = ({
             onChange={(e) => onInputChange("name", e.target.value)}
             className="text-sm font-semibold bg-white border border-gray-300 rounded-md px-2 py-1 flex-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Full Name"
+            disabled={!canEditDelete}
           />
         </div>
         <div className="flex items-center space-x-2">
@@ -263,6 +281,7 @@ const EditableCandidateRow = ({
             onChange={(e) => onInputChange("email", e.target.value)}
             className="text-xs bg-white border border-gray-300 rounded-md px-2 py-1 flex-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Email Address"
+            disabled={!canEditDelete}
           />
         </div>
       </div>
@@ -275,6 +294,7 @@ const EditableCandidateRow = ({
           onChange={(e) => onInputChange("batch", e.target.value)}
           className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Batch"
+          disabled={!canEditDelete}
         />
       </div>
     </td>
@@ -284,6 +304,7 @@ const EditableCandidateRow = ({
           value={editFormData.workInfo || ""}
           onChange={(e) => onInputChange("workInfo", e.target.value)}
           className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+          disabled={!canEditDelete}
         >
           <option value="">Select Work Info</option>
           <option value="ASE">ASE</option>
@@ -317,6 +338,7 @@ const EditableCandidateRow = ({
             }
           }}
           className="w-full text-xs bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+          disabled={!canEditDelete}
         >
           <option value="">Select Type</option>
           <option value="STC">STC</option>
@@ -330,6 +352,7 @@ const EditableCandidateRow = ({
         value={editFormData.status || ""}
         onChange={(e) => onInputChange("status", e.target.value)}
         className="w-full text-sm bg-white border border-gray-300 rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
+        disabled={!canEditDelete}
       >
         <option value="Active">Active</option>
         <option value="Inactive">Inactive</option>
@@ -339,18 +362,24 @@ const EditableCandidateRow = ({
     </td>
     <td className="px-6 py-4">
       <div className="flex space-x-2">
-        <ActionButton
-          onClick={onSaveEdit}
-          icon={Save}
-          className="text-green-600 hover:bg-green-100 border-green-200"
-          title="Save Changes"
-        />
-        <ActionButton
-          onClick={onCancelEdit}
-          icon={X}
-          className="text-red-600 hover:bg-red-100 border-red-200"
-          title="Cancel Edit"
-        />
+        {canEditDelete ? (
+          <>
+            <ActionButton
+              onClick={onSaveEdit}
+              icon={Save}
+              className="text-green-600 hover:bg-green-100 border-green-200"
+              title="Save Changes"
+            />
+            <ActionButton
+              onClick={onCancelEdit}
+              icon={X}
+              className="text-red-600 hover:bg-red-100 border-red-200"
+              title="Cancel Edit"
+            />
+          </>
+        ) : (
+          <span className="text-sm text-gray-500 px-3 py-2">View Only</span>
+        )}
       </div>
     </td>
   </tr>
@@ -687,6 +716,7 @@ const EditCandidateModal = ({
   onCancel,
   onInputChange,
   onImageChange,
+  canEditDelete = true,
 }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
     <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
@@ -827,6 +857,7 @@ const EditCandidateModal = ({
             ]}
             candidate={candidate}
             onInputChange={onInputChange}
+            canEditDelete={canEditDelete}
           />
 
           {/* Professional Information */}
@@ -836,6 +867,7 @@ const EditCandidateModal = ({
             fields={getProfessionalFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
+            canEditDelete={canEditDelete}
           />
 
           {/* Course Information */}
@@ -845,6 +877,7 @@ const EditCandidateModal = ({
             fields={getCourseFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
+            canEditDelete={canEditDelete}
           />
 
           {/* Educational Information */}
@@ -854,6 +887,7 @@ const EditCandidateModal = ({
             fields={getEducationalFields(candidate)}
             candidate={candidate}
             onInputChange={onInputChange}
+            canEditDelete={canEditDelete}
           />
         </div>
       </div>
@@ -864,15 +898,17 @@ const EditCandidateModal = ({
           onClick={onCancel}
           className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors font-medium"
         >
-          Cancel
+          {canEditDelete ? 'Cancel' : 'Close'}
         </button>
-        <button
-          onClick={onSave}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 font-medium"
-        >
-          <Save className="h-4 w-4" />
-          <span>Save Changes</span>
-        </button>
+        {canEditDelete && (
+          <button
+            onClick={onSave}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 font-medium"
+          >
+            <Save className="h-4 w-4" />
+            <span>Save Changes</span>
+          </button>
+        )}
       </div>
     </div>
   </div>
@@ -885,6 +921,7 @@ const EditSection = ({
   fields,
   candidate,
   onInputChange,
+  canEditDelete = true,
 }) => {
   // --- Add local state for image file name ---
   const [selectedFileName, setSelectedFileName] = useState("");
@@ -930,6 +967,7 @@ const EditSection = ({
                         setSelectedFileName(e.target.files[0]?.name || "");
                       }}
                       className="hidden"
+                      disabled={!canEditDelete}
                     />
                   </span>
                 </label>
@@ -948,6 +986,7 @@ const EditSection = ({
                 value={value || ""}
                 onChange={(e) => onInputChange(field, e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                disabled={!canEditDelete}
               >
                 <option value="">Select {label}</option>
                 {options.map((option) => (
@@ -963,6 +1002,7 @@ const EditSection = ({
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder={`Enter ${label.toLowerCase()}`}
+                disabled={!canEditDelete}
               />
             ) : (
               <input
@@ -971,6 +1011,7 @@ const EditSection = ({
                 onChange={(e) => onInputChange(field, e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder={`Enter ${label.toLowerCase()}`}
+                disabled={!canEditDelete}
               />
             )}
           </div>
