@@ -214,7 +214,7 @@ class DashboardAPI {
         ).forEach((c, i) =>
           activities.push({
             id: `nonrailway-${c.id || i}`,
-            activity: "Non-Railway application submitted",
+            activity: "Non-Railway Trainee registered",
             candidate: `${c.name || "Unknown"} - ${c.ticket_no || "N/A"}`,
             time: this.getTimeAgo(getBestDate(c)),
             icon: "🟣", // Purple circle
