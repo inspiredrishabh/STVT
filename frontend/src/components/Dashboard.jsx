@@ -846,16 +846,16 @@ function Dashboard() {
     if (type === "Railway Trainees") {
       // Show all STC + WTC candidates
       url = "/api/stc";
-      title = activeOnly ? "Railway Trainees (STC & WTC) - Active Only" : "Railway Trainees (STC & WTC)";
+      title = activeOnly ? "Railway Trainees (STC & WTC)" : "Railway Trainees (STC & WTC)";
     } else if (type === "Non-Railway Trainees") {
       url = "/api/nonrailway";
-      title = activeOnly ? "Non-Railway Trainees - Active Only" : "Non-Railway Trainees";
+      title = activeOnly ? "Non-Railway Trainees " : "Non-Railway Trainees";
     } else if (type === "STC") {
       url = "/api/stc";
-      title = activeOnly ? "STC Trainees - Active Only" : "STC Trainees";
+      title = activeOnly ? "STC Trainees " : "STC Trainees";
     } else if (type === "WTC") {
       url = "/api/wtc";
-      title = activeOnly ? "WTC Trainees - Active Only" : "WTC Trainees";
+      title = activeOnly ? "WTC Trainees " : "WTC Trainees";
     } else if (type === "Resigned Trainees") {
       // Fetch both STC and WTC resigned trainees
       title = "Resigned Trainees (STC & WTC)";
@@ -935,10 +935,10 @@ function Dashboard() {
       }
     } else if (type === "unit") {
       url = "/api/stc/filter/unit/" + encodeURIComponent(value);
-      title = activeOnly ? `Candidates in Unit: ${value} - Active Only` : `Candidates in Unit: ${value}`;
+      title = activeOnly ? `Candidates in Unit: ${value} ` : `Candidates in Unit: ${value}`;
     } else if (type === "designation") {
       url = "/api/stc/filter/designation/" + encodeURIComponent(value);
-      title = activeOnly ? `Candidates with Designation: ${value} - Active Only` : `Candidates with Designation: ${value}`;
+      title = activeOnly ? `Candidates with Designation: ${value} ` : `Candidates with Designation: ${value}`;
     }
     if (!url) return;
     try {
@@ -1342,9 +1342,9 @@ function Dashboard() {
               <div className="relative">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    {activeSection === "stc" ? "STC Active Trainees" : 
-                     activeSection === "wtc" ? "WTC Active Trainees" : 
-                     "Non-Railway Active Trainees"}
+                    {activeSection === "stc" ? "STC  Trainees" : 
+                     activeSection === "wtc" ? "WTC  Trainees" : 
+                     "Non-Railway Trainees"}
                   </h3>
                   <button
                     className="text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition text-sm"
@@ -1373,7 +1373,7 @@ function Dashboard() {
                     {activeTrainees.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="text-center text-gray-400 py-8">
-                          No active trainees found.
+                          No trainees found.
                         </td>
                       </tr>
                     ) : (
@@ -1439,7 +1439,7 @@ function Dashboard() {
               ) : (() => {
                 const activeDistData = getActiveDistributionData();
                 return activeDistData.length === 0 ? (
-                  <div className="text-center text-gray-400 py-8">No active candidates available</div>
+                  <div className="text-center text-gray-400 py-8">No candidates available</div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Vertical Bar Chart */}
@@ -1651,7 +1651,7 @@ function Dashboard() {
                         if (total === 0) {
                           return (
                             <div className="text-center text-gray-400 py-8">
-                              No active STC candidates found
+                              No STC candidates found
                             </div>
                           );
                         }
@@ -1747,7 +1747,7 @@ function Dashboard() {
                 </div>
               ) : (
                 <div className="text-center text-gray-400 py-8">
-                  No active STC trainees available
+                  No STC trainees available
                 </div>
               )}
             </div>
@@ -1772,7 +1772,7 @@ function Dashboard() {
                 const activeUnitsData = getActiveUnitsData();
                 return activeUnitsData.length === 0 ? (
                   <div className="text-center text-gray-400 py-8">
-                    No active STC candidates available
+                    No STC candidates available
                   </div>
                 ) : (
                   <div className="flex items-end justify-center space-x-4 h-80 overflow-x-auto pb-4">
