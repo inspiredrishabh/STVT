@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   ClipboardList,
   RefreshCw,
+  Filter,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -546,7 +547,7 @@ const realAPI = {
 
 const FeedMark = () => {
   const [searchParams] = useSearchParams();
-  
+
   // New paper-centric approach states
   const [selectedModule, setSelectedModule] = useState("");
   const [selectedSession, setSelectedSession] = useState("");
@@ -555,7 +556,11 @@ const FeedMark = () => {
   const [paperMarks, setPaperMarks] = useState({}); // { candidateId: marks }
   const [existingMarks, setExistingMarks] = useState({}); // { candidateId: marks }
   const [paperSupplementaryMarks, setPaperSupplementaryMarks] = useState({}); // { candidateId: suppMarks }
-  
+
+  // Add batch filtering states
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("all");
+
   // UI states
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -563,7 +568,7 @@ const FeedMark = () => {
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [showMarksPanel, setShowMarksPanel] = useState(false);
   const [isEditingPaperMarks, setIsEditingPaperMarks] = useState(false);
-  
+
   // Legacy states for backward compatibility (can be removed later)
   const [ticketNo, setTicketNo] = useState("");
   const [searchMethod, setSearchMethod] = useState("paper"); // Default to new method
@@ -658,6 +663,18 @@ const FeedMark = () => {
         const moduleCandidates = result.data;
         setCandidates(moduleCandidates);
 
+        // Extract unique batches
+        const batchSet = new Set();
+        moduleCandidates.forEach(candidate => {
+          if (candidate.batch) {
+            batchSet.add(candidate.batch);
+          } else {
+            batchSet.add("No Batch");
+          }
+        });
+        setBatches(Array.from(batchSet).sort());
+        setSelectedBatch("all");
+
         // Load existing marks for this specific paper for all candidates
         const existingMarksData = {};
         const paperMarksData = {};
@@ -696,9 +713,24 @@ const FeedMark = () => {
       setExistingMarks({});
       setPaperMarks({});
       setShowMarksPanel(false);
+      setBatches([]);
+      setSelectedBatch("all");
     } finally {
       setCandidatesLoading(false);
     }
+  };
+
+  // Filter candidates by selected batch
+  const getFilteredCandidates = () => {
+    if (selectedBatch === "all") {
+      return candidates;
+    }
+    return candidates.filter(candidate => {
+      if (selectedBatch === "No Batch") {
+        return !candidate.batch || candidate.batch === "";
+      }
+      return candidate.batch === selectedBatch;
+    });
   };
 
   // Helper function to extract main marks from combined format (e.g., "88C70" -> 88)
@@ -811,6 +843,8 @@ const FeedMark = () => {
     setShowMarksPanel(false);
     setIsEditingPaperMarks(false);
     setMessage({ type: "", text: "" });
+    setBatches([]);
+    setSelectedBatch("all");
   };
 
   // Handle URL parameters for auto-selection from TraineeProfile
@@ -1281,8 +1315,8 @@ const FeedMark = () => {
                   resetPaperForm();
                 }}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "paper"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 📝 Paper-wise Entry (Recommended)
@@ -1290,8 +1324,8 @@ const FeedMark = () => {
               <button
                 onClick={() => setSearchMethod("ticket")}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 🎫 Search by Ticket Number
@@ -1299,8 +1333,8 @@ const FeedMark = () => {
               <button
                 onClick={() => setSearchMethod("dropdown")}
                 className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "dropdown"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 📋 Select from Dropdown
@@ -1420,85 +1454,85 @@ const FeedMark = () => {
             {/* Search Controls - Only for individual candidate methods */}
             {searchMethod !== "paper" && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              {searchMethod === "ticket" ? (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Ticket Number
-                  </label>
-                  <input
-                    type="text"
-                    value={ticketNo}
-                    onChange={(e) => setTicketNo(e.target.value)}
-                    placeholder="Enter ticket number (e.g., STC2024001)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleSearchCandidate()
-                    }
-                  />
-                </div>
-              ) : (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Select Candidate
-                  </label>
-                  <select
-                    value={selectedCandidate}
-                    onChange={(e) => {
-                      setSelectedCandidate(e.target.value);
-                      handleCandidateSelect(e.target.value);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    disabled={candidatesLoading}
-                  >
-                    <option value="">Select a candidate...</option>
-                    {candidates.map((candidate) => (
-                      <option key={candidate.id} value={candidate.id}>
-                        {candidate.ticket_no || candidate.ticketNo} -{" "}
-                        {candidate.name} ({candidate.module_no})
-                      </option>
-                    ))}
-                  </select>
-                  {candidatesLoading && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      Loading candidates...
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                {searchMethod === "ticket" && (
-                  <button
-                    onClick={handleSearchCandidate}
-                    disabled={loading || !ticketNo}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Search className="w-5 h-5" />
+                {searchMethod === "ticket" ? (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Ticket Number
+                    </label>
+                    <input
+                      type="text"
+                      value={ticketNo}
+                      onChange={(e) => setTicketNo(e.target.value)}
+                      placeholder="Enter ticket number (e.g., STC2024001)"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSearchCandidate()
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Select Candidate
+                    </label>
+                    <select
+                      value={selectedCandidate}
+                      onChange={(e) => {
+                        setSelectedCandidate(e.target.value);
+                        handleCandidateSelect(e.target.value);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      disabled={candidatesLoading}
+                    >
+                      <option value="">Select a candidate...</option>
+                      {candidates.map((candidate) => (
+                        <option key={candidate.id} value={candidate.id}>
+                          {candidate.ticket_no || candidate.ticketNo} -{" "}
+                          {candidate.name} ({candidate.module_no})
+                        </option>
+                      ))}
+                    </select>
+                    {candidatesLoading && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Loading candidates...
+                      </p>
                     )}
-                    Search
-                  </button>
+                  </div>
                 )}
-                <button
-                  onClick={resetForm}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200"
-                >
-                  Reset
-                </button>
+
+                <div className="flex gap-3">
+                  {searchMethod === "ticket" && (
+                    <button
+                      onClick={handleSearchCandidate}
+                      disabled={loading || !ticketNo}
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Search className="w-5 h-5" />
+                      )}
+                      Search
+                    </button>
+                  )}
+                  <button
+                    onClick={resetForm}
+                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200"
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
-            </div>
             )}
 
             {/* Messages */}
             {message.text && (
               <div
                 className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : message.type === "info"
-                      ? "bg-blue-50 text-blue-800 border border-blue-200"
-                      : "bg-red-50 text-red-800 border border-red-200"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : message.type === "info"
+                    ? "bg-blue-50 text-blue-800 border border-blue-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
                   }`}
               >
                 {message.type === "success" ? (
@@ -1536,6 +1570,29 @@ const FeedMark = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  {/* Batch Filter Dropdown */}
+                  {batches.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-gray-500" />
+                      <select
+                        value={selectedBatch}
+                        onChange={(e) => setSelectedBatch(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Batches ({candidates.length})</option>
+                        {batches.map(batch => (
+                          <option key={batch} value={batch}>
+                            {batch} ({candidates.filter(c =>
+                              batch === "No Batch"
+                                ? !c.batch || c.batch === ""
+                                : c.batch === batch
+                            ).length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   {/* Clear Supplementary Button - shows if any supplementary marks exist */}
                   {Object.keys(paperSupplementaryMarks).length > 0 && (
                     <button
@@ -1543,18 +1600,18 @@ const FeedMark = () => {
                         // Clear all passing supplementary marks
                         const passingCandidates = Object.keys(paperSupplementaryMarks).filter(candidateId => {
                           const suppMark = paperSupplementaryMarks[candidateId];
-                          const maxMarks = selectedModule && selectedSession && selectedPaper 
-                            ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                          const maxMarks = selectedModule && selectedSession && selectedPaper
+                            ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                             : 0;
                           const passingMarks = Math.ceil(maxMarks * 0.6);
                           return suppMark >= passingMarks;
                         });
-                        
+
                         if (passingCandidates.length === 0) {
                           setMessage({ type: "error", text: "No passing supplementary marks to clear" });
                           return;
                         }
-                        
+
                         if (confirm(`Clear supplementary status for ${passingCandidates.length} students with passing marks?`)) {
                           passingCandidates.forEach(candidateId => {
                             const mainMark = paperMarks[candidateId];
@@ -1562,16 +1619,16 @@ const FeedMark = () => {
                             const newMark = `${mainMark}C${suppMark}`;
                             setPaperMarks(prev => ({ ...prev, [candidateId]: newMark }));
                           });
-                          
+
                           setPaperSupplementaryMarks(prev => {
                             const updated = { ...prev };
                             passingCandidates.forEach(id => delete updated[id]);
                             return updated;
                           });
-                          
-                          setMessage({ 
-                            type: "success", 
-                            text: `✓ Cleared supplementary for ${passingCandidates.length} students` 
+
+                          setMessage({
+                            type: "success",
+                            text: `✓ Cleared supplementary for ${passingCandidates.length} students`
                           });
                         }
                       }}
@@ -1581,7 +1638,7 @@ const FeedMark = () => {
                       Clear Supplementary
                     </button>
                   )}
-                  
+
                   {/* Edit/Save Button */}
                   {isEditingPaperMarks ? (
                     <button
@@ -1608,6 +1665,29 @@ const FeedMark = () => {
                 </div>
               </div>
 
+              {/* Batch filter notification */}
+              {selectedBatch !== "all" && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-blue-800 font-medium">
+                        Filtered by Batch: <span className="font-bold">{selectedBatch}</span>
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Showing {getFilteredCandidates().length} of {candidates.length} candidates
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedBatch("all")}
+                    className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-md text-sm"
+                  >
+                    Show All
+                  </button>
+                </div>
+              )}
+
               {/* Marks Entry Table */}
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
@@ -1622,6 +1702,9 @@ const FeedMark = () => {
                       <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
                         Name
                       </th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+                        Batch
+                      </th>
                       <th className="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700">
                         Marks
                       </th>
@@ -1631,11 +1714,11 @@ const FeedMark = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {candidates.map((candidate, index) => {
+                    {getFilteredCandidates().map((candidate, index) => {
                       const currentMark = paperMarks[candidate.id];
                       const displayMark = getMainMarksOnly(currentMark); // Show only main marks in input
-                      const maxMarks = selectedModule && selectedSession && selectedPaper 
-                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                      const maxMarks = selectedModule && selectedSession && selectedPaper
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                         : 0;
                       const passingMarks = Math.ceil(maxMarks * 0.6);
                       const isOverMax = displayMark > maxMarks;
@@ -1653,6 +1736,9 @@ const FeedMark = () => {
                           <td className="border border-gray-300 px-4 py-3">
                             {candidate.name}
                           </td>
+                          <td className="border border-gray-300 px-4 py-3 text-sm">
+                            {candidate.batch || "No Batch"}
+                          </td>
                           <td className="border border-gray-300 px-4 py-3 text-center">
                             <input
                               type="number"
@@ -1661,24 +1747,23 @@ const FeedMark = () => {
                               value={displayMark || ""}
                               onChange={(e) => handlePaperMarksChange(candidate.id, e.target.value)}
                               disabled={!isEditingPaperMarks}
-                              className={`w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                !isEditingPaperMarks 
+                              className={`w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent ${!isEditingPaperMarks
                                   ? 'bg-gray-100 cursor-not-allowed'
-                                  : isOverMax 
-                                    ? 'border-red-500 bg-red-50' 
-                                    : isPassing 
+                                  : isOverMax
+                                    ? 'border-red-500 bg-red-50'
+                                    : isPassing
                                       ? 'border-green-500 bg-green-50'
                                       : isFailing
                                         ? 'border-red-500 bg-red-50'
                                         : 'border-gray-300'
-                              }`}
+                                }`}
                               placeholder="0"
                             />
                           </td>
                           <td className="border border-gray-300 px-4 py-3 text-center">
                             {(() => {
                               const markValue = paperMarks[candidate.id];
-                              
+
                               // Check if student has cleared supplementary (combined format)
                               if (typeof markValue === 'string' && markValue.includes('C')) {
                                 const [mainMark, suppMark] = markValue.split('C');
@@ -1688,15 +1773,14 @@ const FeedMark = () => {
                                   </span>
                                 );
                               }
-                              
+
                               // Regular status logic
                               if (isOverMax) {
                                 return <span className="text-red-600 text-xs font-medium">Over Max!</span>;
                               } else if (displayMark) {
                                 return (
-                                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                                    isPassing ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                  }`}>
+                                  <span className={`text-xs font-medium px-2 py-1 rounded ${isPassing ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
                                     {isPassing ? 'Pass' : 'Fail'}
                                   </span>
                                 );
@@ -1715,30 +1799,39 @@ const FeedMark = () => {
               {/* Summary Information */}
               <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <div className="text-sm font-semibold text-blue-700">Total Candidates</div>
-                  <div className="text-2xl font-bold text-blue-900">{candidates.length}</div>
+                  <div className="text-sm font-semibold text-blue-700">
+                    {selectedBatch === "all" ? "Total Candidates" : `${selectedBatch} Candidates`}
+                  </div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    {getFilteredCandidates().length}
+                    {selectedBatch !== "all" && (
+                      <span className="text-sm font-normal text-blue-600 ml-2">
+                        of {candidates.length}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                   <div className="text-sm font-semibold text-green-700">Marks Entered</div>
                   <div className="text-2xl font-bold text-green-900">
-                    {Object.values(paperMarks).filter(mark => mark !== "").length}
+                    {getFilteredCandidates().filter(c => paperMarks[c.id] && paperMarks[c.id] !== "").length}
                   </div>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                   <div className="text-sm font-semibold text-red-700">Failed Students</div>
                   <div className="text-2xl font-bold text-red-900">
-                    {candidates.filter(c => {
+                    {getFilteredCandidates().filter(c => {
                       const markValue = paperMarks[c.id];
-                      
+
                       // If mark is in combined format, student has been cleared - don't count as failed
                       if (typeof markValue === 'string' && markValue.includes('C')) {
                         return false;
                       }
-                      
+
                       // Check if main marks are below passing
                       const mark = getMainMarksOnly(markValue);
-                      const maxMarks = selectedModule && selectedSession && selectedPaper 
-                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                      const maxMarks = selectedModule && selectedSession && selectedPaper
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                         : 0;
                       const passingMarks = Math.ceil(maxMarks * 0.6);
                       return mark && mark < passingMarks;
@@ -1748,27 +1841,27 @@ const FeedMark = () => {
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                   <div className="text-sm font-semibold text-purple-700">Max Marks</div>
                   <div className="text-2xl font-bold text-purple-900">
-                    {selectedModule && selectedSession && selectedPaper 
-                      ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                    {selectedModule && selectedSession && selectedPaper
+                      ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                       : '-'}
                   </div>
                 </div>
               </div>
 
-              {/* Supplementary Exam Eligibility Section - Same as dropdown method */}
+              {/* Supplementary Exam Eligibility Section */}
               {(() => {
-                const failedCandidates = candidates.filter(c => {
+                const failedCandidates = getFilteredCandidates().filter(c => {
                   const markValue = paperMarks[c.id];
-                  
+
                   // If mark is in combined format (e.g., "55C70"), student has been cleared - don't show
                   if (typeof markValue === 'string' && markValue.includes('C')) {
                     return false;
                   }
-                  
+
                   // Check if main marks are below passing
                   const mark = getMainMarksOnly(markValue);
-                  const maxMarks = selectedModule && selectedSession && selectedPaper 
-                    ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                  const maxMarks = selectedModule && selectedSession && selectedPaper
+                    ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                     : 0;
                   const passingMarks = Math.ceil(maxMarks * 0.6);
                   return mark && mark < passingMarks;
@@ -1815,8 +1908,8 @@ const FeedMark = () => {
                       {failedCandidates.map((candidate) => {
                         const mainMark = getMainMarksOnly(paperMarks[candidate.id]); // Get main marks only
                         const suppMark = paperSupplementaryMarks[candidate.id];
-                        const maxMarks = selectedModule && selectedSession && selectedPaper 
-                          ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks 
+                        const maxMarks = selectedModule && selectedSession && selectedPaper
+                          ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
                           : 0;
                         const passingMarks = Math.ceil(maxMarks * 0.6);
                         const shortfall = passingMarks - mainMark;
@@ -1838,7 +1931,7 @@ const FeedMark = () => {
                                 <p className="text-xs text-red-500">Main Exam</p>
                               </div>
                             </div>
-                            
+
                             <div className="bg-gray-50 rounded-lg p-3 mb-3">
                               <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600">Required: {passingMarks} (60% of {maxMarks})</span>
@@ -1858,21 +1951,19 @@ const FeedMark = () => {
                                     max={maxMarks}
                                     value={suppMark || ""}
                                     onChange={(e) => handlePaperSupplementaryMarksChange(candidate.id, e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                      suppMark && isSuppPassing 
-                                        ? 'border-green-500 bg-green-50' 
-                                        : suppMark 
-                                          ? 'border-orange-500 bg-orange-50'
-                                          : 'border-gray-300'
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${suppMark && isSuppPassing
+                                      ? 'border-green-500 bg-green-50'
+                                      : suppMark
+                                        ? 'border-orange-500 bg-orange-50'
+                                        : 'border-gray-300'
+                                      }`}
                                     placeholder={`0-${maxMarks}`}
                                   />
                                 </div>
                                 <div className="text-right min-w-[100px]">
                                   {suppMark ? (
-                                    <span className={`text-sm font-medium ${
-                                      isSuppPassing ? 'text-green-600' : 'text-orange-600'
-                                    }`}>
+                                    <span className={`text-sm font-medium ${isSuppPassing ? 'text-green-600' : 'text-orange-600'
+                                      }`}>
                                       {isSuppPassing ? '✓ Passing' : '✗ Still Failing'}
                                     </span>
                                   ) : (
@@ -1960,40 +2051,40 @@ const FeedMark = () => {
                 </div>
                 <div
                   className={`p-4 rounded-xl border ${hasExistingMarks && !isEditMode && !showMarksPanel
-                      ? "bg-gray-50 border-gray-200"
-                      : hasExistingMarks && !isEditMode && showMarksPanel
-                        ? "bg-blue-50 border-blue-200"
-                        : isEditMode
-                          ? "bg-orange-50 border-orange-200"
-                          : showMarksPanel && !hasExistingMarks
-                            ? "bg-green-50 border-green-200"
-                            : "bg-yellow-50 border-yellow-200"
+                    ? "bg-gray-50 border-gray-200"
+                    : hasExistingMarks && !isEditMode && showMarksPanel
+                      ? "bg-blue-50 border-blue-200"
+                      : isEditMode
+                        ? "bg-orange-50 border-orange-200"
+                        : showMarksPanel && !hasExistingMarks
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
                     }`}
                 >
                   <label
                     className={`block text-sm font-semibold mb-1 ${hasExistingMarks && !isEditMode && !showMarksPanel
-                        ? "text-gray-700"
-                        : hasExistingMarks && !isEditMode && showMarksPanel
-                          ? "text-blue-700"
-                          : isEditMode
-                            ? "text-orange-700"
-                            : showMarksPanel && !hasExistingMarks
-                              ? "text-green-700"
-                              : "text-yellow-700"
+                      ? "text-gray-700"
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                        ? "text-blue-700"
+                        : isEditMode
+                          ? "text-orange-700"
+                          : showMarksPanel && !hasExistingMarks
+                            ? "text-green-700"
+                            : "text-yellow-700"
                       }`}
                   >
                     Status
                   </label>
                   <p
                     className={`text-lg font-bold ${hasExistingMarks && !isEditMode && !showMarksPanel
-                        ? "text-gray-900"
-                        : hasExistingMarks && !isEditMode && showMarksPanel
-                          ? "text-blue-900"
-                          : isEditMode
-                            ? "text-orange-900"
-                            : showMarksPanel && !hasExistingMarks
-                              ? "text-green-900"
-                              : "text-yellow-900"
+                      ? "text-gray-900"
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                        ? "text-blue-900"
+                        : isEditMode
+                          ? "text-orange-900"
+                          : showMarksPanel && !hasExistingMarks
+                            ? "text-green-900"
+                            : "text-yellow-900"
                       }`}
                   >
                     {hasExistingMarks && !isEditMode && showMarksPanel
@@ -2146,10 +2237,10 @@ const FeedMark = () => {
                             <div
                               key={paper}
                               className={`p-4 rounded-xl border space-y-3 ${isFailingGrade
-                                  ? "bg-red-50 border-red-300"
-                                  : isCleared && isBelowPassing
-                                    ? "bg-yellow-50 border-yellow-300"
-                                    : "bg-white border-gray-200"
+                                ? "bg-red-50 border-red-300"
+                                : isCleared && isBelowPassing
+                                  ? "bg-yellow-50 border-yellow-300"
+                                  : "bg-white border-gray-200"
                                 }`}
                             >
                               <div className="flex items-center justify-between">
@@ -2198,14 +2289,14 @@ const FeedMark = () => {
                                 placeholder={`Enter marks (0-${config.maxMarks})`}
                                 readOnly={hasExistingMarks && !isEditMode}
                                 className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${hasExistingMarks && !isEditMode
-                                    ? "bg-gray-100 cursor-not-allowed text-gray-600"
-                                    : isOverMaxMarks
-                                      ? "border-red-300 bg-red-50"
-                                      : isFailingGrade
-                                        ? "border-red-400 bg-red-50"
-                                        : isCleared && isBelowPassing
-                                          ? "border-yellow-400 bg-yellow-50"
-                                          : "border-gray-300"
+                                  ? "bg-gray-100 cursor-not-allowed text-gray-600"
+                                  : isOverMaxMarks
+                                    ? "border-red-300 bg-red-50"
+                                    : isFailingGrade
+                                      ? "border-red-400 bg-red-50"
+                                      : isCleared && isBelowPassing
+                                        ? "border-yellow-400 bg-yellow-50"
+                                        : "border-gray-300"
                                   }`}
                               />
 
@@ -2250,8 +2341,8 @@ const FeedMark = () => {
                                         paper,
                                         config.maxMarks
                                       )
-                                          ? "bg-green-50 text-green-700 border border-green-200"
-                                          : "bg-red-50 text-red-700 border border-red-200"
+                                        ? "bg-green-50 text-green-700 border border-green-200"
+                                        : "bg-red-50 text-red-700 border border-red-200"
                                         }`}
                                     >
                                       Supplementary:{" "}
@@ -2283,13 +2374,13 @@ const FeedMark = () => {
                                       )
                                     }
                                     className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded-lg transition-all duration-200 ${hasSupplementaryMarks(session, paper) &&
-                                        isSupplementaryPassing(
-                                          session,
-                                          paper,
-                                          config.maxMarks
-                                        )
-                                        ? "bg-green-600 hover:bg-green-700"
-                                        : "bg-gray-400 cursor-not-allowed"
+                                      isSupplementaryPassing(
+                                        session,
+                                        paper,
+                                        config.maxMarks
+                                      )
+                                      ? "bg-green-600 hover:bg-green-700"
+                                      : "bg-gray-400 cursor-not-allowed"
                                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     title={
                                       !hasSupplementaryMarks(session, paper)
@@ -2449,8 +2540,8 @@ const FeedMark = () => {
                                   }
                                   readOnly={hasExistingMarks && !isEditMode}
                                   className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${hasExistingMarks && !isEditMode
-                                      ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
-                                      : "border-blue-300"
+                                    ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
+                                    : "border-blue-300"
                                     }`}
                                   placeholder={`0-${subject.maxMarks}`}
                                 />
@@ -2484,7 +2575,7 @@ const FeedMark = () => {
                 {searchMethod === "paper" ? "Ready for Paper-wise Entry" : "No Candidate Selected"}
               </h3>
               <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
-                {searchMethod === "paper" 
+                {searchMethod === "paper"
                   ? "Select a module, session, and paper above to load all candidates and enter marks efficiently."
                   : "Please search for a candidate using their ticket number or select from the dropdown to begin entering marks."
                 }
@@ -2495,6 +2586,6 @@ const FeedMark = () => {
       </div>
     </div>
   );
-};
+}
 
 export default FeedMark;

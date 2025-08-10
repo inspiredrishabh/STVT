@@ -160,8 +160,7 @@ const STCMain = () => {
       const result = await submitToAPI(formData);
 
       if (result.success) {
-        alert("Registration submitted successfully!");
-        console.log("Response:", result.data);
+        alert(result.data.message + " Ticket No: " + result.data.ticketNumber);
         // Reset form or redirect
         // For actual deployment, you might want a more sophisticated clear
         // or confirmation. For now, setting initial state.
@@ -216,8 +215,6 @@ const STCMain = () => {
           additionalQualificationYear: "",
           thesisTitle: "",
 
-          // Course
-          // ticketNo: "",
           batch: "",
           dateOfJoiningStcWtcNonRailway: "",
           dateOfSparing: "",

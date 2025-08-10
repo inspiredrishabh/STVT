@@ -34,14 +34,11 @@ const DetailModal = ({ candidate, onClose }) => {
     };
     const basicData = [
       { label: "S.No", value: candidate.serialNo },
+      { label: "Ticket No.", value: candidate.ticketNumber },
       { label: "Gender", value: candidate.sex },
       { label: "Father's Name", value: candidate.fatherName },
       { label: "Mother's Name", value: candidate.motherName },
       { label: "DOB", value: formatDate(candidate.dob) },
-      {
-        label: "Ticket No.",
-        value: candidate.ticketNumber || candidate.employeeNumber,
-      },
       { label: "Category", value: candidate.category },
       { label: "Nationality", value: candidate.nationality },
       { label: "PWD", value: candidate.pwd },
@@ -211,6 +208,7 @@ const DetailModal = ({ candidate, onClose }) => {
               icon={User}
               title="Basic Information"
               data={getBasicInfoData()}
+
             />
             <InfoSection
               icon={BookOpen}
@@ -266,15 +264,11 @@ const InfoSection = ({ title, icon: Icon, data }) => (
     </h5>
     <div className="space-y-3 text-sm">
       {data.map(({ label, value, fullWidth }) => (
-        <div
-          key={label}
-          className={`flex ${fullWidth ? "flex-col items-start" : "justify-between items-center"
-            }`}
-        >
+        <div key={label} className={`flex ${fullWidth ? "flex-col items-start" : "justify-between items-center"}`}>
           <span className="font-medium text-gray-600 whitespace-nowrap">
             {label}:
           </span>
-          <span className={`text-gray-800 ${!fullWidth && "text-right pl-2"}`}>
+          <span className={`text-gray-800 ${!fullWidth && "text-right pl-2"} overflow-y-auto overflow-x-auto`}>
             {value || "N/A"}
           </span>
         </div>

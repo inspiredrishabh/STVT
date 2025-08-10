@@ -169,18 +169,18 @@ class DashboardAPI {
         nonRailwayRes.json(),
       ]);
       const activities = [];
-      
+
       // Helper function to get the best available date from multiple fields
       const getBestDate = (candidate) => {
-        return candidate.created_at || 
-               candidate.createdAt || 
-               candidate.date_of_joining_stc_wtc_non_railway ||
-               candidate.dateOfJoiningStcWtcNonRailway ||
-               candidate.updated_at ||
-               candidate.updatedAt ||
-               null;
+        return candidate.created_at ||
+          candidate.createdAt ||
+          candidate.date_of_joining_stc_wtc_non_railway ||
+          candidate.dateOfJoiningStcWtcNonRailway ||
+          candidate.updated_at ||
+          candidate.updatedAt ||
+          null;
       };
-      
+
       if (stcData.success && stcData.data) {
         (Array.isArray(stcData.data) ? stcData.data.slice(0, 3) : []).forEach(
           (c, i) =>
@@ -222,7 +222,7 @@ class DashboardAPI {
           })
         );
       }
-      
+
       // Sort activities by most recent first (try to parse dates for proper sorting)
       activities.sort((a, b) => {
         // If both have "ago" in them, keep current order
@@ -233,7 +233,7 @@ class DashboardAPI {
         // Otherwise keep current order
         return 0;
       });
-      
+
       return { success: true, data: activities.slice(0, 8) };
     } catch {
       return { success: false, data: [] };
@@ -254,9 +254,9 @@ class DashboardAPI {
       });
       return `${day}/${month}/${year} at ${time}`;
     }
-    
+
     let date;
-    
+
     // Handle various date formats
     if (typeof dateString === "string") {
       // Handle SQL datetime format: 2025-07-30 14:30:00
@@ -281,7 +281,7 @@ class DashboardAPI {
     } else {
       date = new Date(dateString);
     }
-    
+
     // If date parsing failed, show current date and time
     if (isNaN(date.getTime())) {
       const now = new Date();
@@ -296,7 +296,7 @@ class DashboardAPI {
       });
       return `${day}/${month}/${year} at ${time}`;
     }
-    
+
     // Always show full date and time in DD/MM/YYYY at HH:MM AM/PM format
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -307,7 +307,7 @@ class DashboardAPI {
       hour12: true,
       timeZone: 'Asia/Kolkata'
     });
-    
+
     return `${day}/${month}/${year} at ${time}`;
   }
 }
@@ -678,11 +678,11 @@ function isActiveTrainee(trainee, type) {
   if (trainee.resignation_status === "yes") {
     return false;
   }
-  
+
   // Get sparing date for this trainee type
   const dateStr = getSparingDate(trainee, type);
   if (!dateStr) return false;
-  
+
   // Parse date string (support both yyyy-mm-dd and dd-mm-yyyy)
   let sparingDate = new Date(dateStr);
   if (isNaN(sparingDate)) {
@@ -692,15 +692,15 @@ function isActiveTrainee(trainee, type) {
       sparingDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
     }
   }
-  
+
   if (isNaN(sparingDate)) return false;
-  
+
   sparingDate.setHours(0, 0, 0, 0);
-  
+
   // Today's date at 00:00:00
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   // Only include if sparing date is today or in the future (not expired)
   return sparingDate >= today;
 }
@@ -947,13 +947,13 @@ function Dashboard() {
       let candidates = [];
       if (data.success && Array.isArray(data.data)) {
         candidates = data.data;
-        
+
         // Apply active filter if needed
         if (activeOnly) {
           // For STC candidates, use "stc" type for filtering
           candidates = candidates.filter(c => isActiveTrainee(c, "stc"));
         }
-        
+
         // For "Railway Trainees", merge STC and WTC
         if (type === "Railway Trainees") {
           const wtcRes = await fetch("/api/wtc");
@@ -1078,9 +1078,9 @@ function Dashboard() {
     const wtcCount = getActiveTrainees("wtc").length;
     const nonRailwayCount = getActiveTrainees("nonrailway").length;
     const total = stcCount + wtcCount + nonRailwayCount;
-    
+
     if (total === 0) return [];
-    
+
     return [
       {
         name: "STC",
@@ -1089,7 +1089,7 @@ function Dashboard() {
         color: "#e11d48"
       },
       {
-        name: "WTC", 
+        name: "WTC",
         count: wtcCount,
         value: Math.round((wtcCount / total) * 100),
         color: "#059669"
@@ -1107,14 +1107,14 @@ function Dashboard() {
   const getActiveUnitsData = () => {
     const activeStcTrainees = getActiveTrainees("stc");
     const unitCounts = {};
-    
+
     activeStcTrainees.forEach(trainee => {
       const unit = trainee.unit || "Unknown";
       unitCounts[unit] = (unitCounts[unit] || 0) + 1;
     });
-    
+
     const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"];
-    
+
     return Object.entries(unitCounts)
       .map(([unit, count], idx) => ({
         unit,
@@ -1179,7 +1179,7 @@ function Dashboard() {
                 </button>
               </div>
             )}
-            
+
             {/* Vertical Bar Chart for Active Candidates */}
             <div className="mb-6">
               <div className="flex items-end justify-center space-x-8 h-48 mb-4">
@@ -1188,7 +1188,7 @@ function Dashboard() {
                   const wtcCount = getActiveTrainees("wtc").length;
                   const nonRailwayCount = getActiveTrainees("nonrailway").length;
                   const maxCount = Math.max(stcCount, wtcCount, nonRailwayCount, 1);
-                  
+
                   // Dynamic height calculation for better visibility with small data
                   const getBarHeight = (count) => {
                     if (count === 0) return "8px";
@@ -1196,7 +1196,7 @@ function Dashboard() {
                     if (maxCount <= 10) return `${Math.max((count / maxCount) * 120 + 30, 30)}px`; // Medium data
                     return `${Math.max((count / maxCount) * 140 + 20, 30)}px`; // Large data
                   };
-                  
+
                   return (
                     <>
                       <div
@@ -1221,7 +1221,7 @@ function Dashboard() {
                           </div>
                         </div>
                         <div className="text-sm font-medium text-blue-700 text-center leading-tight">
-                          STC 
+                          STC
                         </div>
                       </div>
 
@@ -1247,7 +1247,7 @@ function Dashboard() {
                           </div>
                         </div>
                         <div className="text-sm font-medium text-green-700 text-center leading-tight">
-                          WTC 
+                          WTC
                         </div>
                       </div>
 
@@ -1273,7 +1273,7 @@ function Dashboard() {
                           </div>
                         </div>
                         <div className="text-sm font-medium text-purple-700 text-center leading-tight">
-                          Non-Railway 
+                          Non-Railway
                         </div>
                       </div>
                     </>
@@ -1342,9 +1342,9 @@ function Dashboard() {
               <div className="relative">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    {activeSection === "stc" ? "STC  Trainees" : 
-                     activeSection === "wtc" ? "WTC  Trainees" : 
-                     "Non-Railway Trainees"}
+                    {activeSection === "stc" ? "STC  Trainees" :
+                      activeSection === "wtc" ? "WTC  Trainees" :
+                        "Non-Railway Trainees"}
                   </h3>
                   <button
                     className="text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition text-sm"
@@ -1358,72 +1358,72 @@ function Dashboard() {
                   </button>
                 </div>
                 <div className="overflow-auto border rounded-lg bg-white min-h-[200px]" style={{ maxHeight: "50vh" }}>
-                <table className="min-w-full text-xs md:text-sm border-collapse">
-                  <thead className="sticky top-0 bg-gray-100 z-10">
-                    <tr>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
-                      <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activeTrainees.length === 0 ? (
+                  <table className="min-w-full text-xs md:text-sm border-collapse">
+                    <thead className="sticky top-0 bg-gray-100 z-10">
                       <tr>
-                        <td colSpan={6} className="text-center text-gray-400 py-8">
-                          No trainees found.
-                        </td>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Ticket No</th>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Name</th>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Designation</th>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Unit</th>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Joining</th>
+                        <th className="px-3 py-2 border-b text-left font-semibold text-gray-600">Date of Sparing</th>
                       </tr>
-                    ) : (
-                      activeTrainees.map((c, i) => (
-                        <tr
-                          key={c.ticket_no || c.ticketNo || c.id || i}
-                          className="hover:bg-gray-50 transition border-b"
-                        >
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                            title={c.ticket_no || c.ticketNo || c.id}
-                          >
-                            {c.ticket_no || c.ticketNo || c.id}
-                          </td>
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
-                            title={c.name}
-                          >
-                            {c.name}
-                          </td>
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                            title={c.designation}
-                          >
-                            {c.designation}
-                          </td>
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                            title={c.unit}
-                          >
-                            {c.unit}
-                          </td>
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                            title={getJoiningDate(c, activeSection)}
-                          >
-                            {getJoiningDate(c, activeSection)}
-                          </td>
-                          <td
-                            className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
-                            title={getSparingDate(c, activeSection)}
-                          >
-                            {getSparingDate(c, activeSection)}
+                    </thead>
+                    <tbody>
+                      {activeTrainees.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center text-gray-400 py-8">
+                            No trainees found.
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      ) : (
+                        activeTrainees.map((c, i) => (
+                          <tr
+                            key={c.ticket_no || c.ticketNo || c.id || i}
+                            className="hover:bg-gray-50 transition border-b"
+                          >
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={c.ticket_no || c.ticketNo || c.id}
+                            >
+                              {c.ticket_no || c.ticketNo || c.id}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[160px]"
+                              title={c.name}
+                            >
+                              {c.name}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={c.designation}
+                            >
+                              {c.designation}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={c.unit}
+                            >
+                              {c.unit}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={getJoiningDate(c, activeSection)}
+                            >
+                              {getJoiningDate(c, activeSection)}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-gray-700 truncate max-w-[120px]"
+                              title={getSparingDate(c, activeSection)}
+                            >
+                              {getSparingDate(c, activeSection)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -1449,7 +1449,7 @@ function Dashboard() {
                           // Different colors for bar chart
                           const barColors = ["#e11d48", "#059669", "#7c3aed"];
                           const maxCount = Math.max(...activeDistData.map(d => d.count));
-                          
+
                           // Dynamic height calculation for better visibility
                           const getDynamicHeight = (count) => {
                             if (count === 0) return "8px";
@@ -1457,7 +1457,7 @@ function Dashboard() {
                             if (maxCount <= 10) return `${Math.max((count / maxCount) * 220 + 40, 40)}px`; // Medium data
                             return `${Math.max((count / maxCount) * 260 + 30, 40)}px`; // Large data
                           };
-                          
+
                           return (
                             <div
                               key={idx}
@@ -1496,77 +1496,77 @@ function Dashboard() {
                       </div>
                     </div>
 
-                  {/* Pie Chart */}
-                  <div>
-                    <div className="flex items-center justify-center h-80">
-                      {(() => {
-                        const total = activeDistData.reduce((sum, item) => sum + item.count, 0);
-                        const pieColors = ["#f97316", "#06b6d4", "#84cc16"]; // Orange, Cyan, Lime
-                        let currentAngle = 0;
-                        
-                        return (
-                          <div className="flex flex-col items-center">
-                            <svg width="200" height="200" className="mb-4">
-                              {activeDistData.map((item, idx) => {
-                                const angle = (item.count / total) * 360;
-                                const startAngle = currentAngle;
-                                const endAngle = currentAngle + angle;
-                                currentAngle += angle;
-                                
-                                const startX = 100 + 80 * Math.cos((startAngle - 90) * Math.PI / 180);
-                                const startY = 100 + 80 * Math.sin((startAngle - 90) * Math.PI / 180);
-                                const endX = 100 + 80 * Math.cos((endAngle - 90) * Math.PI / 180);
-                                const endY = 100 + 80 * Math.sin((endAngle - 90) * Math.PI / 180);
-                                
-                                const largeArcFlag = angle > 180 ? 1 : 0;
-                                
-                                const pathData = [
-                                  `M 100 100`,
-                                  `L ${startX} ${startY}`,
-                                  `A 80 80 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-                                  `Z`
-                                ].join(' ');
-                                
-                                return (
-                                  <path
-                                    key={idx}
-                                    d={pathData}
-                                    fill={pieColors[idx]}
-                                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                                    onClick={() => {
-                                      setSelectedStat(item.name);
-                                      if (item.name === "Non-Railway") {
-                                        fetchStatDetails("Non-Railway Trainees", null, true);
-                                      } else {
-                                        fetchStatDetails(item.name, null, true);
-                                      }
-                                    }}
-                                  />
-                                );
-                              })}
-                            </svg>
-                            
-                            {/* Legend */}
-                            <div className="space-y-2">
-                              {activeDistData.map((item, idx) => (
-                                <div key={idx} className="flex items-center space-x-2">
-                                  <div 
-                                    className="w-4 h-4 rounded"
-                                    style={{ backgroundColor: pieColors[idx] }}
-                                  ></div>
-                                  <span className="text-sm text-gray-700">
-                                    {item.name}: {item.value}% ({item.count})
-                                  </span>
-                                </div>
-                              ))}
+                    {/* Pie Chart */}
+                    <div>
+                      <div className="flex items-center justify-center h-80">
+                        {(() => {
+                          const total = activeDistData.reduce((sum, item) => sum + item.count, 0);
+                          const pieColors = ["#f97316", "#06b6d4", "#84cc16"]; // Orange, Cyan, Lime
+                          let currentAngle = 0;
+
+                          return (
+                            <div className="flex flex-col items-center">
+                              <svg width="200" height="200" className="mb-4">
+                                {activeDistData.map((item, idx) => {
+                                  const angle = (item.count / total) * 360;
+                                  const startAngle = currentAngle;
+                                  const endAngle = currentAngle + angle;
+                                  currentAngle += angle;
+
+                                  const startX = 100 + 80 * Math.cos((startAngle - 90) * Math.PI / 180);
+                                  const startY = 100 + 80 * Math.sin((startAngle - 90) * Math.PI / 180);
+                                  const endX = 100 + 80 * Math.cos((endAngle - 90) * Math.PI / 180);
+                                  const endY = 100 + 80 * Math.sin((endAngle - 90) * Math.PI / 180);
+
+                                  const largeArcFlag = angle > 180 ? 1 : 0;
+
+                                  const pathData = [
+                                    `M 100 100`,
+                                    `L ${startX} ${startY}`,
+                                    `A 80 80 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                                    `Z`
+                                  ].join(' ');
+
+                                  return (
+                                    <path
+                                      key={idx}
+                                      d={pathData}
+                                      fill={pieColors[idx]}
+                                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                                      onClick={() => {
+                                        setSelectedStat(item.name);
+                                        if (item.name === "Non-Railway") {
+                                          fetchStatDetails("Non-Railway Trainees", null, true);
+                                        } else {
+                                          fetchStatDetails(item.name, null, true);
+                                        }
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </svg>
+
+                              {/* Legend */}
+                              <div className="space-y-2">
+                                {activeDistData.map((item, idx) => (
+                                  <div key={idx} className="flex items-center space-x-2">
+                                    <div
+                                      className="w-4 h-4 rounded"
+                                      style={{ backgroundColor: pieColors[idx] }}
+                                    ></div>
+                                    <span className="text-sm text-gray-700">
+                                      {item.name}: {item.value}% ({item.count})
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()}
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
+                );
               })()}
             </div>
           </div>
@@ -1587,51 +1587,67 @@ function Dashboard() {
                       {(() => {
                         const activeDesignationCounts = getActiveDesignationCounts();
                         const colors = [
-                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", 
+                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
                           "#06b6d4", "#84cc16", "#f97316", "#ec4899", "#6b7280"
                         ];
-                        
-                        return Object.entries(activeDesignationCounts).map(([desig, count], idx) => {
-                          const maxCount = Math.max(...Object.values(activeDesignationCounts));
-                          
-                          // Dynamic height calculation for better visibility
-                          const getDynamicHeight = (count) => {
-                            if (count === 0) return "8px";
-                            if (maxCount <= 3) return `${Math.max(count * 80, 60)}px`; // Small data: 80px per unit, min 60px
-                            if (maxCount <= 10) return `${Math.max((count / maxCount) * 280 + 40, 60)}px`; // Medium data
-                            return `${Math.max((count / maxCount) * 300 + 30, 60)}px`; // Large data
-                          };
-                          
-                          return (
-                            <div
-                              key={desig}
-                              className={`flex flex-col items-center cursor-pointer group ${selectedStat === "designation:" + desig
-                                ? "transform scale-105"
-                                : ""
-                                }`}
-                              onClick={() => {
-                                setSelectedStat("designation:" + desig);
-                                fetchStatDetails("designation", desig, true);
-                              }}
-                              style={{ minWidth: "60px", maxWidth: "80px" }}
-                            >
-                              <div className="relative w-full mb-2 h-80 flex items-end">
-                                <div
-                                  className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1"
-                                  style={{
-                                    backgroundColor: colors[idx % colors.length],
-                                    height: getDynamicHeight(count),
-                                  }}
-                                >
-                                  {count}
-                                </div>
-                              </div>
-                              <div className="text-xs font-medium text-gray-700 text-center leading-tight">
-                                {desig}
-                              </div>
+
+                        // Create horizontally scrollable container
+                        return (
+                          <div className="overflow-x-auto pb-4" style={{ maxWidth: '100%' }}>
+                            <div className="flex space-x-4" style={{ minWidth: 'max-content' }}>
+                              {Object.entries(activeDesignationCounts).map(([desig, count], idx) => {
+                                const maxCount = Math.max(...Object.values(activeDesignationCounts));
+
+                                // Improved height calculation for better scaling with large numbers
+                                const getDynamicHeight = (count) => {
+                                  if (count === 0) return "8px";
+                                  // Use logarithmic scaling for large counts to prevent excessive height
+                                  if (maxCount > 50) {
+                                    // Log scaling for large datasets
+                                    return `${Math.min(60 + (Math.log10(count) * 100), 240)}px`;
+                                  } else if (maxCount > 20) {
+                                    // More moderate scaling for medium-large datasets
+                                    return `${Math.min(60 + (count / maxCount) * 200, 240)}px`;
+                                  } else if (maxCount <= 3) {
+                                    // Small data: more height per unit, min 60px
+                                    return `${Math.min(Math.max(count * 80, 60), 240)}px`;
+                                  } else {
+                                    // Medium data
+                                    return `${Math.min(Math.max((count / maxCount) * 240 + 40, 60), 240)}px`;
+                                  }
+                                };
+
+                                return (
+                                  <div
+                                    key={desig}
+                                    className={`flex flex-col items-center cursor-pointer group ${selectedStat === "designation:" + desig ? "transform scale-105" : ""
+                                      }`}
+                                    onClick={() => {
+                                      setSelectedStat("designation:" + desig);
+                                      fetchStatDetails("designation", desig, true);
+                                    }}
+                                    style={{ minWidth: "60px", maxWidth: "80px", flexShrink: 0 }}
+                                  >
+                                    <div className="relative w-full mb-2 h-80 flex items-end">
+                                      <div
+                                        className="w-full rounded-t-md transition-all duration-300 hover:opacity-80 flex items-end justify-center text-white text-xs font-medium pb-1"
+                                        style={{
+                                          backgroundColor: colors[idx % colors.length],
+                                          height: getDynamicHeight(count),
+                                        }}
+                                      >
+                                        {count}
+                                      </div>
+                                    </div>
+                                    <div className="text-xs font-medium text-gray-700 text-center leading-tight">
+                                      {desig}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        });
+                          </div>
+                        );
                       })()}
                     </div>
                   </div>
@@ -1644,10 +1660,10 @@ function Dashboard() {
                         const designationData = Object.entries(activeDesignationCounts);
                         const total = Object.values(activeDesignationCounts).reduce((sum, count) => sum + count, 0);
                         const colors = [
-                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", 
+                          "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
                           "#06b6d4", "#84cc16", "#f97316", "#ec4899", "#6b7280"
                         ];
-                        
+
                         if (total === 0) {
                           return (
                             <div className="text-center text-gray-400 py-8">
@@ -1655,9 +1671,9 @@ function Dashboard() {
                             </div>
                           );
                         }
-                        
+
                         let currentAngle = 0;
-                        
+
                         return (
                           <div className="flex items-center space-x-8">
                             {/* Pie Chart SVG */}
@@ -1678,16 +1694,16 @@ function Dashboard() {
                                   const x2 = 120 + 100 * Math.cos(((currentAngle + angle) * Math.PI) / 180);
                                   const y2 = 120 + 100 * Math.sin(((currentAngle + angle) * Math.PI) / 180);
                                   const largeArc = angle > 180 ? 1 : 0;
-                                  
+
                                   const pathData = [
                                     "M", 120, 120,
                                     "L", x1, y1,
                                     "A", 100, 100, 0, largeArc, 1, x2, y2,
                                     "Z"
                                   ].join(" ");
-                                  
+
                                   currentAngle += angle;
-                                  
+
                                   return (
                                     <path
                                       key={desig}
@@ -1695,9 +1711,8 @@ function Dashboard() {
                                       fill={colors[idx % colors.length]}
                                       stroke="white"
                                       strokeWidth="2"
-                                      className={`cursor-pointer transition-opacity hover:opacity-80 ${
-                                        selectedStat === "designation:" + desig ? "opacity-90 stroke-4" : ""
-                                      }`}
+                                      className={`cursor-pointer transition-opacity hover:opacity-80 ${selectedStat === "designation:" + desig ? "opacity-90 stroke-4" : ""
+                                        }`}
                                       onClick={() => {
                                         setSelectedStat("designation:" + desig);
                                         fetchStatDetails("designation", desig, true);
@@ -1707,7 +1722,7 @@ function Dashboard() {
                                 })}
                               </svg>
                             </div>
-                            
+
                             {/* Legend */}
                             <div className="space-y-2 max-h-80 overflow-y-auto">
                               {designationData.map(([desig, count], idx) => {
@@ -1715,9 +1730,8 @@ function Dashboard() {
                                 return (
                                   <div
                                     key={desig}
-                                    className={`flex items-center space-x-3 cursor-pointer p-2 rounded transition hover:bg-gray-50 ${
-                                      selectedStat === "designation:" + desig ? "bg-blue-50 ring-2 ring-blue-500" : ""
-                                    }`}
+                                    className={`flex items-center space-x-3 cursor-pointer p-2 rounded transition hover:bg-gray-50 ${selectedStat === "designation:" + desig ? "bg-blue-50 ring-2 ring-blue-500" : ""
+                                      }`}
                                     onClick={() => {
                                       setSelectedStat("designation:" + desig);
                                       fetchStatDetails("designation", desig, true);
@@ -1778,7 +1792,7 @@ function Dashboard() {
                   <div className="flex items-end justify-center space-x-4 h-80 overflow-x-auto pb-4">
                     {activeUnitsData.map((item, idx) => {
                       const maxCount = Math.max(...activeUnitsData.map(d => d.count));
-                      
+
                       // Dynamic height calculation for better visibility
                       const getDynamicHeight = (count) => {
                         if (count === 0) return "8px";
@@ -1786,7 +1800,7 @@ function Dashboard() {
                         if (maxCount <= 10) return `${Math.max((count / maxCount) * 280 + 40, 60)}px`; // Medium data
                         return `${Math.max((count / maxCount) * 300 + 30, 60)}px`; // Large data
                       };
-                      
+
                       return (
                         <div
                           key={idx}
@@ -1854,7 +1868,7 @@ function Dashboard() {
                       "#7c2d12"  // Amber/Brown
                     ];
                     const barColor = colors[idx % colors.length];
-                    
+
                     return (
                       <div
                         key={item.activityCentre}
@@ -1908,9 +1922,9 @@ function Dashboard() {
                         const railwayAllCount = getAllTrainees("stc").length + getAllTrainees("wtc").length;
                         const nonRailwayAllCount = getAllTrainees("nonrailway").length;
                         const resignedCount = overallStats.resignedCount || 0;
-                        
+
                         const maxCount = Math.max(totalAllCount, railwayAllCount, nonRailwayAllCount, resignedCount, 1);
-                        
+
                         return (
                           <>
                             <div
@@ -1936,10 +1950,10 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-blue-700 text-center leading-tight">
-                                Total 
+                                Total
                               </div>
                             </div>
-                            
+
                             <div
                               className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Railway Trainees"
                                 ? "transform scale-105"
@@ -1963,10 +1977,10 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-green-700 text-center leading-tight">
-                                Railway 
+                                Railway
                               </div>
                             </div>
-                            
+
                             <div
                               className={`flex flex-col items-center cursor-pointer group ${selectedStat === "Non-Railway Trainees"
                                 ? "transform scale-105"
@@ -1990,7 +2004,7 @@ function Dashboard() {
                                 </div>
                               </div>
                               <div className="text-sm font-medium text-purple-700 text-center leading-tight">
-                                Non-Railway 
+                                Non-Railway
                               </div>
                             </div>
 
@@ -2032,15 +2046,15 @@ function Dashboard() {
                       {(() => {
                         const railwayAllCount = getAllTrainees("stc").length + getAllTrainees("wtc").length;
                         const nonRailwayAllCount = getAllTrainees("nonrailway").length;
-                        
+
                         const pieData = [
                           { name: "Railway", count: railwayAllCount, color: "#16a34a" },
                           { name: "Non-Railway", count: nonRailwayAllCount, color: "#9333ea" },
                         ];
-                        
+
                         const total = railwayAllCount + nonRailwayAllCount;
                         let currentAngle = 0;
-                        
+
                         return (
                           <div className="flex flex-col items-center">
                             <svg width="200" height="200" className="mb-4">
@@ -2050,21 +2064,21 @@ function Dashboard() {
                                 const startAngle = currentAngle;
                                 const endAngle = currentAngle + angle;
                                 currentAngle += angle;
-                                
+
                                 const startX = 100 + 80 * Math.cos((startAngle - 90) * Math.PI / 180);
                                 const startY = 100 + 80 * Math.sin((startAngle - 90) * Math.PI / 180);
                                 const endX = 100 + 80 * Math.cos((endAngle - 90) * Math.PI / 180);
                                 const endY = 100 + 80 * Math.sin((endAngle - 90) * Math.PI / 180);
-                                
+
                                 const largeArcFlag = angle > 180 ? 1 : 0;
-                                
+
                                 const pathData = [
                                   `M 100 100`,
                                   `L ${startX} ${startY}`,
                                   `A 80 80 0 ${largeArcFlag} 1 ${endX} ${endY}`,
                                   `Z`
                                 ].join(' ');
-                                
+
                                 return (
                                   <path
                                     key={idx}
@@ -2084,14 +2098,14 @@ function Dashboard() {
                                 );
                               })}
                             </svg>
-                            
+
                             {/* Legend */}
                             <div className="space-y-2">
                               {pieData.map((item, idx) => {
                                 const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
                                 return (
                                   <div key={idx} className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-4 h-4 rounded"
                                       style={{ backgroundColor: item.color }}
                                     ></div>
