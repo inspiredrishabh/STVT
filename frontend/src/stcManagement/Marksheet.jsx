@@ -621,9 +621,8 @@ class MarksheetService {
   }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
-    const fileName = `Marksheet_${ticketNumber}_${
-      options.sessionWise ? "Sessional" : "Complete"
-    }_${new Date().toISOString().split("T")[0]}.pdf`;
+    const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? "Sessional" : "Complete"
+      }_${new Date().toISOString().split("T")[0]}.pdf`;
     return {
       success: true,
       message: "PDF export initiated successfully",
@@ -913,9 +912,7 @@ const Marksheet = () => {
     printContent.style.cssText = `
       background: white !important;
       color: black !important;
-      font-family: 'Times New Roman', serif !important;
-      font-size: 14px !important;
-      line-height: 1.4 !important;
+      font-family: 'Gorgia', serif !important;
       width: 100% !important;
       padding: 20px !important;
       margin: 0 !important;
@@ -929,9 +926,7 @@ const Marksheet = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Marksheet - ${candidateData.name} (${
-      candidateData.ticketNumber || candidateData.ticket_no
-    })</title>
+          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber || candidateData.ticket_no})</title>
           <style>
             @page {
               size: A4;
@@ -944,13 +939,24 @@ const Marksheet = () => {
                 print-color-adjust: exact !important;
               }
               body {
+                font-family: 'Verdana', sans !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                background: white !important;
-                font-family: 'Times New Roman', serif !important;
-                font-size: 14px !important;
-                line-height: 1.4 !important;
                 color: black !important;
+              }
+              img{
+                width:240px:
+                aspect-ratio: auto;
+              }
+              h3{
+                font-size: 12px !important;
+                margin: 2px 0 !important;
+                padding: 0 !important;
+              }
+              p{
+                font-size: 11px !important;
+                padding: 2px 0 !important;
+                margin: 0 !important;
               }
               .no-print {
                 display: none !important;
@@ -970,15 +976,6 @@ const Marksheet = () => {
                 display: table-footer-group !important;
               }
             }
-            body {
-              margin: 0;
-              padding: 0;
-              background: white;
-              font-family: 'Times New Roman', serif;
-              font-size: 14px;
-              line-height: 1.4;
-              color: black;
-            }
           </style>
         </head>
         <body>
@@ -997,61 +994,61 @@ const Marksheet = () => {
     }, 1000);
   }, [candidateData]);
 
-//  const handleExportPDF = useCallback(async () => {
-//   if (!marksheetRef.current) {
-//     setMessage({ type: "error", text: "No marksheet to export." });
-//     return;
-//   }
-//   setGenerating(true);
+  //  const handleExportPDF = useCallback(async () => {
+  //   if (!marksheetRef.current) {
+  //     setMessage({ type: "error", text: "No marksheet to export." });
+  //     return;
+  //   }
+  //   setGenerating(true);
 
-//   try {
-//     // 1) Render DOM node to canvas
-//     const canvas = await html2canvas(marksheetRef.current, {
-//       scale: 2,
-//       useCORS: true,
-//       allowTaint: true,
-//       backgroundColor: "#ffffff",
-//     });
+  //   try {
+  //     // 1) Render DOM node to canvas
+  //     const canvas = await html2canvas(marksheetRef.current, {
+  //       scale: 2,
+  //       useCORS: true,
+  //       allowTaint: true,
+  //       backgroundColor: "#ffffff",
+  //     });
 
-//     // 2) Prepare image data for the PDF
-//     const imgData = canvas.toDataURL("image/jpeg", 1.0);
-//     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-//     const pageWidth = pdf.internal.pageSize.getWidth();
-//     const pageHeight = pdf.internal.pageSize.getHeight();
+  //     // 2) Prepare image data for the PDF
+  //     const imgData = canvas.toDataURL("image/jpeg", 1.0);
+  //     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  //     const pageWidth = pdf.internal.pageSize.getWidth();
+  //     const pageHeight = pdf.internal.pageSize.getHeight();
 
-//     // 3) Calculate the rendered image dimensions
-//     const imgWidth = pageWidth;
-//     const imgHeight = (canvas.height * pageWidth) / canvas.width;
+  //     // 3) Calculate the rendered image dimensions
+  //     const imgWidth = pageWidth;
+  //     const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-//     // 4) Add first page
-//     let heightLeft = imgHeight;
-//     let position = 0;
-//     pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-//     heightLeft -= pageHeight;
+  //     // 4) Add first page
+  //     let heightLeft = imgHeight;
+  //     let position = 0;
+  //     pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
 
-//     // 5) Add additional pages if the content overflows
-//     while (heightLeft > 0) {
-//       position = position - pageHeight;
-//       pdf.addPage();
-//       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-//       heightLeft -= pageHeight;
-//     }
+  //     // 5) Add additional pages if the content overflows
+  //     while (heightLeft > 0) {
+  //       position = position - pageHeight;
+  //       pdf.addPage();
+  //       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+  //     }
 
-//     // 6) Save the file
-//     const filename = `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}.pdf`;
-//     pdf.save(filename);
+  //     // 6) Save the file
+  //     const filename = `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}.pdf`;
+  //     pdf.save(filename);
 
-//     setMessage({ type: "success", text: "PDF exported successfully!" });
-//   } catch (err) {
-//     console.error("PDF export failed:", err);
-//     setMessage({
-//       type: "error",
-//       text: "Failed to export PDF. Check console for details.",
-//     });
-//   } finally {
-//     setGenerating(false);
-//   }
-// }, [candidateData]);
+  //     setMessage({ type: "success", text: "PDF exported successfully!" });
+  //   } catch (err) {
+  //     console.error("PDF export failed:", err);
+  //     setMessage({
+  //       type: "error",
+  //       text: "Failed to export PDF. Check console for details.",
+  //     });
+  //   } finally {
+  //     setGenerating(false);
+  //   }
+  // }, [candidateData]);
 
 
   // Helper functions with useMemo for optimization
@@ -1127,114 +1124,39 @@ const Marksheet = () => {
         const str = paperMarks.toString();
         const isCleared = str.includes("C"); // "C" present anywhere
         const rawMarks = getRawMarks(paperMarks) || 0;
-        const percentage = ((rawMarks / config.maxMarks) * 100).toFixed(1);
         const passingMarks = getPassingMarks(config.maxMarks);
         const isPassed = isCleared || rawMarks >= passingMarks;
 
         return (
-          <tr
-            key={`${session}-${paper}`}
-            style={{ backgroundColor: isPassed ? "white" : "#fef2f2" }}
-          >
+          <tr key={`${session}-${paper}`} style={{ backgroundColor: isPassed ? "white" : "#fef2f2" }}>
             {idx === 0 && (
-              <td
-                rowSpan={Object.keys(papers).length}
-                style={{
-                  border: "1px solid black",
-                  padding: "4px 6px",
-                  fontWeight: "600",
-                  color: "black",
-                  textAlign: "center",
-                  verticalAlign: "top",
-                  fontSize: "11px",
-                }}
-              >
+              <td rowSpan={Object.keys(papers).length} style={{ border: "1px solid black", padding: "4px 6px", fontWeight: "600", color: "black", textAlign: "center", verticalAlign: "top", fontSize: "11px", }}>
                 {session}
               </td>
             )}
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "11px",
-                color: "black",
-              }}
-            >
+            <td style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", color: "black", }}>
               {paper}
             </td>
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "9px",
-                color: "black",
-                textAlign: "left",
-              }}
-            >
+            <td style={{ border: "1px solid black", padding: "4px 6px", fontSize: "9px", color: "black", textAlign: "left", }}>
               {config.subjects.length > 0
                 ? config.subjects.map((code, idx) => {
-                    const subjectName = subjectMapping[code] || "";
-                    return (
-                      <span key={code}>
-                        <span style={{ fontWeight: "bold" }}>{code}</span>
-                        {subjectName ? ` – ${subjectName}` : ""}
-                        {idx < config.subjects.length - 1 && ", "}
-                      </span>
-                    );
-                  })
+                  const subjectName = subjectMapping[code] || "";
+                  return (
+                    <span key={code}>
+                      <span style={{ fontWeight: "bold" }}>{code}</span>
+                      {subjectName ? ` – ${subjectName}` : ""}
+                      {idx < config.subjects.length - 1 && ", "}
+                    </span>
+                  );
+                })
                 : "-"}
             </td>
 
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "11px",
-                fontWeight: "600",
-                color: "black",
-                textAlign: "center",
-              }}
-            >
+            <td style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "600", color: "black", textAlign: "center", }}>
               {config.maxMarks}
             </td>
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "11px",
-                fontWeight: "bold",
-                textAlign: "center",
-                color: !isPassed ? "#dc2626" : "black",
-              }}
-            >
+            <td style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", textAlign: "center", color: !isPassed ? "#dc2626" : "black", }}>
               {rawMarks}
-            </td>
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "11px",
-                textAlign: "center",
-                color: !isPassed ? "#dc2626" : "black",
-              }}
-            >
-              {percentage}%
-            </td>
-            <td
-              style={{
-                border: "1px solid black",
-                padding: "4px 6px",
-                fontSize: "10px",
-                fontWeight: "600",
-                textAlign: "center",
-                color: !isPassed ? "#dc2626" : "#16a34a",
-              }}
-            >
-              {isCleared
-                ? `PASSED IN SUPPLEMENTARY WITH MARKS : ${supplyMarks}`
-                : isPassed
-                ? "PASS"
-                : "FAIL"}
             </td>
           </tr>
         );
@@ -1258,7 +1180,7 @@ const Marksheet = () => {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   Generate Marksheet
@@ -1294,9 +1216,9 @@ const Marksheet = () => {
       <div className="w-full px-8 py-8">
         <div className="max-w-9xl mx-auto">
           {/* Search Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+          <div className="bg-white rounded shadow-lg p-6 mb-8 border border-gray-200">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center">
                 <Search className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -1313,21 +1235,19 @@ const Marksheet = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "ticket"
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${searchMethod === "ticket"
+                  ? "bg-orange-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                  searchMethod === "dropdown"
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${searchMethod === "dropdown"
+                  ? "bg-orange-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
               >
                 Select from Dropdown
               </button>
@@ -1345,7 +1265,7 @@ const Marksheet = () => {
                     value={ticketNumber}
                     onChange={(e) => setTicketNumber(e.target.value)}
                     placeholder="Enter ticket number (e.g., STC2024001)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleSearchCandidate()
                     }
@@ -1362,7 +1282,7 @@ const Marksheet = () => {
                       setSelectedCandidate(e.target.value);
                       handleCandidateSelect(e.target.value);
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     disabled={loading}
                   >
                     <option value="">Select a candidate...</option>
@@ -1390,10 +1310,10 @@ const Marksheet = () => {
                   <button
                     onClick={handleSearchCandidate}
                     disabled={loading || !ticketNumber.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded animate-spin" />
                     ) : (
                       <Search className="w-5 h-5" />
                     )}
@@ -1402,7 +1322,7 @@ const Marksheet = () => {
                 )}
                 <button
                   onClick={resetForm}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200"
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-all duration-200"
                 >
                   Reset
                 </button>
@@ -1412,13 +1332,12 @@ const Marksheet = () => {
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
-                  message.type === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : message.type === "info"
+                className={`mt-6 p-4 rounded flex items-center gap-3 ${message.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : message.type === "info"
                     ? "bg-blue-50 text-blue-800 border border-blue-200"
                     : "bg-red-50 text-red-800 border border-red-200"
-                }`}
+                  }`}
               >
                 {message.type === "success" ? (
                   <CheckCircle className="w-6 h-6" />
@@ -1431,7 +1350,7 @@ const Marksheet = () => {
 
             {/* Debug Section - Show raw candidate data */}
             {candidateData && (
-              <div className="mt-6 p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <div className="mt-6 p-4 rounded bg-gray-50 border border-gray-200">
                 <p className="text-xs font-mono text-gray-600 mb-2">
                   Debug Info:
                 </p>
@@ -1450,10 +1369,10 @@ const Marksheet = () => {
 
           {/* Marksheet Controls */}
           {candidateData && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+            <div className="bg-white rounded shadow-lg p-6 mb-8 border border-gray-200">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center">
                     <GraduationCap className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -1466,10 +1385,7 @@ const Marksheet = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={handlePrintMarksheet}
-                    className="flex items-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
+                  <button onClick={handlePrintMarksheet} className="flex items-center gap-2 px-4 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <Printer className="w-5 h-5" />
                     Print
                   </button>
@@ -1497,7 +1413,7 @@ const Marksheet = () => {
                   <select
                     value={viewMode}
                     onChange={(e) => setViewMode(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                   >
                     <option value="complete">Final Marksheet</option>
                     <option value="sessionWise">Sessional Marksheet</option>
@@ -1512,7 +1428,7 @@ const Marksheet = () => {
                     <select
                       value={selectedSession}
                       onChange={(e) => setSelectedSession(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     >
                       <option value="all">All Sessions</option>
                       {currentCourseStructure &&
@@ -1526,7 +1442,7 @@ const Marksheet = () => {
                 )}
 
                 <div className="flex items-end">
-                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 w-full">
+                  <div className="bg-orange-50 p-4 rounded border border-orange-200 w-full">
                     <p className="text-sm font-semibold text-orange-700">
                       Total Marks
                     </p>
@@ -1542,8 +1458,8 @@ const Marksheet = () => {
 
           {/* No Marks Display */}
           {candidateData && marksheetData === null && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200 mb-8">
-              <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="bg-white rounded shadow-lg p-12 text-center border border-gray-200 mb-8">
+              <div className="w-20 h-20 bg-orange-500 rounded flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">
@@ -1554,7 +1470,7 @@ const Marksheet = () => {
                 {candidateData.ticketNumber}) has been registered but no marks
                 have been entered yet.
               </p>
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 max-w-md mx-auto">
+              <div className="bg-gray-50 p-4 rounded border border-gray-200 max-w-md mx-auto">
                 <p className="text-sm text-gray-700">
                   <strong>Course:</strong>{" "}
                   {courseCode || candidateData.courseCode}
@@ -1575,75 +1491,14 @@ const Marksheet = () => {
 
           {/* Marksheet Display */}
           {candidateData && marksheetData && (
-            <div
-              ref={marksheetRef}
-              style={{
-                backgroundColor: "white",
-                borderRadius: "16px",
-                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e5e7eb",
-                padding: "16px",
-                marginBottom: "32px",
-                fontFamily: "Times New Roman, serif",
-                fontSize: "12px",
-                lineHeight: "1.2",
-                color: "black",
-              }}
-            >
+            <div ref={marksheetRef} style={{ backgroundColor: "white", borderRadius: "16px", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", border: "1px solid #e5e7eb", padding: "16px", marginBottom: "32px", fontFamily: "Times New Roman, serif", fontSize: "12px", lineHeight: "1.2", color: "black", }}>
               {/* Header - Compact format */}
-              <div
-                style={{
-                  borderBottom: "2px solid #6b7280",
-                  paddingBottom: "12px",
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "center",
-                    position: "relative",
-                    width: "100%",
-                  }}
-                >
+              <div style={{ borderBottom: "2px solid #6b7280", paddingBottom: "12px", marginBottom: "16px", }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative", width: "100%", }}>
                   {/* Railway Logo - Smaller */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "0",
-                      width: "84px",
-                      height: "84px",
-                      backgroundColor: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: "0",
-                      padding: "2px",
-                    }}
-                  >
-                    <img
-                      src={railwayLogo}
-                      alt="Indian Railways Logo"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
-                      }}
-                    />
-                    <div
-                      style={{
-                        textAlign: "center",
-                        display: "none",
-                        flexDirection: "column",
-                        fontSize: "8px",
-                        fontWeight: "bold",
-                      }}
-                    >
+                  <div style={{ position: "absolute", left: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
+                    <img src={railwayLogo} alt="Indian Railways Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                    <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
                       <div>INDIAN</div>
                       <div>RAILWAYS</div>
                       <div>LOGO</div>
@@ -1651,42 +1506,9 @@ const Marksheet = () => {
                   </div>
 
                   {/* North Logo - Same size and position as Railway Logo */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: "0",
-                      width: "84px",
-                      height: "84px",
-                      backgroundColor: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: "0",
-                      padding: "2px",
-                    }}
-                  >
-                    <img
-                      src={northLogo}
-                      alt="Northern Railway Logo"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
-                      }}
-                    />
-                    <div
-                      style={{
-                        textAlign: "center",
-                        display: "none",
-                        flexDirection: "column",
-                        fontSize: "8px",
-                        fontWeight: "bold",
-                      }}
-                    >
+                  <div style={{ position: "absolute", right: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
+                    <img src={northLogo} alt="Northern Railway Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                    <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
                       <div>NORTHERN</div>
                       <div>RAILWAY</div>
                       <div>LOGO</div>
@@ -1694,290 +1516,103 @@ const Marksheet = () => {
                   </div>
 
                   {/* Header text - Centered and Compact */}
-                  <div
-                    style={{
-                      textAlign: "center",
-                      flex: "1",
-                      paddingLeft: "80px",
-                      paddingRight: "80px",
-                    }}
-                  >
-                    <h1
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "0 0 2px 0",
-                      }}
-                    >
+                  <div style={{ textAlign: "center", flex: "1", paddingLeft: "80px", paddingRight: "80px", }}>
+                    <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "black", margin: "0 0 2px 0", }}>
                       NORTHERN RAILWAY
                     </h1>
-                    <h2
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        color: "black",
-                        margin: "0 0 1px 0",
-                      }}
-                    >
+                    <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
                       SUPERVISOR TRAINING CENTRE
                     </h2>
-                    <h2
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        color: "black",
-                        margin: "0 0 1px 0",
-                      }}
-                    >
+                    <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
                       CHARBAGH, LUCKNOW
                     </h2>
-                    <h3
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "6px 0 2px 0",
-                      }}
-                    >
+                    <h3 style={{ fontSize: "12px", fontWeight: "bold", color: "black", margin: "6px 0 2px 0", }}>
                       STATEMENT OF MARKS
                     </h3>
                     {viewMode === "sessionWise" &&
                       selectedSession !== "all" && (
-                        <h4
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: "600",
-                            color: "#374151",
-                            margin: "1px 0 0 0",
-                          }}
-                        >
+                        <h4 style={{ fontSize: "10px", fontWeight: "600", color: "#374151", margin: "1px 0 0 0", }}>
                           (Sessional Marksheet - {selectedSession})
                         </h4>
                       )}
-                    {viewMode === "complete" && (
-                      <h4
-                        style={{
-                          fontSize: "10px",
-                          fontWeight: "600",
-                          color: "black",
-                          margin: "1px 0 0 0",
-                        }}
-                      >
-                        (Final Marksheet)
-                      </h4>
-                    )}
                   </div>
                 </div>
               </div>
 
               {/* Candidate Information - Compact */}
-              <div style={{ marginBottom: "16px" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "separate",
-                    borderSpacing: "0",
-                  }}
-                >
-                  <tbody>
-                    <tr>
-                      <td
+              <div style={{ marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }} className="flex justify-between">
+                <div className="font-sans" style={{ flex: "1" }}>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Ticket Number : <span style={{ fontWeight: 500 }} > {candidateData.ticketNumber || candidateData.ticket_no}</span></p>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Name :  <span style={{ fontWeight: 500 }} >{candidateData.name} </span></p>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Father's Name : <span style={{ fontWeight: 500 }} >{candidateData.fatherName || candidateData.father_name}</span> </p>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Module : <span style={{ fontWeight: 500 }} >{candidateData.courseCode}</span> </p>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Post : <span style={{ fontWeight: 500 }} >{candidateData.designation}</span></p>
+                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Unit :  <span style={{ fontWeight: 500 }} >{candidateData.unit}</span></p>
+                </div>
+                <div style={{ flex: "0 0 auto", marginLeft: "20px" }}>
+                  <div style={{
+                    width: "84px",
+                    height: "100px",
+                    border: "2px solid #000",
+                    background: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "4px",
+                    overflow: "hidden"
+                  }}>
+                    {candidateData.picture ? (
+                      <img
+                        src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidateData.picture}`}
+                        alt={candidateData.name}
                         style={{
-                          padding: "2px 0",
-                          color: "black",
-                          fontSize: "12px",
+                          objectFit: "cover",
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "2px"
                         }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Name:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.name}
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          textAlign: "right",
-                          fontSize: "12px",
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.parentNode.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 10px; color: #666; text-align: center;">No Photo<br/>Available</div>`;
                         }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Father's Name:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.fatherName ||
-                            candidateData.father_name}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Batch:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.batch}
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          textAlign: "right",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Ticket No:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.ticketNumber ||
-                            candidateData.ticket_no}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Post:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.designation}
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          textAlign: "right",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Module:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.courseCode}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        style={{
-                          padding: "2px 0",
-                          color: "black",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <span style={{ fontWeight: 600 }}>Unit:</span>{" "}
-                        <span style={{ fontWeight: 400 }}>
-                          {candidateData.unit}
-                        </span>
-                      </td>
-                      <td />
-                    </tr>
-                  </tbody>
-                </table>
+                      />
+                    ) : (
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        fontSize: "10px",
+                        color: "#666",
+                        textAlign: "center"
+                      }}>
+                        No Photo<br />Available
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Marks Table - Compact */}
               {currentCourseStructure && (
                 <div style={{ marginBottom: "20px" }}>
-                  <table
-                    style={{
-                      width: "100%",
-                      border: "2px solid black",
-                      borderCollapse: "collapse",
-                    }}
-                  >
+                  <table style={{ width: "100%", border: "2px solid black", borderCollapse: "collapse", }}>
                     <thead>
                       <tr style={{ backgroundColor: "#f3f4f6" }}>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
+                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
                           Session
                         </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
+                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
                           Paper
                         </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
+                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
                           Subjects
                         </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
+                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
                           Max Marks
                         </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
+                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
                           Marks Obtained
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
-                          Percentage (%)
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            padding: "4px 6px",
-                            fontSize: "11px",
-                            fontWeight: "bold",
-                            color: "black",
-                            textAlign: "center",
-                          }}
-                        >
-                          Remark
                         </th>
                       </tr>
                     </thead>
@@ -2000,74 +1635,23 @@ const Marksheet = () => {
               )}
 
               {/* Summary Section - Compact */}
-              <div
-                style={{
-                  marginBottom: "20px",
-                  border: "2px solid #d1d5db",
-                  backgroundColor: "#f9fafb",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    borderRight: "0",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "10px",
-                      textAlign: "center",
-                      borderRight: "2px solid #d1d5db",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "0 0 2px 0",
-                      }}
-                    >
-                      TOTAL MARKS
+              <div style={{ marginBottom: "20px", border: "2px solid #d1d5db", backgroundColor: "#f9fafb", }}>
+                <div style={{ fontWeight: "bold" }}>
+                  <div style={{ padding: "5px", }}>
+                    <h3 style={{ fontSize: "11px", }}>
+                      TOTAL MARKS :
+                      <span style={{ paddingLeft: "4px", }}>
+                        {total}/{maxTotal}
+                      </span>
                     </h3>
-                    <p
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "0",
-                      }}
-                    >
-                      {total}/{maxTotal}
-                    </p>
                   </div>
-                  <div
-                    style={{
-                      padding: "10px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "0 0 2px 0",
-                      }}
-                    >
-                      FINAL PERCENTAGE
+                  <div style={{ padding: "5px", }}>
+                    <h3 style={{ fontSize: "11px", }}>
+                      FINAL PERCENTAGE :
+                      <span style={{ paddingLeft: "4px", }}>
+                        {percentage}%
+                      </span>
                     </h3>
-                    <p
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "bold",
-                        color: "black",
-                        margin: "0",
-                      }}
-                    >
-                      {percentage}%
-                    </p>
                   </div>
                 </div>
 
@@ -2089,27 +1673,14 @@ const Marksheet = () => {
                   });
                   if (relevantFailed.length > 0 && hasUncleared) {
                     return (
-                      <div
-                        style={{
-                          borderTop: "2px solid #d1d5db",
-                          padding: "16px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <p
-                          style={{
-                            color: "#dc2626",
-                            fontWeight: "bold",
-                            fontSize: "13px",
-                            margin: "0 0 4px 0",
-                          }}
-                        >
+                      <div style={{ borderTop: "2px solid #d1d5db", padding: "16px", textAlign: "center", }}>
+                        <p style={{ color: "#dc2626", fontWeight: "bold", fontSize: "13px", margin: "0 0 4px 0", }}>
                           Remark : Candidate has failed in subject(s):{" "}
                           {relevantFailed
                             .filter((subject) => {
                               const marks =
                                 marksheetData?.[subject.session]?.[
-                                  subject.paper
+                                subject.paper
                                 ];
                               // "C" present anywhere means cleared
                               return !(
@@ -2123,13 +1694,7 @@ const Marksheet = () => {
                             )
                             .join(", ")}
                         </p>
-                        <p
-                          style={{
-                            color: "#dc2626",
-                            fontSize: "11px",
-                            margin: "0",
-                          }}
-                        >
+                        <p style={{ color: "#dc2626", fontSize: "11px", margin: "0", }}>
                           Passing criteria: 60% or above required in each
                           subject.
                         </p>
@@ -2142,67 +1707,26 @@ const Marksheet = () => {
               </div>
 
               {/* Footer - Compact */}
-              <div
-                style={{
-                  borderTop: "2px solid #6b7280",
-                  paddingTop: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                  }}
-                >
+              <div style={{ borderTop: "2px solid #6b7280", paddingTop: "16px", }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", }}>
                   <div style={{ textAlign: "center" }}>
-                    <p
-                      style={{
-                        fontWeight: "600",
-                        color: "black",
-                        fontSize: "11px",
-                        margin: "0",
-                      }}
-                    >
+                    <div style={{ height: "30px", marginTop: "20px" }}></div>
+                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
                       Senior Lecturer (IC)
                     </p>
-                    <div style={{ height: "30px", marginTop: "20px" }}></div>
-                    <div
-                      style={{
-                        borderTop: "2px solid black",
-                        width: "100px",
-                        margin: "0 auto",
-                      }}
-                    ></div>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <p
-                      style={{
-                        fontWeight: "600",
-                        color: "black",
-                        fontSize: "11px",
-                        margin: "0",
-                      }}
-                    >
+                    <div style={{ height: "30px", marginTop: "20px" }}></div>
+                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
+                      Checked by
+                    </p>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ height: "30px", marginTop: "20px" }}></div>
+                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
                       Director
                     </p>
-                    <div style={{ height: "30px", marginTop: "20px" }}></div>
-                    <div
-                      style={{
-                        borderTop: "2px solid black",
-                        width: "100px",
-                        margin: "0 auto",
-                      }}
-                    ></div>
-                    <p
-                      style={{
-                        fontSize: "9px",
-                        color: "#6b7280",
-                        fontStyle: "italic",
-                        marginTop: "4px",
-                        margin: "4px 0 0 0",
-                      }}
-                    >
+                    <p style={{ fontSize: "9px", color: "#6b7280", fontStyle: "italic", marginTop: "4px", margin: "4px 0 0 0", }}>
                       Date of Generation:{" "}
                       {new Date().toLocaleDateString("en-IN")}
                     </p>
@@ -2214,8 +1738,8 @@ const Marksheet = () => {
 
           {/* No candidate selected message */}
           {!candidateData && !loading && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
-              <div className="w-20 h-20 bg-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="bg-white rounded shadow-lg p-12 text-center border border-gray-200">
+              <div className="w-20 h-20 bg-gray-500 rounded flex items-center justify-center mx-auto mb-6">
                 <FileText className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">

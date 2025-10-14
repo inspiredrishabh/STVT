@@ -81,7 +81,7 @@ const CertificatePreview2 = () => {
   // Course structure mapping for training duration
   const courseStructure = {
     "MSE-C&W": "Trainset Maintenance",
-    "MSE-D": "Diesel Locomotive Maintenance", 
+    "MSE-D": "Diesel Locomotive Maintenance",
     "MSE-W": "Workshop Training",
     "MJR-C&W": "Carriage & Wagon Maintenance",
     "MJR-D": "Diesel Locomotive Maintenance",
@@ -137,122 +137,40 @@ const CertificatePreview2 = () => {
 
     return (
       <div className="certificate-preview-outer ">
-        <div
-          className="certificate border-double border-4 border-black bg-white relative overflow-hidden shadow-xl"
-          style={{
-            fontFamily: "Times New Roman, serif",
-            width: "950px",
-            minHeight: "670px",
-            margin: "4px auto",
-            background: "#fff",
-            borderRadius: "18px",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
-            position: "relative",
-            padding: "40px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-          }}
-        >
+        <div className="certificate border-double border-4 border-black bg-white relative overflow-hidden shadow-xl" style={{ fontFamily: "Times New Roman, serif", width: "950px", minHeight: "670px", margin: "4px auto", background: "#fff", borderRadius: "18px", boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)", position: "relative", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "space-between", }}>
           {/* Double border effect - Remove this as we're using CSS classes */}
-          
+
           {/* Watermark - Railway Logo */}
-          <img
-            src={BgImage}
-            alt="Watermark"
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: "92%",
-              height: "92%",
-              transform: "translate(-50%, -50%)",
-              opacity: 0.07,
-              zIndex: 0,
-              pointerEvents: "none",
-              objectFit: "contain",
-              filter: "blur(0.5px)",
-            }}
-            draggable={false}
-          />
+          <img src={BgImage} alt="Watermark" style={{ position: "absolute", top: "50%", left: "50%", width: "92%", height: "92%", transform: "translate(-50%, -50%)", opacity: 0.07, zIndex: 0, pointerEvents: "none", objectFit: "contain", filter: "blur(0.5px)", }} draggable={false} />
 
           {/* Content Container */}
           <div style={{ position: "relative", zIndex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "20px" }}>
-            
+
             {/* Header Section */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px", padding: "10px 15px" }}>
-              
+
               {/* Railway Logo */}
               <div style={{ flex: "0 0 120px", marginLeft: "10px" }}>
-                <img
-                  src={railwayLogo}
-                  alt="Railway Logo"
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    objectFit: "contain",
-                  }}
-                />
+                <img src={railwayLogo} alt="Railway Logo" style={{ width: "120px", height: "120px", objectFit: "contain", }} />
               </div>
 
               {/* Center Content */}
               <div style={{ flex: "1", textAlign: "center", padding: "0 30px" }}>
-                <h1 style={{
-                  fontSize: "31px",
-                  fontWeight: "bold",
-                  color: "#1e40af",
-                  margin: "0 0 5px 0",
-                  letterSpacing: "1px"
-                }}>
+                <h1 style={{ fontSize: "31px", fontWeight: "bold", color: "#1e40af", margin: "0 0 5px 0", letterSpacing: "1px" }}>
                   Supervisors Training Centre
                 </h1>
-                <h2 style={{
-                  fontSize: "20px",
-                  fontWeight: "600",
-                  color: "#1e40af", 
-                  margin: "0 0 15px 0"
-                }}>
+                <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#1e40af", margin: "0 0 15px 0" }}>
                   Northern Railway, Charbagh, Lucknow
                 </h2>
-                <h1 style={{
-                  fontSize: "35px",
-                  fontWeight: "bold",
-                  color: "#1e40af",
-                  margin: "0",
-                  letterSpacing: "2px"
-                }}>
+                <h1 style={{ fontSize: "35px", fontWeight: "bold", color: "#1e40af", margin: "0", letterSpacing: "2px" }}>
                   Certificate
                 </h1>
               </div>
 
               {/* Photo */}
               <div style={{ flex: "0 0 120px", marginRight: "10px" }}>
-                <div
-                  style={{
-                    width: "120px",
-                    height: "140px",
-                    border: "2px solid #000",
-                    background: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
-                    alt={trainee.name}
-                    style={{
-                      objectFit: "cover",
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "2px",
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.parentNode.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; color: #666;">Photo</div>`;
-                    }}
-                  />
+                <div style={{ width: "120px", height: "140px", border: "2px solid #000", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px", }}>
+                  <img src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`} alt={trainee.name} style={{ objectFit: "cover", width: "100%", height: "100%", borderRadius: "2px", }} onError={(e) => { e.target.style.display = "none"; e.target.parentNode.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; color: #666;">Photo</div>`; }} />
                 </div>
               </div>
             </div>
@@ -260,13 +178,8 @@ const CertificatePreview2 = () => {
             {/* Serial Number */}
             <div style={{ marginBottom: "15px", paddingLeft: "15px" }}>
               <span style={{ fontSize: "18px", fontWeight: "600", color: "#1e40af" }}>
-                S. No.: 
-                <span
-                  contentEditable={true}
-                  suppressContentEditableWarning={true}
-                  style={{ textDecoration: "none", marginLeft: "5px" }}
-                  onBlur={(e) => setEditableSerialNo(e.currentTarget.textContent)}
-                >
+                S. No.:
+                <span contentEditable={true} suppressContentEditableWarning={true} style={{ textDecoration: "none", marginLeft: "5px" }} onBlur={(e) => setEditableSerialNo(e.currentTarget.textContent)}>
                   {editableSerialNo}
                 </span>
               </span>
@@ -274,49 +187,29 @@ const CertificatePreview2 = () => {
 
             {/* Main Certificate Text */}
             <div style={{ flex: "1", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 25px" }}>
-              <div style={{ 
-                fontSize: "20.6px", 
-                lineHeight: "1.8", 
-                textAlign: "center",
-                marginBottom: "20px"
-              }}>
+              <div style={{ fontSize: "20.6px", lineHeight: "1.8", textAlign: "center", marginBottom: "20px" }}>
                 <p style={{ margin: "0 0 15px 0" }}>
                   This is to certify that{" "}
                   <span style={{ fontWeight: "bold", fontSize: "22.7px" }}>
-                    <span 
-                      contentEditable={true}
-                      suppressContentEditableWarning={true}
-                      onBlur={(e) => setEditableName(e.currentTarget.textContent)}
-                    >
+                    <span contentEditable={true} suppressContentEditableWarning={true} onBlur={(e) => setEditableName(e.currentTarget.textContent)}>
                       {editableName}
                     </span>
                   </span>
                 </p>
-                
+
                 <div style={{ margin: "15px 0" }}>
                   <span>
                     Designation{" "}
-                    <span
-                      contentEditable={true}
-                      suppressContentEditableWarning={true}
-                      style={{ 
-                        borderBottom: "1px solid #000", 
-                        minWidth: "150px", 
-                        display: "inline-block",
-                        textAlign: "center",
-                        fontWeight: "bold"
-                      }}
-                      onBlur={(e) => setEditableDesignation(e.currentTarget.textContent)}
-                    >
+                    <span contentEditable={true} suppressContentEditableWarning={true} style={{ borderBottom: "1px solid #000", minWidth: "150px", display: "inline-block", textAlign: "center", fontWeight: "bold" }} onBlur={(e) => setEditableDesignation(e.currentTarget.textContent)}>
                       {editableDesignation}
                     </span>
                     , Employee No.{" "}
                     <span
                       contentEditable={true}
                       suppressContentEditableWarning={true}
-                      style={{ 
-                        borderBottom: "1px solid #000", 
-                        minWidth: "120px", 
+                      style={{
+                        borderBottom: "1px solid #000",
+                        minWidth: "120px",
                         display: "inline-block",
                         textAlign: "center",
                         fontWeight: "bold"
@@ -333,9 +226,9 @@ const CertificatePreview2 = () => {
                   <span
                     contentEditable={true}
                     suppressContentEditableWarning={true}
-                    style={{ 
-                      borderBottom: "1px solid #000", 
-                      minWidth: "200px", 
+                    style={{
+                      borderBottom: "1px solid #000",
+                      minWidth: "200px",
                       display: "inline-block",
                       textAlign: "center",
                       fontWeight: "bold"
@@ -361,9 +254,9 @@ const CertificatePreview2 = () => {
                   <span
                     contentEditable={true}
                     suppressContentEditableWarning={true}
-                    style={{ 
-                      borderBottom: "1px solid #000", 
-                      minWidth: "100px", 
+                    style={{
+                      borderBottom: "1px solid #000",
+                      minWidth: "100px",
                       display: "inline-block",
                       textAlign: "center",
                       fontWeight: "bold"
@@ -376,9 +269,9 @@ const CertificatePreview2 = () => {
                   <span
                     contentEditable={true}
                     suppressContentEditableWarning={true}
-                    style={{ 
-                      borderBottom: "1px solid #000", 
-                      minWidth: "100px", 
+                    style={{
+                      borderBottom: "1px solid #000",
+                      minWidth: "100px",
                       display: "inline-block",
                       textAlign: "center",
                       fontWeight: "bold"
@@ -397,7 +290,7 @@ const CertificatePreview2 = () => {
               {/* Date and Place */}
               <div style={{ marginBottom: "50px" }}>
                 <div style={{ fontSize: "18px", fontWeight: "600", color: "#1e40af", marginBottom: "10px" }}>
-                  Date: 
+                  Date:
                   <span
                     contentEditable={true}
                     suppressContentEditableWarning={true}
@@ -408,7 +301,7 @@ const CertificatePreview2 = () => {
                   </span>
                 </div>
                 <div style={{ fontSize: "18px", fontWeight: "600", color: "#1e40af", marginBottom: "80px" }}>
-                  Place: 
+                  Place:
                   <span
                     contentEditable={true}
                     suppressContentEditableWarning={true}
@@ -422,12 +315,12 @@ const CertificatePreview2 = () => {
 
               {/* Signatures */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
-                
+
                 {/* Course Coordinator */}
                 <div style={{ textAlign: "center", width: "200px" }}>
-                  <div style={{ 
-                    fontSize: "18px", 
-                    fontWeight: "600", 
+                  <div style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
                     color: "#1e40af",
                     marginBottom: "5px"
                   }}>
@@ -441,9 +334,9 @@ const CertificatePreview2 = () => {
                     </span>
                     )
                   </div>
-                  <div style={{ 
-                    fontSize: "18px", 
-                    fontWeight: "600", 
+                  <div style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
                     color: "#1e40af"
                   }}>
                     Course Coordinator
@@ -452,16 +345,16 @@ const CertificatePreview2 = () => {
 
                 {/* Institute Seal */}
                 <div style={{ textAlign: "center", flex: "1" }}>
-                  <div style={{ 
-                    fontSize: "18px", 
-                    fontWeight: "600", 
+                  <div style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
                     color: "#000",
                     marginBottom: "5px"
                   }}>
                     Institute Seal
                   </div>
-                  <div style={{ 
-                    fontSize: "13px", 
+                  <div style={{
+                    fontSize: "13px",
                     fontStyle: "italic",
                     color: "#666"
                   }}>
@@ -471,9 +364,9 @@ const CertificatePreview2 = () => {
 
                 {/* Director */}
                 <div style={{ textAlign: "center", width: "200px" }}>
-                  <div style={{ 
-                    fontSize: "18px", 
-                    fontWeight: "600", 
+                  <div style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
                     color: "#1e40af",
                     marginBottom: "5px"
                   }}>
@@ -487,9 +380,9 @@ const CertificatePreview2 = () => {
                     </span>
                     )
                   </div>
-                  <div style={{ 
-                    fontSize: "18px", 
-                    fontWeight: "600", 
+                  <div style={{
+                    fontSize: "18px",
+                    fontWeight: "600",
                     color: "#1e40af"
                   }}>
                     Director
@@ -627,10 +520,10 @@ const CertificatePreview2 = () => {
             display: none !important;
           }
           ${trainees.length > 1
-            ? `.certificate-preview-outer.certificate-preview-outer-margin {
+          ? `.certificate-preview-outer.certificate-preview-outer-margin {
                   margin: 40px !important;
                 }`
-            : ""}
+          : ""}
         }
       `}</style>
     </div>
