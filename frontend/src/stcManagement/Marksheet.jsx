@@ -1,23 +1,9 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
-import {
-  Search,
-  FileText,
-  // Download,
-  Printer,
-  ArrowLeft,
-  GraduationCap,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, } from "react";
+import { Search, FileText, Printer, ArrowLeft, GraduationCap, AlertTriangle, CheckCircle, } from "lucide-react";
 import { Link } from "react-router-dom";
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import railwayLogo from "../assets/rail.png";
 import northLogo from "../assets/north.jpeg";
 
@@ -653,6 +639,7 @@ const Marksheet = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [viewMode, setViewMode] = useState("complete");
   const [selectedSession, setSelectedSession] = useState("all");
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const marksheetRef = useRef();
 
   // Helper function to determine course code from module_no or designation
@@ -910,7 +897,7 @@ const Marksheet = () => {
 
     // Apply print-specific styles to ensure consistent output
     printContent.style.cssText = `
-      background: white !important;
+      background: #FFFFFF00 !important;
       color: black !important;
       font-family: 'Gorgia', serif !important;
       width: 100% !important;
@@ -919,7 +906,7 @@ const Marksheet = () => {
       box-sizing: border-box !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      border: none !important;
+      border: 4px double black !important;
     `;
 
     printWindow.document.write(`
@@ -942,7 +929,6 @@ const Marksheet = () => {
                 font-family: 'Verdana', sans !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                color: black !important;
               }
               img{
                 width:240px:
@@ -993,62 +979,6 @@ const Marksheet = () => {
       printWindow.close();
     }, 1000);
   }, [candidateData]);
-
-  //  const handleExportPDF = useCallback(async () => {
-  //   if (!marksheetRef.current) {
-  //     setMessage({ type: "error", text: "No marksheet to export." });
-  //     return;
-  //   }
-  //   setGenerating(true);
-
-  //   try {
-  //     // 1) Render DOM node to canvas
-  //     const canvas = await html2canvas(marksheetRef.current, {
-  //       scale: 2,
-  //       useCORS: true,
-  //       allowTaint: true,
-  //       backgroundColor: "#ffffff",
-  //     });
-
-  //     // 2) Prepare image data for the PDF
-  //     const imgData = canvas.toDataURL("image/jpeg", 1.0);
-  //     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  //     const pageWidth = pdf.internal.pageSize.getWidth();
-  //     const pageHeight = pdf.internal.pageSize.getHeight();
-
-  //     // 3) Calculate the rendered image dimensions
-  //     const imgWidth = pageWidth;
-  //     const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-  //     // 4) Add first page
-  //     let heightLeft = imgHeight;
-  //     let position = 0;
-  //     pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-  //     heightLeft -= pageHeight;
-
-  //     // 5) Add additional pages if the content overflows
-  //     while (heightLeft > 0) {
-  //       position = position - pageHeight;
-  //       pdf.addPage();
-  //       pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-  //       heightLeft -= pageHeight;
-  //     }
-
-  //     // 6) Save the file
-  //     const filename = `Marksheet_${candidateData.ticketNumber || candidateData.ticket_no}.pdf`;
-  //     pdf.save(filename);
-
-  //     setMessage({ type: "success", text: "PDF exported successfully!" });
-  //   } catch (err) {
-  //     console.error("PDF export failed:", err);
-  //     setMessage({
-  //       type: "error",
-  //       text: "Failed to export PDF. Check console for details.",
-  //     });
-  //   } finally {
-  //     setGenerating(false);
-  //   }
-  // }, [candidateData]);
 
 
   // Helper functions with useMemo for optimization
@@ -1164,6 +1094,35 @@ const Marksheet = () => {
     },
     [marksheetData]
   );
+
+  // Generate QR code when candidate data or marks change
+  useEffect(() => {
+    if (candidateData && marksheetData && total !== undefined && percentage !== undefined) {
+      const generateQRCode = async () => {
+        try {
+          const qrData = `Name: ${candidateData.name}\nTicket Number: ${candidateData.ticketNumber || candidateData.ticket_no}\nTotal Marks: ${total}/${maxTotal}\nFinal Percentage: ${percentage}%`;
+
+          const qrCodeUrl = await QRCode.toDataURL(qrData, {
+            width: 120,
+            margin: 1,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          });
+
+          setQrCodeDataUrl(qrCodeUrl);
+        } catch (error) {
+          console.error('Error generating QR code:', error);
+          setQrCodeDataUrl("");
+        }
+      };
+
+      generateQRCode();
+    } else {
+      setQrCodeDataUrl("");
+    }
+  }, [candidateData, marksheetData, total, maxTotal, percentage]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1491,245 +1450,268 @@ const Marksheet = () => {
 
           {/* Marksheet Display */}
           {candidateData && marksheetData && (
-            <div ref={marksheetRef} style={{ backgroundColor: "white", borderRadius: "16px", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", border: "1px solid #e5e7eb", padding: "16px", marginBottom: "32px", fontFamily: "Times New Roman, serif", fontSize: "12px", lineHeight: "1.2", color: "black", }}>
-              {/* Header - Compact format */}
-              <div style={{ borderBottom: "2px solid #6b7280", paddingBottom: "12px", marginBottom: "16px", }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative", width: "100%", }}>
-                  {/* Railway Logo - Smaller */}
-                  <div style={{ position: "absolute", left: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
-                    <img src={railwayLogo} alt="Indian Railways Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
-                    <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
-                      <div>INDIAN</div>
-                      <div>RAILWAYS</div>
-                      <div>LOGO</div>
+            <div ref={marksheetRef} style={{ backgroundColor: "white", borderRadius: "16px", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", border: "1px solid #e5e7eb", padding: "16px", marginBottom: "32px", fontFamily: "Times New Roman, serif", fontSize: "12px", lineHeight: "1.2", color: "black", position: "relative", overflow: "hidden" }}>
+
+              {/* Watermark background image */}
+              <img src={railwayLogo} alt="Watermark" style={{ position: 'absolute', top: '50%', left: '50%', width: '60%', height: '60%', transform: 'translate(-50%, -50%)', opacity: 0.1, zIndex: 10, pointerEvents: 'none', objectFit: 'contain', }} draggable={false} />
+
+              {/* Content wrapper with relative positioning */}
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {/* Header - Compact format */}
+                <div style={{ borderBottom: "2px solid #6b7280", paddingBottom: "12px", marginBottom: "16px", }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative", width: "100%", }}>
+                    {/* Railway Logo - Smaller */}
+                    <div style={{ position: "absolute", left: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
+                      <img src={railwayLogo} alt="Indian Railways Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                      <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
+                        <div>INDIAN</div>
+                        <div>RAILWAYS</div>
+                        <div>LOGO</div>
+                      </div>
+                    </div>
+
+                    {/* North Logo - Same size and position as Railway Logo */}
+                    <div style={{ position: "absolute", right: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
+                      <img src={northLogo} alt="Northern Railway Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
+                      <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
+                        <div>NORTHERN</div>
+                        <div>RAILWAY</div>
+                        <div>LOGO</div>
+                      </div>
+                    </div>
+
+                    {/* Header text - Centered and Compact */}
+                    <div style={{ textAlign: "center", flex: "1", paddingLeft: "80px", paddingRight: "80px", }}>
+                      <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "black", margin: "0 0 2px 0", }}>
+                        NORTHERN RAILWAY
+                      </h1>
+                      <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
+                        SUPERVISOR TRAINING CENTRE
+                      </h2>
+                      <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
+                        CHARBAGH, LUCKNOW
+                      </h2>
+                      <h3 style={{ fontSize: "12px", fontWeight: "bold", color: "black", margin: "6px 0 2px 0", }}>
+                        STATEMENT OF MARKS
+                      </h3>
+                      {viewMode === "sessionWise" &&
+                        selectedSession !== "all" && (
+                          <h4 style={{ fontSize: "10px", fontWeight: "600", color: "#374151", margin: "1px 0 0 0", }}>
+                            (Sessional Marksheet - {selectedSession})
+                          </h4>
+                        )}
                     </div>
                   </div>
-
-                  {/* North Logo - Same size and position as Railway Logo */}
-                  <div style={{ position: "absolute", right: "0", width: "84px", height: "84px", backgroundColor: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", padding: "2px", }}>
-                    <img src={northLogo} alt="Northern Railway Logo" style={{ width: "100%", height: "100%", objectFit: "contain", }} onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }} />
-                    <div style={{ textAlign: "center", display: "none", flexDirection: "column", fontSize: "8px", fontWeight: "bold", }}>
-                      <div>NORTHERN</div>
-                      <div>RAILWAY</div>
-                      <div>LOGO</div>
-                    </div>
-                  </div>
-
-                  {/* Header text - Centered and Compact */}
-                  <div style={{ textAlign: "center", flex: "1", paddingLeft: "80px", paddingRight: "80px", }}>
-                    <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "black", margin: "0 0 2px 0", }}>
-                      NORTHERN RAILWAY
-                    </h1>
-                    <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
-                      SUPERVISOR TRAINING CENTRE
-                    </h2>
-                    <h2 style={{ fontSize: "12px", fontWeight: "600", color: "black", margin: "0 0 1px 0", }}>
-                      CHARBAGH, LUCKNOW
-                    </h2>
-                    <h3 style={{ fontSize: "12px", fontWeight: "bold", color: "black", margin: "6px 0 2px 0", }}>
-                      STATEMENT OF MARKS
-                    </h3>
-                    {viewMode === "sessionWise" &&
-                      selectedSession !== "all" && (
-                        <h4 style={{ fontSize: "10px", fontWeight: "600", color: "#374151", margin: "1px 0 0 0", }}>
-                          (Sessional Marksheet - {selectedSession})
-                        </h4>
-                      )}
-                  </div>
                 </div>
-              </div>
 
-              {/* Candidate Information - Compact */}
-              <div style={{ marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }} className="flex justify-between">
-                <div className="font-sans" style={{ flex: "1" }}>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Ticket Number : <span style={{ fontWeight: 500 }} > {candidateData.ticketNumber || candidateData.ticket_no}</span></p>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Name :  <span style={{ fontWeight: 500 }} >{candidateData.name} </span></p>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Father's Name : <span style={{ fontWeight: 500 }} >{candidateData.fatherName || candidateData.father_name}</span> </p>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Module : <span style={{ fontWeight: 500 }} >{candidateData.courseCode}</span> </p>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Post : <span style={{ fontWeight: 500 }} >{candidateData.designation}</span></p>
-                  <p style={{ padding: "2px 0", fontWeight: "bold" }} >Unit :  <span style={{ fontWeight: 500 }} >{candidateData.unit}</span></p>
-                </div>
-                <div style={{ flex: "0 0 auto", marginLeft: "20px" }}>
-                  <div style={{
-                    width: "84px",
-                    height: "100px",
-                    border: "2px solid #000",
-                    background: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "4px",
-                    overflow: "hidden"
-                  }}>
-                    {candidateData.picture ? (
-                      <img
-                        src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidateData.picture}`}
-                        alt={candidateData.name}
-                        style={{
-                          objectFit: "cover",
-                          width: "100%",
+                {/* Candidate Information - Compact */}
+                <div style={{ marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }} className="flex justify-between">
+                  <div className="font-sans" style={{ flex: "1" }}>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Ticket Number : <span style={{ fontWeight: 500 }} > {candidateData.ticketNumber || candidateData.ticket_no}</span></p>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Name :  <span style={{ fontWeight: 500 }} >{candidateData.name} </span></p>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Father's Name : <span style={{ fontWeight: 500 }} >{candidateData.fatherName || candidateData.father_name}</span> </p>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Module : <span style={{ fontWeight: 500 }} >{candidateData.courseCode}</span> </p>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Post : <span style={{ fontWeight: 500 }} >{candidateData.designation}</span></p>
+                    <p style={{ padding: "2px 0", fontWeight: "bold" }} >Unit :  <span style={{ fontWeight: 500 }} >{candidateData.unit}</span></p>
+                  </div>
+                  <div style={{ flex: "0 0 auto", marginLeft: "20px" }}>
+                    <div style={{
+                      width: "84px",
+                      height: "100px",
+                      border: "2px solid #000",
+                      background: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "4px",
+                      overflow: "hidden"
+                    }}>
+                      {candidateData.picture ? (
+                        <img
+                          src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidateData.picture}`}
+                          alt={candidateData.name}
+                          style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "2px"
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.parentNode.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 10px; color: #666; text-align: center;">No Photo<br/>Available</div>`;
+                          }}
+                        />
+                      ) : (
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           height: "100%",
-                          borderRadius: "2px"
-                        }}
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.parentNode.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 10px; color: #666; text-align: center;">No Photo<br/>Available</div>`;
-                        }}
-                      />
-                    ) : (
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: "100%",
-                        fontSize: "10px",
-                        color: "#666",
-                        textAlign: "center"
-                      }}>
-                        No Photo<br />Available
+                          fontSize: "10px",
+                          color: "#666",
+                          textAlign: "center"
+                        }}>
+                          No Photo<br />Available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Marks Table - Compact */}
+                {currentCourseStructure && (
+                  <div style={{ marginBottom: "20px" }}>
+                    <table style={{ width: "100%", border: "2px solid black", borderCollapse: "collapse", }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f3f4f6" }}>
+                          <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
+                            Session
+                          </th>
+                          <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
+                            Paper
+                          </th>
+                          <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
+                            Subjects
+                          </th>
+                          <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
+                            Max Marks
+                          </th>
+                          <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
+                            Marks Obtained
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentCourseStructure &&
+                          Object.entries(currentCourseStructure).flatMap(
+                            ([session, papers]) => {
+                              if (
+                                viewMode === "sessionWise" &&
+                                selectedSession !== "all" &&
+                                selectedSession !== session
+                              )
+                                return [];
+                              return renderRows(session, papers);
+                            }
+                          )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Summary Section - Compact */}
+                <div style={{ marginBottom: "20px", border: "2px solid #d1d5db", backgroundColor: "#f9fafb", }}>
+                  <div style={{ display: "flex", alignItems: "center", padding: "8px" }}>
+                    {/* Left side - Total marks and percentage */}
+                    <div style={{ flex: "1", }}>
+                      <div style={{ fontWeight: "bold" }}>
+                        <div style={{ padding: "5px", }}>
+                          <h3 style={{ fontSize: "11px", }}>
+                            TOTAL MARKS :
+                            <span style={{ paddingLeft: "4px", }}>
+                              {total}/{maxTotal}
+                            </span>
+                          </h3>
+                        </div>
+                        <div style={{ padding: "5px", }}>
+                          <h3 style={{ fontSize: "11px", }}>
+                            FINAL PERCENTAGE :
+                            <span style={{ paddingLeft: "4px", }}>
+                              {percentage}%
+                            </span>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right side - QR Code */}
+                    {qrCodeDataUrl && (
+                      <div style={{ flex: "0 0 auto", marginLeft: "20px", textAlign: "center" }}>
+                        <img src={qrCodeDataUrl} alt="QR Code" style={{ width: "80px", height: "80px", border: "1px solid #ccc", borderRadius: "4px" }} />
+                        <div style={{ fontSize: "8px", color: "#666", marginTop: "2px", fontWeight: "normal" }}>
+                          Scan for Details
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Marks Table - Compact */}
-              {currentCourseStructure && (
-                <div style={{ marginBottom: "20px" }}>
-                  <table style={{ width: "100%", border: "2px solid black", borderCollapse: "collapse", }}>
-                    <thead>
-                      <tr style={{ backgroundColor: "#f3f4f6" }}>
-                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
-                          Session
-                        </th>
-                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
-                          Paper
-                        </th>
-                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
-                          Subjects
-                        </th>
-                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
-                          Max Marks
-                        </th>
-                        <th style={{ border: "1px solid black", padding: "4px 6px", fontSize: "11px", fontWeight: "bold", color: "black", textAlign: "center", }}>
-                          Marks Obtained
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCourseStructure &&
-                        Object.entries(currentCourseStructure).flatMap(
-                          ([session, papers]) => {
-                            if (
-                              viewMode === "sessionWise" &&
-                              selectedSession !== "all" &&
-                              selectedSession !== session
-                            )
-                              return [];
-                            return renderRows(session, papers);
-                          }
-                        )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Summary Section - Compact */}
-              <div style={{ marginBottom: "20px", border: "2px solid #d1d5db", backgroundColor: "#f9fafb", }}>
-                <div style={{ fontWeight: "bold" }}>
-                  <div style={{ padding: "5px", }}>
-                    <h3 style={{ fontSize: "11px", }}>
-                      TOTAL MARKS :
-                      <span style={{ paddingLeft: "4px", }}>
-                        {total}/{maxTotal}
-                      </span>
-                    </h3>
-                  </div>
-                  <div style={{ padding: "5px", }}>
-                    <h3 style={{ fontSize: "11px", }}>
-                      FINAL PERCENTAGE :
-                      <span style={{ paddingLeft: "4px", }}>
-                        {percentage}%
-                      </span>
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Failed Subjects Disclaimer - Only show when relevant */}
-                {(() => {
-                  // Filter failed subjects for current view
-                  const relevantFailed = failedSubjects.filter((subject) =>
-                    viewMode === "sessionWise" && selectedSession !== "all"
-                      ? subject.session === selectedSession
-                      : true
-                  );
-                  // If there are failed subjects, check if any are not cleared
-
-                  const hasUncleared = relevantFailed.some((subject) => {
-                    const marks =
-                      marksheetData?.[subject.session]?.[subject.paper];
-                    // "C" present anywhere means cleared
-                    return !(typeof marks === "string" && marks.includes("C"));
-                  });
-                  if (relevantFailed.length > 0 && hasUncleared) {
-                    return (
-                      <div style={{ borderTop: "2px solid #d1d5db", padding: "16px", textAlign: "center", }}>
-                        <p style={{ color: "#dc2626", fontWeight: "bold", fontSize: "13px", margin: "0 0 4px 0", }}>
-                          Remark : Candidate has failed in subject(s):{" "}
-                          {relevantFailed
-                            .filter((subject) => {
-                              const marks =
-                                marksheetData?.[subject.session]?.[
-                                subject.paper
-                                ];
-                              // "C" present anywhere means cleared
-                              return !(
-                                typeof marks === "string" && marks.includes("C")
-                              );
-                            })
-                            .map((subject) =>
-                              subject.subjects.length > 0
-                                ? subject.subjects.join(", ")
-                                : `${subject.session} - ${subject.paper}`
-                            )
-                            .join(", ")}
-                        </p>
-                        <p style={{ color: "#dc2626", fontSize: "11px", margin: "0", }}>
-                          Passing criteria: 60% or above required in each
-                          subject.
-                        </p>
-                      </div>
+                  {/* Failed Subjects Disclaimer - Only show when relevant */}
+                  {(() => {
+                    // Filter failed subjects for current view
+                    const relevantFailed = failedSubjects.filter((subject) =>
+                      viewMode === "sessionWise" && selectedSession !== "all"
+                        ? subject.session === selectedSession
+                        : true
                     );
-                  }
-                  // If all failed subjects are cleared, show nothing
-                  return null;
-                })()}
-              </div>
+                    // If there are failed subjects, check if any are not cleared
 
-              {/* Footer - Compact */}
-              <div style={{ borderTop: "2px solid #6b7280", paddingTop: "16px", }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ height: "30px", marginTop: "20px" }}></div>
-                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
-                      Senior Lecturer (IC)
-                    </p>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ height: "30px", marginTop: "20px" }}></div>
-                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
-                      Checked by
-                    </p>
-                  </div>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ height: "30px", marginTop: "20px" }}></div>
-                    <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
-                      Director
-                    </p>
-                    <p style={{ fontSize: "9px", color: "#6b7280", fontStyle: "italic", marginTop: "4px", margin: "4px 0 0 0", }}>
-                      Date of Generation:{" "}
-                      {new Date().toLocaleDateString("en-IN")}
-                    </p>
+                    const hasUncleared = relevantFailed.some((subject) => {
+                      const marks =
+                        marksheetData?.[subject.session]?.[subject.paper];
+                      // "C" present anywhere means cleared
+
+                      return !(typeof marks === "string" && marks.includes("C"));
+                    });
+                    if (relevantFailed.length > 0 && hasUncleared) {
+                      return (
+                        <div style={{ borderTop: "2px solid #d1d5db", padding: "16px", textAlign: "center", }}>
+                          <p style={{ color: "#dc2626", fontWeight: "bold", fontSize: "13px", margin: "0 0 4px 0", }}>
+                            Remark : Candidate has failed in subject(s):{" "}
+                            {relevantFailed
+                              .filter((subject) => {
+                                const marks =
+                                  marksheetData?.[subject.session]?.[
+                                  subject.paper
+                                  ];
+                                // "C" present anywhere means cleared
+                                return !(
+                                  typeof marks === "string" && marks.includes("C")
+                                );
+                              })
+                              .map((subject) =>
+                                subject.subjects.length > 0
+                                  ? subject.subjects.join(", ")
+                                  : `${subject.session} - ${subject.paper}`
+                              )
+                              .join(", ")}
+                          </p>
+                          <p style={{ color: "#dc2626", fontSize: "11px", margin: "0", }}>
+                            Passing criteria: 60% or above required in each
+                            subject.
+                          </p>
+                        </div>
+                      );
+                    }
+                    // If all failed subjects are cleared, show nothing
+                    return null;
+                  })()}
+                </div>
+
+                {/* Footer - Compact */}
+                <div style={{ borderTop: "2px solid #6b7280", paddingTop: "16px", }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", }}>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ height: "30px", marginTop: "20px" }}></div>
+                      <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
+                        Senior Lecturer (IC)
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ height: "30px", marginTop: "20px" }}></div>
+                      <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
+                        Checked by
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ height: "30px", marginTop: "20px" }}></div>
+                      <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
+                        Director
+                      </p>
+                      <p style={{ fontSize: "9px", color: "#6b7280", fontStyle: "italic", marginTop: "4px", margin: "4px 0 0 0", }}>
+                        Date of Generation:{" "}
+                        {new Date().toLocaleDateString("en-IN")}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
