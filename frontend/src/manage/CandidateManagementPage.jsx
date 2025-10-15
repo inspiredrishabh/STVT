@@ -7,6 +7,7 @@ import CandidateTable from "./CandidateTable";
 import DeleteModal from "./DeleteModal";
 import DetailModal from "./DetailModal";
 import ActivityPanel from "./ActivityPanel";
+import { ArrowUp } from "lucide-react";
 // import CandidateForm from '../form/Components/StcCandidateForm';
 
 // Real Backend API - Connects to actual REST endpoints
@@ -2029,6 +2030,12 @@ const CandidateManagementPage = () => {
             }}
           />
         )}
+
+        <div className="fixed bottom-8 right-8 z-10 h-12 w-12 rounded-full bg-amber-400 hover:bg-amber-300 flex items-center justify-center" >
+          <button className="text-3xl font-bold text-gray-900" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <ArrowUp />
+          </button>
+        </div>
 
         {/* Auto-filter notification */}
         {autoFilterNotification && (

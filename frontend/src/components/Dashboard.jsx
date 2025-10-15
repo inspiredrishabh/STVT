@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { RefreshCw, Download } from "lucide-react";
+import { RefreshCw, Download, ArrowUp } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
 class DashboardAPI {
@@ -403,6 +403,8 @@ const SimpleBarChart = ({
 
   // Reserve fixed height for chart container to prevent layout shift
   return (
+
+
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900 text-center">
         {title}
@@ -1126,6 +1128,11 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="fixed bottom-8 right-8 z-10 h-12 w-12 rounded-full bg-amber-400 hover:bg-amber-300 flex items-center justify-center" >
+        <button className="text-3xl font-bold text-gray-900" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <ArrowUp />
+        </button>
+      </div>
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-20">
         <div className="max-w-9xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
