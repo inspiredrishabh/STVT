@@ -134,11 +134,26 @@ const CertificatePreview = () => {
           <img
             src={BgImage}
             alt="Watermark"
-            style={{ position: "absolute", top: "50%", left: "50%", width: "60%", height: "60%", transform: "translate(-50%, -50%)", opacity: 0.07, zIndex: 0, pointerEvents: "none", objectFit: "contain", filter: "blur(0.5px)", }}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: "60%",
+              height: "60%",
+              transform: "translate(-50%, -50%)",
+              opacity: 0.07,
+              zIndex: 0,
+              pointerEvents: "none",
+              objectFit: "contain",
+              filter: "blur(0.5px)",
+            }}
             draggable={false}
           />
           {/* Header */}
-          <div className="relative z-10 " style={{ padding: "38px 60px 40px 60px" }}>
+          <div
+            className="relative z-10 "
+            style={{ padding: "38px 60px 40px 60px" }}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <img
@@ -175,15 +190,36 @@ const CertificatePreview = () => {
                 >
                   Northern Railway, Charbagh, Lucknow
                 </div>
-                <div style={{ fontSize: 36, fontWeight: 700, color: "#17408B", margin: "18px 0 0 0", letterSpacing: "2px", }}>
+                <div
+                  style={{
+                    fontSize: 36,
+                    fontWeight: 700,
+                    color: "#17408B",
+                    margin: "18px 0 0 0",
+                    letterSpacing: "2px",
+                  }}
+                >
                   Certificate
                 </div>
               </div>
               <div>
                 <div
-                  style={{ width: 110, height: 130, border: "2.5px solid #222", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 10, borderRadius: "8px", }}>
+                  style={{
+                    width: 110,
+                    height: 130,
+                    border: "2.5px solid #222",
+                    background: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginLeft: 10,
+                    borderRadius: "8px",
+                  }}
+                >
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture}`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                      trainee.picture
+                    }`}
                     alt={trainee.name}
                     style={{
                       objectFit: "cover",
@@ -227,7 +263,12 @@ const CertificatePreview = () => {
                 This is to certify that
               </div>
               <div>
-                Sh./Smt./Km.{" "}
+                <span
+                  contentEditable={true}
+                  suppressContentEditableWarning={true}
+                >
+                  Sh./Smt./Km.
+                </span>{" "}
                 <span
                   style={{ fontWeight: 700 }}
                   contentEditable={true}
@@ -274,7 +315,10 @@ const CertificatePreview = () => {
               </div>
               <div style={{ marginTop: 6 }}>
                 has successfully completed the
-                <span contentEditable={true} >  Induction/Promotional course </span>
+                <span contentEditable={true}>
+                  {" "}
+                  Induction/Promotional course{" "}
+                </span>
                 <br />
                 of{" "}
                 <span
@@ -401,7 +445,7 @@ const CertificatePreview = () => {
           cursor: "pointer",
           boxShadow: "0 2px 8px #0001",
           transition: "background 0.2s",
-          display: "block"
+          display: "block",
         }}
         className="no-print"
       >
