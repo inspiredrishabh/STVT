@@ -1188,9 +1188,11 @@ const Marksheet = () => {
     ) {
       const generateQRCode = async () => {
         try {
-          const qrData = `Name: ${candidateData.name}\nTicket Number: ${
+          const qrData = ` Northern Railway | Supervisor Training Centre | Charbagh, Lucknow | \nName: ${
+            candidateData.name
+          } |\nTicket Number: ${
             candidateData.ticketNumber || candidateData.ticket_no
-          }\nTotal Marks: ${total}/${maxTotal}\nFinal Percentage: ${percentage}%`;
+          } |\nTotal Marks: ${total}/${maxTotal} |\nFinal Percentage: ${percentage}%`;
 
           const qrCodeUrl = await QRCode.toDataURL(qrData, {
             width: 120,
