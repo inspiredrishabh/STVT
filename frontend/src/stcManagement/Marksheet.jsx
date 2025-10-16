@@ -932,16 +932,16 @@ const Marksheet = () => {
 
     // Apply print-specific styles to ensure consistent output
     printContent.style.cssText = `
-      background: #FFFFFF00 !important;
+      background: #FFFFFF !important;
       color: black !important;
-      font-family: 'Gorgia', serif !important;
-      width: 100% !important;
-      padding: 20px !important;
-      margin: 0 !important;
+      font-family: 'Times New Roman', serif !important;
+      width: 210mm !important;
+      height: 297mm !important;
+      padding: 10mm !important;
+      margin: 0 auto !important;
       box-sizing: border-box !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      border: 4px double black !important;
     `;
 
     printWindow.document.write(`
@@ -954,7 +954,28 @@ const Marksheet = () => {
           <style>
             @page {
               size: A4;
-              margin: 8mm;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 210mm;
+              height: 297mm;
+            }
+            body {
+              font-family: 'Times New Roman', serif !important;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background-color: #f0f0f0;
+            }
+            .marksheet-container {
+              width: 210mm;
+              height: 297mm;
+              overflow: hidden;
+              background: white;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+              box-sizing: border-box;
             }
             @media print {
               * {
@@ -962,30 +983,30 @@ const Marksheet = () => {
                 color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
+              html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden;
+              }
               body {
-                font-family: 'Verdana', sans !important;
-                margin: 0 !important;
-                padding: 0 !important;
+                font-family: 'Times New Roman', serif !important;
               }
-              img{
-                width:240px:
-                aspect-ratio: auto;
+              img {
+                max-width: 100%;
+                height: auto;
               }
-              h3{
-                font-size: 12px !important;
-                margin: 2px 0 !important;
-                padding: 0 !important;
-              }
-              p{
-                font-size: 11px !important;
-                padding: 2px 0 !important;
-                margin: 0 !important;
-              }
+              h1 { font-size: 22px !important; margin: 0 0 2px 0 !important; }
+              h2 { font-size: 14px !important; margin: 0 0 1px 0 !important; }
+              h3 { font-size: 13px !important; margin: 2px 0 !important; }
+              p { font-size: 12px !important; margin: 2px 0 !important; }
               .no-print {
                 display: none !important;
               }
               table {
                 border-collapse: collapse !important;
+                width: 100% !important;
                 page-break-inside: auto !important;
               }
               tr {
@@ -1002,7 +1023,9 @@ const Marksheet = () => {
           </style>
         </head>
         <body>
-          ${printContent.outerHTML}
+          <div class="marksheet-container">
+            ${printContent.outerHTML}
+          </div>
         </body>
       </html>
     `);
@@ -1581,11 +1604,13 @@ const Marksheet = () => {
               ref={marksheetRef}
               style={{
                 backgroundColor: "white",
-                borderRadius: "16px",
+                width: "210mm", // A4 width
+                height: "297mm", // A4 height
+                margin: "0 auto", // Center the marksheet
+                padding: "10mm", // Standard margin
+                boxSizing: "border-box",
                 boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                 border: "1px solid #e5e7eb",
-                padding: "16px",
-                marginBottom: "32px",
                 fontFamily: "Times New Roman, serif",
                 fontSize: "12px",
                 lineHeight: "1.2",
@@ -1614,13 +1639,13 @@ const Marksheet = () => {
               />
 
               {/* Content wrapper with relative positioning */}
-              <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ position: "relative", zIndex: 1, height: "100%" }}>
                 {/* Header - Compact format */}
                 <div
                   style={{
                     borderBottom: "2px solid #6b7280",
-                    paddingBottom: "12px",
-                    marginBottom: "16px",
+                    paddingBottom: "8px",
+                    marginBottom: "12px",
                   }}
                 >
                   <div
@@ -1637,8 +1662,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         left: "0",
-                        width: "84px",
-                        height: "84px",
+                        width: "70px",
+                        height: "70px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1680,8 +1705,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         right: "0",
-                        width: "84px",
-                        height: "84px",
+                        width: "70px",
+                        height: "70px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1723,8 +1748,8 @@ const Marksheet = () => {
                       style={{
                         textAlign: "center",
                         flex: "1",
-                        paddingLeft: "80px",
-                        paddingRight: "80px",
+                        paddingLeft: "70px",
+                        paddingRight: "70px",
                       }}
                     >
                       <h1
@@ -1739,7 +1764,7 @@ const Marksheet = () => {
                       </h1>
                       <h2
                         style={{
-                          fontSize: "12px",
+                          fontSize: "14px",
                           fontWeight: "600",
                           color: "black",
                           margin: "0 0 1px 0",
@@ -1749,7 +1774,7 @@ const Marksheet = () => {
                       </h2>
                       <h2
                         style={{
-                          fontSize: "12px",
+                          fontSize: "14px",
                           fontWeight: "600",
                           color: "black",
                           margin: "0 0 1px 0",
@@ -1759,7 +1784,7 @@ const Marksheet = () => {
                       </h2>
                       <h3
                         style={{
-                          fontSize: "12px",
+                          fontSize: "13px",
                           fontWeight: "bold",
                           color: "black",
                           margin: "6px 0 2px 0",
@@ -1787,7 +1812,7 @@ const Marksheet = () => {
                 {/* Candidate Information - Compact */}
                 <div
                   style={{
-                    marginBottom: "16px",
+                    marginBottom: "12px",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "flex-start",
@@ -1795,38 +1820,74 @@ const Marksheet = () => {
                   className="flex justify-between"
                 >
                   <div className="times-new-roman" style={{ flex: "1" }}>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Ticket Number :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {" "}
                         {candidateData.ticketNumber || candidateData.ticket_no}
                       </span>
                     </p>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Name :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.name}{" "}
                       </span>
                     </p>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Father's Name :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.fatherName || candidateData.father_name}
                       </span>{" "}
                     </p>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Module :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.courseCode}
                       </span>{" "}
                     </p>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Post :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.designation}
                       </span>
                     </p>
-                    <p style={{ padding: "2px 0", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Unit :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.unit}
@@ -1836,8 +1897,8 @@ const Marksheet = () => {
                   <div style={{ flex: "0 0 auto", marginLeft: "20px" }}>
                     <div
                       style={{
-                        width: "84px",
-                        height: "100px",
+                        width: "80px",
+                        height: "95px",
                         border: "1px solid #000",
                         background: "#fff",
                         display: "flex",
@@ -1887,7 +1948,7 @@ const Marksheet = () => {
 
                 {/* Marks Table - Compact */}
                 {currentCourseStructure && (
-                  <div style={{ marginBottom: "20px" }}>
+                  <div style={{ marginBottom: "15px" }}>
                     <table
                       style={{
                         width: "100%",
@@ -1929,6 +1990,7 @@ const Marksheet = () => {
                               fontWeight: "bold",
                               color: "black",
                               textAlign: "center",
+                              width: "40%",
                             }}
                           >
                             Subjects
@@ -1980,7 +2042,7 @@ const Marksheet = () => {
                 {/* Summary Section - Compact */}
                 <div
                   style={{
-                    marginBottom: "20px",
+                    marginBottom: "15px",
                     border: "2px solid #d1d5db",
                     backgroundColor: "#f9fafb",
                   }}
@@ -1996,7 +2058,7 @@ const Marksheet = () => {
                     <div style={{ flex: "1" }}>
                       <div style={{ fontWeight: "bold" }}>
                         <div style={{ padding: "5px" }}>
-                          <h3 style={{ fontSize: "11px" }}>
+                          <h3 style={{ fontSize: "12px", margin: "2px 0" }}>
                             TOTAL MARKS :
                             <span style={{ paddingLeft: "4px" }}>
                               {total}/{maxTotal}
@@ -2004,7 +2066,7 @@ const Marksheet = () => {
                           </h3>
                         </div>
                         <div style={{ padding: "5px" }}>
-                          <h3 style={{ fontSize: "11px" }}>
+                          <h3 style={{ fontSize: "12px", margin: "2px 0" }}>
                             FINAL PERCENTAGE :
                             <span style={{ paddingLeft: "4px" }}>
                               {percentage}%
@@ -2027,8 +2089,8 @@ const Marksheet = () => {
                           src={qrCodeDataUrl}
                           alt="QR Code"
                           style={{
-                            width: "80px",
-                            height: "80px",
+                            width: "75px",
+                            height: "75px",
                             border: "1px solid #ccc",
                             borderRadius: "1px",
                           }}
@@ -2071,7 +2133,7 @@ const Marksheet = () => {
                         <div
                           style={{
                             borderTop: "2px solid #d1d5db",
-                            padding: "16px",
+                            padding: "12px",
                             textAlign: "center",
                           }}
                         >
@@ -2079,7 +2141,7 @@ const Marksheet = () => {
                             style={{
                               color: "#dc2626",
                               fontWeight: "bold",
-                              fontSize: "13px",
+                              fontSize: "12px",
                               margin: "0 0 4px 0",
                             }}
                           >
@@ -2121,9 +2183,13 @@ const Marksheet = () => {
                   })()}
                 </div>
 
-                {/* Footer - Compact */}
+                {/* Footer - with auto margin-top to push to bottom */}
                 <div
-                  style={{ borderTop: "2px solid #6b7280", paddingTop: "16px" }}
+                  style={{
+                    borderTop: "2px solid #6b7280",
+                    paddingTop: "15px",
+                    marginTop: "auto",
+                  }}
                 >
                   <div
                     style={{
