@@ -2221,7 +2221,7 @@ const Marksheet = () => {
                           margin: "0",
                         }}
                       >
-                        Checked by
+                        Director
                       </p>
                     </div>
                     <div style={{ textAlign: "center" }}>
@@ -2234,11 +2234,11 @@ const Marksheet = () => {
                           margin: "0",
                         }}
                       >
-                        Director
+                        Checked By
                       </p>
                       <p
                         style={{
-                          fontSize: "8px",
+                          fontSize: "7px",
                           color: "#6b7280",
                           fontStyle: "italic",
                           marginTop: "4px",
