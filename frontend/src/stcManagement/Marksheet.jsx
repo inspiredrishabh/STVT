@@ -1506,7 +1506,7 @@ const Marksheet = () => {
 
                 {/* Candidate Information - Compact */}
                 <div style={{ marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }} className="flex justify-between">
-                  <div className="font-sans" style={{ flex: "1" }}>
+                  <div className="times-new-roman" style={{ flex: "1" }}>
                     <p style={{ padding: "2px 0", fontWeight: "bold" }} >Ticket Number : <span style={{ fontWeight: 500 }} > {candidateData.ticketNumber || candidateData.ticket_no}</span></p>
                     <p style={{ padding: "2px 0", fontWeight: "bold" }} >Name :  <span style={{ fontWeight: 500 }} >{candidateData.name} </span></p>
                     <p style={{ padding: "2px 0", fontWeight: "bold" }} >Father's Name : <span style={{ fontWeight: 500 }} >{candidateData.fatherName || candidateData.father_name}</span> </p>
@@ -1518,12 +1518,12 @@ const Marksheet = () => {
                     <div style={{
                       width: "84px",
                       height: "100px",
-                      border: "2px solid #000",
+                      border: "1px solid #000",
                       background: "#fff",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: "4px",
+                      borderRadius: "1px",
                       overflow: "hidden"
                     }}>
                       {candidateData.picture ? (
@@ -1627,7 +1627,7 @@ const Marksheet = () => {
                     {/* Right side - QR Code */}
                     {qrCodeDataUrl && (
                       <div style={{ flex: "0 0 auto", marginLeft: "20px", textAlign: "center" }}>
-                        <img src={qrCodeDataUrl} alt="QR Code" style={{ width: "80px", height: "80px", border: "1px solid #ccc", borderRadius: "4px" }} />
+                        <img src={qrCodeDataUrl} alt="QR Code" style={{ width: "80px", height: "80px", border: "1px solid #ccc", borderRadius: "1px" }} />
                         <div style={{ fontSize: "8px", color: "#666", marginTop: "2px", fontWeight: "normal" }}>
                           Scan for Details
                         </div>
@@ -1707,7 +1707,7 @@ const Marksheet = () => {
                       <p style={{ fontWeight: "600", color: "black", fontSize: "11px", margin: "0", }}>
                         Director
                       </p>
-                      <p style={{ fontSize: "9px", color: "#6b7280", fontStyle: "italic", marginTop: "4px", margin: "4px 0 0 0", }}>
+                      <p style={{ fontSize: "8px", color: "#6b7280", fontStyle: "italic", marginTop: "4px", margin: "5px 0 0 0", }}>
                         Date of Generation:{" "}
                         {new Date().toLocaleDateString("en-IN")}
                       </p>
