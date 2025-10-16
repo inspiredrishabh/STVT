@@ -1600,10 +1600,10 @@ const Marksheet = () => {
                 alt="Watermark"
                 style={{
                   position: "absolute",
-                  top: "50%",
+                  top: "40%",
                   left: "50%",
-                  width: "60%",
-                  height: "60%",
+                  width: "50%",
+                  height: "50%",
                   transform: "translate(-50%, -50%)",
                   opacity: 0.1,
                   zIndex: 10,
