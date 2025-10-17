@@ -1876,6 +1876,31 @@ const Marksheet = () => {
                         fontSize: "12px",
                       }}
                     >
+                      Session :{" "}
+                      <span style={{ fontWeight: 500 }}>
+                        {candidateData.date_of_joining_stc_wtc_non_railway &&
+                        candidateData.date_of_sparing
+                          ? `${new Date(
+                              candidateData.date_of_joining_stc_wtc_non_railway
+                            ).getFullYear()}-${new Date(
+                              candidateData.date_of_sparing
+                            ).getFullYear()}`
+                          : candidateData.date_of_joining_stc_wtc_non_railway
+                          ? `${new Date(
+                              candidateData.date_of_joining_stc_wtc_non_railway
+                            ).getFullYear()}`
+                          : new Date(
+                              candidateData.date_of_sparing
+                            ).getFullYear()}
+                      </span>
+                    </p>
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
                       Module :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.courseCode}
@@ -1906,7 +1931,13 @@ const Marksheet = () => {
                       </span>
                     </p>
                   </div>
-                  <div style={{ flex: "0 0 auto", marginLeft: "20px" }}>
+                  <div
+                    style={{
+                      flex: "0 0 auto",
+                      marginLeft: "18px",
+                      marginTop: "16px",
+                    }}
+                  >
                     <div
                       style={{
                         width: "80px",
