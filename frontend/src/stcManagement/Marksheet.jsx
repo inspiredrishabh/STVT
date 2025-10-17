@@ -31,11 +31,11 @@ const subjectMapping = {
     "Rolling Stock Theory - Diesel Loco, DEMU, SPART, Train Sets: MEMU/ EMU",
   "MRT-06": "Industrial Safety, First aid & Firefighting",
   "MRT-07": "Tender & Contract",
-  "MRT-08": "Accident & Disaster management",
+  "MRT-08": "Accident & Disaster management - IRIDM-Bengaluru",
   "MRT-09": "Managerial Skills",
   "MRT-10": "Welding & Non-Destructive Testing",
-  "MRT-11": "Train operations with signaling",
-  "MRT-12": "Integrated Course at IRIMEE",
+  "MRT-11": "Train operations with signaling - ZRTI-Chandausi",
+  "MRT-12": "Integrated Course at IRIMEE-Jamalpur",
   "MRT-13": "Introduction to Rolling Stock",
   "MRT-14": "Computer Awareness",
   "MRT-15": "Technical English",
@@ -75,6 +75,14 @@ const subjectMapping = {
   "MWT-03": "Workshop Theory - 03",
   "MWT-04": "Workshop Trade Theory - 04",
   "MWT-05": "Workshop Theory - 05",
+  "MCT-02/I": "C & W Theory",
+  "MCT-02/II": "C & W Theory",
+  "MDT-02/I": "Diesel Theory",
+  "MDT-02/II": "Diesel Theory",
+  "MWT-02/I": "Workshop Theory",
+  "MWT-02/II": "Workshop Theory",
+  Practical:
+    "Field Training at RDSO, PUs, Diesel Shed, C & W Depot, Workshops, Practical Training in Welding, etc.",
 };
 
 // Course structure definition
@@ -1156,18 +1164,22 @@ const Marksheet = () => {
                 textAlign: "left",
               }}
             >
-              {config.subjects.length > 0
-                ? config.subjects.map((code, idx) => {
-                    const subjectName = subjectMapping[code] || "";
-                    return (
-                      <span key={code}>
-                        <span style={{ fontWeight: "bold" }}>{code}</span>
-                        {subjectName ? ` – ${subjectName}` : ""}
-                        {idx < config.subjects.length - 1 && ", "}
-                      </span>
-                    );
-                  })
-                : "-"}
+              {paper === "Practical" ? (
+                <span>{subjectMapping.Practical}</span>
+              ) : config.subjects.length > 0 ? (
+                config.subjects.map((code, idx) => {
+                  const subjectName = subjectMapping[code] || "";
+                  return (
+                    <span key={code}>
+                      <span style={{ fontWeight: "bold" }}>{code}</span>
+                      {subjectName ? ` – ${subjectName}` : ""}
+                      {idx < config.subjects.length - 1 && ", "}
+                    </span>
+                  );
+                })
+              ) : (
+                "-"
+              )}
             </td>
 
             <td
@@ -2208,6 +2220,19 @@ const Marksheet = () => {
                           margin: "0",
                         }}
                       >
+                        Chief Instructor
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ height: "30px", marginTop: "20px" }}></div>
+                      <p
+                        style={{
+                          fontWeight: "600",
+                          color: "black",
+                          fontSize: "11px",
+                          margin: "0",
+                        }}
+                      >
                         Senior Lecturer (IC)
                       </p>
                     </div>
@@ -2223,25 +2248,12 @@ const Marksheet = () => {
                       >
                         Director
                       </p>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ height: "30px", marginTop: "20px" }}></div>
-                      <p
-                        style={{
-                          fontWeight: "600",
-                          color: "black",
-                          fontSize: "11px",
-                          margin: "0",
-                        }}
-                      >
-                        Checked By
-                      </p>
                       <p
                         style={{
                           fontSize: "7px",
                           color: "#6b7280",
                           fontStyle: "italic",
-                          marginTop: "4px",
+                          marginTop: "18px",
                           margin: "5px 0 0 0",
                         }}
                       >
