@@ -2116,6 +2116,44 @@ const Marksheet = () => {
                             </span>
                           </h3>
                         </div>
+                        <div style={{ padding: "5px" }}>
+                          <h3 style={{ fontSize: "12px", margin: "2px 0" }}>
+                            RESULT :
+                            <span
+                              style={{
+                                paddingLeft: "4px",
+                                color: !failedSubjects.some((subject) => {
+                                  // Get the marks for this subject
+                                  const marks =
+                                    marksheetData?.[subject.session]?.[
+                                      subject.paper
+                                    ];
+                                  // Check if it's not cleared (no "C" in the mark)
+                                  return !(
+                                    typeof marks === "string" &&
+                                    marks.includes("C")
+                                  );
+                                })
+                                  ? "#059669"
+                                  : "#dc2626",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {!failedSubjects.some((subject) => {
+                                const marks =
+                                  marksheetData?.[subject.session]?.[
+                                    subject.paper
+                                  ];
+                                return !(
+                                  typeof marks === "string" &&
+                                  marks.includes("C")
+                                );
+                              })
+                                ? "PASSED"
+                                : "FAILED"}
+                            </span>
+                          </h3>
+                        </div>
                       </div>
                     </div>
 
