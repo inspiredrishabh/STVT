@@ -137,7 +137,7 @@ const CertificatePreview2 = () => {
 
     return (
       <div className="certificate-preview-outer ">
-        <div className="certificate border-double border-4 border-black bg-white relative overflow-hidden shadow-xl" style={{ fontFamily: "Times New Roman, serif", width: "950px", minHeight: "670px", margin: "4px auto", background: "#fff", borderRadius: "18px", boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)", position: "relative", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "space-between", }}>
+        <div className="certificate border-double border-4 border-black bg-white relative overflow-hidden shadow-xl" style={{ fontFamily: "Times New Roman, serif", width: "950px", minHeight: "670px", margin: "4px auto", background: "#fff", borderRadius: "6px", boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)", position: "relative", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "space-between", }}>
           {/* Double border effect - Remove this as we're using CSS classes */}
 
           {/* Watermark - Railway Logo */}

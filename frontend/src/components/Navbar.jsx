@@ -9,14 +9,12 @@ const Navbar = () => {
   const { userRole, logout } = useAuth();
   const navigate = useNavigate();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
-  const [showManagementDropdown, setShowManagementDropdown] = useState(false);
   const [showFontSizeDropdown, setShowFontSizeDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const addDropdownRef = useRef(null);
-  const managementDropdownRef = useRef(null);
   const fontSizeDropdownRef = useRef(null);
   const searchDropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -153,11 +151,6 @@ const Navbar = () => {
       )
         setShowAddDropdown(false);
       if (
-        managementDropdownRef.current &&
-        !managementDropdownRef.current.contains(event.target)
-      )
-        setShowManagementDropdown(false);
-      if (
         fontSizeDropdownRef.current &&
         !fontSizeDropdownRef.current.contains(event.target)
       )
@@ -278,12 +271,7 @@ const Navbar = () => {
               className="flex items-center space-x-2 relative w-full md:w-auto"
               ref={searchDropdownRef}
             >
-              <form
-                onSubmit={handleSearch}
-                className="flex items-center space-x-2 w-full md:w-auto"
-                role="search"
-                aria-label="Site Search"
-              >
+              <form onSubmit={handleSearch} className="flex items-center space-x-2 w-full md:w-auto" role="search" aria-label="Site Search">
                 <div className="relative flex-1 md:flex-none">
                   <input
                     id="search"
@@ -437,44 +425,16 @@ const Navbar = () => {
               </div>
 
 
-              {/* Management Systems Dropdown */}
-              <div className="relative" ref={managementDropdownRef}>
-                <button
-                  onClick={() => setShowManagementDropdown((v) => !v)}
-                  className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12"
-                  aria-haspopup="true"
-                  aria-expanded={showManagementDropdown}
-                  aria-controls="management-dropdown"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Management Systems</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                {showManagementDropdown && (
-                  <div
-                    id="management-dropdown"
-                    className="absolute top-full left-0 mt-0 w-64 bg-white rounded-b-lg shadow-lg border border-orange-200 py-1 z-50"
-                  >
-                    <Link
-                      to="/stc-management"
-                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
-                      onClick={() => setShowManagementDropdown(false)}
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      STC Management System
-                    </Link>
-                    <div className="border-t border-orange-100 my-1"></div>
-                    <Link
-                      to="/wtc"
-                      className="flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 hover:text-orange-900"
-                      onClick={() => setShowManagementDropdown(false)}
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      WTC Management System
-                    </Link>
-                  </div>
-                )}
-              </div>
+
+              <Link to="/stc-management" className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12">
+                <Settings className="w-4 h-4 mr-2" />
+                STC Management
+              </Link>
+              <div className="border-t border-orange-100 my-1"></div>
+              <Link to="/wtc" className="flex items-center space-x-1 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 border-r border-orange-500 transition-colors h-12">
+                <Settings className="w-4 h-4 mr-2" />
+                WTC Management
+              </Link>
             </div>
 
             {/* Title for mobile view */}

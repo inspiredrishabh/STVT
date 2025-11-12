@@ -3,7 +3,7 @@ globalThis.Buffer = Buffer;
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BgImage from "../assets/fullsizelogo.png";
-
+import { courseDuration } from "./CourseInfo";
 // Format date for display (can be used by both components)
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -66,41 +66,10 @@ const CertificatePreview = () => {
     };
   }, [navigate]);
 
-  // Add courseStructure mapping
-  const courseStructure = {
-    "MSE-C&W": "52 weeks",
-    "MSE-D": "52 weeks",
-    "MSE-W": "52 weeks",
-    "MJR-C&W": "52 weeks",
-    "MJR-D": "52 weeks",
-    "MJR-W": "52 weeks",
-    "MJI-C&W": "52 weeks",
-    "MJI-D": "52 weeks",
-    "MJI-W": "52 weeks",
-    "MJP-C&W": "13 weeks",
-    "MJP-D": "13 weeks",
-    "MJP-W": "13 weeks",
-    ASE: "52 weeks",
-    AJE: "52 weeks",
-    IJE: "52 weeks",
-    RJE: "13 weeks",
-    RCW: "3 weeks",
-    RD: "2 weeks",
-    TS: "1 week",
-    "LH-I": "1 week",
-    "LH-II": "1 week",
-    FM: "1 week",
-    WT: "1 week",
-    DM: "3 days",
-    WE: "3 days",
-    NDT: "4 days",
-    EA: "4 days",
-    "3DMP": "3 days",
-  };
 
   // Certificate Template
   const CertificateTemplate = ({ trainee }) => {
-    const defaultDuration = courseStructure[trainee.module_no] || "";
+    const defaultDuration = courseDuration[trainee.module_no] || "";
     const [editableDuration, setEditableDuration] = useState(defaultDuration);
     // Add editableTicketNo state
     const [editableTicketNo, setEditableTicketNo] = useState(trainee.ticket_no);
@@ -217,9 +186,8 @@ const CertificatePreview = () => {
                   }}
                 >
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
-                      trainee.picture
-                    }`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture
+                      }`}
                     alt={trainee.name}
                     style={{
                       objectFit: "cover",
