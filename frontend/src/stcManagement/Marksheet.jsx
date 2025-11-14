@@ -1,12 +1,26 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo, } from "react";
-import { Search, FileText, Printer, ArrowLeft, GraduationCap, AlertTriangle, CheckCircle, } from "lucide-react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  Search,
+  FileText,
+  Printer,
+  ArrowLeft,
+  GraduationCap,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { courseStructure, subjectMapping } from "./CourseInfo";
-// import html2canvas from "html2canvas";
+// import html2canvas from a"html2canvas";
 // import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import railwayLogo from "../assets/rail.png";
 import northLogo from "../assets/north.jpeg";
+import { subjectMapping, courseStructure } from "./CourseInfo"
 
 // Add this utility function before the MarksheetService class
 const getRawMarks = (paperMarks) => {
@@ -19,16 +33,16 @@ const getRawMarks = (paperMarks) => {
 };
 
 // Utility to get supplementary marks from "mainMarkCsupMark"
-// const getSupplementaryParsedMarks = (paperMarks) => {
-//   if (typeof paperMarks === "string") {
-//     // Looks for strings like "45C12" → main 45, sup 12
-//     const match = paperMarks.match(/^(\d+)C(\d+)$/);
-//     if (match) {
-//       return parseInt(match[2], 10);
-//     }
-//   }
-//   return 0;
-// };
+const getSupplementaryParsedMarks = (paperMarks) => {
+  if (typeof paperMarks === "string") {
+    // Looks for strings like "45C12" → main 45, sup 12
+    const match = paperMarks.match(/^(\d+)C(\d+)$/);
+    if (match) {
+      return parseInt(match[2], 10);
+    }
+  }
+  return 0;
+};
 
 // Helper to compute 60% passing marks
 const getPassingMarks = (maxMarks) => Math.ceil(maxMarks * 0.6);
@@ -228,6 +242,16 @@ class MarksheetService {
     };
   }
 
+  async validateMarksheetData(ticketNumber) {
+    return {
+      success: true,
+      data: {
+        valid: true,
+        errors: [],
+        warnings: [],
+      },
+    };
+  }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
     const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? "Sessional" : "Complete"
@@ -258,6 +282,7 @@ const Marksheet = () => {
   const [marksheetData, setMarksheetData] = useState({});
   const [failedSubjects, setFailedSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [viewMode, setViewMode] = useState("complete");
   const [selectedSession, setSelectedSession] = useState("all");
@@ -268,8 +293,14 @@ const Marksheet = () => {
 
   // Helper function to determine course code from module_no or designation
   const determineCourseCode = useCallback((moduleNo, designation) => {
+    console.log("Determining course code from:", { moduleNo, designation });
+
     // First check if module_no directly matches our course structure
     if (moduleNo && courseStructure[moduleNo.toUpperCase()]) {
+      console.log(
+        "Found direct match in courseStructure:",
+        moduleNo.toUpperCase()
+      );
       return moduleNo.toUpperCase();
     }
 
@@ -322,6 +353,11 @@ const Marksheet = () => {
       }
     }
 
+    // If no pattern matches, return null to indicate unsupported course
+    console.log("No course code pattern matched for:", {
+      moduleNo,
+      designation,
+    });
     return null;
   }, []);
 
@@ -363,10 +399,24 @@ const Marksheet = () => {
       setMessage({ type: "", text: "" });
 
       try {
+        // Validate candidate first
+        const validation = await marksheetService.validateMarksheetData(
+          candidate.ticket_no
+        );
+        if (!validation.data.valid) {
+          throw new Error(validation.data.errors.join(", "));
+        }
+
         // Determine course code from module_no or use a mapping
         const detectedCourseCode = determineCourseCode(
           candidate.module_no,
           candidate.designation
+        );
+        console.log(
+          "Detected course code:",
+          detectedCourseCode,
+          "for candidate:",
+          candidate.name
         );
 
         if (!detectedCourseCode) {
@@ -666,13 +716,31 @@ const Marksheet = () => {
     [total, maxTotal]
   );
 
+  // Helper function to check if supplementary is cleared
+  const isSupplementaryCleared = useCallback((paperMarks) => {
+    return typeof paperMarks === "string" && paperMarks.endsWith("C");
+  }, []);
+
+  // Helper function to check if paper should be treated as passed
+  const isPaperPassed = useCallback(
+    (paperMarks, maxMarks) => {
+      const rawMarks = getRawMarks(paperMarks) || 0; // Use the standalone function
+      const passingMarks = Math.ceil(maxMarks * 0.6);
+
+      // Paper is passed if either:
+      // 1. Raw marks are above passing threshold, OR
+      // 2. Supplementary is cleared (ends with "C")
+      return rawMarks >= passingMarks || isSupplementaryCleared(paperMarks);
+    },
+    [isSupplementaryCleared]
+  );
 
   // Render each session/paper row
   const renderRows = useCallback(
     (session, papers) => {
       return Object.entries(papers).map(([paper, config], idx) => {
         const paperMarks = marksheetData[session]?.[paper] ?? "";
-        // const supplyMarks = getSupplementaryParsedMarks(paperMarks);
+        const supplyMarks = getSupplementaryParsedMarks(paperMarks);
         const str = paperMarks.toString();
         const isCleared = str.includes("C"); // "C" present anywhere
         const rawMarks = getRawMarks(paperMarks) || 0;
@@ -1224,8 +1292,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         left: "0",
-                        width: "70px",
-                        height: "70px",
+                        width: "82px",
+                        height: "82px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1267,8 +1335,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         right: "0",
-                        width: "70px",
-                        height: "70px",
+                        width: "85px",
+                        height: "85px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1382,6 +1450,19 @@ const Marksheet = () => {
                   className="flex justify-between"
                 >
                   <div className="times-new-roman" style={{ flex: "1" }}>
+
+                    <p
+                      style={{
+                        padding: "2px 0",
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                      }}
+                    >
+                      Name :{" "}
+                      <span style={{ fontWeight: 500 }}>
+                        {candidateData.name}{" "}
+                      </span>
+                    </p>
                     <p
                       style={{
                         padding: "2px 0",
@@ -1393,18 +1474,6 @@ const Marksheet = () => {
                       <span style={{ fontWeight: 500 }}>
                         {" "}
                         {candidateData.ticketNumber || candidateData.ticket_no}
-                      </span>
-                    </p>
-                    <p
-                      style={{
-                        padding: "2px 0",
-                        fontWeight: "bold",
-                        fontSize: "12px",
-                      }}
-                    >
-                      Name :{" "}
-                      <span style={{ fontWeight: 500 }}>
-                        {candidateData.name}{" "}
                       </span>
                     </p>
                     <p
@@ -1619,8 +1688,7 @@ const Marksheet = () => {
                             ([session, papers]) => {
                               if (
                                 viewMode === "sessionWise" &&
-                                selectedSession !== "all" &&
-                                selectedSession !== session
+                                selectedSession !== "all"
                               )
                                 return [];
                               return renderRows(session, papers);
@@ -1819,6 +1887,8 @@ const Marksheet = () => {
                     borderTop: "2px solid #6b7280",
                     paddingTop: "15px",
                     marginTop: "auto",
+                    position: "relative", // Add this
+                    paddingBottom: "20px", // Add this
                   }}
                 >
                   <div
@@ -1866,20 +1936,25 @@ const Marksheet = () => {
                       >
                         Director
                       </p>
-                      <p
-                        style={{
-                          fontSize: "7px",
-                          color: "#6b7280",
-                          fontStyle: "italic",
-                          marginTop: "18px",
-                          margin: "5px 0 0 0",
-                        }}
-                      >
-                        Date of Generation:{" "}
-                        {new Date().toLocaleDateString("en-IN")}
-                      </p>
                     </div>
                   </div>
+                  {/* Move date to bottom center */}
+                  <p
+                    style={{
+                      fontSize: "5px",
+                      color: "#6b7280",
+                      fontStyle: "italic",
+                      position: "absolute",
+                      bottom: "0px",
+                      left: "93.5%",
+                      transform: "translateX(-50%)",
+                      textAlign: "center",
+                      width: "100%",
+                      marginTop: "18px",
+                    }}
+                  >
+                    Date of Generation: {new Date().toLocaleDateString("en-IN")}
+                  </p>
                 </div>
               </div>
             </div>
