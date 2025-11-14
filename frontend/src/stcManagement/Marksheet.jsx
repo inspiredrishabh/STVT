@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import QRCode from "qrcode";
 import railwayLogo from "../assets/rail.png";
 import northLogo from "../assets/north.jpeg";
-import { subjectMapping, courseStructure } from "./CourseInfo"
+import { subjectMapping, courseStructure } from "./CourseInfo";
 
 // Add this utility function before the MarksheetService class
 const getRawMarks = (paperMarks) => {
@@ -254,8 +254,9 @@ class MarksheetService {
   }
 
   async exportMarksheetPDF(ticketNumber, options = {}) {
-    const fileName = `Marksheet_${ticketNumber}_${options.sessionWise ? "Sessional" : "Complete"
-      }_${new Date().toISOString().split("T")[0]}.pdf`;
+    const fileName = `Marksheet_${ticketNumber}_${
+      options.sessionWise ? "Sessional" : "Complete"
+    }_${new Date().toISOString().split("T")[0]}.pdf`;
     return {
       success: true,
       message: "PDF export initiated successfully",
@@ -580,8 +581,9 @@ const Marksheet = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Marksheet - ${candidateData.name} (${candidateData.ticketNumber || candidateData.ticket_no
-      })</title>
+          <title>Marksheet - ${candidateData.name} (${
+      candidateData.ticketNumber || candidateData.ticket_no
+    })</title>
           <style>
             @page {
               size: A4;
@@ -846,9 +848,11 @@ const Marksheet = () => {
     ) {
       const generateQRCode = async () => {
         try {
-          const qrData = ` Northern Railway | Supervisor Training Centre | Charbagh, Lucknow | \nName: ${candidateData.name
-            } |\nTicket Number: ${candidateData.ticketNumber || candidateData.ticket_no
-            } |\nTotal Marks: ${total}/${maxTotal} |\nFinal Percentage: ${percentage}%`;
+          const qrData = ` Northern Railway | Supervisor Training Centre | Charbagh, Lucknow | \nName: ${
+            candidateData.name
+          } |\nTicket Number: ${
+            candidateData.ticketNumber || candidateData.ticket_no
+          } |\nTotal Marks: ${total}/${maxTotal} |\nPercentage: ${percentage}%`;
 
           const qrCodeUrl = await QRCode.toDataURL(qrData, {
             width: 120,
@@ -942,19 +946,21 @@ const Marksheet = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${searchMethod === "ticket"
-                  ? "bg-orange-600 text-white shadow-lg"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${
+                  searchMethod === "ticket"
+                    ? "bg-orange-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
                 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${searchMethod === "dropdown"
-                  ? "bg-orange-600 text-white shadow-lg"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                className={`px-6 py-3 rounded font-medium transition-all duration-200 ${
+                  searchMethod === "dropdown"
+                    ? "bg-orange-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
                 Select from Dropdown
               </button>
@@ -1068,12 +1074,13 @@ const Marksheet = () => {
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded flex items-center gap-3 ${message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : message.type === "info"
+                className={`mt-6 p-4 rounded flex items-center gap-3 ${
+                  message.type === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : message.type === "info"
                     ? "bg-blue-50 text-blue-800 border border-blue-200"
                     : "bg-red-50 text-red-800 border border-red-200"
-                  }`}
+                }`}
               >
                 {message.type === "success" ? (
                   <CheckCircle className="w-6 h-6" />
@@ -1249,27 +1256,26 @@ const Marksheet = () => {
                 overflow: "hidden",
               }}
             >
-              {/* Watermark background image */}
-              <img
-                src={railwayLogo}
-                alt="Watermark"
-                style={{
-                  position: "absolute",
-                  top: "40%",
-                  left: "50%",
-                  width: "50%",
-                  height: "50%",
-                  transform: "translate(-50%, -50%)",
-                  opacity: 0.1,
-                  zIndex: 10,
-                  pointerEvents: "none",
-                  objectFit: "contain",
-                }}
-                draggable={false}
-              />
-
               {/* Content wrapper with relative positioning */}
               <div style={{ position: "relative", zIndex: 1, height: "100%" }}>
+                {/* Watermark background image */}
+                <img
+                  src={railwayLogo}
+                  alt="Watermark"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    width: "50%",
+                    height: "50%",
+                    transform: "translate(-50%, -50%)",
+                    opacity: 0.1,
+                    zIndex: 10,
+                    pointerEvents: "none",
+                    objectFit: "contain",
+                  }}
+                  draggable={false}
+                />
                 {/* Header - Compact format */}
                 <div
                   style={{
@@ -1450,7 +1456,6 @@ const Marksheet = () => {
                   className="flex justify-between"
                 >
                   <div className="times-new-roman" style={{ flex: "1" }}>
-
                     <p
                       style={{
                         padding: "2px 0",
@@ -1498,17 +1503,17 @@ const Marksheet = () => {
                       Session :{" "}
                       <span style={{ fontWeight: 500 }}>
                         {candidateData.date_of_joining_stc_wtc_non_railway &&
-                          candidateData.date_of_sparing
+                        candidateData.date_of_sparing
                           ? `${new Date(
-                            candidateData.date_of_joining_stc_wtc_non_railway
-                          ).getFullYear()}-${new Date(
-                            candidateData.date_of_sparing
-                          ).getFullYear()}`
+                              candidateData.date_of_joining_stc_wtc_non_railway
+                            ).getFullYear()}-${new Date(
+                              candidateData.date_of_sparing
+                            ).getFullYear()}`
                           : candidateData.date_of_joining_stc_wtc_non_railway
-                            ? `${new Date(
+                          ? `${new Date(
                               candidateData.date_of_joining_stc_wtc_non_railway
                             ).getFullYear()}`
-                            : new Date(
+                          : new Date(
                               candidateData.date_of_sparing
                             ).getFullYear()}
                       </span>
@@ -1572,8 +1577,9 @@ const Marksheet = () => {
                     >
                       {candidateData.picture ? (
                         <img
-                          src={`http://${import.meta.env.VITE_BACKEND_IP
-                            }:5000/${candidateData.picture}`}
+                          src={`http://${
+                            import.meta.env.VITE_BACKEND_IP
+                          }:5000/${candidateData.picture}`}
                           alt={candidateData.name}
                           style={{
                             objectFit: "cover",
@@ -1727,7 +1733,7 @@ const Marksheet = () => {
                         </div>
                         <div style={{ padding: "5px" }}>
                           <h3 style={{ fontSize: "12px", margin: "2px 0" }}>
-                            FINAL PERCENTAGE :
+                            PERCENTAGE :
                             <span style={{ paddingLeft: "4px" }}>
                               {percentage}%
                             </span>
@@ -1743,7 +1749,7 @@ const Marksheet = () => {
                                   // Get the marks for this subject
                                   const marks =
                                     marksheetData?.[subject.session]?.[
-                                    subject.paper
+                                      subject.paper
                                     ];
                                   // Check if it's not cleared (no "C" in the mark)
                                   return !(
@@ -1759,7 +1765,7 @@ const Marksheet = () => {
                               {!failedSubjects.some((subject) => {
                                 const marks =
                                   marksheetData?.[subject.session]?.[
-                                  subject.paper
+                                    subject.paper
                                   ];
                                 return !(
                                   typeof marks === "string" &&
@@ -1848,7 +1854,7 @@ const Marksheet = () => {
                               .filter((subject) => {
                                 const marks =
                                   marksheetData?.[subject.session]?.[
-                                  subject.paper
+                                    subject.paper
                                   ];
                                 // "C" present anywhere means cleared
                                 return !(

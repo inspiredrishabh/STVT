@@ -66,7 +66,6 @@ const CertificatePreview = () => {
     };
   }, [navigate]);
 
-
   // Certificate Template
   const CertificateTemplate = ({ trainee }) => {
     const defaultDuration = courseDuration[trainee.module_no] || "";
@@ -107,11 +106,11 @@ const CertificatePreview = () => {
               position: "absolute",
               top: "50%",
               left: "50%",
-              width: "60%",
-              height: "60%",
+              width: "30%",
+              height: "30%",
               transform: "translate(-50%, -50%)",
-              opacity: 0.07,
-              zIndex: 0,
+              opacity: 0.1,
+              zIndex: 10,
               pointerEvents: "none",
               objectFit: "contain",
               filter: "blur(0.5px)",
@@ -186,8 +185,9 @@ const CertificatePreview = () => {
                   }}
                 >
                   <img
-                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${trainee.picture
-                      }`}
+                    src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                      trainee.picture
+                    }`}
                     alt={trainee.name}
                     style={{
                       objectFit: "cover",
@@ -347,28 +347,6 @@ const CertificatePreview = () => {
                   style={{ fontWeight: 700, color: "#17408B", fontSize: 21 }}
                 >
                   Course Coordinator
-                </div>
-              </div>
-
-              {/* Institute Seal in the center */}
-              <div
-                className="text-center"
-                style={{ width: 240, marginTop: 20 }}
-              >
-                <span
-                  style={{ fontWeight: 700, color: "#17408B", fontSize: 19 }}
-                >
-                  Institute Seal
-                </span>
-                <div
-                  className="certificate-note"
-                  style={{
-                    fontSize: 14,
-                    fontStyle: "italic",
-                    marginTop: 5,
-                  }}
-                >
-                  The certificate is valid with Institute Seal only.
                 </div>
               </div>
 
