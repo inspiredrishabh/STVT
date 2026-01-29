@@ -1,55 +1,51 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 
 const Professional = ({ formData, onChange, errors = {} }) => {
-  // Validate a single field value
-  const validateField = useCallback((field, value) => {
-    const trimmed = value?.toString().trim() || "";
+  const validateField = useCallback(
+    (field, value) => {
+      const trimmed = value?.toString().trim() || "";
 
-    // Required
-    if (!trimmed) {
-      if (field === "gradeType") return "Please select grade type";
-      if (field === "gradeValue") return "Grade value is required";
-      return "This field is required";
-    }
-
-    // Min length for certain text inputs
-    const min2Fields = [
-      "workingUnder",
-      "institution",
-      "fieldOfStudy",
-      "customFieldOfStudy",
-      "modeOfAppointmentOther"
-    ];
-    if (min2Fields.includes(field) && trimmed.length < 2) {
-      return "Must be at least 2 characters";
-    }
-
-    // Numeric range for gradeValue
-    if (field === "gradeValue") {
-      const num = parseFloat(trimmed);
-      switch (formData.gradeType) {
-        case "CGPA (out of 10)":
-          if (isNaN(num) || num < 0 || num > 10) {
-            return "CGPA must be between 0 and 10";
-          }
-          break;
-        case "CGPA (out of 4)":
-          if (isNaN(num) || num < 0 || num > 4) {
-            return "CGPA must be between 0 and 4";
-          }
-          break;
-        case "Percentage":
-          if (isNaN(num) || num < 0 || num > 100) {
-            return "Percentage must be between 0 and 100";
-          }
-          break;
-        default:
-          break;
+      if (!trimmed) {
+        if (field === "gradeType") return "Please select grade type";
+        if (field === "gradeValue") return "Grade value is required";
+        if (field === "highestDegree") return "Highest degree is required";
+        if (field === "college") return "College name is required";
+        return "This field is required";
       }
-    }
 
-    return "";
-  }, [formData]);
+      const min2Fields = [
+        "workingUnder",
+        "institution",
+        "fieldOfStudy",
+        "customFieldOfStudy",
+        "modeOfAppointmentOther",
+      ];
+      if (min2Fields.includes(field) && trimmed.length < 2) {
+        return "Must be at least 2 characters";
+      }
+
+      if (field === "gradeValue") {
+        const num = parseFloat(trimmed);
+        switch (formData.gradeType) {
+          case "CGPA (out of 10)":
+            if (isNaN(num) || num < 0 || num > 10)
+              return "CGPA must be between 0 and 10";
+            break;
+          case "CGPA (out of 4)":
+            if (isNaN(num) || num < 0 || num > 4)
+              return "CGPA must be between 0 and 4";
+            break;
+          case "Percentage":
+            if (isNaN(num) || num < 0 || num > 100)
+              return "Percentage must be between 0 and 100";
+            break;
+        }
+      }
+
+      return "";
+    },
+    [formData]
+  );
 
   const validateAllFields = useCallback(() => {
     const required = [
@@ -58,10 +54,12 @@ const Professional = ({ formData, onChange, errors = {} }) => {
       "designation",
       "unit",
       "highestQualification",
+      "highestDegree",
       "fieldOfStudy",
       "institution",
+      "college",
       "gradeType",
-      "gradeValue"
+      "gradeValue",
     ];
 
     const errs = {};
@@ -73,7 +71,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     return { isValid: Object.keys(errs).length === 0, errors: errs };
   }, [formData, validateField]);
 
-  // Expose the overall validator to parent
   useEffect(() => {
     if (onChange.setValidationFunction) {
       onChange.setValidationFunction(validateAllFields);
@@ -89,12 +86,9 @@ const Professional = ({ formData, onChange, errors = {} }) => {
   );
 
   const OptionalLabel = ({ children }) => (
-    <label className="block text-gray-700 font-medium mb-1">
-      {children}
-    </label>
+    <label className="block text-gray-700 font-medium mb-1">{children}</label>
   );
 
-  // Field of study options based on qualification
   const getFieldOfStudyOptions = () => {
     switch (formData.highestQualification) {
       case "Diploma":
@@ -105,7 +99,8 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Electronics Engineering",
           "Computer Engineering",
           "Automobile Engineering",
-          "Railway Engineering"
+          "Railway Engineering",
+          "Information Technology",
         ];
       case "Bachelor's Degree":
         return [
@@ -114,15 +109,24 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "B.Tech - Civil Engineering",
           "B.Tech - Electronics & Communication",
           "B.Tech - Computer Science",
+          "B.Tech - Information Technology",
           "B.Tech - Railway Engineering",
           "B.E - Mechanical Engineering",
           "B.E - Electrical Engineering",
           "B.E - Civil Engineering",
-          "BCA - Computer Applications",
           "B.Sc - Physics",
           "B.Sc - Mathematics",
           "B.Sc - Chemistry",
-          "B.Com - Commerce"
+          "B.Sc - Computer Science",
+          "B.Sc - Information Technology",
+          "BCA - Computer Applications",
+          "BA - Arts",
+          "BA - Economics",
+          "BA - English",
+          "BA - History",
+          "BBA - Business Administration",
+          "B.Com - Commerce",
+          "B.Com - Accounting",
         ];
       case "Master's Degree":
         return [
@@ -131,16 +135,27 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "M.Tech - Civil Engineering",
           "M.Tech - Electronics & Communication",
           "M.Tech - Computer Science",
+          "M.Tech - Information Technology",
           "M.Tech - Railway Engineering",
           "M.E - Mechanical Engineering",
           "M.E - Electrical Engineering",
           "M.E - Civil Engineering",
-          "MCA - Computer Applications",
           "M.Sc - Physics",
           "M.Sc - Mathematics",
           "M.Sc - Chemistry",
+          "M.Sc - Computer Science",
+          "M.Sc - Information Technology",
+          "MCA - Computer Applications",
           "MBA - Business Administration",
-          "M.Com - Commerce"
+          "MBA - Finance",
+          "MBA - Marketing",
+          "MBA - Human Resources",
+          "M.Com - Commerce",
+          "M.Com - Accounting",
+          "MA - Arts",
+          "MA - Economics",
+          "MA - English",
+          "MA - History",
         ];
       case "Ph.D":
         return [
@@ -153,8 +168,47 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           "Ph.D - Physics",
           "Ph.D - Mathematics",
           "Ph.D - Chemistry",
-          "Ph.D - Management"
+          "Ph.D - Management",
+          "Ph.D - Economics",
+          "Ph.D - Commerce",
         ];
+      default:
+        return [];
+    }
+  };
+
+  const getHighestDegreeOptions = () => {
+    switch (formData.highestQualification) {
+      case "Diploma":
+        return ["Diploma", "Diploma (Honors)", "Advanced Diploma"];
+      case "Bachelor's Degree":
+        return [
+          "B.Tech",
+          "B.E",
+          "B.Sc",
+          "BCA",
+          "BA",
+          "BBA",
+          "B.Com",
+          "B.Arch",
+          "BDS",
+          "MBBS",
+        ];
+      case "Master's Degree":
+        return [
+          "M.Tech",
+          "M.E",
+          "M.Sc",
+          "MCA",
+          "MA",
+          "MBA",
+          "M.Com",
+          "M.Arch",
+          "MDS",
+          "MD",
+        ];
+      case "Ph.D":
+        return ["Ph.D", "D.Sc", "D.Litt"];
       default:
         return [];
     }
@@ -171,12 +225,16 @@ const Professional = ({ formData, onChange, errors = {} }) => {
 
     useEffect(() => {
       const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target)
+        ) {
           setIsOpen(false);
         }
       };
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const handleInputChange = (e) => {
@@ -190,8 +248,12 @@ const Professional = ({ formData, onChange, errors = {} }) => {
     };
 
     const handleBlur = () => {
-      onChange(inputValue); // Commit input value on blur (if needed)
+      onChange(inputValue);
     };
+
+    const filteredOptions = options.filter((option) =>
+      option.toLowerCase().includes(inputValue.toLowerCase())
+    );
 
     return (
       <div className="relative" ref={dropdownRef}>
@@ -207,7 +269,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           />
           <div
             className="absolute inset-y-0 right-0 flex items-center px-2 cursor-pointer"
-            onMouseDown={(e) => e.preventDefault()} // Prevent input blur
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setIsOpen(!isOpen)}
           >
             <svg
@@ -215,7 +277,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
@@ -227,46 +288,43 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           </div>
         </div>
 
-        {isOpen && (
+        {isOpen && filteredOptions.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-            {options
-              .filter((option) =>
-                option.toLowerCase().includes(inputValue.toLowerCase())
-              )
-              .map((option, index) => (
-                <div
-                  key={index}
-                  className="px-4 py-2 cursor-pointer hover:bg-orange-50"
-                  onMouseDown={() => handleOptionClick(option)}
-                >
-                  {option}
-                </div>
-              ))}
+            {filteredOptions.map((option, index) => (
+              <div
+                key={index}
+                className="px-4 py-2 cursor-pointer hover:bg-orange-50"
+                onMouseDown={() => handleOptionClick(option)}
+              >
+                {option}
+              </div>
+            ))}
           </div>
         )}
       </div>
     );
   };
 
-
   return (
     <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-        {/* Date of Appointment */}
         <div>
           <RequiredLabel>Date of Appointment</RequiredLabel>
           <input
             type="date"
             value={formData.dateOfAppointmentInRailway || ""}
-            onChange={(e) => handleChange("dateOfAppointmentInRailway", e.target.value)}
+            onChange={(e) =>
+              handleChange("dateOfAppointmentInRailway", e.target.value)
+            }
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
           />
           {errors.dateOfAppointmentInRailway && (
-            <p className="text-sm text-red-500 mt-1">{errors.dateOfAppointmentInRailway}</p>
+            <p className="text-sm text-red-500 mt-1">
+              {errors.dateOfAppointmentInRailway}
+            </p>
           )}
         </div>
 
-        {/* Mode of Appointment */}
         <div>
           <RequiredLabel>Mode of Appointment</RequiredLabel>
           <ComboBox
@@ -277,47 +335,24 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               "CG",
               "RRC",
               "Promotion Through LDCE",
-              "Promotion Through Seniority"
+              "Promotion Through Seniority",
             ]}
             placeholder="Select or type mode"
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
           />
           {errors.modeOfAppointment && (
-            <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointment}</p>
+            <p className="text-sm text-red-500 mt-1">
+              {errors.modeOfAppointment}
+            </p>
           )}
         </div>
 
-        {/* Specify Other Mode */}
-        {formData.modeOfAppointment === "Other" && (
-          <div>
-            <RequiredLabel>Specify Mode of Appointment</RequiredLabel>
-            <input
-              type="text"
-              value={formData.modeOfAppointmentOther || ""}
-              onChange={(e) => handleChange("modeOfAppointmentOther", e.target.value)}
-              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-              placeholder="Enter mode"
-            />
-            {errors.modeOfAppointmentOther && (
-              <p className="text-sm text-red-500 mt-1">{errors.modeOfAppointmentOther}</p>
-            )}
-          </div>
-        )}
-
-        {/* Designation */}
         <div>
           <RequiredLabel>Designation</RequiredLabel>
           <ComboBox
             value={formData.designation || ""}
             onChange={(value) => handleChange("designation", value)}
-            options={[
-              "ASE",
-              "AJE",
-              "IJE",
-              "RJE",
-              "SSE",
-              "JE"
-            ]}
+            options={["ASE", "AJE", "IJE", "RJE", "SSE", "JE"]}
             placeholder="Select or type designation"
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
           />
@@ -326,7 +361,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
-        {/* Unit/Division */}
         <div>
           <RequiredLabel>Unit / Division</RequiredLabel>
           <ComboBox
@@ -346,7 +380,7 @@ const Professional = ({ formData, onChange, errors = {} }) => {
               "MB",
               "LKO",
               "HQ",
-              "Rly. Board"
+              "Rly. Board",
             ]}
             placeholder="Select or type unit"
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
@@ -356,7 +390,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
           )}
         </div>
 
-        {/* Optional Text Inputs */}
         <div>
           <OptionalLabel>Working Under</OptionalLabel>
           <input
@@ -366,9 +399,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             placeholder="Enter working under"
           />
-          {errors.workingUnder && (
-            <p className="text-sm text-red-500 mt-1">{errors.workingUnder}</p>
-          )}
         </div>
 
         <div>
@@ -380,9 +410,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             placeholder="Enter HRMS ID"
           />
-          {errors.hrmsId && (
-            <p className="text-sm text-red-500 mt-1">{errors.hrmsId}</p>
-          )}
         </div>
 
         <div>
@@ -394,9 +421,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             placeholder="Enter PF/NPS/UPS number"
           />
-          {errors.pfNoNpsUps && (
-            <p className="text-sm text-red-500 mt-1">{errors.pfNoNpsUps}</p>
-          )}
         </div>
 
         <div>
@@ -408,13 +432,22 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             placeholder="Enter employee number"
           />
-          {errors.employeeNumber && (
-            <p className="text-sm text-red-500 mt-1">{errors.employeeNumber}</p>
-          )}
         </div>
       </div>
 
-      {/* Educational Qualifications */}
+      <div className="mt-6">
+        <OptionalLabel>Previous Work Experience</OptionalLabel>
+        <textarea
+          rows="3"
+          value={formData.previousWorkExperience || ""}
+          onChange={(e) =>
+            handleChange("previousWorkExperience", e.target.value)
+          }
+          className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+          placeholder="Enter previous work experience (if any)"
+        />
+      </div>
+
       <div className="mt-10">
         <div className="flex items-center space-x-3 mb-6">
           <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
@@ -426,33 +459,53 @@ const Professional = ({ formData, onChange, errors = {} }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-          {/* Highest Qualification */}
           <div>
             <RequiredLabel>Highest Qualification</RequiredLabel>
             <ComboBox
               value={formData.highestQualification || ""}
-              onChange={(value) => handleChange("highestQualification", value)}
+              onChange={(value) => {
+                handleChange("highestQualification", value);
+                handleChange("highestDegree", "");
+                handleChange("fieldOfStudy", "");
+              }}
               options={[
                 "Diploma",
                 "Bachelor's Degree",
                 "Master's Degree",
-                "Ph.D"
+                "Ph.D",
               ]}
               placeholder="Select or type qualification"
               className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             />
             {errors.highestQualification && (
-              <p className="text-sm text-red-500 mt-1">{errors.highestQualification}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.highestQualification}
+              </p>
             )}
           </div>
 
-          {/* Field of Study */}
+          <div>
+            <RequiredLabel>Highest Degree</RequiredLabel>
+            <ComboBox
+              value={formData.highestDegree || ""}
+              onChange={(value) => handleChange("highestDegree", value)}
+              options={getHighestDegreeOptions()}
+              placeholder="Select or type degree (e.g., B.Tech, MBA)"
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+            />
+            {errors.highestDegree && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.highestDegree}
+              </p>
+            )}
+          </div>
+
           <div>
             <RequiredLabel>Field of Study</RequiredLabel>
             <ComboBox
               value={formData.fieldOfStudy || ""}
               onChange={(value) => handleChange("fieldOfStudy", value)}
-              options={getFieldOfStudyOptions().filter(opt => opt !== "Other")}
+              options={getFieldOfStudyOptions()}
               placeholder="Select or type field of study"
               className="w-full border-gray-300 rounded-lg px-4 py-2 border"
             />
@@ -461,24 +514,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             )}
           </div>
 
-          {/* Custom Field of Study */}
-          {formData.fieldOfStudy === "Other" && (
-            <div>
-              <RequiredLabel>Custom Field of Study</RequiredLabel>
-              <input
-                type="text"
-                value={formData.customFieldOfStudy || ""}
-                onChange={(e) => handleChange("customFieldOfStudy", e.target.value)}
-                className="w-full border-gray-300 rounded-lg px-4 py-2 border"
-                placeholder="Enter custom field of study"
-              />
-              {errors.customFieldOfStudy && (
-                <p className="text-sm text-red-500 mt-1">{errors.customFieldOfStudy}</p>
-              )}
-            </div>
-          )}
-
-          {/* Institution */}
           <div>
             <RequiredLabel>Institution</RequiredLabel>
             <input
@@ -493,7 +528,20 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             )}
           </div>
 
-          {/* Grade Type */}
+          <div>
+            <RequiredLabel>College</RequiredLabel>
+            <input
+              type="text"
+              value={formData.college || ""}
+              onChange={(e) => handleChange("college", e.target.value)}
+              className="w-full border-gray-300 rounded-lg px-4 py-2 border"
+              placeholder="Enter college name"
+            />
+            {errors.college && (
+              <p className="text-sm text-red-500 mt-1">{errors.college}</p>
+            )}
+          </div>
+
           <div>
             <RequiredLabel>Grade Type</RequiredLabel>
             <select
@@ -511,7 +559,6 @@ const Professional = ({ formData, onChange, errors = {} }) => {
             )}
           </div>
 
-          {/* Grade Value */}
           <div>
             <RequiredLabel>Grade Value</RequiredLabel>
             <input

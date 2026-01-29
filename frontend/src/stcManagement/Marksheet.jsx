@@ -15,387 +15,12 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-// import html2canvas from "html2canvas";
+// import html2canvas from a"html2canvas";
 // import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import railwayLogo from "../assets/rail.png";
 import northLogo from "../assets/north.jpeg";
-
-// Subject code to name mapping
-const subjectMapping = {
-  "MRT-01": "Railway Organization & Management",
-  "MRT-02": "Role of Mechanical Dept.",
-  "MRT-03": "Rolling Stock Theory- Carriage",
-  "MRT-04": "Rolling Stock Theory - Wagon",
-  "MRT-05":
-    "Rolling Stock Theory - Diesel Loco, DEMU, SPART, Train Sets: MEMU/ EMU",
-  "MRT-06": "Industrial Safety, First aid & Firefighting",
-  "MRT-07": "Tender & Contract",
-  "MRT-08": "Accident & Disaster management - IRIDM-Bengaluru",
-  "MRT-09": "Managerial Skills",
-  "MRT-10": "Welding & Non-Destructive Testing",
-  "MRT-11": "Train operations with signaling - ZRTI-Chandausi",
-  "MRT-12": "Integrated Course at IRIMEE-Jamalpur",
-  "MRT-13": "Introduction to Rolling Stock",
-  "MRT-14": "Computer Awareness",
-  "MRT-15": "Technical English",
-  "MRT-16": "Industrial Safety, First Aid & Fire Fighting",
-  "MRT-17": "Accident & Disaster Management",
-  "MRT-18": "Supervisory Skills",
-  "MRT-19": "Technical English",
-  "MET-01": "Applied Mechanics",
-  "MET-02": "Hydraulics",
-  "MET-03": "Manufacturing Process",
-  "MET-04": "Engineering Drawing",
-  "MET-05": "Electrical Engineering",
-  "MET-06": "Strength of Material",
-  "MET-07": "Heat Engine & Thermodynamics",
-  "MET-08": "Theory of Machines",
-  "MET-09": "Material Science",
-  "MET-10": "Machine Design & Drawing",
-  "MET-11": "Industrial Engineering",
-  "MET-12": "Manufacturing Process",
-  "MET-13": "Industrial Engineering",
-  "MET-14": "Engineering Drawing",
-  "MCT-01": "C & W Theory - 01",
-  "MCT-02": "C & W Theory - 02",
-  "MCT-03": "C & W Theory - 03",
-  "MCT-04": "C & W Theory - 04",
-  "MDT-01": "Diesel Locomotive Theory (Common) - 01",
-  "MDT-02 M": "Diesel Locomotive Theory (Mechanical) – 02 M",
-  "MDT-02 E": "Diesel Locomotive Theory (Electrical) – 02 E",
-  "MDT-03 M": "Diesel Locomotive Theory (Mechanical) – 03 M",
-  "MDT-04 M": "Diesel Locomotive Theory (Mechanical) – 04 M",
-  "MDT-03 E": "Diesel Locomotive Theory (Electrical) – 03 E",
-  "MDT-04 E": "Diesel Locomotive Theory (Electrical) – 04 E",
-  "MDT-05 M": "Diesel Locomotive Theory (Mechanical) – 05 M",
-  "MDT-05 E": "Diesel Locomotive Theory (Electrical) – 05 E",
-  "MWT-01": "Workshop Theory - 01",
-  "MWT-02": "Workshop Theory - 02",
-  "MWT-03": "Workshop Theory - 03",
-  "MWT-04": "Workshop Trade Theory - 04",
-  "MWT-05": "Workshop Theory - 05",
-  "MCT-02/I": "C & W Theory",
-  "MCT-02/II": "C & W Theory",
-  "MDT-02/I": "Diesel Theory",
-  "MDT-02/II": "Diesel Theory",
-  "MWT-02/I": "Workshop Theory",
-  "MWT-02/II": "Workshop Theory",
-  Practical:
-    "Field Training at RDSO, PUs, Diesel Shed, C & W Depot, Workshops, Practical Training in Welding, etc.",
-};
-
-// Course structure definition
-const courseStructure = {
-  "MSE-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MCT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MSE-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MDT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MSE-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-02"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MWT-04"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MCT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MDT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-02"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MWT-04"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJI-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-11"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-02/II"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJI-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-11"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-03 M/E"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-04 M/E"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJI-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-10"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-03/I"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-03/II"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-04"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-C&W": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-03", "MCT-04"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-D": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-05 M/E"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-W": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-05"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-};
+import { subjectMapping, courseStructure } from "./CourseInfo";
 
 // Add this utility function before the MarksheetService class
 const getRawMarks = (paperMarks) => {
@@ -942,7 +567,7 @@ const Marksheet = () => {
     printContent.style.cssText = `
       background: #FFFFFF !important;
       color: black !important;
-      font-family: 'Times New Roman', serif !important;
+      font-family: 'Calibri', 'Arial', sans-serif !important;
       width: 210mm !important;
       height: 297mm !important;
       padding: 10mm !important;
@@ -971,7 +596,7 @@ const Marksheet = () => {
               height: 297mm;
             }
             body {
-              font-family: 'Times New Roman', serif !important;
+              font-family: 'Calibri', 'Arial', sans-serif !important;
               display: flex;
               justify-content: center;
               align-items: center;
@@ -990,6 +615,7 @@ const Marksheet = () => {
                 -webkit-print-color-adjust: exact !important;
                 color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
               }
               html, body {
                 width: 210mm;
@@ -999,16 +625,35 @@ const Marksheet = () => {
                 overflow: hidden;
               }
               body {
-                font-family: 'Times New Roman', serif !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
               }
               img {
                 max-width: 100%;
                 height: auto;
               }
-              h1 { font-size: 22px !important; margin: 0 0 2px 0 !important; }
-              h2 { font-size: 14px !important; margin: 0 0 1px 0 !important; }
-              h3 { font-size: 13px !important; margin: 2px 0 !important; }
-              p { font-size: 12px !important; margin: 2px 0 !important; }
+              h1 { 
+                font-size: 23px !important; 
+                margin: 0 0 2px 0 !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
+              }
+              h2 { 
+                font-size: 15px !important; 
+                margin: 0 0 1px 0 !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
+              }
+              h3 { 
+                font-size: 14px !important; 
+                margin: 2px 0 !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
+              }
+              p { 
+                font-size: 14px !important; 
+                margin: 2px 0 !important;
+                font-family: 'Calibri', 'Arial', sans-serif !important;
+              }
+              table, th, td {
+                font-family: 'Calibri', 'Arial', sans-serif !important;
+              }
               .no-print {
                 display: none !important;
               }
@@ -1227,7 +872,7 @@ const Marksheet = () => {
             candidateData.name
           } |\nTicket Number: ${
             candidateData.ticketNumber || candidateData.ticket_no
-          } |\nTotal Marks: ${total}/${maxTotal} |\nFinal Percentage: ${percentage}%`;
+          } |\nTotal Marks: ${total}/${maxTotal} |\nPercentage: ${percentage}%`;
 
           const qrCodeUrl = await QRCode.toDataURL(qrData, {
             width: 120,
@@ -1623,8 +1268,8 @@ const Marksheet = () => {
                 boxSizing: "border-box",
                 boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                 border: "1px solid #e5e7eb",
-                fontFamily: "Times New Roman, serif",
-                fontSize: "12px",
+                fontFamily: "'Calibri', 'Arial', sans-serif", // Changed to Calibri
+                fontSize: "14px",
                 lineHeight: "1.2",
                 color: "black",
                 position: "relative",
@@ -1637,10 +1282,10 @@ const Marksheet = () => {
                 alt="Watermark"
                 style={{
                   position: "absolute",
-                  top: "40%",
+                  top: "50%",
                   left: "50%",
-                  width: "50%",
-                  height: "50%",
+                  width: "35%",
+                  height: "35%",
                   transform: "translate(-50%, -50%)",
                   opacity: 0.1,
                   zIndex: 10,
@@ -1674,8 +1319,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         left: "0",
-                        width: "70px",
-                        height: "70px",
+                        width: "82px",
+                        height: "82px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1717,8 +1362,8 @@ const Marksheet = () => {
                       style={{
                         position: "absolute",
                         right: "0",
-                        width: "70px",
-                        height: "70px",
+                        width: "85px",
+                        height: "85px",
                         backgroundColor: "white",
                         display: "flex",
                         alignItems: "center",
@@ -1782,7 +1427,7 @@ const Marksheet = () => {
                           margin: "0 0 1px 0",
                         }}
                       >
-                        SUPERVISOR TRAINING CENTRE
+                        SUPERVISORS TRAINING CENTRE
                       </h2>
                       <h2
                         style={{
@@ -1796,13 +1441,13 @@ const Marksheet = () => {
                       </h2>
                       <h3
                         style={{
-                          fontSize: "13px",
+                          fontSize: "15px",
                           fontWeight: "bold",
                           color: "black",
-                          margin: "6px 0 2px 0",
+                          margin: "7px 0 0 0",
                         }}
                       >
-                        STATEMENT OF MARKS
+                        MARKSHEET
                       </h3>
                       {viewMode === "sessionWise" &&
                         selectedSession !== "all" && (
@@ -1839,10 +1484,9 @@ const Marksheet = () => {
                         fontSize: "12px",
                       }}
                     >
-                      Ticket Number :{" "}
+                      Name :{" "}
                       <span style={{ fontWeight: 500 }}>
-                        {" "}
-                        {candidateData.ticketNumber || candidateData.ticket_no}
+                        {candidateData.name}{" "}
                       </span>
                     </p>
                     <p
@@ -1852,9 +1496,10 @@ const Marksheet = () => {
                         fontSize: "12px",
                       }}
                     >
-                      Name :{" "}
+                      Ticket Number :{" "}
                       <span style={{ fontWeight: 500 }}>
-                        {candidateData.name}{" "}
+                        {" "}
+                        {candidateData.ticketNumber || candidateData.ticket_no}
                       </span>
                     </p>
                     <p
@@ -1940,8 +1585,8 @@ const Marksheet = () => {
                   >
                     <div
                       style={{
-                        width: "80px",
-                        height: "95px",
+                        width: "89px",
+                        height: "98px",
                         border: "1px solid #000",
                         background: "#fff",
                         display: "flex",
@@ -2041,7 +1686,6 @@ const Marksheet = () => {
                           <th
                             style={{
                               border: "1px solid black",
-                              padding: "4px 6px",
                               fontSize: "11px",
                               fontWeight: "bold",
                               color: "black",
@@ -2053,7 +1697,6 @@ const Marksheet = () => {
                           <th
                             style={{
                               border: "1px solid black",
-                              padding: "4px 6px",
                               fontSize: "11px",
                               fontWeight: "bold",
                               color: "black",
@@ -2070,8 +1713,7 @@ const Marksheet = () => {
                             ([session, papers]) => {
                               if (
                                 viewMode === "sessionWise" &&
-                                selectedSession !== "all" &&
-                                selectedSession !== session
+                                selectedSession !== "all"
                               )
                                 return [];
                               return renderRows(session, papers);
@@ -2110,7 +1752,7 @@ const Marksheet = () => {
                         </div>
                         <div style={{ padding: "5px" }}>
                           <h3 style={{ fontSize: "12px", margin: "2px 0" }}>
-                            FINAL PERCENTAGE :
+                            PERCENTAGE :
                             <span style={{ paddingLeft: "4px" }}>
                               {percentage}%
                             </span>
@@ -2270,6 +1912,8 @@ const Marksheet = () => {
                     borderTop: "2px solid #6b7280",
                     paddingTop: "15px",
                     marginTop: "auto",
+                    position: "relative", // Add this
+                    paddingBottom: "20px", // Add this
                   }}
                 >
                   <div
@@ -2317,20 +1961,25 @@ const Marksheet = () => {
                       >
                         Director
                       </p>
-                      <p
-                        style={{
-                          fontSize: "7px",
-                          color: "#6b7280",
-                          fontStyle: "italic",
-                          marginTop: "18px",
-                          margin: "5px 0 0 0",
-                        }}
-                      >
-                        Date of Generation:{" "}
-                        {new Date().toLocaleDateString("en-IN")}
-                      </p>
                     </div>
                   </div>
+                  {/* Move date to bottom center */}
+                  <p
+                    style={{
+                      fontSize: "5px",
+                      color: "#6b7280",
+                      fontStyle: "italic",
+                      position: "absolute",
+                      bottom: "0px",
+                      left: "92.5%",
+                      transform: "translateX(-50%)",
+                      textAlign: "center",
+                      width: "100%",
+                      marginTop: "18px",
+                    }}
+                  >
+                    Issue Date: {new Date().toLocaleDateString("en-IN")}
+                  </p>
                 </div>
               </div>
             </div>

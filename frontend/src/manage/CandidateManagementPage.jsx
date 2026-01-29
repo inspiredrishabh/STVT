@@ -36,11 +36,11 @@ class RealBackendAPI {
     if (!ticketNo) {
       console.error("Ticket number is undefined for candidate:", candidate);
       throw new Error(
-        `Ticket number is undefined for candidate ${candidate.name || candidate.id
+        `Ticket number is undefined for candidate ${
+          candidate.name || candidate.id
         }`
       );
     }
-
 
     // Default endpoints for basic candidates
     const endpoints = {
@@ -52,251 +52,6 @@ class RealBackendAPI {
     const endpoint = endpoints[type] || endpoints["STC"];
     return endpoint;
   }
-
-  transformFieldsForBackend(candidateData) {
-    const transformed = { ...candidateData };
-
-    // Common field mappings that apply to all candidate types
-    const commonMappings = {
-      // Personal Info
-      fatherName: "father_name",
-      motherName: "mother_name",
-      phoneNumber: "phone_number",
-      emergencyContactNumber: "emergency_contact_number",
-      permanentAddress: "permanent_address",
-      currentAddress: "current_address",
-      typeOfDisability: "type_of_disability",
-
-      // Professional Info
-      ticketNumber: "ticket_no",
-      dateOfJoiningStcWtcNonRailway: "date_of_joining_stc_wtc_non_railway",
-      dateOfSparing: "date_of_sparing",
-      workingUnder: "working_under",
-
-      // Education
-      highestQualification: "highest_qualification",
-      fieldOfStudy: "field_of_study",
-      gradeType: "grade_type",
-      gradeValue: "grade_value",
-    };
-
-    // Type-specific mappings
-    if (candidateData.type === "Non Railway") {
-      commonMappings.courseType = "course_type";
-      commonMappings.moduleNo = "module_no";
-      commonMappings.courseCoordinator = "course_coordinator";
-      // For Non-Railway, workInfo maps to designation
-      commonMappings.workInfo = "designation";
-    } else if (candidateData.type === "STC") {
-      commonMappings.hrmsId = "hrms_id";
-      commonMappings.pfNoNpsUps = "pf_no_nps_ups";
-      commonMappings.employeeNumber = "employee_number";
-      commonMappings.dateOfAppointmentInRailway =
-        "date_of_appointment_in_railway";
-      commonMappings.modeOfAppointment = "mode_of_appointment";
-      commonMappings.moduleNo = "module_no";
-      commonMappings.courseDuration = "course_duration";
-      commonMappings.stationCode = "station_code";
-      commonMappings.resignationStatus = "resignation_status";
-      commonMappings.workInfo = "designation";
-    } else if (candidateData.type === "WTC") {
-      commonMappings.hrmsId = "hrms_id";
-      commonMappings.pfNoNpsUps = "pf_no_nps_ups";
-      commonMappings.employeeNumber = "employee_number";
-      commonMappings.dateOfAppointmentInRailway =
-        "date_of_appointment_in_railway";
-      commonMappings.modeOfAppointment = "mode_of_appointment";
-      commonMappings.courseType = "course_type";
-      commonMappings.workInfo = "designation";
-    }
-
-    // Apply transformations
-    Object.keys(commonMappings).forEach((frontendField) => {
-      if (transformed[frontendField] !== undefined) {
-        transformed[commonMappings[frontendField]] = transformed[frontendField];
-        delete transformed[frontendField];
-      }
-    });
-
-    return transformed;
-  }
-
-  // transformBackendResponseToFrontend(backendData, candidateType) {
-  //   // Reverse field mappings - from snake_case to camelCase
-  //   const commonReverseMapping = {
-  //     // Personal Information
-  //     father_name: "fatherName",
-  //     mother_name: "motherName",
-  //     phone_number: "phoneNumber",
-  //     emergency_contact_number: "emergencyContactNumber",
-  //     permanent_address: "permanentAddress",
-  //     current_address: "currentAddress",
-
-  //     // Professional Information (common)
-  //     employee_number: "employeeNumber",
-  //     ticket_no: "ticketNumber",
-  //     working_under: "workingUnder",
-  //     hrms_id: "hrmsId",
-  //     pf_no_nps_ups: "pfNoNpsUps",
-  //     date_of_appointment_in_railway: "dateOfAppointmentInRailway",
-  //     mode_of_appointment: "modeOfAppointment",
-
-  //     // Educational Information
-  //     highest_qualification: "highestQualification",
-  //     field_of_study: "fieldOfStudy",
-  //     grade_type: "gradeType",
-  //     grade_value: "gradeValue",
-
-  //     // Course Information (common)
-  //     date_of_sparing: "dateOfSparing",
-  //     date_of_joining_stc_wtc_non_railway: "dateOfJoiningStcWtcNonRailway",
-
-  //     // Additional fields
-  //     type_of_disability: "typeOfDisability",
-  //     resignation_status: "resignationStatus",
-  //   };
-
-  //   // STC-specific reverse mappings
-  //   const stcReverseMapping = {
-  //     ...commonReverseMapping,
-  //     module_no: "moduleNo",
-  //     module_name: "moduleName",
-  //     course_duration: "courseDuration",
-  //     station_code: "stationCode",
-  //   };
-
-  //   // WTC-specific reverse mappings (WTC uses camelCase in backend, so most fields don't need transformation)
-  //   const wtcReverseMapping = {
-  //     // Only transform fields that might come as snake_case from backend
-  //     father_name: "fatherName",
-  //     mother_name: "motherName",
-  //     phone_number: "phoneNumber",
-  //     emergency_contact_number: "emergencyContactNumber",
-  //     permanent_address: "permanentAddress",
-  //     current_address: "currentAddress",
-  //     employee_number: "employeeNumber",
-  //     ticket_no: "ticketNumber",
-  //     working_under: "workingUnder",
-  //     hrms_id: "hrmsId",
-  //     pf_no_nps_ups: "pfNoNpsUps",
-  //     date_of_appointment_in_railway: "dateOfAppointmentInRailway",
-  //     mode_of_appointment: "modeOfAppointment",
-  //     highest_qualification: "highestQualification",
-  //     field_of_study: "fieldOfStudy",
-  //     grade_type: "gradeType",
-  //     grade_value: "gradeValue",
-  //     date_of_sparing: "dateOfSparing",
-  //     date_of_joining_stc_wtc_non_railway: "dateOfJoiningStcWtcNonRailway",
-  //     type_of_disability: "typeOfDisability",
-  //     resignation_status: "resignationStatus",
-
-  //     // WTC fields that are already camelCase in backend (pass through)
-  //     courseType: "courseType",
-  //     designationOther: "designationOther",
-  //     trainingPeriod: "trainingPeriod",
-  //     customTrainingPeriod: "customTrainingPeriod",
-  //     theoryDuration: "theoryDuration",
-  //     customTheoryDuration: "customTheoryDuration",
-  //     practicalDuration: "practicalDuration",
-  //     customPracticalDuration: "customPracticalDuration",
-  //     customFieldOfStudy: "customFieldOfStudy",
-  //     courseCoordinator: "courseCoordinator",
-
-  //     // Common fields that are already camelCase
-  //     fatherName: "fatherName",
-  //     motherName: "motherName",
-  //     phoneNumber: "phoneNumber",
-  //     emergencyContactNumber: "emergencyContactNumber",
-  //     permanentAddress: "permanentAddress",
-  //     currentAddress: "currentAddress",
-  //     employeeNumber: "employeeNumber",
-  //     ticketNumber: "ticketNumber",
-  //     workingUnder: "workingUnder",
-  //     hrmsId: "hrmsId",
-  //     pfNoNpsUps: "pfNoNpsUps",
-  //     dateOfAppointmentInRailway: "dateOfAppointmentInRailway",
-  //     modeOfAppointment: "modeOfAppointment",
-  //     highestQualification: "highestQualification",
-  //     fieldOfStudy: "fieldOfStudy",
-  //     gradeType: "gradeType",
-  //     gradeValue: "gradeValue",
-  //     dateOfSparing: "dateOfSparing",
-  //     dateOfJoiningStcWtcNonRailway: "dateOfJoiningStcWtcNonRailway",
-  //     typeOfDisability: "typeOfDisability",
-  //     resignationStatus: "resignationStatus",
-  //   };
-
-  //   // Non-Railway specific reverse mappings
-  //   const nonRailwayReverseMapping = {
-  //     ...commonReverseMapping,
-  //     // Non-Railway specific fields (from snake_case to camelCase)
-  //     course_type: "courseType",
-  //     module_no: "moduleNo",
-  //     course_coordinator: "courseCoordinator",
-  //     // Keep fields that are already correct (no transformation needed)
-  //     duration: "duration",
-  //     theory: "theory",
-  //     practical: "practical",
-  //     remarks: "remarks",
-  //     unit: "unit",
-  //     institution: "institution",
-  //     nationality: "nationality",
-  //     pwd: "pwd",
-  //     // Additional common fields that might come as snake_case
-  //     batch: "batch",
-  //     designation: "designation",
-  //   };
-
-  //   // Determine which reverse mapping to use
-  //   let reverseMapping = commonReverseMapping;
-  //   if (candidateType === "STC") {
-  //     reverseMapping = stcReverseMapping;
-  //   } else if (candidateType === "WTC") {
-  //     reverseMapping = wtcReverseMapping;
-  //   } else if (candidateType === "Non Railway") {
-  //     reverseMapping = nonRailwayReverseMapping;
-  //   }
-
-  //   const transformedData = {};
-
-  //   // Transform fields that have reverse mappings
-  //   Object.keys(backendData).forEach((key) => {
-  //     const frontendKey = reverseMapping[key] || key;
-  //     // Only include fields that are not undefined or null
-  //     if (backendData[key] !== undefined && backendData[key] !== null) {
-  //       transformedData[frontendKey] = backendData[key];
-  //     }
-  //   });
-
-  //   console.log(
-  //     `Transformed ${Object.keys(backendData).length} backend fields to ${
-  //       Object.keys(transformedData).length
-  //     } frontend fields for type: ${candidateType}`
-  //   );
-
-  //   if (candidateType === "WTC") {
-  //     console.log("WTC reverse transformation details:");
-  //     console.log("Backend data keys:", Object.keys(backendData));
-  //     console.log("Frontend data keys:", Object.keys(transformedData));
-  //     console.log(
-  //       "Sample reverse transformed fields:",
-  //       Object.fromEntries(Object.entries(transformedData).slice(0, 10))
-  //     );
-  //   }
-
-  //   if (candidateType === "Non Railway") {
-  //     console.log("Non Railway reverse transformation details:");
-  //     console.log("Backend data keys:", Object.keys(backendData));
-  //     console.log("Frontend data keys:", Object.keys(transformedData));
-  //     console.log(
-  //       "Sample reverse transformed fields:",
-  //       Object.fromEntries(Object.entries(transformedData).slice(0, 10))
-  //     );
-  //   }
-
-  //   return transformedData;
-  // }
-  // Add this method to the RealBackendAPI class:
 
   // Helper method to transform backend response back to frontend camelCase format
   transformBackendResponseToFrontend(backendData, candidateType) {
@@ -311,18 +66,29 @@ class RealBackendAPI {
       permanent_address: "permanentAddress",
       current_address: "currentAddress",
       type_of_disability: "typeOfDisability",
+      blood_group: "bloodGroup", // NEW FIELD
 
       // Professional Info
       ticket_no: "ticketNumber",
       date_of_joining_stc_wtc_non_railway: "dateOfJoiningStcWtcNonRailway",
       date_of_sparing: "dateOfSparing",
       working_under: "workingUnder",
+      previous_work_experience: "previousWorkExperience", // NEW FIELD
 
       // Education
       highest_qualification: "highestQualification",
+      highest_degree: "highestDegree", // NEW FIELD
       field_of_study: "fieldOfStudy",
+      stream_in_btech: "streamInBtech", // NEW FIELD
+      college: "college", // NEW FIELD
       grade_type: "gradeType",
       grade_value: "gradeValue",
+      database: "database", // NEW FIELD
+
+      // Additional Information
+      hobbies: "hobbies", // NEW FIELD
+      cultural_hobby: "culturalHobby", // NEW FIELD
+      achievement: "achievement", // NEW FIELD
 
       // System fields
       created_at: "createdAt",
@@ -334,7 +100,6 @@ class RealBackendAPI {
       commonTransformations.course_type = "courseType";
       commonTransformations.module_no = "moduleNo";
       commonTransformations.course_coordinator = "courseCoordinator";
-      // For Non-Railway, designation maps to workInfo for consistency
       commonTransformations.designation = "workInfo";
     }
 
@@ -393,6 +158,7 @@ class RealBackendAPI {
 
     return transformed;
   }
+
   // Helper method to get candidate details by ticket number
   async getCandidateByTicket(candidate) {
     try {
@@ -411,11 +177,12 @@ class RealBackendAPI {
     try {
       const response = await fetch(`${this.baseURL}/stc`);
       const data = await response.json();
+
       if (data.success) {
         return data.data.map((candidate) => {
           return {
             ...candidate,
-            id: `stc-${candidate.id}`, // Make ID unique across types
+            id: `stc-${candidate.id}`,
             originalId: candidate.id,
             type: "STC",
             category: candidate.category,
@@ -424,26 +191,31 @@ class RealBackendAPI {
             ticketNumber:
               candidate.ticket_no ||
               candidate.ticketNumber ||
-              `STC${candidate.id}`, // Multiple fallbacks
+              `STC${candidate.id}`,
             ticket_no:
               candidate.ticket_no ||
               candidate.ticketNumber ||
-              `STC${candidate.id}`, // Ensure ticket_no is also set
+              `STC${candidate.id}`,
             serialNo: candidate.id + 1000,
             batch: candidate.batch || "2024-2025",
             status:
               candidate.resignation_status === "yes" ? "Resigned" : "Active",
             phoneNumber: candidate.phone_number || "N/A",
+
             // Personal Information
             fatherName: candidate.father_name,
             motherName: candidate.mother_name,
             sex: candidate.sex,
             dob: candidate.dob,
+            bloodGroup: candidate.blood_group || null,
+            maritalStatus: candidate.marital_status || null, // ADD THIS - was missing
+
             // Contact Information
             email: candidate.email,
             emergencyContactNumber: candidate.emergency_contact_number,
             permanentAddress: candidate.permanent_address,
             currentAddress: candidate.current_address,
+
             // Professional Information
             designation: candidate.designation,
             unit: candidate.unit,
@@ -455,20 +227,30 @@ class RealBackendAPI {
             dateOfAppointmentInRailway:
               candidate.date_of_appointment_in_railway,
             modeOfAppointment: candidate.mode_of_appointment,
+            previousWorkExperience: candidate.previous_work_experience || null,
+
             // Educational Information
             highestQualification: candidate.highest_qualification,
+            highestDegree: candidate.highest_degree || null,
             fieldOfStudy: candidate.field_of_study,
             institution: candidate.institution,
+            college: candidate.college || null,
             gradeType: candidate.grade_type,
             gradeValue: candidate.grade_value,
+
             // Course Information
             moduleNo: candidate.module_no,
             moduleName: candidate.module_name,
             courseDuration: candidate.course_duration,
             dateOfSparing: candidate.date_of_sparing,
+
+            // Additional Information - NEW FIELDS
+            hobbies: candidate.hobbies || null,
+            culturalHobby: candidate.cultural_hobby || null,
+            achievement: candidate.achievement || null,
+
             // Additional fields
             nationality: candidate.nationality,
-            // category: candidate.category,
             pwd: candidate.pwd,
             typeOfDisability: candidate.type_of_disability,
             dateOfJoiningStcWtcNonRailway:
@@ -539,7 +321,6 @@ class RealBackendAPI {
             // Educational Information
             highestQualification: candidate.highestQualification,
             fieldOfStudy: candidate.fieldOfStudy,
-            customFieldOfStudy: candidate.customFieldOfStudy,
             institution: candidate.institution,
             gradeType: candidate.gradeType,
             gradeValue: candidate.gradeValue,
@@ -569,7 +350,6 @@ class RealBackendAPI {
       return [];
     }
   }
-
 
   // Fetch all Non-Railway candidates
   async getNonRailwayCandidates() {
@@ -613,6 +393,7 @@ class RealBackendAPI {
             unit: candidate.unit,
             workingUnder: candidate.working_under,
             remarks: candidate.remarks,
+            previousWorkExperience: candidate.previous_work_experience, // NEW FIELD
             // Educational Information
             highestQualification: candidate.highest_qualification,
             fieldOfStudy: candidate.field_of_study,
@@ -627,6 +408,10 @@ class RealBackendAPI {
             moduleNo: candidate.module_no,
             dateOfSparing: candidate.date_of_sparing,
             courseCoordinator: candidate.course_coordinator,
+            // Additional Information - NEW FIELDS
+            hobbies: candidate.hobbies,
+            culturalHobby: candidate.cultural_hobby,
+            achievement: candidate.achievement,
             // Additional fields
             nationality: candidate.nationality,
             // category: candidate.category,
@@ -647,7 +432,6 @@ class RealBackendAPI {
       return [];
     }
   }
-
 
   // Fetch all candidates from only the 3 tables/endpoints
   async getAllCandidates() {
@@ -774,8 +558,8 @@ class RealBackendAPI {
               type === "STC"
                 ? `stc-${data.data.id}`
                 : type === "WTC"
-                  ? `wtc-${data.data.id}`
-                  : `nonrailway-${data.data.id}`,
+                ? `wtc-${data.data.id}`
+                : `nonrailway-${data.data.id}`,
             type,
             // category: type === "Non Railway" ? "Non Railway" : "Railway",
             stream: type === "Non Railway" ? "Non Railway" : "Railway",
@@ -815,11 +599,17 @@ class RealBackendAPI {
       let body;
       let headers = {};
 
-      if (candidateData.picture instanceof File || candidateData.image instanceof File) {
+      if (
+        candidateData.picture instanceof File ||
+        candidateData.image instanceof File
+      ) {
         // Use FormData for file uploads
         const formData = new FormData();
         Object.keys(transformedData).forEach((key) => {
-          if (transformedData[key] !== null && transformedData[key] !== undefined) {
+          if (
+            transformedData[key] !== null &&
+            transformedData[key] !== undefined
+          ) {
             formData.append(key, transformedData[key]);
           }
         });
@@ -827,7 +617,7 @@ class RealBackendAPI {
         // Don't set Content-Type header for FormData - browser will set it with boundary
       } else {
         // Use JSON for regular updates
-        headers['Content-Type'] = 'application/json';
+        headers["Content-Type"] = "application/json";
         body = JSON.stringify(transformedData);
       }
 
@@ -870,7 +660,7 @@ class RealBackendAPI {
       console.error("Error updating candidate:", error);
       return {
         success: false,
-        message: error.message || "Failed to update candidate"
+        message: error.message || "Failed to update candidate",
       };
     }
   }
@@ -1362,7 +1152,7 @@ class MockBackendAPI {
         candidateData.picture instanceof File
           ? URL.createObjectURL(candidateData.picture)
           : candidateData.picture ||
-          "https://randomuser.me/api/portraits/lego/1.jpg",
+            "https://randomuser.me/api/portraits/lego/1.jpg",
       status: candidateData.status || "Active",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1644,7 +1434,7 @@ const CandidateManagementPage = () => {
   const [candidateToEdit, setCandidateToEdit] = useState(null);
 
   // Check if user has edit/delete permissions
-  const canEditDelete = userRole === 'admin' || userRole === 'master';
+  const canEditDelete = userRole === "admin" || userRole === "master";
 
   // API functions using the real backend
   const fetchCandidates = async () => {
@@ -1764,7 +1554,10 @@ const CandidateManagementPage = () => {
   const deleteCandidate = async (candidateId) => {
     // Check permissions before allowing delete
     if (!canEditDelete) {
-      showNotification("You don't have permission to delete candidates", "error");
+      showNotification(
+        "You don't have permission to delete candidates",
+        "error"
+      );
       return;
     }
 
@@ -1927,7 +1720,10 @@ const CandidateManagementPage = () => {
   const handleDelete = async () => {
     // Check permissions before allowing delete
     if (!canEditDelete) {
-      showNotification("You don't have permission to delete candidates", "error");
+      showNotification(
+        "You don't have permission to delete candidates",
+        "error"
+      );
       setDeleteModal({ isOpen: false, candidateId: null, candidateName: "" });
       return;
     }
@@ -2031,8 +1827,11 @@ const CandidateManagementPage = () => {
           />
         )}
 
-        <div className="fixed bottom-8 right-8 z-10 h-12 w-12 rounded-full bg-amber-400 hover:bg-amber-300 flex items-center justify-center" >
-          <button className="text-3xl font-bold text-gray-900" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <div className="fixed bottom-8 right-8 z-10 h-12 w-12 rounded-full bg-amber-400 hover:bg-amber-300 flex items-center justify-center">
+          <button
+            className="text-3xl font-bold text-gray-900"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
             <ArrowUp />
           </button>
         </div>
@@ -2049,7 +1848,7 @@ const CandidateManagementPage = () => {
                 >
                   <path
                     fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                     clipRule="evenodd"
                   />
                 </svg>
@@ -2125,9 +1924,9 @@ const CandidateManagementPage = () => {
                       candidateName: name,
                     })
                   }
-                  onEdit={handleEdit} // Pass the edit handler
-                  onUpdate={handleInlineUpdate} // Pass the inline update handler
-                  canEditDelete={canEditDelete} // Pass permission flag
+                  onEdit={handleEdit}
+                  onUpdate={handleInlineUpdate}
+                  canEditDelete={canEditDelete}
                 />
               </div>
               <div className="lg:col-span-1">
@@ -2137,10 +1936,10 @@ const CandidateManagementPage = () => {
           </>
         ) : (
           <CandidateForm
-            candidate={candidateToEdit} // Pass the candidate to edit, or null for a new one
+            candidate={candidateToEdit}
             onSubmit={handleFormSubmit}
             onCancel={handleCancelForm}
-            isEdit={!!candidateToEdit} // True if editing, false if adding
+            isEdit={!!candidateToEdit}
           />
         )}
 

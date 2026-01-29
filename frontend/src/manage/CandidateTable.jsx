@@ -16,7 +16,13 @@ import {
   Building,
 } from "lucide-react";
 
-const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditDelete = true }) => {
+const CandidateTable = ({
+  candidates,
+  onViewDetail,
+  onDelete,
+  onUpdate,
+  canEditDelete = true,
+}) => {
   const [editingCandidate, setEditingCandidate] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
@@ -31,17 +37,14 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditD
     if (!canEditDelete) {
       return; // Do nothing if user doesn't have edit permissions
     }
-    // For comprehensive editing, open modal
     setEditFormData({ ...candidate });
     setShowEditModal(true);
   };
 
   const handleInlineEditClick = (candidate) => {
-    // Check permissions before allowing inline edit
     if (!canEditDelete) {
-      return; // Do nothing if user doesn't have edit permissions
+      return;
     }
-    // For quick inline editing
     setEditingCandidate(candidate.id);
     setEditFormData({ ...candidate });
   };
@@ -56,7 +59,6 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditD
 
   const handleModalSave = async () => {
     if (onUpdate && editFormData.id) {
-      // If an image file is selected, pass it as 'image'
       let updateData = { ...editFormData };
       if (editImageFile) {
         updateData.image = editImageFile;
@@ -84,9 +86,6 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditD
       [field]: value,
     }));
   };
-  if (candidates.length === 0) {
-    return <EmptyState />;
-  }
 
   return (
     <>
@@ -130,7 +129,6 @@ const CandidateTable = ({ candidates, onViewDetail, onDelete, onUpdate, canEditD
         </div>
       </div>
 
-      {/* Comprehensive Edit Modal */}
       {showEditModal && canEditDelete && (
         <EditCandidateModal
           candidate={editFormData}
@@ -327,10 +325,8 @@ const EditableCandidateRow = ({
         <select
           value={editFormData.type || ""}
           onChange={(e) => {
-            // Set both type and category based on selection
             const type = e.target.value;
             onInputChange("type", type);
-            // Set category based on type
             if (type === "STC" || type === "WTC") {
               onInputChange("category", "Railway");
             } else if (type === "Non Railway") {
@@ -420,7 +416,6 @@ const EmptyState = () => (
   </div>
 );
 
-// Helper function to get course-specific fields based on candidate type
 const getCourseFields = (candidate) => {
   const commonCourseFields = [
     {
@@ -476,7 +471,6 @@ const getCourseFields = (candidate) => {
     },
   ];
 
-  // Add type-specific fields
   if (candidate.type === "STC") {
     return [
       ...commonCourseFields,
@@ -578,7 +572,6 @@ const getCourseFields = (candidate) => {
   return commonCourseFields;
 };
 
-// Helper function to get professional fields based on candidate type
 const getProfessionalFields = (candidate) => {
   const commonProfessionalFields = [
     {
@@ -608,7 +601,6 @@ const getProfessionalFields = (candidate) => {
     },
   ];
 
-  // Add type-specific professional fields
   if (candidate.type === "STC" || candidate.type === "WTC") {
     const railwayFields = [
       ...commonProfessionalFields,
@@ -638,8 +630,13 @@ const getProfessionalFields = (candidate) => {
       },
     ];
 
-    // Add station code specifically for STC candidates
     if (candidate.type === "STC") {
+      railwayFields.push({
+        label: "Previous Work Experience",
+        field: "previousWorkExperience",
+        type: "textarea",
+        value: candidate.previousWorkExperience,
+      });
       railwayFields.push({
         label: "Station Code",
         field: "stationCode",
@@ -664,7 +661,6 @@ const getProfessionalFields = (candidate) => {
   return commonProfessionalFields;
 };
 
-// Helper function to get educational fields based on candidate type
 const getEducationalFields = (candidate) => {
   const commonEducationalFields = [
     {
@@ -672,6 +668,12 @@ const getEducationalFields = (candidate) => {
       field: "highestQualification",
       type: "text",
       value: candidate.highestQualification,
+    },
+    {
+      label: "Highest Degree",
+      field: "highestDegree",
+      type: "text",
+      value: candidate.highestDegree,
     },
     {
       label: "Field of Study",
@@ -686,6 +688,12 @@ const getEducationalFields = (candidate) => {
       value: candidate.institution,
     },
     {
+      label: "College",
+      field: "college",
+      type: "text",
+      value: candidate.college,
+    },
+    {
       label: "Grade/Score",
       field: "gradeValue",
       type: "text",
@@ -693,23 +701,9 @@ const getEducationalFields = (candidate) => {
     },
   ];
 
-  // Add WTC-specific educational fields
-  if (candidate.type === "WTC") {
-    return [
-      ...commonEducationalFields,
-      {
-        label: "Custom Field of Study",
-        field: "customFieldOfStudy",
-        type: "text",
-        value: candidate.customFieldOfStudy,
-      },
-    ];
-  }
-
   return commonEducationalFields;
 };
 
-// Comprehensive Edit Modal Component
 const EditCandidateModal = ({
   candidate,
   onSave,
@@ -720,7 +714,6 @@ const EditCandidateModal = ({
 }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
     <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-300 shadow-xl">
-      {/* Header */}
       <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
         <div className="flex items-center space-x-4">
           <Edit className="h-6 w-6 text-blue-600" />
@@ -741,15 +734,12 @@ const EditCandidateModal = ({
         </button>
       </div>
 
-      {/* Content */}
       <div className="p-8 space-y-8 overflow-y-auto flex-1 bg-gray-50/50">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Personal Information */}
           <EditSection
             title="Personal Information"
             icon={User}
             fields={[
-              // --- Add Profile Image field at the top ---
               {
                 label: "Profile Image",
                 field: "picture",
@@ -796,6 +786,13 @@ const EditCandidateModal = ({
                 options: ["General", "OBC", "SC", "ST", "EWS"],
               },
               {
+                label: "Blood Group",
+                field: "bloodGroup",
+                type: "select",
+                value: candidate.bloodGroup,
+                options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+              },
+              {
                 label: "Nationality",
                 field: "nationality",
                 type: "text",
@@ -817,9 +814,9 @@ const EditCandidateModal = ({
             ]}
             candidate={candidate}
             onInputChange={onInputChange}
+            canEditDelete={canEditDelete}
           />
 
-          {/* Contact Information */}
           <EditSection
             title="Contact Information"
             icon={Phone}
@@ -860,7 +857,6 @@ const EditCandidateModal = ({
             canEditDelete={canEditDelete}
           />
 
-          {/* Professional Information */}
           <EditSection
             title="Professional Information"
             icon={Briefcase}
@@ -870,7 +866,6 @@ const EditCandidateModal = ({
             canEditDelete={canEditDelete}
           />
 
-          {/* Course Information */}
           <EditSection
             title="Course Information"
             icon={Building}
@@ -880,7 +875,6 @@ const EditCandidateModal = ({
             canEditDelete={canEditDelete}
           />
 
-          {/* Educational Information */}
           <EditSection
             title="Educational Information"
             icon={Calendar}
@@ -889,16 +883,45 @@ const EditCandidateModal = ({
             onInputChange={onInputChange}
             canEditDelete={canEditDelete}
           />
+
+          {candidate.type === "STC" && (
+            <EditSection
+              title="Additional Information"
+              icon={User}
+              fields={[
+                {
+                  label: "Hobbies",
+                  field: "hobbies",
+                  type: "textarea",
+                  value: candidate.hobbies,
+                },
+                {
+                  label: "Cultural Hobby",
+                  field: "culturalHobby",
+                  type: "textarea",
+                  value: candidate.culturalHobby,
+                },
+                {
+                  label: "Achievements",
+                  field: "achievement",
+                  type: "textarea",
+                  value: candidate.achievement,
+                },
+              ]}
+              candidate={candidate}
+              onInputChange={onInputChange}
+              canEditDelete={canEditDelete}
+            />
+          )}
         </div>
       </div>
 
-      {/* Footer */}
       <div className="p-6 bg-white border-t border-gray-200 flex justify-end space-x-4 flex-shrink-0">
         <button
           onClick={onCancel}
           className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors font-medium"
         >
-          {canEditDelete ? 'Cancel' : 'Close'}
+          {canEditDelete ? "Cancel" : "Close"}
         </button>
         {canEditDelete && (
           <button
@@ -914,7 +937,6 @@ const EditCandidateModal = ({
   </div>
 );
 
-// Edit Section Component
 const EditSection = ({
   title,
   icon: Icon,
@@ -923,7 +945,6 @@ const EditSection = ({
   onInputChange,
   canEditDelete = true,
 }) => {
-  // --- Add local state for image file name ---
   const [selectedFileName, setSelectedFileName] = useState("");
 
   return (

@@ -40,6 +40,7 @@ const DetailModal = ({ candidate, onClose }) => {
       { label: "Mother's Name", value: candidate.motherName },
       { label: "DOB", value: formatDate(candidate.dob) },
       { label: "Category", value: candidate.category },
+      { label: "Blood Group", value: candidate.bloodGroup },
       { label: "Nationality", value: candidate.nationality },
       { label: "PWD", value: candidate.pwd },
       {
@@ -60,7 +61,6 @@ const DetailModal = ({ candidate, onClose }) => {
     return basicData;
   };
 
-
   // Helper function to get course information data based on candidate type
   const getCourseInfoData = () => {
     const courseData = [
@@ -80,8 +80,7 @@ const DetailModal = ({ candidate, onClose }) => {
     if (candidate.type === "STC") {
       courseData.push(
         { label: "Module No.", value: candidate.moduleNo },
-        // { label: "Module Name", value: candidate.moduleName },
-        { label: "Course Duration", value: candidate.courseDuration },
+        { label: "Course Duration", value: candidate.courseDuration }
       );
     } else if (candidate.type === "WTC") {
       courseData.push(
@@ -92,16 +91,7 @@ const DetailModal = ({ candidate, onClose }) => {
         { label: "Course Coordinator", value: candidate.courseCoordinator }
       );
     } else if (candidate.type === "Non Railway") {
-      courseData
-        .push
-        // { label: "Course Type", value: candidate.courseType },
-        // { label: "Duration", value: candidate.duration },
-        // { label: "Theory", value: candidate.theory },
-        // { label: "Practical", value: candidate.practical },
-        // { label: "Module No.", value: candidate.moduleNo },
-        // { label: "Course Coordinator", value: candidate.courseCoordinator },
-        // { label: "Remarks", value: candidate.remarks }
-        ();
+      courseData.push();
     }
 
     return courseData;
@@ -127,12 +117,7 @@ const DetailModal = ({ candidate, onClose }) => {
     }
 
     if (candidate.type === "Non Railway") {
-      workData.push(
-        { label: "Course Type", value: candidate.courseType }
-        // { label: "Duration", value: candidate.duration },
-        // { label: "Theory", value: candidate.theory },
-        // { label: "Practical", value: candidate.practical }
-      );
+      workData.push({ label: "Course Type", value: candidate.courseType });
     } else if (candidate.type === "STC" || candidate.type === "WTC") {
       workData.push(
         { label: "HRMS ID", value: candidate.hrmsId },
@@ -141,12 +126,16 @@ const DetailModal = ({ candidate, onClose }) => {
         { label: "Appt. Mode", value: candidate.modeOfAppointment },
         { label: "Appt. Date", value: candidate.dateOfAppointmentInRailway }
       );
-    }
 
-    // Add station code for STC
-    // if (candidate.type === "STC") {
-    //   workData.push({ label: "Station Code", value: candidate.stationCode });
-    // }
+      // Add Previous Work Experience for STC
+      if (candidate.type === "STC" && candidate.previousWorkExperience) {
+        workData.push({
+          label: "Previous Experience",
+          value: candidate.previousWorkExperience,
+          fullWidth: true,
+        });
+      }
+    }
 
     return workData;
   };
@@ -155,19 +144,13 @@ const DetailModal = ({ candidate, onClose }) => {
   const getEducationInfoData = () => {
     const educationData = [
       { label: "Qualification", value: candidate.highestQualification },
+      { label: "Highest Degree", value: candidate.highestDegree },
       { label: "Field of Study", value: candidate.fieldOfStudy },
       { label: "Institution", value: candidate.institution },
+      { label: "College", value: candidate.college },
       { label: "Grade Type", value: candidate.gradeType },
       { label: "Grade/Score", value: candidate.gradeValue },
     ];
-
-    // Add custom field of study for WTC if exists
-    if (candidate.type === "WTC" && candidate.customFieldOfStudy) {
-      educationData.push({
-        label: "Custom Field of Study",
-        value: candidate.customFieldOfStudy,
-      });
-    }
 
     return educationData;
   };
@@ -179,7 +162,9 @@ const DetailModal = ({ candidate, onClose }) => {
         <div className="p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-gray-50">
           <div className="flex items-center space-x-4">
             <img
-              src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${candidate.picture}`}
+              src={`http://${import.meta.env.VITE_BACKEND_IP}:5000/${
+                candidate.picture
+              }`}
               alt={candidate.name}
               className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
             />
@@ -208,7 +193,6 @@ const DetailModal = ({ candidate, onClose }) => {
               icon={User}
               title="Basic Information"
               data={getBasicInfoData()}
-
             />
             <InfoSection
               icon={BookOpen}
@@ -250,6 +234,36 @@ const DetailModal = ({ candidate, onClose }) => {
               ]}
             />
           </div>
+
+          {/* NEW SECTION: Additional Information for STC candidates */}
+          {candidate.type === "STC" &&
+            (candidate.hobbies ||
+              candidate.culturalHobby ||
+              candidate.achievement) && (
+              <div className="grid grid-cols-1 gap-6">
+                <InfoSection
+                  icon={User}
+                  title="Additional Information"
+                  data={[
+                    {
+                      label: "Hobbies",
+                      value: candidate.hobbies,
+                      fullWidth: true,
+                    },
+                    {
+                      label: "Cultural Hobby",
+                      value: candidate.culturalHobby,
+                      fullWidth: true,
+                    },
+                    {
+                      label: "Achievements",
+                      value: candidate.achievement,
+                      fullWidth: true,
+                    },
+                  ].filter((item) => item.value)} // Only show fields that have values
+                />
+              </div>
+            )}
         </div>
       </div>
     </div>
@@ -264,11 +278,20 @@ const InfoSection = ({ title, icon: Icon, data }) => (
     </h5>
     <div className="space-y-3 text-sm">
       {data.map(({ label, value, fullWidth }) => (
-        <div key={label} className={`flex ${fullWidth ? "flex-col items-start" : "justify-between items-center"}`}>
+        <div
+          key={label}
+          className={`flex ${
+            fullWidth ? "flex-col items-start" : "justify-between items-center"
+          }`}
+        >
           <span className="font-medium text-gray-600 whitespace-nowrap">
             {label}:
           </span>
-          <span className={`text-gray-800 ${!fullWidth && "text-right pl-2"} overflow-y-auto overflow-x-auto`}>
+          <span
+            className={`text-gray-800 ${
+              !fullWidth && "text-right pl-2"
+            } overflow-y-auto overflow-x-auto`}
+          >
             {value || "N/A"}
           </span>
         </div>
