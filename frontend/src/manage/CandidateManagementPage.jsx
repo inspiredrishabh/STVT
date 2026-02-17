@@ -159,6 +159,93 @@ class RealBackendAPI {
     return transformed;
   }
 
+  // Helper method to transform frontend camelCase fields to backend snake_case fields
+  transformFieldsForBackend(frontendData) {
+    if (!frontendData) return frontendData;
+
+    const commonTransformations = {
+      // Personal Info
+      fatherName: "father_name",
+      motherName: "mother_name",
+      phoneNumber: "phone_number",
+      emergencyContactNumber: "emergency_contact_number",
+      permanentAddress: "permanent_address",
+      currentAddress: "current_address",
+      typeOfDisability: "type_of_disability",
+      bloodGroup: "blood_group",
+
+      // Professional Info
+      ticketNumber: "ticket_no",
+      dateOfJoiningStcWtcNonRailway: "date_of_joining_stc_wtc_non_railway",
+      dateOfSparing: "date_of_sparing",
+      workingUnder: "working_under",
+      previousWorkExperience: "previous_work_experience",
+
+      // Education
+      highestQualification: "highest_qualification",
+      highestDegree: "highest_degree",
+      fieldOfStudy: "field_of_study",
+      streamInBtech: "stream_in_btech",
+      gradeType: "grade_type",
+      gradeValue: "grade_value",
+
+      // Additional Information
+      hobbies: "hobbies",
+      culturalHobby: "cultural_hobby",
+      achievement: "achievement",
+
+      // System fields
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    };
+
+    const candidateType = frontendData.type;
+
+    if (candidateType === "Non Railway") {
+      commonTransformations.courseType = "course_type";
+      commonTransformations.moduleNo = "module_no";
+      commonTransformations.courseCoordinator = "course_coordinator";
+      commonTransformations.workInfo = "designation";
+    }
+
+    if (candidateType === "STC") {
+      commonTransformations.hrmsId = "hrms_id";
+      commonTransformations.pfNoNpsUps = "pf_no_nps_ups";
+      commonTransformations.employeeNumber = "employee_number";
+      commonTransformations.dateOfAppointmentInRailway =
+        "date_of_appointment_in_railway";
+      commonTransformations.modeOfAppointment = "mode_of_appointment";
+      commonTransformations.moduleNo = "module_no";
+      commonTransformations.courseDuration = "course_duration";
+      commonTransformations.stationCode = "station_code";
+      commonTransformations.resignationStatus = "resignation_status";
+      commonTransformations.workInfo = "designation";
+    }
+
+    if (candidateType === "WTC") {
+      commonTransformations.hrmsId = "hrms_id";
+      commonTransformations.pfNoNpsUps = "pf_no_nps_ups";
+      commonTransformations.employeeNumber = "employee_number";
+      commonTransformations.dateOfAppointmentInRailway =
+        "date_of_appointment_in_railway";
+      commonTransformations.modeOfAppointment = "mode_of_appointment";
+      commonTransformations.courseType = "course_type";
+      commonTransformations.workInfo = "designation";
+    }
+
+    const transformed = { ...frontendData };
+
+    Object.keys(commonTransformations).forEach((frontendField) => {
+      if (transformed[frontendField] !== undefined) {
+        transformed[commonTransformations[frontendField]] =
+          transformed[frontendField];
+        delete transformed[frontendField];
+      }
+    });
+
+    return transformed;
+  }
+
   // Helper method to get candidate details by ticket number
   async getCandidateByTicket(candidate) {
     try {
