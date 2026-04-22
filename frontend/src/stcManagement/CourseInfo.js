@@ -255,7 +255,7 @@ export const courseStructure = {
         },
         "Session 2": {
             "Paper 1": { maxMarks: 100, subjects: ["MCT-03", "MCT-04"] },
-            Practical: { maxMarks: 100, subjects: [] },
+            Practical: { maxMarks: 50, subjects: [] },
             Interview: { maxMarks: 50, subjects: [] },
         },
     },
