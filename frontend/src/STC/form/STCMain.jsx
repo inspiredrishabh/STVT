@@ -18,6 +18,7 @@ const STCMain = () => {
     typeOfDisability: "",
     nationality: "Indian", // Default value set to "Indian"
     maritalStatus: "",
+    bloodGroup: "", // New field
 
     // Contact
     currentAddress: "",
@@ -35,13 +36,21 @@ const STCMain = () => {
     hrmsId: "",
     pfNoNpsUps: "",
     employeeNumber: "",
+    previousWorkExperience: "", // New field
 
-    // Education - 
+    // Education
     highestQualification: "",
+    highestDegree: "", // New field
     fieldOfStudy: "",
     institution: "",
+    college: "", // New field
     gradeType: "",
     gradeValue: "",
+
+    // Additional Information
+    hobbies: "", // New field
+    culturalHobby: "", // New field
+    achievement: "", // New field
 
     batch: "",
     dateOfJoiningStcWtcNonRailway: "",
@@ -115,28 +124,29 @@ const STCMain = () => {
 
   const submitToAPI = async (data) => {
     try {
-      // Use FormData for file uploads instead of JSON
+      // Use FormData for file uploads
       const formDataToSend = new FormData();
 
+      // Map all fields - the backend will transform camelCase to snake_case
       Object.entries(data).forEach(([key, value]) => {
-        if (key === 'picture' && value) {
-          formDataToSend.append('image', value); // Backend expects 'image'
+        if (key === "picture" && value) {
+          formDataToSend.append("image", value); // Backend expects 'image' for file
         } else if (value !== null && value !== undefined && value !== "") {
-          // Transform camelCase to snake_case for backend
-          const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-          formDataToSend.append(snakeKey, value);
+          // Send as camelCase - backend will transform to snake_case
+          formDataToSend.append(key, value);
         }
       });
 
       const response = await fetch("/api/stc", {
         method: "POST",
-        body: formDataToSend, // Send FormData (no Content-Type header needed)
+        body: formDataToSend,
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); // Read error message from response
+        const errorData = await response.json();
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorData.message || response.statusText
+          `HTTP error! status: ${response.status}, message: ${
+            errorData.message || response.statusText
           }`
         );
       }
@@ -160,8 +170,7 @@ const STCMain = () => {
       const result = await submitToAPI(formData);
 
       if (result.success) {
-        alert("Registration submitted successfully!");
-        console.log("Response:", result.data);
+        alert(result.data.message + " Ticket No: " + result.data.ticketNumber);
         // Reset form or redirect
         // For actual deployment, you might want a more sophisticated clear
         // or confirmation. For now, setting initial state.
@@ -179,6 +188,7 @@ const STCMain = () => {
           typeOfDisability: "",
           nationality: "INDIAN",
           maritalStatus: "",
+          bloodGroup: "",
 
           // Contact
           currentAddress: "",
@@ -196,28 +206,22 @@ const STCMain = () => {
           hrmsId: "",
           pfNoNpsUps: "",
           employeeNumber: "",
+          previousWorkExperience: "",
 
           // Education
           highestQualification: "",
-          otherQualification: "",
+          highestDegree: "",
           fieldOfStudy: "",
           institution: "",
-          boardType: "",
-          educationStartYear: "",
-          eduCourseDuration: "",
-          yearOfGraduation: "",
-          modeOfStudy: "",
+          college: "",
           gradeType: "",
           gradeValue: "",
-          division: "",
-          hasAdditionalQualification: "",
-          additionalQualificationName: "",
-          additionalQualificationOrg: "",
-          additionalQualificationYear: "",
-          thesisTitle: "",
 
-          // Course
-          // ticketNo: "",
+          // Additional Information
+          hobbies: "",
+          culturalHobby: "",
+          achievement: "",
+
           batch: "",
           dateOfJoiningStcWtcNonRailway: "",
           dateOfSparing: "",
@@ -268,27 +272,29 @@ const STCMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           STC Registration
         </h1>
-        <div className="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
+        <div className="h-1 bg-gradient-to-r from-orange-300 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation */}
-      <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
+      <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
             <div
               className={`mx-auto mb-1 h-12 w-12 flex items-center justify-center rounded-full text-white font-bold
-              ${step === index
+              ${
+                step === index
                   ? "bg-orange-500"
                   : step > index
-                    ? "bg-green-500"
-                    : "bg-gray-500"
-                }`}
+                  ? "bg-green-500"
+                  : "bg-gray-500"
+              }`}
             >
               {icons[index]}
             </div>
             <p
-              className={`text-sm font-semibold ${step === index ? "text-white" : "text-gray-300"
-                }`}
+              className={`text-sm font-semibold ${
+                step === index ? "text-white" : "text-gray-300"
+              }`}
             >
               {label}
             </p>
@@ -323,8 +329,8 @@ const STCMain = () => {
           {isSubmitting
             ? "Submitting..."
             : step === steps.length - 1
-              ? "Submit"
-              : "Save and Next →"}
+            ? "Submit"
+            : "Save and Next →"}
         </button>
       </div>
     </div>

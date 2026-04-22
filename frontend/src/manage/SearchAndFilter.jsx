@@ -54,7 +54,7 @@ const SearchFilters = ({
   }
 
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-orange-100">
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-orange-100">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Filter className="h-5 w-5 text-black" />
@@ -85,7 +85,7 @@ const SearchFilters = ({
 };
 
 const baseInputClasses = `
-  w-full px-4 py-3 rounded-xl border-2 border-gray-300
+  w-full px-4 py-3 rounded-lg border-2 border-gray-300
   bg-white text-[#1B2A41] shadow-md
   focus:border-orange-200 focus:ring-4 focus:ring-orange-200/20 focus:shadow-lg
   transition-all duration-200 ease-in-out

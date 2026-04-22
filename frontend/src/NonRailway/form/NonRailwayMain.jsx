@@ -374,11 +374,11 @@ const NonRailwayMain = () => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Non-Railway Candidate Registration
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto rounded-full"></div>
+        <div className="h-1 bg-gradient-to-r from-orange-300 to-orange-600 mx-auto rounded-full"></div>
       </div>
 
       {/* Step Navigation Bar */}
-      <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-2xl p-4">
+      <div className="flex justify-between items-center mb-8 bg-gray-800 rounded-xl p-4">
         {steps.map((label, index) => (
           <div key={index} className="flex-1 text-center">
             <div

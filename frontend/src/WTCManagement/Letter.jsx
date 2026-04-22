@@ -150,20 +150,19 @@ const Letter = () => {
     return (
         <div className="min-h-screen bg-gray-100 py-8 px-4">
             <div className="max-w-6xl mx-auto">
-                {/* Header with back button and actions */}
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center space-x-4">
-                        <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-md bg-white shadow-sm hover:bg-gray-50">
-                            <ArrowLeft className="w-4 h-4 text-gray-600" />
-                        </Link>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            Letter Management
-                        </h1>
-                    </div>
-                </div>
 
                 {/* Search and Filter Controls */}
                 <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center space-x-4">
+                            <Link to="/wtc" className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 shadow-sm hover:bg-gray-200">
+                                <ArrowLeft className="w-4 h-4 text-gray-600" />
+                            </Link>
+                            <h1 className="text-2xl font-bold text-gray-800">
+                                Letter Management
+                            </h1>
+                        </div>
+                    </div>
                     <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
                         {/* Search Box */}
                         <div className="relative flex-1">

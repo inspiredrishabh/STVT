@@ -3,7 +3,7 @@ globalThis.Buffer = Buffer;
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BgImage from "../assets/fullsizelogo.png";
-
+import { courseDuration } from "./CourseInfo";
 // Format date for display (can be used by both components)
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -66,41 +66,9 @@ const CertificatePreview = () => {
     };
   }, [navigate]);
 
-  // Add courseStructure mapping
-  const courseStructure = {
-    "MSE-C&W": "52 weeks",
-    "MSE-D": "52 weeks",
-    "MSE-W": "52 weeks",
-    "MJR-C&W": "52 weeks",
-    "MJR-D": "52 weeks",
-    "MJR-W": "52 weeks",
-    "MJI-C&W": "52 weeks",
-    "MJI-D": "52 weeks",
-    "MJI-W": "52 weeks",
-    "MJP-C&W": "13 weeks",
-    "MJP-D": "13 weeks",
-    "MJP-W": "13 weeks",
-    ASE: "52 weeks",
-    AJE: "52 weeks",
-    IJE: "52 weeks",
-    RJE: "13 weeks",
-    RCW: "3 weeks",
-    RD: "2 weeks",
-    TS: "1 week",
-    "LH-I": "1 week",
-    "LH-II": "1 week",
-    FM: "1 week",
-    WT: "1 week",
-    DM: "3 days",
-    WE: "3 days",
-    NDT: "4 days",
-    EA: "4 days",
-    "3DMP": "3 days",
-  };
-
   // Certificate Template
   const CertificateTemplate = ({ trainee }) => {
-    const defaultDuration = courseStructure[trainee.module_no] || "";
+    const defaultDuration = courseDuration[trainee.module_no] || "";
     const [editableDuration, setEditableDuration] = useState(defaultDuration);
     // Add editableTicketNo state
     const [editableTicketNo, setEditableTicketNo] = useState(trainee.ticket_no);
@@ -116,9 +84,9 @@ const CertificatePreview = () => {
         <div
           className="certificate border-double border-4 border-black bg-white relative overflow-hidden shadow-xl"
           style={{
-            fontFamily: "Times New Roman, serif",
-            width: "950px",
-            minHeight: "670px",
+            fontFamily: "Calibri, sans-serif",
+            width: "297mm", // Changed from 990px to A4 landscape width
+            height: "210mm", // Changed from 670px to A4 landscape height
             margin: "4px auto",
             background: "#fff",
             borderRadius: "18px",
@@ -138,14 +106,13 @@ const CertificatePreview = () => {
               position: "absolute",
               top: "50%",
               left: "50%",
-              width: "92%",
-              height: "92%",
+              width: "35%",
+              height: "35%",
               transform: "translate(-50%, -50%)",
-              opacity: 0.07,
-              zIndex: 0,
+              opacity: 0.2,
+              zIndex: 10,
               pointerEvents: "none",
               objectFit: "contain",
-              filter: "blur(0.5px)",
             }}
             draggable={false}
           />
@@ -171,7 +138,8 @@ const CertificatePreview = () => {
               >
                 <div
                   style={{
-                    fontSize: 36,
+                    fontFamily: "'edwardian Script ITC', cursive",
+                    fontSize: 38,
                     fontWeight: 700,
                     color: "#17408B",
                     marginBottom: 0,
@@ -182,7 +150,7 @@ const CertificatePreview = () => {
                 </div>
                 <div
                   style={{
-                    fontSize: 22,
+                    fontSize: 19,
                     fontWeight: 600,
                     color: "#17408B",
                     marginBottom: 0,
@@ -197,6 +165,8 @@ const CertificatePreview = () => {
                     color: "#17408B",
                     margin: "18px 0 0 0",
                     letterSpacing: "2px",
+                    textDecoration: "underline",
+                    textDecorationStyle: "solid",
                   }}
                 >
                   Certificate
@@ -205,8 +175,8 @@ const CertificatePreview = () => {
               <div>
                 <div
                   style={{
-                    width: 110,
-                    height: 130,
+                    width: 126,
+                    height: 138,
                     border: "2.5px solid #222",
                     background: "#fff",
                     display: "flex",
@@ -238,13 +208,7 @@ const CertificatePreview = () => {
                 <span
                   contentEditable={true}
                   suppressContentEditableWarning={true}
-                  style={{
-                    textDecoration: "underline",
-                    textDecorationStyle: "solid",
-                  }}
-                >
-                  (_________)
-                </span>
+                ></span>
               </div>
               <div></div>
             </div>
@@ -263,7 +227,12 @@ const CertificatePreview = () => {
                 This is to certify that
               </div>
               <div>
-                Sh./Smt./Km.{" "}
+                <span
+                  contentEditable={true}
+                  suppressContentEditableWarning={true}
+                >
+                  Sh./Smt./Km.
+                </span>{" "}
                 <span
                   style={{ fontWeight: 700 }}
                   contentEditable={true}
@@ -282,7 +251,7 @@ const CertificatePreview = () => {
                 Division/Workshop
               </div>
               <div style={{ marginTop: 6 }}>
-                STC Ticket No.:{" "}
+                STC Ticket No.-{" "}
                 <span
                   style={{
                     fontWeight: 700,
@@ -309,7 +278,11 @@ const CertificatePreview = () => {
                 </span>
               </div>
               <div style={{ marginTop: 6 }}>
-                has successfully completed the Induction/Promotional course
+                has successfully completed the
+                <span contentEditable={true}>
+                  {" "}
+                  Induction/Promotional course{" "}
+                </span>
                 <br />
                 of{" "}
                 <span
@@ -329,7 +302,7 @@ const CertificatePreview = () => {
             <div
               className="flex flex-col items-start mt-10 mb-15"
               style={{
-                fontSize: 19,
+                fontSize: 18,
                 alignItems: "flex-start",
                 marginBottom: 0,
               }}
@@ -355,14 +328,14 @@ const CertificatePreview = () => {
             </div>
             {/* Signatures and Institute Seal - All in one line */}
             <div
-              className="flex justify-between items-end mt-12"
-              style={{ fontSize: 19, marginTop: 30, marginBottom: 40 }}
+              className="flex justify-between items-end mt-10"
+              style={{ fontSize: 19, marginTop: 48, marginBottom: 35 }}
             >
               <div className="text-center" style={{ width: 240 }}>
                 <span
                   contentEditable={true}
                   suppressContentEditableWarning={true}
-                  style={{ fontSize: 17 }}
+                  style={{ fontSize: 16 }}
                 >
                   (Naveen Jaiswal)
                 </span>
@@ -370,28 +343,6 @@ const CertificatePreview = () => {
                   style={{ fontWeight: 700, color: "#17408B", fontSize: 21 }}
                 >
                   Course Coordinator
-                </div>
-              </div>
-
-              {/* Institute Seal in the center */}
-              <div
-                className="text-center"
-                style={{ width: 240, marginTop: 20 }}
-              >
-                <span
-                  style={{ fontWeight: 700, color: "#17408B", fontSize: 19 }}
-                >
-                  Institute Seal
-                </span>
-                <div
-                  className="certificate-note"
-                  style={{
-                    fontSize: 14,
-                    fontStyle: "italic",
-                    marginTop: 5,
-                  }}
-                >
-                  The certificate is valid with Institute Seal only.
                 </div>
               </div>
 
@@ -436,7 +387,7 @@ const CertificatePreview = () => {
           cursor: "pointer",
           boxShadow: "0 2px 8px #0001",
           transition: "background 0.2s",
-          display: "block"
+          display: "block",
         }}
         className="no-print"
       >
@@ -495,9 +446,10 @@ const CertificatePreview = () => {
       <style jsx="true">{`
         @media print {
           @page {
-            size: landscape;
-            margin: 0mm !important;
+            size: A4 landscape;
+            margin: 10mm 10mm 10mm 10mm !important; /* Added margins: top right bottom left */
           }
+
           html,
           body {
             padding: 0 !important;
@@ -505,49 +457,87 @@ const CertificatePreview = () => {
             background: #fff !important;
             height: 100% !important;
             width: 100% !important;
+            overflow: hidden !important;
           }
+
           body > div {
             padding: 0 !important;
             margin: 0 !important;
           }
+
           .certificate-preview-outer {
             background: #fff !important;
             box-shadow: none !important;
             padding: 0 !important;
             margin: 0 !important;
             page-break-inside: avoid !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
+
           .certificate-preview-outer:not(:first-child) {
-            margin-top: 10mm !important;
+            margin-top: 0 !important;
           }
+
           .certificate {
-            width: 270mm !important;
-            min-height: 190mm !important;
-            max-height: 200mm !important;
-            height: auto !important;
+            width: calc(
+              297mm - 20mm
+            ) !important; /* Subtract total horizontal margins (10mm left + 10mm right) */
+            height: calc(
+              210mm - 20mm
+            ) !important; /* Subtract total vertical margins (10mm top + 10mm bottom) */
+            min-height: calc(210mm - 20mm) !important;
+            max-height: calc(210mm - 20mm) !important;
             box-shadow: none !important;
             border-radius: 0 !important;
             margin: 0 auto !important;
             padding: 0 !important;
-            transform: scale(0.98) !important;
-            transform-origin: center top !important;
+            transform: none !important;
+            transform-origin: center center !important;
+            border: 4px double #000 !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
           }
+
           button {
             display: none !important;
           }
+
           .certificate-preview-outer {
             page-break-after: always;
             break-after: page;
           }
+
           .certificate-preview-outer:last-child {
             page-break-after: auto;
             break-after: auto;
           }
+
           .certificate-preview-outer:first-child {
             margin-top: 0 !important;
           }
+
           .no-print {
             display: none !important;
+          }
+
+          /* Ensure content fits properly */
+          .certificate > div {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+          }
+        }
+
+        /* Screen view - make it responsive */
+        @media screen {
+          .certificate {
+            width: 990px;
+            min-height: 700px;
           }
         }
       `}</style>

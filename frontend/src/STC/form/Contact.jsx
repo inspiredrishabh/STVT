@@ -66,8 +66,13 @@ const Contact = ({ formData, onChange, errors = {} }) => {
       case "currentAddress":
         return trimmedValue.length < 5 ? "Address must be at least 5 characters long" : "";
       case "phoneNumber":
+        if (!/^\d{10}$/.test(trimmedValue)) return "Must be 10 digits";
+        if (trimmedValue === formData.emergencyContactNumber) return "Phone number cannot be the same as emergency contact";
+        return "";
       case "emergencyContactNumber":
-        return !/^\d{10}$/.test(trimmedValue) ? "Must be 10 digits" : "";
+        if (!/^\d{10}$/.test(trimmedValue)) return "Must be 10 digits";
+        if (trimmedValue === formData.phoneNumber) return "Emergency contact cannot be the same as phone number";
+        return "";
       case "email":
         return !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(trimmedValue) ? "Invalid email format" : "";
       default:
@@ -83,6 +88,11 @@ const Contact = ({ formData, onChange, errors = {} }) => {
       const error = validateField(field, formData[field]);
       if (error) validationErrors[field] = error;
     });
+
+    if (formData.phoneNumber && formData.emergencyContactNumber &&
+      formData.phoneNumber === formData.emergencyContactNumber) {
+      validationErrors.emergencyContactNumber = "Emergency contact must be different from phone number";
+    }
 
     return {
       isValid: Object.keys(validationErrors).length === 0,
@@ -106,7 +116,7 @@ const Contact = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full shadow text-lg">
           📞

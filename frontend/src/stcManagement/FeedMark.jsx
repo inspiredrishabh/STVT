@@ -1,328 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Search,
-  UserCheck,
-  BookOpen,
-  Save,
-  AlertCircle,
-  CheckCircle,
-  ArrowLeft,
-  ClipboardList,
-  RefreshCw,
-} from "lucide-react";
+import { Search, UserCheck, BookOpen, Save, AlertCircle, CheckCircle, ArrowLeft, ClipboardList, RefreshCw, Filter, } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-
-// Course structure definition
-const courseStructure = {
-  "MSE-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MCT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MSE-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MDT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MSE-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-02"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MWT-04"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MCT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-02/I"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MDT-02/II"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJR-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-06"] },
-      "Paper 2": {
-        maxMarks: 100,
-        subjects: ["MRT-02", "MRT-03", "MRT-04", "MRT-05"],
-      },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 75, subjects: ["MRT-07", "MRT-09", "MRT-10"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-01"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 3": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-02"] },
-      "Paper 2": { maxMarks: 50, subjects: ["MWT-04"] },
-      "Paper 3": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 4": { maxMarks: 50, subjects: ["MRT-11"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-12"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 100, subjects: [] },
-    },
-  },
-  "MJI-C&W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-11"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-01"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-02/I"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MCT-02/II"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJI-D": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-11"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-01"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-03 M/E"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MDT-04 M/E"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJI-W": {
-    "Session 1": {
-      "Paper 1": { maxMarks: 100, subjects: ["MRT-01", "MRT-02"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-01"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-02"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-03"] },
-      "Paper 5": { maxMarks: 100, subjects: ["MET-04"] },
-      "Paper 6": { maxMarks: 100, subjects: ["MET-05"] },
-      "Paper 7": { maxMarks: 100, subjects: ["MET-08"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MET-06"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MET-07"] },
-      "Paper 3": { maxMarks: 100, subjects: ["MET-09"] },
-      "Paper 4": { maxMarks: 100, subjects: ["MET-10"] },
-      "Paper 5": { maxMarks: 50, subjects: ["MET-11"] },
-      "Paper 6": { maxMarks: 25, subjects: ["MRT-08"] },
-      "Paper 7": { maxMarks: 50, subjects: ["MRT-10"] },
-      "Paper 8": { maxMarks: 50, subjects: ["MRT-13"] },
-    },
-    "Session 3": {
-      "Paper 1": {
-        maxMarks: 125,
-        subjects: ["MRT-06", "MRT-07", "MRT-09", "MRT-14", "MRT-15"],
-      },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-03/I"] },
-    },
-    "Session 4": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-03/II"] },
-      "Paper 2": { maxMarks: 100, subjects: ["MWT-04"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-C&W": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MCT-03", "MCT-04"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-D": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-      Practical: { maxMarks: 50, subjects: [] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MDT-05 M/E"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-  "MJP-W": {
-    "Session 1": {
-      "Paper 1": {
-        maxMarks: 150,
-        subjects: ["MRT-14", "MRT-16", "MRT-17", "MRT-18", "MRT-19"],
-      },
-      "Paper 2": { maxMarks: 150, subjects: ["MET-12", "MET-13", "MET-14"] },
-    },
-    "Session 2": {
-      "Paper 1": { maxMarks: 100, subjects: ["MWT-05"] },
-      Practical: { maxMarks: 50, subjects: [] },
-      Interview: { maxMarks: 50, subjects: [] },
-    },
-  },
-};
+import { courseStructure } from "./CourseInfo";
 
 // Utility to get raw marks (removes trailing 'C' and any supplementary marks)
 const getRawMarks = (paperMarks) => {
@@ -546,21 +225,38 @@ const realAPI = {
 
 const FeedMark = () => {
   const [searchParams] = useSearchParams();
-  const [ticketNo, setTicketNo] = useState("");
-  const [searchMethod, setSearchMethod] = useState("ticket");
-  const [selectedCandidate, setSelectedCandidate] = useState("");
+
+  // New paper-centric approach states
+  const [selectedModule, setSelectedModule] = useState("");
+  const [selectedSession, setSelectedSession] = useState("");
+  const [selectedPaper, setSelectedPaper] = useState("");
   const [candidates, setCandidates] = useState([]);
-  const [candidateData, setCandidateData] = useState(null);
-  const [courseCode, setCourseCode] = useState("");
-  const [marks, setMarks] = useState({});
-  const [supplementaryMarks, setSupplementaryMarks] = useState({});
+  const [paperMarks, setPaperMarks] = useState({}); // { candidateId: marks }
+  const [existingMarks, setExistingMarks] = useState({}); // { candidateId: marks }
+  const [paperSupplementaryMarks, setPaperSupplementaryMarks] = useState({}); // { candidateId: suppMarks }
+
+  // Add batch filtering states
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("all");
+
+  // UI states
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [showMarksPanel, setShowMarksPanel] = useState(false);
+  const [isEditingPaperMarks, setIsEditingPaperMarks] = useState(false);
+
+  // Legacy states for backward compatibility (can be removed later)
+  const [ticketNo, setTicketNo] = useState("");
+  const [searchMethod, setSearchMethod] = useState("paper"); // Default to new method
+  const [selectedCandidate, setSelectedCandidate] = useState("");
+  const [candidateData, setCandidateData] = useState(null);
+  const [courseCode, setCourseCode] = useState("");
+  const [marks, setMarks] = useState({});
+  const [supplementaryMarks, setSupplementaryMarks] = useState({});
   const [hasExistingMarks, setHasExistingMarks] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [showMarksPanel, setShowMarksPanel] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [clearedSupplementary, setClearedSupplementary] = useState({});
 
@@ -626,6 +322,209 @@ const FeedMark = () => {
     }
   };
 
+  // New paper-centric functions
+  const loadCandidatesForPaper = async () => {
+    if (!selectedModule || !selectedSession || !selectedPaper) return;
+
+    setCandidatesLoading(true);
+    setMessage({ type: "info", text: "Loading candidates..." });
+
+    try {
+      // Fetch all candidates for the selected module
+      const response = await fetch(`/api/stc?module=${selectedModule}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const result = await response.json();
+
+      if (result.success) {
+        const moduleCandidates = result.data;
+        setCandidates(moduleCandidates);
+
+        // Extract unique batches
+        const batchSet = new Set();
+        moduleCandidates.forEach(candidate => {
+          if (candidate.batch) {
+            batchSet.add(candidate.batch);
+          } else {
+            batchSet.add("No Batch");
+          }
+        });
+        setBatches(Array.from(batchSet).sort());
+        setSelectedBatch("all");
+
+        // Load existing marks for this specific paper for all candidates
+        const existingMarksData = {};
+        const paperMarksData = {};
+
+        for (const candidate of moduleCandidates) {
+          try {
+            const marksData = await realAPI.getExistingMarks(
+              candidate.ticket_no,
+              selectedModule
+            );
+            const paperMark = marksData.mainMarks[selectedSession]?.[selectedPaper];
+            existingMarksData[candidate.id] = paperMark || "";
+            paperMarksData[candidate.id] = paperMark || "";
+          } catch (error) {
+            existingMarksData[candidate.id] = "";
+            paperMarksData[candidate.id] = "";
+          }
+        }
+
+        setExistingMarks(existingMarksData);
+        setPaperMarks(paperMarksData);
+        setShowMarksPanel(true);
+        setIsEditingPaperMarks(true); // Enable editing for new candidates
+
+        setMessage({
+          type: "success",
+          text: `Loaded ${moduleCandidates.length} candidates for ${selectedModule} - ${selectedSession} - ${selectedPaper}`,
+        });
+      } else {
+        throw new Error(result.message || "Failed to load candidates");
+      }
+    } catch (error) {
+      console.error("Failed to load candidates:", error);
+      setMessage({ type: "error", text: error.message });
+      setCandidates([]);
+      setExistingMarks({});
+      setPaperMarks({});
+      setShowMarksPanel(false);
+      setBatches([]);
+      setSelectedBatch("all");
+    } finally {
+      setCandidatesLoading(false);
+    }
+  };
+
+  // Filter candidates by selected batch
+  const getFilteredCandidates = () => {
+    if (selectedBatch === "all") {
+      return candidates;
+    }
+    return candidates.filter(candidate => {
+      if (selectedBatch === "No Batch") {
+        return !candidate.batch || candidate.batch === "";
+      }
+      return candidate.batch === selectedBatch;
+    });
+  };
+
+  // Helper function to extract main marks from combined format (e.g., "88C70" -> 88)
+  const getMainMarksOnly = (marks) => {
+    if (typeof marks === 'string' && marks.includes('C')) {
+      return parseInt(marks.split('C')[0]);
+    }
+    return marks;
+  };
+
+  const handlePaperMarksChange = (candidateId, value) => {
+    const numValue = value === "" ? "" : parseInt(value);
+    setPaperMarks((prev) => ({
+      ...prev,
+      [candidateId]: numValue,
+    }));
+  };
+
+  const handlePaperSupplementaryMarksChange = (candidateId, value) => {
+    const numValue = value === "" ? "" : parseInt(value);
+    setPaperSupplementaryMarks((prev) => ({
+      ...prev,
+      [candidateId]: numValue,
+    }));
+  };
+
+  const savePaperMarks = async () => {
+    if (!selectedModule || !selectedSession || !selectedPaper) {
+      setMessage({ type: "error", text: "Please select module, session, and paper" });
+      return;
+    }
+
+    setSaving(true);
+    setMessage({ type: "info", text: "Saving marks..." });
+
+    try {
+      const savePromises = [];
+
+      for (const candidate of candidates) {
+        const newMark = paperMarks[candidate.id];
+        if (newMark !== undefined && newMark !== existingMarks[candidate.id]) {
+          // Load existing marks for this candidate
+          const existingData = await realAPI.getExistingMarks(
+            candidate.ticket_no,
+            selectedModule
+          );
+
+          // Update only the specific paper mark
+          const updatedMarks = {
+            ...existingData.mainMarks,
+            [selectedSession]: {
+              ...existingData.mainMarks[selectedSession],
+              [selectedPaper]: newMark,
+            },
+          };
+
+          // Determine if this is an update or new entry
+          const isUpdate = existingData.hasExistingMarks;
+
+          savePromises.push(
+            realAPI.saveMarks(
+              candidate.ticket_no,
+              updatedMarks,
+              selectedModule,
+              existingData.supplementaryMarks,
+              {},
+              isUpdate
+            )
+          );
+        }
+      }
+
+      await Promise.all(savePromises);
+
+      // Update existing marks state and disable editing
+      setExistingMarks({ ...paperMarks });
+      setIsEditingPaperMarks(false);
+
+      setMessage({
+        type: "success",
+        text: `Successfully saved marks for ${savePromises.length} candidates`,
+      });
+    } catch (error) {
+      console.error("Error saving paper marks:", error);
+      setMessage({
+        type: "error",
+        text: `Failed to save marks: ${error.message}`,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const enableEditingPaperMarks = () => {
+    setIsEditingPaperMarks(true);
+    setMessage({
+      type: "info",
+      text: "Edit mode enabled. Make changes and click 'Save All Marks' when done.",
+    });
+  };
+
+  const resetPaperForm = () => {
+    setSelectedModule("");
+    setSelectedSession("");
+    setSelectedPaper("");
+    setCandidates([]);
+    setPaperMarks({});
+    setExistingMarks({});
+    setPaperSupplementaryMarks({});
+    setShowMarksPanel(false);
+    setIsEditingPaperMarks(false);
+    setMessage({ type: "", text: "" });
+    setBatches([]);
+    setSelectedBatch("all");
+  };
+
   // Handle URL parameters for auto-selection from TraineeProfile
   useEffect(() => {
     const traineeId = searchParams.get("traineeId");
@@ -633,9 +532,9 @@ const FeedMark = () => {
     const autoSelect = searchParams.get("autoSelect");
 
     if (autoSelect === "true" && urlTicketNo) {
-      // Set the form state immediately
-      setTicketNo(urlTicketNo);
+      // Set the form state immediately for individual candidate view
       setSearchMethod("ticket");
+      setTicketNo(urlTicketNo);
 
       // Clear any existing messages
       setMessage({ type: "", text: "" });
@@ -1024,13 +923,13 @@ const FeedMark = () => {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
                     <ClipboardList className="w-5 h-5 text-white" />
                   </div>
-                  Feed Marks
+                  Feed Marks - Enhanced
                 </h1>
                 <p className="text-gray-600 text-sm">
-                  Input and manage trainee examination marks
+                  Paper-wise bulk entry & individual candidate mark management
                 </p>
               </div>
             </div>
@@ -1071,17 +970,17 @@ const FeedMark = () => {
       <div className="w-full px-8 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Search Section */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-lg p-4 mb-8 border border-gray-300">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center">
                 <Search className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Search Candidate
+                  Select Entry Method
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  Find trainee by ticket number or select from list
+                  Choose how you want to enter marks - paper-wise for multiple students or individual candidate
                 </p>
               </div>
             </div>
@@ -1089,105 +988,222 @@ const FeedMark = () => {
             {/* Search Method Selection */}
             <div className="flex gap-4 mb-6">
               <button
-                onClick={() => setSearchMethod("ticket")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "ticket"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                onClick={() => {
+                  setSearchMethod("paper");
+                  resetPaperForm();
+                }}
+                className={`px-6 py-2 rounded font-medium transition-all duration-200 ${searchMethod === "paper"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
-                Search by Ticket Number
+                📝 Paper-wise Entry (Recommended)
+              </button>
+              <button
+                onClick={() => setSearchMethod("ticket")}
+                className={`px-6 py-2 rounded font-medium transition-all duration-200 ${searchMethod === "ticket"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+              >
+                🎫 Search by Ticket Number
               </button>
               <button
                 onClick={() => setSearchMethod("dropdown")}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${searchMethod === "dropdown"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className={`px-6 py-2 rounded font-medium transition-all duration-200 ${searchMethod === "dropdown"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
-                Select from Dropdown
+                📋 Select from Dropdown
               </button>
             </div>
 
-            {/* Search Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              {searchMethod === "ticket" ? (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Ticket Number
-                  </label>
-                  <input
-                    type="text"
-                    value={ticketNo}
-                    onChange={(e) => setTicketNo(e.target.value)}
-                    placeholder="Enter ticket number (e.g., STC2024001)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleSearchCandidate()
-                    }
-                  />
-                </div>
-              ) : (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Select Candidate
-                  </label>
-                  <select
-                    value={selectedCandidate}
-                    onChange={(e) => {
-                      setSelectedCandidate(e.target.value);
-                      handleCandidateSelect(e.target.value);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    disabled={candidatesLoading}
-                  >
-                    <option value="">Select a candidate...</option>
-                    {candidates.map((candidate) => (
-                      <option key={candidate.id} value={candidate.id}>
-                        {candidate.ticket_no || candidate.ticketNo} -{" "}
-                        {candidate.name} ({candidate.module_no})
-                      </option>
-                    ))}
-                  </select>
-                  {candidatesLoading && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      Loading candidates...
-                    </p>
-                  )}
-                </div>
-              )}
+            {/* Paper Selection UI */}
+            {searchMethod === "paper" && (
+              <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
 
-              <div className="flex gap-3">
-                {searchMethod === "ticket" && (
-                  <button
-                    onClick={handleSearchCandidate}
-                    disabled={loading || !ticketNo}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <Search className="w-5 h-5" />
-                    )}
-                    Search
-                  </button>
-                )}
-                <button
-                  onClick={resetForm}
-                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200"
-                >
-                  Reset
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {/* Module Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Module/Course
+                    </label>
+                    <select
+                      value={selectedModule}
+                      onChange={(e) => {
+                        setSelectedModule(e.target.value);
+                        setSelectedSession("");
+                        setSelectedPaper("");
+                        setShowMarksPanel(false);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Module...</option>
+                      {Object.keys(courseStructure).map((module) => (
+                        <option key={module} value={module}>
+                          {module}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Session Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Session
+                    </label>
+                    <select
+                      value={selectedSession}
+                      onChange={(e) => {
+                        setSelectedSession(e.target.value);
+                        setSelectedPaper("");
+                        setShowMarksPanel(false);
+                      }}
+                      disabled={!selectedModule}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Session...</option>
+                      {selectedModule &&
+                        Object.keys(courseStructure[selectedModule]).map((session) => (
+                          <option key={session} value={session}>
+                            {session}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Paper Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Paper
+                    </label>
+                    <select
+                      value={selectedPaper}
+                      onChange={(e) => {
+                        setSelectedPaper(e.target.value);
+                        setShowMarksPanel(false);
+                      }}
+                      disabled={!selectedSession}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Paper...</option>
+                      {selectedModule &&
+                        selectedSession &&
+                        Object.keys(courseStructure[selectedModule][selectedSession]).map((paper) => (
+                          <option key={paper} value={paper}>
+                            {paper} (Max: {courseStructure[selectedModule][selectedSession][paper].maxMarks})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  {/* Load button */}
+                  <div className="mt-auto">
+                    <button
+                      onClick={loadCandidatesForPaper}
+                      disabled={!selectedModule || !selectedSession || !selectedPaper || candidatesLoading}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {candidatesLoading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <UserCheck className="w-5 h-5" />
+                      )}
+                      Load Candidates
+                    </button>
+                  </div>
+                  <div className="mt-auto">
+                    <button onClick={resetPaperForm} className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-all duration-200">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+
               </div>
-            </div>
+            )}
+
+            {/* Search Controls - Only for individual candidate methods */}
+            {searchMethod !== "paper" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                {searchMethod === "ticket" ? (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Ticket Number
+                    </label>
+                    <input
+                      type="text"
+                      value={ticketNo}
+                      onChange={(e) => setTicketNo(e.target.value)}
+                      placeholder="Enter ticket number (e.g., STC2024001)"
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSearchCandidate()
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Select Candidate
+                    </label>
+                    <select
+                      value={selectedCandidate}
+                      onChange={(e) => {
+                        setSelectedCandidate(e.target.value);
+                        handleCandidateSelect(e.target.value);
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      disabled={candidatesLoading}
+                    >
+                      <option value="">Select a candidate...</option>
+                      {candidates.map((candidate) => (
+                        <option key={candidate.id} value={candidate.id}>
+                          {candidate.ticket_no || candidate.ticketNo} -{" "}
+                          {candidate.name} ({candidate.module_no})
+                        </option>
+                      ))}
+                    </select>
+                    {candidatesLoading && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Loading candidates...
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  {searchMethod === "ticket" && (
+                    <button
+                      onClick={handleSearchCandidate}
+                      disabled={loading || !ticketNo}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Search className="w-5 h-5" />
+                      )}
+                      Search
+                    </button>
+                  )}
+                  <button
+                    onClick={resetForm}
+                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-all duration-200"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Messages */}
             {message.text && (
               <div
-                className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${message.type === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : message.type === "info"
-                      ? "bg-blue-50 text-blue-800 border border-blue-200"
-                      : "bg-red-50 text-red-800 border border-red-200"
+                className={`mt-6 p-4 rounded flex items-center gap-3 ${message.type === "success"
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : message.type === "info"
+                    ? "bg-blue-50 text-blue-800 border border-blue-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
                   }`}
               >
                 {message.type === "success" ? (
@@ -1202,25 +1218,472 @@ const FeedMark = () => {
             )}
           </div>
 
-          {/* Candidate Information */}
-          {candidateData && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                  <UserCheck className="w-6 h-6 text-white" />
+          {/* Paper-wise Marks Entry Table */}
+          {searchMethod === "paper" && showMarksPanel && candidates.length > 0 && (
+            <div className="bg-white rounded-lg shadow-lg p-4 mb-8 border border-gray-500">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600 rounded flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Paper Marks Entry
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      {selectedModule} - {selectedSession} - {selectedPaper}
+                      {selectedModule && selectedSession && selectedPaper && (
+                        <span className="font-semibold text-blue-600 ml-2">
+                          (Max Marks: {courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks})
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Candidate Information
-                  </h2>
-                  <p className="text-gray-600 text-sm">
-                    Selected trainee details
-                  </p>
+                <div className="flex items-center gap-3">
+                  {/* Batch Filter Dropdown */}
+                  {batches.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-gray-500" />
+                      <select
+                        value={selectedBatch}
+                        onChange={(e) => setSelectedBatch(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="all">All Batches ({candidates.length})</option>
+                        {batches.map(batch => (
+                          <option key={batch} value={batch}>
+                            {batch} ({candidates.filter(c =>
+                              batch === "No Batch"
+                                ? !c.batch || c.batch === ""
+                                : c.batch === batch
+                            ).length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Clear Supplementary Button - shows if any supplementary marks exist */}
+                  {Object.keys(paperSupplementaryMarks).length > 0 && (
+                    <button
+                      onClick={() => {
+                        // Clear all passing supplementary marks
+                        const passingCandidates = Object.keys(paperSupplementaryMarks).filter(candidateId => {
+                          const suppMark = paperSupplementaryMarks[candidateId];
+                          const maxMarks = selectedModule && selectedSession && selectedPaper
+                            ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                            : 0;
+                          const passingMarks = Math.ceil(maxMarks * 0.6);
+                          return suppMark >= passingMarks;
+                        });
+
+                        if (passingCandidates.length === 0) {
+                          setMessage({ type: "error", text: "No passing supplementary marks to clear" });
+                          return;
+                        }
+
+                        if (confirm(`Clear supplementary status for ${passingCandidates.length} students with passing marks?`)) {
+                          passingCandidates.forEach(candidateId => {
+                            const mainMark = paperMarks[candidateId];
+                            const suppMark = paperSupplementaryMarks[candidateId];
+                            const newMark = `${mainMark}C${suppMark}`;
+                            setPaperMarks(prev => ({ ...prev, [candidateId]: newMark }));
+                          });
+
+                          setPaperSupplementaryMarks(prev => {
+                            const updated = { ...prev };
+                            passingCandidates.forEach(id => delete updated[id]);
+                            return updated;
+                          });
+
+                          setMessage({
+                            type: "success",
+                            text: `✓ Cleared supplementary for ${passingCandidates.length} students`
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-all duration-200"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Clear Supplementary
+                    </button>
+                  )}
+
+                  {/* Edit/Save Button */}
+                  {isEditingPaperMarks ? (
+                    <button
+                      onClick={savePaperMarks}
+                      disabled={saving}
+                      className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      {saving ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      {saving ? "Saving..." : "Save All Marks"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={enableEditingPaperMarks}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                      <ClipboardList className="w-5 h-5" />
+                      Edit Marks
+                    </button>
+                  )}
                 </div>
               </div>
 
+              {/* Batch filter notification */}
+              {selectedBatch !== "all" && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-blue-800 font-medium">
+                        Filtered by Batch: <span className="font-bold">{selectedBatch}</span>
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Showing {getFilteredCandidates().length} of {candidates.length} candidates
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedBatch("all")}
+                    className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-md text-sm"
+                  >
+                    Show All
+                  </button>
+                </div>
+              )}
+
+              {/* Marks Entry Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">
+                        S.No
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">
+                        Ticket No
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">
+                        Name
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">
+                        Batch
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-center font-semibold text-gray-700">
+                        Marks
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-center font-semibold text-gray-700">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getFilteredCandidates().map((candidate, index) => {
+                      const currentMark = paperMarks[candidate.id];
+                      const displayMark = getMainMarksOnly(currentMark); // Show only main marks in input
+                      const maxMarks = selectedModule && selectedSession && selectedPaper
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                        : 0;
+                      const passingMarks = Math.ceil(maxMarks * 0.6);
+                      const isOverMax = displayMark > maxMarks;
+                      const isPassing = displayMark >= passingMarks;
+                      const isFailing = displayMark && displayMark < passingMarks;
+
+                      return (
+                        <tr key={candidate.id} className="bg-white hover:bg-gray-50">
+                          <td className="border border-gray-300 px-4 py-2 text-center">
+                            {index + 1}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2 font-medium">
+                            {candidate.ticket_no}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            {candidate.name}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2 text-sm">
+                            {candidate.batch || "No Batch"}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              max={maxMarks}
+                              value={displayMark || ""}
+                              onChange={(e) => handlePaperMarksChange(candidate.id, e.target.value)}
+                              disabled={!isEditingPaperMarks}
+                              className={`w-20 px-2 py-1 border rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent ${!isEditingPaperMarks
+                                ? 'bg-gray-100 cursor-not-allowed'
+                                : isOverMax
+                                  ? 'border-red-500 bg-red-50'
+                                  : isPassing
+                                    ? 'border-green-500 bg-green-50'
+                                    : isFailing
+                                      ? 'border-red-500 bg-red-50'
+                                      : 'border-gray-300'
+                                }`}
+                              placeholder="0"
+                            />
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2 text-center">
+                            {(() => {
+                              const markValue = paperMarks[candidate.id];
+
+                              // Check if student has cleared supplementary (combined format)
+                              if (typeof markValue === 'string' && markValue.includes('C')) {
+                                const [mainMark, suppMark] = markValue.split('C');
+                                return (
+                                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
+                                    Passed Supplementary with {suppMark} marks
+                                  </span>
+                                );
+                              }
+
+                              // Regular status logic
+                              if (isOverMax) {
+                                return <span className="text-red-600 text-xs font-medium">Over Max!</span>;
+                              } else if (displayMark) {
+                                return (
+                                  <span className={`text-xs font-medium px-2 py-1 rounded ${isPassing ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                    {isPassing ? 'Pass' : 'Fail'}
+                                  </span>
+                                );
+                              } else {
+                                return <span className="text-gray-400 text-xs">-</span>;
+                              }
+                            })()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Summary Information */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-4 rounded border border-blue-200">
+                  <div className="text-sm font-semibold text-blue-700">
+                    {selectedBatch === "all" ? "Total Candidates" : `${selectedBatch} Candidates`}
+                  </div>
+                  <div className="text-2xl font-bold text-blue-900">
+                    {getFilteredCandidates().length}
+                    {selectedBatch !== "all" && (
+                      <span className="text-sm font-normal text-blue-600 ml-2">
+                        of {candidates.length}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="bg-green-50 p-4 rounded border border-green-200">
+                  <div className="text-sm font-semibold text-green-700">Marks Entered</div>
+                  <div className="text-2xl font-bold text-green-900">
+                    {getFilteredCandidates().filter(c => paperMarks[c.id] && paperMarks[c.id] !== "").length}
+                  </div>
+                </div>
+                <div className="bg-red-50 p-4 rounded border border-red-200">
+                  <div className="text-sm font-semibold text-red-700">Failed Students</div>
+                  <div className="text-2xl font-bold text-red-900">
+                    {getFilteredCandidates().filter(c => {
+                      const markValue = paperMarks[c.id];
+
+                      // If mark is in combined format, student has been cleared - don't count as failed
+                      if (typeof markValue === 'string' && markValue.includes('C')) {
+                        return false;
+                      }
+
+                      // Check if main marks are below passing
+                      const mark = getMainMarksOnly(markValue);
+                      const maxMarks = selectedModule && selectedSession && selectedPaper
+                        ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                        : 0;
+                      const passingMarks = Math.ceil(maxMarks * 0.6);
+                      return mark && mark < passingMarks;
+                    }).length}
+                  </div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded border border-purple-200">
+                  <div className="text-sm font-semibold text-purple-700">Max Marks</div>
+                  <div className="text-2xl font-bold text-purple-900">
+                    {selectedModule && selectedSession && selectedPaper
+                      ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                      : '-'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Supplementary Exam Eligibility Section */}
+              {(() => {
+                const failedCandidates = getFilteredCandidates().filter(c => {
+                  const markValue = paperMarks[c.id];
+
+                  // If mark is in combined format (e.g., "55C70"), student has been cleared - don't show
+                  if (typeof markValue === 'string' && markValue.includes('C')) {
+                    return false;
+                  }
+
+                  // Check if main marks are below passing
+                  const mark = getMainMarksOnly(markValue);
+                  const maxMarks = selectedModule && selectedSession && selectedPaper
+                    ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                    : 0;
+                  const passingMarks = Math.ceil(maxMarks * 0.6);
+                  return mark && mark < passingMarks;
+                });
+
+                if (failedCandidates.length === 0) return null;
+
+                return (
+                  <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded">
+                    <div className="flex items-center gap-3 mb-4">
+                      <AlertCircle className="w-6 h-6 text-red-600" />
+                      <h3 className="text-lg font-bold text-red-800">
+                        Supplementary Exam Eligibility
+                      </h3>
+                    </div>
+                    <p className="text-red-700 mb-4 font-medium">
+                      The following candidates have scored below 60% in {selectedSession} - {selectedPaper} and are eligible for supplementary examination:
+                    </p>
+                    <div className="bg-orange-50 border border-orange-200 rounded p-3 mb-4">
+                      <div className="flex items-start gap-2">
+                        <RefreshCw className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                        <div className="text-orange-800 text-sm">
+                          <p className="font-semibold mb-2">
+                            Process for Clearing Supplementary Status:
+                          </p>
+                          <ol className="list-decimal list-inside space-y-1 text-xs">
+                            <li>
+                              Enter supplementary exam marks in the "Record Only" fields below
+                            </li>
+                            <li>
+                              If supplementary marks are ≥60% (passing), the "Clear Supplementary" button will be enabled
+                            </li>
+                            <li>
+                              Click "Clear Supplementary" to use main exam marks for marksheet generation
+                            </li>
+                            <li>
+                              If supplementary marks are still below 60%, student remains in supplementary status
+                            </li>
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {failedCandidates.map((candidate) => {
+                        const mainMark = getMainMarksOnly(paperMarks[candidate.id]); // Get main marks only
+                        const suppMark = paperSupplementaryMarks[candidate.id];
+                        const maxMarks = selectedModule && selectedSession && selectedPaper
+                          ? courseStructure[selectedModule][selectedSession][selectedPaper].maxMarks
+                          : 0;
+                        const passingMarks = Math.ceil(maxMarks * 0.6);
+                        const shortfall = passingMarks - mainMark;
+                        const isSuppPassing = suppMark >= passingMarks;
+
+                        return (
+                          <div key={candidate.id} className="border border-red-300 rounded p-4 bg-white">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h4 className="font-semibold text-gray-900">
+                                  {candidate.name} ({candidate.ticket_no})
+                                </h4>
+                                <p className="text-sm text-red-600">
+                                  {selectedSession} - {selectedPaper}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-2xl font-bold text-red-600">{mainMark}/{maxMarks}</span>
+                                <p className="text-xs text-red-500">Main Exam</p>
+                              </div>
+                            </div>
+
+                            <div className="bg-gray-50 rounded p-3 mb-3">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">Required: {passingMarks} (60% of {maxMarks})</span>
+                                <span className="text-red-600 font-medium">Shortfall: {shortfall} marks</span>
+                              </div>
+                            </div>
+
+                            <div className="border-t pt-3">
+                              <label className="block text-sm font-medium text-blue-700 mb-2">
+                                Supplementary Exam Marks (Record Only)
+                              </label>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max={maxMarks}
+                                    value={suppMark || ""}
+                                    onChange={(e) => handlePaperSupplementaryMarksChange(candidate.id, e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent ${suppMark && isSuppPassing
+                                      ? 'border-green-500 bg-green-50'
+                                      : suppMark
+                                        ? 'border-orange-500 bg-orange-50'
+                                        : 'border-gray-300'
+                                      }`}
+                                    placeholder={`0-${maxMarks}`}
+                                  />
+                                </div>
+                                <div className="text-right min-w-[100px]">
+                                  {suppMark ? (
+                                    <span className={`text-sm font-medium ${isSuppPassing ? 'text-green-600' : 'text-orange-600'
+                                      }`}>
+                                      {isSuppPassing ? '✓ Passing' : '✗ Still Failing'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-500">/100</span>
+                                  )}
+                                </div>
+                                {suppMark && isSuppPassing && (
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Clear supplementary for ${candidate.name}? This will combine main and supplementary marks.`)) {
+                                        const newMark = `${mainMark}C${suppMark}`;
+                                        setPaperMarks(prev => ({ ...prev, [candidate.id]: newMark }));
+                                        setPaperSupplementaryMarks(prev => {
+                                          const updated = { ...prev };
+                                          delete updated[candidate.id];
+                                          return updated;
+                                        });
+                                        setMessage({
+                                          type: "success",
+                                          text: `✓ Cleared supplementary for ${candidate.name} - Combined as ${newMark}`,
+                                        });
+                                      }
+                                    }}
+                                    className="px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                                  >
+                                    Clear Supp
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-blue-600 mt-1">
+                                💡 These marks are for record keeping only. Main exam marks will be used in marksheet generation.
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Candidate Information */}
+          {candidateData && searchMethod !== "paper" && (
+            <div className="bg-white rounded-lg shadow-lg p-4 mb-8 border border-gray-300">
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                <div className="bg-blue-50 p-4 rounded border border-blue-200">
                   <label className="block text-sm font-semibold text-blue-700 mb-1">
                     Ticket Number
                   </label>
@@ -1228,7 +1691,7 @@ const FeedMark = () => {
                     {candidateData.ticket_no}
                   </p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                <div className="bg-green-50 p-4 rounded border border-green-200">
                   <label className="block text-sm font-semibold text-green-700 mb-1">
                     Name
                   </label>
@@ -1236,7 +1699,7 @@ const FeedMark = () => {
                     {candidateData.name}
                   </p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+                <div className="bg-purple-50 p-4 rounded border border-purple-200">
                   <label className="block text-sm font-semibold text-purple-700 mb-1">
                     Course Code
                   </label>
@@ -1245,41 +1708,41 @@ const FeedMark = () => {
                   </p>
                 </div>
                 <div
-                  className={`p-4 rounded-xl border ${hasExistingMarks && !isEditMode && !showMarksPanel
-                      ? "bg-gray-50 border-gray-200"
-                      : hasExistingMarks && !isEditMode && showMarksPanel
-                        ? "bg-blue-50 border-blue-200"
-                        : isEditMode
-                          ? "bg-orange-50 border-orange-200"
-                          : showMarksPanel && !hasExistingMarks
-                            ? "bg-green-50 border-green-200"
-                            : "bg-yellow-50 border-yellow-200"
+                  className={`p-4 rounded border ${hasExistingMarks && !isEditMode && !showMarksPanel
+                    ? "bg-gray-50 border-gray-200"
+                    : hasExistingMarks && !isEditMode && showMarksPanel
+                      ? "bg-blue-50 border-blue-200"
+                      : isEditMode
+                        ? "bg-orange-50 border-orange-200"
+                        : showMarksPanel && !hasExistingMarks
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
                     }`}
                 >
                   <label
                     className={`block text-sm font-semibold mb-1 ${hasExistingMarks && !isEditMode && !showMarksPanel
-                        ? "text-gray-700"
-                        : hasExistingMarks && !isEditMode && showMarksPanel
-                          ? "text-blue-700"
-                          : isEditMode
-                            ? "text-orange-700"
-                            : showMarksPanel && !hasExistingMarks
-                              ? "text-green-700"
-                              : "text-yellow-700"
+                      ? "text-gray-700"
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                        ? "text-blue-700"
+                        : isEditMode
+                          ? "text-orange-700"
+                          : showMarksPanel && !hasExistingMarks
+                            ? "text-green-700"
+                            : "text-yellow-700"
                       }`}
                   >
                     Status
                   </label>
                   <p
                     className={`text-lg font-bold ${hasExistingMarks && !isEditMode && !showMarksPanel
-                        ? "text-gray-900"
-                        : hasExistingMarks && !isEditMode && showMarksPanel
-                          ? "text-blue-900"
-                          : isEditMode
-                            ? "text-orange-900"
-                            : showMarksPanel && !hasExistingMarks
-                              ? "text-green-900"
-                              : "text-yellow-900"
+                      ? "text-gray-900"
+                      : hasExistingMarks && !isEditMode && showMarksPanel
+                        ? "text-blue-900"
+                        : isEditMode
+                          ? "text-orange-900"
+                          : showMarksPanel && !hasExistingMarks
+                            ? "text-green-900"
+                            : "text-yellow-900"
                       }`}
                   >
                     {hasExistingMarks && !isEditMode && showMarksPanel
@@ -1297,7 +1760,7 @@ const FeedMark = () => {
 
               {/* Action Button for candidates without marks */}
               {candidateData && !hasExistingMarks && !showMarksPanel && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-semibold text-blue-900">
@@ -1310,7 +1773,7 @@ const FeedMark = () => {
                     </div>
                     <button
                       onClick={handleAddMarks}
-                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
                       <BookOpen className="w-5 h-5" />
                       Add Marks
@@ -1321,12 +1784,12 @@ const FeedMark = () => {
             </div>
           )}
 
-          {/* Marks Entry Form */}
-          {currentCourseStructure && showMarksPanel && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          {/* Marks Entry Form - Only for individual candidate methods */}
+          {currentCourseStructure && showMarksPanel && searchMethod !== "paper" && (
+            <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-400">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -1352,7 +1815,7 @@ const FeedMark = () => {
                     // View mode - show edit button
                     <button
                       onClick={() => setIsEditMode(true)}
-                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
                       <Save className="w-5 h-5" />
                       Edit Marks
@@ -1366,14 +1829,14 @@ const FeedMark = () => {
                             ? () => setIsEditMode(false)
                             : handleCancelAddMarks
                         }
-                        className="flex items-center gap-2 px-4 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-all duration-200"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveMarks}
                         disabled={saving}
-                        className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
                         {saving ? (
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1396,7 +1859,7 @@ const FeedMark = () => {
                   ([session, papers]) => (
                     <div
                       key={session}
-                      className="border border-gray-200 rounded-xl p-6 bg-gray-50"
+                      className="border border-gray-200 rounded p-4 bg-gray-50"
                     >
                       <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <div className="w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center">
@@ -1431,11 +1894,11 @@ const FeedMark = () => {
                           return (
                             <div
                               key={paper}
-                              className={`p-4 rounded-xl border space-y-3 ${isFailingGrade
-                                  ? "bg-red-50 border-red-300"
-                                  : isCleared && isBelowPassing
-                                    ? "bg-yellow-50 border-yellow-300"
-                                    : "bg-white border-gray-200"
+                              className={`p-4 rounded border space-y-3 ${isFailingGrade
+                                ? "bg-red-50 border-red-300"
+                                : isCleared && isBelowPassing
+                                  ? "bg-yellow-50 border-yellow-300"
+                                  : "bg-white border-gray-200"
                                 }`}
                             >
                               <div className="flex items-center justify-between">
@@ -1458,7 +1921,7 @@ const FeedMark = () => {
                               </div>
 
                               {config.subjects.length > 0 && (
-                                <div className="bg-gray-50 p-2 rounded-lg">
+                                <div className="bg-gray-50 p-2 rounded">
                                   <p className="text-xs text-gray-600 font-medium mb-1">
                                     Subjects:
                                   </p>
@@ -1483,15 +1946,15 @@ const FeedMark = () => {
                                 }
                                 placeholder={`Enter marks (0-${config.maxMarks})`}
                                 readOnly={hasExistingMarks && !isEditMode}
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${hasExistingMarks && !isEditMode
-                                    ? "bg-gray-100 cursor-not-allowed text-gray-600"
-                                    : isOverMaxMarks
-                                      ? "border-red-300 bg-red-50"
-                                      : isFailingGrade
-                                        ? "border-red-400 bg-red-50"
-                                        : isCleared && isBelowPassing
-                                          ? "border-yellow-400 bg-yellow-50"
-                                          : "border-gray-300"
+                                className={`w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${hasExistingMarks && !isEditMode
+                                  ? "bg-gray-100 cursor-not-allowed text-gray-600"
+                                  : isOverMaxMarks
+                                    ? "border-red-300 bg-red-50"
+                                    : isFailingGrade
+                                      ? "border-red-400 bg-red-50"
+                                      : isCleared && isBelowPassing
+                                        ? "border-yellow-400 bg-yellow-50"
+                                        : "border-gray-300"
                                   }`}
                               />
 
@@ -1531,13 +1994,13 @@ const FeedMark = () => {
                                   </p>
                                   {hasSupplementaryMarks(session, paper) && (
                                     <div
-                                      className={`text-xs p-2 rounded-lg ${isSupplementaryPassing(
+                                      className={`text-xs p-2 rounded ${isSupplementaryPassing(
                                         session,
                                         paper,
                                         config.maxMarks
                                       )
-                                          ? "bg-green-50 text-green-700 border border-green-200"
-                                          : "bg-red-50 text-red-700 border border-red-200"
+                                        ? "bg-green-50 text-green-700 border border-green-200"
+                                        : "bg-red-50 text-red-700 border border-red-200"
                                         }`}
                                     >
                                       Supplementary:{" "}
@@ -1568,14 +2031,14 @@ const FeedMark = () => {
                                         config.maxMarks
                                       )
                                     }
-                                    className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded-lg transition-all duration-200 ${hasSupplementaryMarks(session, paper) &&
-                                        isSupplementaryPassing(
-                                          session,
-                                          paper,
-                                          config.maxMarks
-                                        )
-                                        ? "bg-green-600 hover:bg-green-700"
-                                        : "bg-gray-400 cursor-not-allowed"
+                                    className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-white text-xs rounded transition-all duration-200 ${hasSupplementaryMarks(session, paper) &&
+                                      isSupplementaryPassing(
+                                        session,
+                                        paper,
+                                        config.maxMarks
+                                      )
+                                      ? "bg-green-600 hover:bg-green-700"
+                                      : "bg-gray-400 cursor-not-allowed"
                                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     title={
                                       !hasSupplementaryMarks(session, paper)
@@ -1634,7 +2097,7 @@ const FeedMark = () => {
 
               {/* Supplementary Eligibility Message */}
               {failedSubjects.length > 0 && (
-                <div className="mt-8 p-6 bg-red-50 border border-red-200 rounded-xl">
+                <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded">
                   <div className="flex items-center gap-3 mb-4">
                     <AlertCircle className="w-6 h-6 text-red-600" />
                     <h3 className="text-lg font-bold text-red-800">
@@ -1645,7 +2108,7 @@ const FeedMark = () => {
                     The candidate has scored below 60% in the following subjects
                     and is eligible for supplementary examination:
                   </p>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                  <div className="bg-orange-50 border border-orange-200 rounded p-3 mb-4">
                     <div className="flex items-start gap-2">
                       <RefreshCw className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
                       <div className="text-orange-800 text-sm">
@@ -1682,7 +2145,7 @@ const FeedMark = () => {
                       return (
                         <div
                           key={index}
-                          className="bg-white p-4 rounded-lg border border-red-200"
+                          className="bg-white p-4 rounded border border-red-200"
                         >
                           <div className="flex items-center justify-between mb-3">
                             <div>
@@ -1734,9 +2197,9 @@ const FeedMark = () => {
                                     )
                                   }
                                   readOnly={hasExistingMarks && !isEditMode}
-                                  className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${hasExistingMarks && !isEditMode
-                                      ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
-                                      : "border-blue-300"
+                                  className={`w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${hasExistingMarks && !isEditMode
+                                    ? "bg-gray-100 cursor-not-allowed text-gray-600 border-gray-300"
+                                    : "border-blue-300"
                                     }`}
                                   placeholder={`0-${subject.maxMarks}`}
                                 />
@@ -1760,17 +2223,20 @@ const FeedMark = () => {
           )}
 
           {/* No candidate selected message */}
-          {!candidateData && !loading && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-200">
-              <div className="w-20 h-20 bg-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          {/* No Data Selected */}
+          {!candidateData && !showMarksPanel && !loading && (
+            <div className="bg-white rounded-lg shadow-lg p-12 text-center border border-gray-200">
+              <div className="w-20 h-20 bg-gray-500 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                No Candidate Selected
+                {searchMethod === "paper" ? "Ready for Paper-wise Entry" : "No Candidate Selected"}
               </h3>
               <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
-                Please search for a candidate using their ticket number or
-                select from the dropdown to begin entering marks.
+                {searchMethod === "paper"
+                  ? "Select a module, session, and paper above to load all candidates and enter marks efficiently."
+                  : "Please search for a candidate using their ticket number or select from the dropdown to begin entering marks."
+                }
               </p>
             </div>
           )}
@@ -1778,6 +2244,6 @@ const FeedMark = () => {
       </div>
     </div>
   );
-};
+}
 
 export default FeedMark;

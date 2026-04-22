@@ -7,9 +7,70 @@ class StcController {
     this.stcModel = stcModel;
   }
 
+  transformFieldNames(data) {
+    // Transform camelCase to snake_case for database
+    const transformed = {};
+    
+    const fieldMapping = {
+      // Frontend camelCase → Backend snake_case
+      picture: 'picture',
+      name: 'name',
+      sex: 'sex',
+      fatherName: 'father_name',
+      motherName: 'mother_name',
+      dob: 'dob',
+      category: 'category',
+      pwd: 'pwd',
+      typeOfDisability: 'type_of_disability',
+      nationality: 'nationality',
+      maritalStatus: 'marital_status',
+      bloodGroup: 'blood_group',
+      permanentAddress: 'permanent_address',
+      currentAddress: 'current_address',
+      phoneNumber: 'phone_number',
+      emergencyContactNumber: 'emergency_contact_number',
+      email: 'email',
+      dateOfAppointmentInRailway: 'date_of_appointment_in_railway',
+      modeOfAppointment: 'mode_of_appointment',
+      designation: 'designation',
+      unit: 'unit',
+      workingUnder: 'working_under',
+      hrmsId: 'hrms_id',
+      pfNoNpsUps: 'pf_no_nps_ups',
+      employeeNumber: 'employee_number',
+      previousWorkExperience: 'previous_work_experience',
+      highestQualification: 'highest_qualification',
+      highestDegree: 'highest_degree',
+      fieldOfStudy: 'field_of_study',
+      institution: 'institution',
+      college: 'college',
+      gradeType: 'grade_type',
+      gradeValue: 'grade_value',
+      hobbies: 'hobbies',
+      culturalHobby: 'cultural_hobby',
+      achievement: 'achievement',
+      batch: 'batch',
+      dateOfJoiningStcWtcNonRailway: 'date_of_joining_stc_wtc_non_railway',
+      dateOfSparing: 'date_of_sparing',
+      moduleNo: 'module_no',
+      courseDuration: 'course_duration',
+    };
+
+    // Apply transformation
+    Object.keys(data).forEach(key => {
+      const dbKey = fieldMapping[key] || key;
+      transformed[dbKey] = data[key];
+    });
+
+    return transformed;
+  }
+
   async createCandidate(req, res) {
     try {
-      const candidateData = req.body;
+      let candidateData = req.body;
+      
+      // Transform field names from camelCase to snake_case
+      candidateData = this.transformFieldNames(candidateData);
 
       // Generate ticket number
       const ticketNumber = await generateTicketNumber(
@@ -38,6 +99,16 @@ class StcController {
       candidateData.session4start = candidateData.session4start ?? null;
       candidateData.session4end = candidateData.session4end ?? null;
 
+      // Ensure new fields default to null if not provided
+      candidateData.marital_status = candidateData.marital_status ?? null;
+      candidateData.blood_group = candidateData.blood_group ?? null;
+      candidateData.previous_work_experience = candidateData.previous_work_experience ?? null;
+      candidateData.highest_degree = candidateData.highest_degree ?? null;
+      candidateData.college = candidateData.college ?? null;
+      candidateData.hobbies = candidateData.hobbies ?? null;
+      candidateData.cultural_hobby = candidateData.cultural_hobby ?? null;
+      candidateData.achievement = candidateData.achievement ?? null;
+
       const newCandidate = await this.stcModel.create(candidateData);
 
       res.status(201).json({
@@ -56,10 +127,22 @@ class StcController {
 
   async getCandidates(req, res) {
     try {
-      const candidates = await this.stcModel.getAll();
+      const { module } = req.query;
+      let candidates;
+      
+      if (module) {
+        // Filter candidates by module
+        candidates = await this.stcModel.getByModule(module);
+      } else {
+        // Get all candidates
+        candidates = await this.stcModel.getAll();
+      }
+      
       res.status(200).json({
         success: true,
-        message: "STC Candidates retrieved successfully",
+        message: module 
+          ? `STC Candidates for module ${module} retrieved successfully`
+          : "STC Candidates retrieved successfully",
         data: candidates,
         count: candidates.length,
       });
@@ -101,56 +184,48 @@ class StcController {
   async updateCandidateByTicketNumber(req, res) {
     try {
       const { ticketNumber } = req.params;
-      const updatedData = req.body;
+      let candidateData = req.body;
 
-      // If ticketNumber is being updated, ensure ticket_no is set in updatedData
-      if (updatedData.ticketNumber) {
-        updatedData.ticket_no = updatedData.ticketNumber;
-      }
+      // Transform field names from camelCase to snake_case
+      candidateData = this.transformFieldNames(candidateData);
 
-      // Check if candidate exists
-      const existingCandidate = await this.stcModel.getByTicketNumber(
-        ticketNumber
-      );
-      if (!existingCandidate) {
-        return res.status(404).json({
-          success: false,
-          message: "STC Candidate not found",
-        });
-      }
-
-      // Handle image upload
+      // Handle image upload (no backup)
       if (req.file) {
-        // Delete old image if exists
-        if (existingCandidate.picture) {
-          const oldImagePath = path.join(
-            __dirname,
-            "../../",
-            existingCandidate.picture
-          );
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
-          }
-        }
-
         const imagePath = await this.handleImageUpload(
           req.file,
           ticketNumber,
           "stc"
         );
-        updatedData.picture = imagePath;
+        candidateData.picture = imagePath;
       }
+
+      // Ensure new fields default to null if not provided
+      candidateData.marital_status = candidateData.marital_status ?? null;
+      candidateData.blood_group = candidateData.blood_group ?? null;
+      candidateData.previous_work_experience = candidateData.previous_work_experience ?? null;
+      candidateData.highest_degree = candidateData.highest_degree ?? null;
+      candidateData.college = candidateData.college ?? null;
+      candidateData.hobbies = candidateData.hobbies ?? null;
+      candidateData.cultural_hobby = candidateData.cultural_hobby ?? null;
+      candidateData.achievement = candidateData.achievement ?? null;
 
       const updatedCandidate = await this.stcModel.updateByTicketNumber(
         ticketNumber,
-        updatedData
+        candidateData
       );
 
-      res.status(200).json({
-        success: true,
-        message: "STC Candidate updated successfully",
-        data: updatedCandidate,
-      });
+      if (updatedCandidate) {
+        res.json({
+          success: true,
+          message: "STC Candidate updated successfully",
+          data: updatedCandidate,
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "STC Candidate not found",
+        });
+      }
     } catch (error) {
       console.error("Error updating STC candidate:", error);
       res.status(500).json({
@@ -159,76 +234,6 @@ class StcController {
       });
     }
   }
-
-  //   async createMultipleCandidates(req, res) {
-  //   try {
-  //     const { candidates } = req.body;
-
-  //     if (!Array.isArray(candidates) || candidates.length === 0) {
-  //       return res.status(400).json({
-  //         success: false,
-  //         message: "Please provide an array of candidates"
-  //       });
-  //     }
-
-  //     const results = [];
-  //     const errors = [];
-
-  //     for (let i = 0; i < candidates.length; i++) {
-  //       try {
-  //         const candidateData = candidates[i];
-
-  //         // Generate ticket number for each candidate
-  //         const ticketNumber = await generateTicketNumber(
-  //           candidateData.designation,
-  //           "stc"
-  //         );
-  //         candidateData.ticket_no = ticketNumber;
-
-  //         // Set default session values
-  //         candidateData.session1start = candidateData.session1start ?? null;
-  //         candidateData.session1end = candidateData.session1end ?? null;
-  //         candidateData.session2start = candidateData.session2start ?? null;
-  //         candidateData.session2end = candidateData.session2end ?? null;
-  //         candidateData.session3start = candidateData.session3start ?? null;
-  //         candidateData.session3end = candidateData.session3end ?? null;
-  //         candidateData.session4start = candidateData.session4start ?? null;
-  //         candidateData.session4end = candidateData.session4end ?? null;
-
-  //         const newCandidate = await this.stcModel.create(candidateData);
-  //         results.push({
-  //           index: i,
-  //           ticketNumber: ticketNumber,
-  //           success: true,
-  //           data: newCandidate
-  //         });
-  //       } catch (error) {
-  //         errors.push({
-  //           index: i,
-  //           candidate: candidates[i]?.name || `Candidate ${i + 1}`,
-  //           error: error.message
-  //         });
-  //       }
-  //     }
-
-  //     res.status(201).json({
-  //       success: true,
-  //       message: `${results.length} candidates created successfully`,
-  //       totalProcessed: candidates.length,
-  //       successful: results.length,
-  //       failed: errors.length,
-  //       results: results,
-  //       errors: errors
-  //     });
-
-  //   } catch (error) {
-  //     console.error("Error creating multiple STC candidates:", error);
-  //     res.status(500).json({
-  //       success: false,
-  //       message: error.message || "Failed to create multiple STC candidates"
-  //     });
-  //   }
-  // }
 
   async deleteCandidateByTicketNumber(req, res) {
     try {
@@ -513,63 +518,6 @@ class StcController {
       });
     }
   }
-
-  // async getCandidatesByTrainingPeriod(req, res) {
-  //    try {
-  //        const { trainingPeriod } = req.params;
-  //        const candidates = await this.stcModel.getByTrainingPeriod(trainingPeriod);
-  //        res.status(200).json({
-  //            success: true,
-  //            message: `STC Candidates with training period ${trainingPeriod} retrieved successfully`,
-  //            data: candidates,
-  //            count: candidates.length
-  //        });
-  //    } catch (error) {
-  //        console.error('Error getting STC candidates by training period:', error);
-  //        res.status(500).json({
-  //            success: false,
-  //            message: 'Failed to retrieve STC candidates by training period'
-  //        });
-  //    }
-  // }
-
-  // async getCandidatesByTheoryDuration(req, res) {
-  //    try {
-  //        const { theoryDuration } = req.params;
-  //        const candidates = await this.stcModel.getByTheoryDuration(theoryDuration);
-  //        res.status(200).json({
-  //            success: true,
-  //            message: `STC Candidates with theory duration ${theoryDuration} retrieved successfully`,
-  //            data: candidates,
-  //            count: candidates.length
-  //        });
-  //    } catch (error) {
-  //        console.error('Error getting STC candidates by theory duration:', error);
-  //        res.status(500).json({
-  //            success: false,
-  //            message: 'Failed to retrieve STC candidates by theory duration'
-  //        });
-  //    }
-  // }
-
-  // async getCandidatesByPracticalDuration(req, res) {
-  //    try {
-  //        const { practicalDuration } = req.params;
-  //        const candidates = await this.stcModel.getByPracticalDuration(practicalDuration);
-  //        res.status(200).json({
-  //            success: true,
-  //            message: `STC Candidates with practical duration ${practicalDuration} retrieved successfully`,
-  //            data: candidates,
-  //            count: candidates.length
-  //        });
-  //    } catch (error) {
-  //        console.error('Error getting STC candidates by practical duration:', error);
-  //        res.status(500).json({
-  //            success: false,
-  //            message: 'Failed to retrieve STC candidates by practical duration'
-  //        });
-  //    }
-  // }
 
   // Backward Compatibility Methods
   async getCandidateById(req, res) {

@@ -141,6 +141,14 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   // };
 
   const validateField = (field, value) => {
+    if (
+      field === "hobbies" ||
+      field === "culturalHobby" ||
+      field === "achievement"
+    ) {
+      // These are optional, no validation needed
+      return "";
+    }
     if (!value || (typeof value === "string" && value.trim() === "")) {
       return "This field is required";
     }
@@ -180,7 +188,7 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
   }, [formData]);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full shadow text-lg">
           🎓
@@ -351,6 +359,62 @@ const Course = ({ formData, onChange, errors = {}, onSubmit }) => {
           {errors.courseDuration && (
             <p className="text-sm text-red-500 mt-1">{errors.courseDuration}</p>
           )}
+        </div>
+      </div>
+
+      {/* Additional Information Section */}
+      <div className="mt-10">
+        <div className="flex items-center space-x-3 mb-6 border-b border-gray-400 pb-4">
+          <div className="h-12 w-12 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full shadow text-lg">
+            ✨
+          </div>
+          <h3 className="text-xl font-semibold text-black">
+            Additional Information
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+          {/* Hobbies */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Hobbies
+            </label>
+            <textarea
+              rows="2"
+              value={formData.hobbies || ""}
+              onChange={(e) => onChange("hobbies", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="E.g., Reading, Sports, Music"
+            />
+          </div>
+
+          {/* Cultural Hobby */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Cultural Hobby
+            </label>
+            <textarea
+              rows="2"
+              value={formData.culturalHobby || ""}
+              onChange={(e) => onChange("culturalHobby", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="E.g., Dancing, Singing, Drama"
+            />
+          </div>
+
+          {/* Achievement */}
+          <div className="sm:col-span-2">
+            <label className="block text-gray-700 font-medium mb-1">
+              Achievements
+            </label>
+            <textarea
+              rows="3"
+              value={formData.achievement || ""}
+              onChange={(e) => onChange("achievement", e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              placeholder="Describe your achievements, awards, certifications, etc."
+            />
+          </div>
         </div>
       </div>
     </div>

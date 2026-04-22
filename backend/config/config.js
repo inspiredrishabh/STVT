@@ -58,9 +58,10 @@ const rolePermissions = {
         "wtc-attendance",
         "wtc-management",
 
-        // Forms
+        // Forms (all candidate types)
         "stc-form",
         "wtc-form",
+        "non-railway-form",
 
         // Generic permissions
         "feed-marks",
@@ -71,9 +72,10 @@ const rolePermissions = {
         "add-candidate",
         "manage-candidates",
 
-        // Forms - basic data entry
+        // Forms - basic data entry (all candidate types)
         "stc-form",
         "wtc-form",
+        "non-railway-form",
 
         // View-only permissions
         "view-candidates",

@@ -139,7 +139,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
             <select
               value={
                 formData[field] === "Other" ||
-                !options.includes(formData[field])
+                  !options.includes(formData[field])
                   ? "Other"
                   : formData[field]
               }
@@ -177,9 +177,8 @@ const Course = ({ formData, onChange, errors = {} }) => {
             type={type}
             value={formData[field] || ""}
             onChange={(e) => onChange(field, e.target.value)}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${
-              disabled ? "bg-gray-50" : ""
-            }`}
+            className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${disabled ? "bg-gray-50" : ""
+              }`}
             placeholder={
               disabled ? "Auto-filled" : `Enter ${label.toLowerCase()}`
             }
@@ -195,7 +194,7 @@ const Course = ({ formData, onChange, errors = {} }) => {
   );
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full shadow text-lg">
           🎓

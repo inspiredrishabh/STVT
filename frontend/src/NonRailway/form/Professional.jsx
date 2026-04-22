@@ -256,7 +256,7 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
   ]);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
       <div className="flex items-center space-x-3 mb-6">
         <div className="h-12 w-12 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full shadow text-lg">
           💼
@@ -489,9 +489,9 @@ const Professional = ({ formData, onChange, errors, durationInfo }) => {
             // Make sparing date read-only if auto-calculated
             readOnly={Boolean(
               formData.dateOfJoiningStcWtcNonRailway &&
-                (formData.duration || durationInfo.total)
+              (formData.duration || durationInfo.total)
             )}
-            // --- End of changed code ---
+          // --- End of changed code ---
           />
           {localErrors.dateOfSparing && (
             <p className="text-sm text-red-500 mt-1">

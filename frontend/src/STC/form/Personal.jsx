@@ -1,64 +1,74 @@
 import { useEffect, useCallback } from "react";
 
 const Personal = ({ formData, onChange, errors = {} }) => {
-  const validateField = useCallback((fieldName, value) => {
-    const trimmedValue = value?.toString().trim() || "";
+  const validateField = useCallback(
+    (fieldName, value) => {
+      const trimmedValue = value?.toString().trim() || "";
 
-    switch (fieldName) {
-      case "picture":
-        if (!value) return "Picture is required";
-        if (value && !value.type?.startsWith("image/"))
-          return "Please select a valid image file";
-        if (value && value.size > 1 * 1024 * 1024)
-          return "Image size should be less than 1MB";
-        return "";
-      case "name":
-      case "fatherName":
-        if (!trimmedValue)
-          return `${fieldName === "name" ? "Name" : "Father's name"
+      switch (fieldName) {
+        case "picture":
+          if (!value) return "Picture is required";
+          if (value && !value.type?.startsWith("image/"))
+            return "Please select a valid image file";
+          if (value && value.size > 1 * 1024 * 1024)
+            return "Image size should be less than 1MB";
+          return "";
+        case "name":
+        case "fatherName":
+          if (!trimmedValue)
+            return `${
+              fieldName === "name" ? "Name" : "Father's name"
             } is required`;
-        if (trimmedValue.length < 2)
-          return "Must be at least 2 characters long";
-        if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
-          return "Should only contain letters and spaces";
-        return "";
-      case "sex":
-        return !["Male", "Female", "Other"].includes(value)
-          ? "Please select a valid gender"
-          : "";
-      case "dob": {
-        if (!value) return "Date of birth is required";
-        const dobDate = new Date(value);
-        const today = new Date();
-        const age = today.getFullYear() - dobDate.getFullYear();
-        if (dobDate > today) return "Date of birth cannot be in the future";
-        if (age < 16) return "Age must be at least 16 years";
-        if (age > 100) return "Please enter a valid date of birth";
-        return "";
+          if (trimmedValue.length < 2)
+            return "Must be at least 2 characters long";
+          if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
+            return "Should only contain letters and spaces";
+          return "";
+        case "sex":
+          return !["Male", "Female", "Other"].includes(value)
+            ? "Please select a valid gender"
+            : "";
+        case "dob": {
+          if (!value) return "Date of birth is required";
+          const dobDate = new Date(value);
+          const today = new Date();
+          const age = today.getFullYear() - dobDate.getFullYear();
+          if (dobDate > today) return "Date of birth cannot be in the future";
+          if (age < 16) return "Age must be at least 16 years";
+          if (age > 100) return "Please enter a valid date of birth";
+          return "";
+        }
+        case "category":
+          return !["General", "OBC", "SC", "ST", "EWS"].includes(value)
+            ? "Please select a valid category"
+            : "";
+        case "pwd":
+          return !["Yes", "No"].includes(value)
+            ? "Please select Yes or No for PWD"
+            : "";
+        case "typeOfDisability":
+          if (formData.pwd === "Yes" && !trimmedValue)
+            return "Type of disability is required when PWD is Yes";
+          if (formData.pwd === "Yes" && trimmedValue.length < 3)
+            return "Please provide more specific details about the disability";
+          return "";
+        case "nationality":
+          if (!trimmedValue) return "Nationality is required";
+          if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
+            return "Should only contain letters and spaces";
+          return "";
+        case "bloodGroup":
+          return !["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].includes(
+            value
+          )
+            ? "Please select a valid blood group"
+            : "";
+        default:
+          return "";
       }
-      case "category":
-        return !["General", "OBC", "SC", "ST", "EWS"].includes(value)
-          ? "Please select a valid category"
-          : "";
-      case "pwd":
-        return !["Yes", "No"].includes(value)
-          ? "Please select Yes or No for PWD"
-          : "";
-      case "typeOfDisability":
-        if (formData.pwd === "Yes" && !trimmedValue)
-          return "Type of disability is required when PWD is Yes";
-        if (formData.pwd === "Yes" && trimmedValue.length < 3)
-          return "Please provide more specific details about the disability";
-        return "";
-      case "nationality":
-        if (!trimmedValue) return "Nationality is required";
-        if (!/^[a-zA-Z\s]+$/.test(trimmedValue))
-          return "Should only contain letters and spaces";
-        return "";
-      default:
-        return "";
-    }
-  }, [formData]);
+    },
+    [formData]
+  );
 
   const validateAllFields = useCallback(() => {
     const requiredFields = [
@@ -70,6 +80,7 @@ const Personal = ({ formData, onChange, errors = {} }) => {
       "category",
       "pwd",
       "nationality",
+      "bloodGroup",
     ];
 
     // Add conditional required fields
@@ -99,14 +110,12 @@ const Personal = ({ formData, onChange, errors = {} }) => {
   const handleFieldChange = (fieldName, value) => onChange(fieldName, value);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-lg border-2 border-orange-100">
-      <div className="flex items-center space-x-3 mb-6">
+    <div className="bg-white rounded-xl p-8 shadow-lg border-2 border-orange-100">
+      <div className="flex items-center space-x-3 mb-6 border-b border-gray-400 pb-4">
         <div className="h-12 w-12 flex items-center justify-center bg-pink-100 text-pink-600 rounded-full shadow text-lg">
           👤
         </div>
-        <h3 className="text-xl font-semibold text-black">
-          Personal Details
-        </h3>
+        <h3 className="text-xl font-semibold text-black">Personal Details</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
@@ -280,7 +289,9 @@ const Personal = ({ formData, onChange, errors = {} }) => {
               onChange={(e) =>
                 handleFieldChange("typeOfDisability", e.target.value)
               }
-              className={`w-full border ${errors.typeOfDisability ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-2`}
+              className={`w-full border ${
+                errors.typeOfDisability ? "border-red-500" : "border-gray-300"
+              } rounded-lg px-4 py-2`}
               placeholder="Specify disability"
             />
             {errors.typeOfDisability && (
@@ -300,12 +311,43 @@ const Personal = ({ formData, onChange, errors = {} }) => {
             type="text"
             value={formData.nationality}
             onChange={(e) => handleFieldChange("nationality", e.target.value)}
-            className={`w-full border ${errors.nationality ? "border-red-500" : "border-gray-300"} rounded-lg px-4 py-2`}
+            className={`w-full border ${
+              errors.nationality ? "border-red-500" : "border-gray-300"
+            } rounded-lg px-4 py-2`}
             placeholder="Please enter nationality "
           />
           {errors.nationality && (
             <span className="text-red-500 text-sm mt-1">
               {errors.nationality}
+            </span>
+          )}
+        </div>
+
+        {/* Blood Group */}
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">
+            Blood Group <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.bloodGroup || ""}
+            onChange={(e) => handleFieldChange("bloodGroup", e.target.value)}
+            className={`w-full border ${
+              errors.bloodGroup ? "border-red-500" : "border-gray-300"
+            } rounded-lg px-4 py-2`}
+          >
+            <option value="">Select blood group</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+          {errors.bloodGroup && (
+            <span className="text-red-500 text-sm mt-1">
+              {errors.bloodGroup}
             </span>
           )}
         </div>
